@@ -6,6 +6,7 @@
 	** Matching types
 	** Include pokepowers
 	** Shuffle pokepowers
+ * Remove evolutions
  * Randomize HP, retreat cost 
 	** Fully random
 	** evo stage weighted
