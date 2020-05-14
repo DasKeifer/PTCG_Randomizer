@@ -2,7 +2,7 @@ package constants;
 
 public class CardDataConstants 
 {
-	enum EnergyTypes
+	public enum EnergyTypes
 	{
 		FIRE		(0x00),
 		GRASS		(0x01),
@@ -25,7 +25,7 @@ public class CardDataConstants
 		}
 	}
 
-	enum CardType
+	public enum CardType
 	{
 		POKEMON_FIRE            (EnergyTypes.FIRE.getValue()),
 		POKEMON_GRASS           (EnergyTypes.GRASS.getValue()),
@@ -63,7 +63,7 @@ public class CardDataConstants
 		}
 	}
 
-	enum CardRarity
+	public enum CardRarity
 	{
 		CIRCLE    (0x0),
 		DIAMOND   (0x1),
@@ -82,7 +82,7 @@ public class CardDataConstants
 		}
 	}
 
-	enum BoosterPacks // Upper bits?
+	public enum BoosterPacks // Upper bits?
 	{
 		COLOSSEUM   (0x0 << 4),
 		EVOLUTION   (0x1 << 4),
@@ -103,7 +103,7 @@ public class CardDataConstants
 		}
 	}
 
-	enum CardSet // Lower Bits?
+	public enum CardSet // Lower Bits?
 	{
 		JUNGLE (0x1),
 		FOSSIL (0x2),
@@ -122,7 +122,7 @@ public class CardDataConstants
 		}
 	}
 
-	enum EvolutionStage
+	public enum EvolutionStage
 	{
 		BASIC  (0x00),
 		STAGE1 (0x01),
@@ -140,7 +140,7 @@ public class CardDataConstants
 		}
 	}
 
-	enum WeaknessAndResistance
+	public enum WeaknessAndResistance
 	{
 		FIRE      (0x80),
 		GRASS     (0x40),
@@ -161,7 +161,7 @@ public class CardDataConstants
 		}
 	}
 
-	enum MoveCategory
+	public enum MoveCategory
 	{
 		DAMAGE_NORMAL (0x00),
 		DAMAGE_PLUS   (0x01),
@@ -183,7 +183,7 @@ public class CardDataConstants
 		}
 	}
 
-	enum MoveEffect1
+	public enum MoveEffect1
 	{
 		INFLICT_POISON           (1 << 0),
 		INFLICT_SLEEP            (1 << 1),
@@ -206,7 +206,7 @@ public class CardDataConstants
 		}
 	}
 
-	enum MoveEffect2
+	public enum MoveEffect2
 	{
 		// TODO: bits 5, 6 and 7 cover a wide variety of effects
 		SWITCH_OPPONENT_POKEMON  (1 << 0),
@@ -230,7 +230,7 @@ public class CardDataConstants
 		}
 	}
 
-	enum MoveEffect3
+	public enum MoveEffect3
 	{
 		// TODO: bit 1 covers a wide variety of effects
 		// bits 2-7 are unused

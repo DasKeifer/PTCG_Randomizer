@@ -2,7 +2,7 @@ package constants;
 
 public class CardConstants 
 {
-	enum CardId
+	public enum CardId
 	{
 		NO_CARD                 (0x00, false),
 		GRASS_ENERGY            (0x01),

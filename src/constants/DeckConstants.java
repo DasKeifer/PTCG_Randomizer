@@ -2,7 +2,7 @@ package constants;
 
 public class DeckConstants 
 {
-	enum DeckValues
+	public enum DeckValues
 	{
 		// Both *_DECK and *_DECK_ID constants are defined here.
 		// *_DECK constants are to be used with LoadDeck and related routines.
