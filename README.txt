@@ -6,6 +6,7 @@
 	** Matching types
 	** Include pokepowers
 	** Shuffle pokepowers
+ * Remove evolutions
  * Randomize HP, retreat cost 
 	** Fully random
 	** evo stage weighted
@@ -24,6 +25,7 @@
 	** Generate moves based on power levels
 	** Assign moves based on card power levels
 	** Randomize power levels of cards based on stage, apply appropiate rarities
+ * Randomize trainer pics
 	
 ## Misc tweaks
  * Remove pokemon names from effects
