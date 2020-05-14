@@ -64,21 +64,38 @@ public class DeckConstants
 		RESHUFFLE_DECK              (0x35),
 		IMAKUNI_DECK                (0x36);
 		
-		private int value;
+		private byte value;
 		DeckValues(int inValue)
 		{
-			value = inValue;
+			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			{
+				throw new IllegalArgumentException("Invalid constant input for "
+						+ "DeckValues enum: " + inValue);
+			}
+			value = (byte) inValue;
 		}
 		
-		int getValue()
+		boolean isValidDeck()
+		{
+			return value >= 2;
+		}
+		
+		byte getValue()
 		{
 			return value;
 		}
 
 		// Always, *_DECK_ID = *_DECK - 2. UNNAMED_DECK_ID and UNNAMED_2_DECK_ID do not exist.
-		int getId()
+		byte getId()
 		{
-			return value - 2;
+			if (value < 2)
+			{
+				return (byte) (value - 2);
+			}
+			else
+			{
+				throw new IllegalArgumentException("Attempted to retrieve ID for invalid deck with value: " + value);
+			}
 		}
 	}
 }

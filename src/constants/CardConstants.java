@@ -234,18 +234,29 @@ public class CardConstants
 		GAMBLER                 (0xe3),
 		RECYCLE                 (0xe4);
 
-		private int value;
-		static int numCards = 0;
+		private byte value;
+		static byte numCards = 0;
 		
 		CardId(int inValue)
 		{
-			value = inValue;
+			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			{
+				throw new IllegalArgumentException("Invalid constant input for "
+						+ "DeckValues enum: " + inValue);
+			}
+			value = (byte) inValue;
 			incrementNumberOfCards();
 		}
 		
 		CardId(int inValue, boolean isValidCard)
 		{
-			value = inValue;
+			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			{
+				throw new IllegalArgumentException("Invalid constant input for "
+						+ "DeckValues enum: " + inValue);
+			}
+			value = (byte) inValue;
+			
 			if (isValidCard)
 			{
 				incrementNumberOfCards();
@@ -257,7 +268,7 @@ public class CardConstants
 			numCards++;
 		}
 		
-		int getValue()
+		byte getValue()
 		{
 			return value;
 		}

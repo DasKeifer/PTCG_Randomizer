@@ -2,7 +2,7 @@ package constants;
 
 public class CardDataConstants 
 {
-	public enum EnergyTypes
+	public enum EnergyType
 	{
 		FIRE		(0x00),
 		GRASS		(0x01),
@@ -13,13 +13,18 @@ public class CardDataConstants
 		COLORLESS   (0x06),
 		UNUSED_TYPE (0x07);
 
-		private int value;
-		EnergyTypes(int inValue)
+		private byte value;
+		EnergyType(int inValue)
 		{
-			value = inValue;
+			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			{
+				throw new IllegalArgumentException("Invalid constant input for "
+						+ "EnergyTypes enum: " + inValue);
+			}
+			value = (byte) inValue;
 		}
 
-		int getValue()
+		byte getValue()
 		{
 			return value;
 		}
@@ -27,14 +32,14 @@ public class CardDataConstants
 
 	public enum CardType
 	{
-		POKEMON_FIRE            (EnergyTypes.FIRE.getValue()),
-		POKEMON_GRASS           (EnergyTypes.GRASS.getValue()),
-		POKEMON_LIGHTNING       (EnergyTypes.LIGHTNING.getValue()),
-		POKEMON_WATER           (EnergyTypes.WATER.getValue()),
-		POKEMON_FIGHTING        (EnergyTypes.FIGHTING.getValue()),
-		POKEMON_PSYCHIC         (EnergyTypes.PSYCHIC.getValue()),
-		POKEMON_COLORLESS       (EnergyTypes.COLORLESS.getValue()),
-		POKEMON_UNUSED          (EnergyTypes.UNUSED_TYPE.getValue()),
+		POKEMON_FIRE            (EnergyType.FIRE.getValue()),
+		POKEMON_GRASS           (EnergyType.GRASS.getValue()),
+		POKEMON_LIGHTNING       (EnergyType.LIGHTNING.getValue()),
+		POKEMON_WATER           (EnergyType.WATER.getValue()),
+		POKEMON_FIGHTING        (EnergyType.FIGHTING.getValue()),
+		POKEMON_PSYCHIC         (EnergyType.PSYCHIC.getValue()),
+		POKEMON_COLORLESS       (EnergyType.COLORLESS.getValue()),
+		POKEMON_UNUSED          (EnergyType.UNUSED_TYPE.getValue()),
 		ENERGY_FIRE             (0x08),
 		ENERGY_GRASS            (0x09),
 		ENERGY_LIGHTNING        (0x0a),
@@ -51,13 +56,18 @@ public class CardDataConstants
 		//TYPE_ENERGY_F  EQU 3
 		//TYPE_TRAINER_F EQU 4
 
-		private int value;
+		private byte value;
 		CardType(int inValue)
 		{
-			value = inValue;
+			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			{
+				throw new IllegalArgumentException("Invalid constant input for "
+						+ "CardType enum: " + inValue);
+			}
+			value = (byte) inValue;
 		}
 
-		int getValue()
+		byte getValue()
 		{
 			return value;
 		}
@@ -70,53 +80,49 @@ public class CardDataConstants
 		STAR      (0x2),
 		PROMOSTAR (0xff);
 
-		private int value;
+		private byte value;
 		CardRarity(int inValue)
 		{
-			value = inValue;
+			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			{
+				throw new IllegalArgumentException("Invalid constant input for "
+						+ "CardRarity enum: " + inValue);
+			}
+			value = (byte) inValue;
 		}
 
-		int getValue()
+		byte getValue()
 		{
 			return value;
 		}
 	}
 
-	public enum BoosterPacks // Upper bits?
+	public enum CardSetAndPack
 	{
-		COLOSSEUM   (0x0 << 4),
-		EVOLUTION   (0x1 << 4),
-		MYSTERY     (0x2 << 4),
-		LABORATORY  (0x3 << 4),
-		PROMOTIONAL (0x4 << 4),
-		ENERGY      (0x5 << 4);
+		// bits 0-3 are the set, bits 4-7 are the booster pack they can be found in
+		SET_JUNGLE (0x1),
+		SET_FOSSIL (0x2),
+		SET_GB     (0x7),
+		SET_PRO    (0x8),
+		PACK_COLOSSEUM   (0x0 << 4),
+		PACK_EVOLUTION   (0x1 << 4),
+		PACK_MYSTERY     (0x2 << 4),
+		PACK_LABORATORY  (0x3 << 4),
+		PACK_PROMOTIONAL (0x4 << 4),
+		PACK_ENERGY      (0x5 << 4);
 
-		private int value;
-		BoosterPacks(int inValue)
+		private byte value;
+		CardSetAndPack(int inValue)
 		{
-			value = inValue;
+			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			{
+				throw new IllegalArgumentException("Invalid constant input for "
+						+ "CardSetAndPack enum: " + inValue);
+			}
+			value = (byte) inValue;
 		}
 
-		int getValue()
-		{
-			return value;
-		}
-	}
-
-	public enum CardSet // Lower Bits?
-	{
-		JUNGLE (0x1),
-		FOSSIL (0x2),
-		GB     (0x7),
-		PRO    (0x8);
-
-		private int value;
-		CardSet(int inValue)
-		{
-			value = inValue;
-		}
-
-		int getValue()
+		byte getValue()
 		{
 			return value;
 		}
@@ -128,13 +134,18 @@ public class CardDataConstants
 		STAGE1 (0x01),
 		STAGE2 (0x02);
 
-		private int value;
+		private byte value;
 		EvolutionStage(int inValue)
 		{
-			value = inValue;
+			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			{
+				throw new IllegalArgumentException("Invalid constant input for "
+						+ "EvolutionStage enum: " + inValue);
+			}
+			value = (byte) inValue;
 		}
 
-		int getValue()
+		byte getValue()
 		{
 			return value;
 		}
@@ -142,20 +153,27 @@ public class CardDataConstants
 
 	public enum WeaknessAndResistance
 	{
+		// TODO: This looks like a flag... Can we have multiple weaknesses?
 		FIRE      (0x80),
 		GRASS     (0x40),
 		LIGHTNING (0x20),
 		WATER     (0x10),
 		FIGHTING  (0x08),
 		PSYCHIC   (0x04);
+		// TODO: Colorless 0x02?
 
-		private int value;
+		private byte value;
 		WeaknessAndResistance(int inValue)
 		{
-			value = inValue;
+			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			{
+				throw new IllegalArgumentException("Invalid constant input for "
+						+ "WeaknessAndResistance enum: " + inValue);
+			}
+			value = (byte) inValue;
 		}
 
-		int getValue()
+		byte getValue()
 		{
 			return value;
 		}
@@ -171,13 +189,18 @@ public class CardDataConstants
 		//TODO:RESIDUAL_F    EQU 7
 		//RESIDUAL      EQU 1 << RESIDUAL_F
 
-		private int value;
+		private byte value;
 		MoveCategory(int inValue)
 		{
-			value = inValue;
+			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			{
+				throw new IllegalArgumentException("Invalid constant input for "
+						+ "MoveCategory enum: " + inValue);
+			}
+			value = (byte) inValue;
 		}
 
-		int getValue()
+		byte getValue()
 		{
 			return value;
 		}
@@ -194,13 +217,18 @@ public class CardDataConstants
 		HIGH_RECOIL              (1 << 6),
 		DRAW_CARD                (1 << 7);
 
-		private int value;
+		private byte value;
 		MoveEffect1(int inValue)
 		{
-			value = inValue;
+			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			{
+				throw new IllegalArgumentException("Invalid constant input for "
+						+ "MoveEffect1 enum: " + inValue);
+			}
+			value = (byte) inValue;
 		}
 
-		int getValue()
+		byte getValue()
 		{
 			return value;
 		}
@@ -218,13 +246,18 @@ public class CardDataConstants
 		FLAG_2_BIT_6             (1 << 6),
 		FLAG_2_BIT_7             (1 << 7);
 
-		private int value;
+		private byte value;
 		MoveEffect2(int inValue)
 		{
-			value = inValue;
+			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			{
+				throw new IllegalArgumentException("Invalid constant input for "
+						+ "MoveEffect2 enum: " + inValue);
+			}
+			value = (byte) inValue;
 		}
 
-		int getValue()
+		byte getValue()
 		{
 			return value;
 		}
@@ -237,17 +270,22 @@ public class CardDataConstants
 		BOOST_IF_TAKEN_DAMAGE    (1 << 0),
 		FLAG_3_BIT_1             (1 << 1);
 
-		private int value;
+		private byte value;
 		MoveEffect3(int inValue)
 		{
-			value = inValue;
+			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			{
+				throw new IllegalArgumentException("Invalid constant input for "
+						+ "MoveEffect3 enum: " + inValue);
+			}
+			value = (byte) inValue;
 		}
 
-		int getValue()
+		byte getValue()
 		{
 			return value;
 		}
 	}
 
-	static final int RETREAT_COST_UNABLE_RETREAT = 0x64;
+	static final byte RETREAT_COST_UNABLE_RETREAT = 0x64;
 }
