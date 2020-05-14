@@ -4,7 +4,7 @@ public class CardConstants
 {
 	enum CardId
 	{
-		NO_CARD                 (0x00),
+		NO_CARD                 (0x00, false),
 		GRASS_ENERGY            (0x01),
 		FIRE_ENERGY             (0x02),
 		WATER_ENERGY            (0x03),
@@ -235,14 +235,36 @@ public class CardConstants
 		RECYCLE                 (0xe4);
 
 		private int value;
+		static int numCards = 0;
+		
 		CardId(int inValue)
 		{
 			value = inValue;
+			incrementNumberOfCards();
+		}
+		
+		CardId(int inValue, boolean isValidCard)
+		{
+			value = inValue;
+			if (isValidCard)
+			{
+				incrementNumberOfCards();
+			}
+		}
+		
+		private static void incrementNumberOfCards()
+		{
+			numCards++;
 		}
 		
 		int getValue()
 		{
 			return value;
+		}
+		
+		int getNumberOfCards()
+		{
+			return numCards;
 		}
 	}
 }

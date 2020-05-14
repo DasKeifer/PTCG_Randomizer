@@ -25,6 +25,7 @@
 	** Generate moves based on power levels
 	** Assign moves based on card power levels
 	** Randomize power levels of cards based on stage, apply appropiate rarities
+ * Randomize trainer pics
 	
 ## Misc tweaks
  * Remove pokemon names from effects

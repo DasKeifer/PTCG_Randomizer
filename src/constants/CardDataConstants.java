@@ -46,7 +46,8 @@ public class CardDataConstants
 		TRAINER                 (0x10),
 		TRAINER_UNUSED          (0x11);
 
-		//TODO TYPE_PKMN      EQU %111
+		//Suspect these are unneeded but can be implemented as functions/constants
+		//TYPE_PKMN      EQU %111
 		//TYPE_ENERGY_F  EQU 3
 		//TYPE_TRAINER_F EQU 4
 
