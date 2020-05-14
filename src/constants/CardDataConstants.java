@@ -1,5 +1,8 @@
 package constants;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 public class CardDataConstants 
 {
 	public enum EnergyType
@@ -28,6 +31,18 @@ public class CardDataConstants
 		{
 			return value;
 		}
+		
+	    public static EnergyType readFromByte(byte b)
+	    {
+	    	for(EnergyType num : EnergyType.values())
+	    	{
+	    		if(b == num.getValue())
+	    		{
+	    			return num;
+	    		}
+	    	}
+	    	throw new IllegalArgumentException("Invalid EnergyType value " + b + " was passed");
+	    }
 	}
 
 	public enum CardType
@@ -71,6 +86,18 @@ public class CardDataConstants
 		{
 			return value;
 		}
+		
+	    public static CardType readFromByte(byte b)
+	    {
+	    	for(CardType num : CardType.values())
+	    	{
+	    		if(b == num.getValue())
+	    		{
+	    			return num;
+	    		}
+	    	}
+	    	throw new IllegalArgumentException("Invalid CardType value " + b + " was passed");
+	    }
 	}
 
 	public enum CardRarity
@@ -95,29 +122,38 @@ public class CardDataConstants
 		{
 			return value;
 		}
+		
+	    public static CardRarity readFromByte(byte b)
+	    {
+	    	for(CardRarity num : CardRarity.values())
+	    	{
+	    		if(b == num.getValue())
+	    		{
+	    			return num;
+	    		}
+	    	}
+	    	throw new IllegalArgumentException("Invalid CardType value " + b + " was passed");
+	    }
 	}
-
-	public enum CardSetAndPack
+	
+	public enum BoosterPack
 	{
-		// bits 0-3 are the set, bits 4-7 are the booster pack they can be found in
-		SET_JUNGLE (0x1),
-		SET_FOSSIL (0x2),
-		SET_GB     (0x7),
-		SET_PRO    (0x8),
-		PACK_COLOSSEUM   (0x0 << 4),
-		PACK_EVOLUTION   (0x1 << 4),
-		PACK_MYSTERY     (0x2 << 4),
-		PACK_LABORATORY  (0x3 << 4),
-		PACK_PROMOTIONAL (0x4 << 4),
-		PACK_ENERGY      (0x5 << 4);
-
+		COLOSSEUM   (0x0 << 4),
+		EVOLUTION   (0x1 << 4),
+		MYSTERY     (0x2 << 4),
+		LABORATORY  (0x3 << 4),
+		PROMOTIONAL (0x4 << 4),
+		ENERGY      (0x5 << 4);
+		
 		private byte value;
-		CardSetAndPack(int inValue)
+		
+		BoosterPack(int inValue)
 		{
-			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			// stored in upper half of byte with set in the lower half
+			if (inValue > Byte.MAX_VALUE || inValue < (Byte.MIN_VALUE << 4))
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
-						+ "CardSetAndPack enum: " + inValue);
+						+ "BoosterPack enum: " + inValue);
 			}
 			value = (byte) inValue;
 		}
@@ -126,6 +162,56 @@ public class CardDataConstants
 		{
 			return value;
 		}
+		
+	    public static BoosterPack readFromByte(byte b)
+	    {
+	    	for(BoosterPack num : BoosterPack.values())
+	    	{
+	    		if(b == num.getValue())
+	    		{
+	    			return num;
+	    		}
+	    	}
+	    	throw new IllegalArgumentException("Invalid BoosterPack value " + b + " was passed");
+	    }
+	}
+
+	public enum CardSet
+	{
+		JUNGLE (0x1),
+		FOSSIL (0x2),
+		GB     (0x7),
+		PRO    (0x8);
+
+		private byte value;
+		
+		CardSet(int inValue)
+		{
+			// stored in lower half of byte with pack in the upper half
+			if (inValue > (Byte.MAX_VALUE >> 4) || inValue < Byte.MIN_VALUE)
+			{
+				throw new IllegalArgumentException("Invalid constant input for "
+						+ "CardSet enum: " + inValue);
+			}
+			value = (byte) inValue;
+		}
+
+		byte getValue()
+		{
+			return value;
+		}
+		
+	    public static CardSet readFromByte(byte b)
+	    {
+	    	for(CardSet num : CardSet.values())
+	    	{
+	    		if(b == num.getValue())
+	    		{
+	    			return num;
+	    		}
+	    	}
+	    	throw new IllegalArgumentException("Invalid CardSet value " + b + " was passed");
+	    }
 	}
 
 	public enum EvolutionStage
@@ -149,9 +235,21 @@ public class CardDataConstants
 		{
 			return value;
 		}
+		
+	    public static EvolutionStage readFromByte(byte b)
+	    {
+	    	for(EvolutionStage num : EvolutionStage.values())
+	    	{
+	    		if(b == num.getValue())
+	    		{
+	    			return num;
+	    		}
+	    	}
+	    	throw new IllegalArgumentException("Invalid EvolutionStage value " + b + " was passed");
+	    }
 	}
 
-	public enum WeaknessAndResistance
+	public enum WeaknessResistanceType
 	{
 		// TODO: This looks like a flag... Can we have multiple weaknesses?
 		FIRE      (0x80),
@@ -163,12 +261,12 @@ public class CardDataConstants
 		// TODO: Colorless 0x02?
 
 		private byte value;
-		WeaknessAndResistance(int inValue)
+		WeaknessResistanceType(int inValue)
 		{
 			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
-						+ "WeaknessAndResistance enum: " + inValue);
+						+ "WeaknessResistanceType enum: " + inValue);
 			}
 			value = (byte) inValue;
 		}
@@ -177,6 +275,18 @@ public class CardDataConstants
 		{
 			return value;
 		}
+		
+	    public static WeaknessResistanceType readFromByte(byte b)
+	    {
+	    	for(WeaknessResistanceType num : WeaknessResistanceType.values())
+	    	{
+	    		if(b == num.getValue())
+	    		{
+	    			return num;
+	    		}
+	    	}
+	    	throw new IllegalArgumentException("Invalid WeaknessResistanceType value " + b + " was passed");
+	    }
 	}
 
 	public enum MoveCategory
@@ -204,6 +314,18 @@ public class CardDataConstants
 		{
 			return value;
 		}
+		
+	    public static MoveCategory readFromByte(byte b)
+	    {
+	    	for(MoveCategory num : MoveCategory.values())
+	    	{
+	    		if(b == num.getValue())
+	    		{
+	    			return num;
+	    		}
+	    	}
+	    	throw new IllegalArgumentException("Invalid MoveCategory value " + b + " was passed");
+	    }
 	}
 
 	public enum MoveEffect1
@@ -216,7 +338,7 @@ public class CardDataConstants
 		DAMAGE_TO_OPPONENT_BENCH (1 << 5),
 		HIGH_RECOIL              (1 << 6),
 		DRAW_CARD                (1 << 7);
-
+		
 		private byte value;
 		MoveEffect1(int inValue)
 		{
@@ -232,6 +354,32 @@ public class CardDataConstants
 		{
 			return value;
 		}
+		
+	    public static Set<MoveEffect1> readFromByte(byte b)
+	    {
+	    	EnumSet<MoveEffect1> readInEffects = EnumSet.noneOf(MoveEffect1.class);
+	    	for(MoveEffect1 num : MoveEffect1.values())
+	    	{
+	    		if ((num.getValue() & b) != 0)
+	    		{
+	    	    	readInEffects.add(num);
+	    		}
+	    	}
+	    	return readInEffects;
+	    }
+	    
+	    public static byte storeAsByte(Set<MoveEffect1> set)
+	    {
+	    	byte combinedValue = 0;
+	    	for(MoveEffect1 num : MoveEffect1.values())
+	    	{
+	    		if(set.contains(num))
+	    		{
+	    			combinedValue += num.getValue();
+	    		}
+	    	}
+	    	return combinedValue;
+	    }
 	}
 
 	public enum MoveEffect2
@@ -261,6 +409,32 @@ public class CardDataConstants
 		{
 			return value;
 		}
+
+	    public static Set<MoveEffect2> readFromByte(byte b)
+	    {
+	    	EnumSet<MoveEffect2> readInEffects = EnumSet.noneOf(MoveEffect2.class);
+	    	for(MoveEffect2 num : MoveEffect2.values())
+	    	{
+	    		if ((num.getValue() & b) != 0)
+	    		{
+	    	    	readInEffects.add(num);
+	    		}
+	    	}
+	    	return readInEffects;
+	    }
+	    
+	    public static byte storeAsByte(Set<MoveEffect2> set)
+	    {
+	    	byte combinedValue = 0;
+	    	for(MoveEffect2 num : MoveEffect2.values())
+	    	{
+	    		if(set.contains(num))
+	    		{
+	    			combinedValue += num.getValue();
+	    		}
+	    	}
+	    	return combinedValue;
+	    }
 	}
 
 	public enum MoveEffect3
@@ -285,6 +459,32 @@ public class CardDataConstants
 		{
 			return value;
 		}
+		
+	    public static Set<MoveEffect3> readFromByte(byte b)
+	    {
+	    	EnumSet<MoveEffect3> readInEffects = EnumSet.noneOf(MoveEffect3.class);
+	    	for(MoveEffect3 num : MoveEffect3.values())
+	    	{
+	    		if ((num.getValue() & b) != 0)
+	    		{
+	    	    	readInEffects.add(num);
+	    		}
+	    	}
+	    	return readInEffects;
+	    }
+	    
+	    public static byte storeAsByte(Set<MoveEffect3> set)
+	    {
+	    	byte combinedValue = 0;
+	    	for(MoveEffect3 num : MoveEffect3.values())
+	    	{
+	    		if(set.contains(num))
+	    		{
+	    			combinedValue += num.getValue();
+	    		}
+	    	}
+	    	return combinedValue;
+	    }
 	}
 
 	static final byte RETREAT_COST_UNABLE_RETREAT = 0x64;

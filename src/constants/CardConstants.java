@@ -277,5 +277,17 @@ public class CardConstants
 		{
 			return numCards;
 		}
+		
+	    public static CardId readFromByte(byte b)
+	    {
+	    	for(CardId num : CardId.values())
+	    	{
+	    		if(b == num.getValue())
+	    		{
+	    			return num;
+	    		}
+	    	}
+	    	throw new IllegalArgumentException("Invalid CardId value " + b + " was passed");
+	    }
 	}
 }

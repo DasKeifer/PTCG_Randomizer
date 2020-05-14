@@ -97,5 +97,29 @@ public class DeckConstants
 				throw new IllegalArgumentException("Attempted to retrieve ID for invalid deck with value: " + value);
 			}
 		}
+
+	    public static DeckValues readFromByte(byte b)
+	    {
+	    	for(DeckValues num : DeckValues.values())
+	    	{
+	    		if(b == num.getValue())
+	    		{
+	    			return num;
+	    		}
+	    	}
+	    	throw new IllegalArgumentException("Invalid DeckValues value " + b + " was passed");
+	    }
+	    
+	    public static DeckValues readIdFromByte(byte b)
+	    {
+	    	for(DeckValues num : DeckValues.values())
+	    	{
+	    		if(b == num.getId())
+	    		{
+	    			return num;
+	    		}
+	    	}
+	    	throw new IllegalArgumentException("Invalid DeckValues id value " + b + " was passed");
+	    }
 	}
 }
