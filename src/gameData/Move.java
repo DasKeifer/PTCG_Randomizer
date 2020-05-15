@@ -2,8 +2,8 @@ package gameData;
 
 import java.util.Set;
 
-import Util.IoUtils;
 import constants.CardDataConstants.*;
+import util.IoUtils;
 
 public class Move implements GameData 
 {

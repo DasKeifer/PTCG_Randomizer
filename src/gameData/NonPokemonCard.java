@@ -1,6 +1,6 @@
 package gameData;
 
-import Util.IoUtils;
+import util.IoUtils;
 
 public class NonPokemonCard extends Card
 {

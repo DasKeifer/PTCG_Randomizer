@@ -5,10 +5,9 @@ import constants.CardDataConstants.BoosterPack;
 import constants.CardDataConstants.CardRarity;
 import constants.CardDataConstants.CardSet;
 import constants.CardDataConstants.CardType;
+import util.IoUtils;
 
 import java.security.InvalidParameterException;
-
-import Util.IoUtils;
 
 public abstract class Card implements GameData
 {

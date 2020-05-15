@@ -1,8 +1,8 @@
 package gameData;
 
-import Util.IoUtils;
 import constants.CardConstants.*;
 import constants.CardDataConstants.*;
+import util.IoUtils;
 
 public class PokemonCard extends Card 
 {
