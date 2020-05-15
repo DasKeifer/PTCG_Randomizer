@@ -1,20 +1,13 @@
 package gameData;
 
+import Util.IoUtils;
 import constants.CardConstants.*;
 import constants.CardDataConstants.*;
 
-public class PokemonCard implements GameData 
+public class PokemonCard extends Card 
 {
-	CardType type;
-	int gfx; // Card art
-	int name; // No gameplay impact
-	CardRarity rarity;
-
-	// IMPORTANT! in the data the set and pack are stored in one byte:
-	// bits 0-3 are the set, bits 4-7 are the booster pack they can be found in
-	CardSet set;
-	BoosterPack pack;
-	CardId id; // This is used to calculate the offset of the card data and is used to reference other cards
+	public static final int SIZE_OF_PAYLOAD_IN_BYTES = 65 - CARD_COMMON_SIZE;
+	
 	byte hp; // TODO: non multiples of 10?
 	EvolutionStage stage;
 	CardId prevEvolution;
@@ -25,22 +18,76 @@ public class PokemonCard implements GameData
 	byte retreatCost; // TODO: max allowed?
 	WeaknessResistanceType weakness; // TODO: Allows multiple?
 	WeaknessResistanceType resistance; // TODO: Allows multiple?
-	int pokemonCategory; // TODO: Investigate - i.e cocoon, hairy bug, etc. Shouldn't need to change
+	short pokemonCategory; // TODO: Investigate - i.e cocoon, hairy bug, etc. Shouldn't need to change
 	byte pokedexNumber;
 	byte unknownByte1;
 	byte level; // TODO: Investigate No gameplay impact?
-	int length; //One byte is feet, another is inches // TODO: Investigate No gameplay impact?
-	int weight; // TODO: Investigate No gameplay impact?
-	int description; // Shouldn't need to change - No gameplay impact
+	short length; //TODO: One byte is feet, another is inches - separate them // TODO: Investigate No gameplay impact?
+	short weight; // TODO: Investigate No gameplay impact?
+	short description; // Shouldn't need to change - No gameplay impact
 	byte unknownByte2;
 	
 	@Override
-	public void readData(byte[] rom, int startIndex) {
-		// TODO:
+	public int readData(byte[] cardBytes, int startIndex) 
+	{
+		int index = readCommonData(cardBytes, startIndex);
+		
+		hp = cardBytes[index++];
+		stage = EvolutionStage.readFromByte(cardBytes[index++]);
+		prevEvolution = CardId.readFromByte(cardBytes[index++]);
+		
+		move1 = new Move();
+		index = move1.readData(cardBytes, index);
+		move2 = new Move();
+		index = move2.readData(cardBytes, index);
+		
+		retreatCost = cardBytes[index++];
+		weakness = WeaknessResistanceType.readFromByte(cardBytes[index++]);
+		resistance = WeaknessResistanceType.readFromByte(cardBytes[index++]);
+		pokemonCategory = IoUtils.readShort(cardBytes, index);
+		index += 2;
+		pokedexNumber = cardBytes[index++];
+		unknownByte1 = cardBytes[index++];
+		level = cardBytes[index++];
+		length = IoUtils.readShort(cardBytes, index);
+		index += 2;
+		weight = IoUtils.readShort(cardBytes, index);
+		index += 2;
+		description = IoUtils.readShort(cardBytes, index);
+		index += 2;
+		unknownByte2 = cardBytes[index++];
+		
+		return index;
 	}
 
 	@Override
-	public void writeData(byte[] rom, int startIndex) {
-		// TODO:
+	public int writeData(byte[] cardBytes, int startIndex) 
+	{
+		int index = writeCommonData(cardBytes, startIndex);
+		
+		cardBytes[index++] = hp;
+		cardBytes[index++] = stage.getValue();
+		cardBytes[index++] = prevEvolution.getValue();
+		
+		move1.writeData(cardBytes, index);
+		move2.writeData(cardBytes, index);
+		
+		cardBytes[index++] = retreatCost;
+		cardBytes[index++] = weakness.getValue();
+		cardBytes[index++] = resistance.getValue();
+		IoUtils.writeShort(pokemonCategory, cardBytes, index);
+		index += 2;
+		cardBytes[index++] = pokedexNumber;
+		cardBytes[index++] = unknownByte1;
+		cardBytes[index++] = level;
+		IoUtils.writeShort(length, cardBytes, index);
+		index += 2;
+		IoUtils.writeShort(weight, cardBytes, index);
+		index += 2;
+		IoUtils.writeShort(description, cardBytes, index);
+		index += 2;
+		cardBytes[index++] = unknownByte2;
+		
+		return index;
 	}
 }

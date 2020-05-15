@@ -4,7 +4,7 @@ public class CardConstants
 {
 	public enum CardId
 	{
-		NO_CARD                 (0x00, false),
+		NO_CARD                 (0x00, false), // Not a real cad - needed for spacing
 		GRASS_ENERGY            (0x01),
 		FIRE_ENERGY             (0x02),
 		WATER_ENERGY            (0x03),
@@ -237,7 +237,7 @@ public class CardConstants
 		private byte value;
 		static byte numCards = 0;
 		
-		CardId(int inValue)
+		private CardId(int inValue)
 		{
 			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
 			{
@@ -248,7 +248,7 @@ public class CardConstants
 			incrementNumberOfCards();
 		}
 		
-		CardId(int inValue, boolean isValidCard)
+		private CardId(int inValue, boolean isValidCard)
 		{
 			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
 			{
@@ -268,12 +268,12 @@ public class CardConstants
 			numCards++;
 		}
 		
-		byte getValue()
+		public byte getValue()
 		{
 			return value;
 		}
 		
-		int getNumberOfCards()
+		public int getNumberOfCards()
 		{
 			return numCards;
 		}
