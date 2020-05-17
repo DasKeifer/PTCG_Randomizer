@@ -69,8 +69,8 @@ public class PokemonCard extends Card
 		cardBytes[index++] = stage.getValue();
 		cardBytes[index++] = prevEvolution.getValue();
 		
-		move1.writeData(cardBytes, index);
-		move2.writeData(cardBytes, index);
+		index = move1.writeData(cardBytes, index);
+		index = move2.writeData(cardBytes, index);
 		
 		cardBytes[index++] = retreatCost;
 		cardBytes[index++] = weakness.getValue();

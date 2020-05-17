@@ -60,7 +60,7 @@ public class Move implements GameData
 		
 		moveBytes[index++] = energyType1.getValue();
 		moveBytes[index++] = numOfEnergyType1;
-		moveBytes[index++] = energyType1.getValue();
+		moveBytes[index++] = energyType2.getValue();
 		moveBytes[index++] = numOfEnergyType2;
 		IoUtils.writeShort(name, moveBytes, index);
 		index += 2;
