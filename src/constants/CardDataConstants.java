@@ -17,7 +17,7 @@ public class CardDataConstants
 		UNUSED_TYPE (0x07);
 
 		private byte value;
-		EnergyType(int inValue)
+		private EnergyType(int inValue)
 		{
 			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
 			{
@@ -27,7 +27,7 @@ public class CardDataConstants
 			value = (byte) inValue;
 		}
 
-		byte getValue()
+		public byte getValue()
 		{
 			return value;
 		}
@@ -72,7 +72,7 @@ public class CardDataConstants
 		//TYPE_TRAINER_F EQU 4
 
 		private byte value;
-		CardType(int inValue)
+		private CardType(int inValue)
 		{
 			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
 			{
@@ -82,7 +82,7 @@ public class CardDataConstants
 			value = (byte) inValue;
 		}
 
-		byte getValue()
+		public byte getValue()
 		{
 			return value;
 		}
@@ -98,6 +98,36 @@ public class CardDataConstants
 	    	}
 	    	throw new IllegalArgumentException("Invalid CardType value " + b + " was passed");
 	    }
+
+		public boolean isPokemonCard() 
+		{
+			return value == POKEMON_FIRE.getValue() || 
+					value == POKEMON_GRASS.getValue() ||
+					value == POKEMON_LIGHTNING.getValue() ||
+					value == POKEMON_WATER.getValue() ||
+					value == POKEMON_FIGHTING.getValue() ||
+					value == POKEMON_PSYCHIC.getValue() ||
+					value == POKEMON_COLORLESS.getValue() ||
+					value == POKEMON_UNUSED.getValue();
+		}
+
+		public boolean isEnergyCard() 
+		{
+			return value == ENERGY_FIRE.getValue() || 
+					value == ENERGY_GRASS.getValue() ||
+					value == ENERGY_LIGHTNING.getValue() ||
+					value == ENERGY_WATER.getValue() ||
+					value == ENERGY_FIGHTING.getValue() ||
+					value == ENERGY_PSYCHIC.getValue() ||
+					value == ENERGY_DOUBLE_COLORLESS.getValue() ||
+					value == ENERGY_UNUSED.getValue();
+		}
+
+		public boolean isTrainerCard() 
+		{
+			return value == TRAINER.getValue() || 
+					value == TRAINER_UNUSED.getValue();
+		}
 	}
 
 	public enum CardRarity
@@ -108,7 +138,7 @@ public class CardDataConstants
 		PROMOSTAR (0xff);
 
 		private byte value;
-		CardRarity(int inValue)
+		private CardRarity(int inValue)
 		{
 			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
 			{
@@ -118,7 +148,7 @@ public class CardDataConstants
 			value = (byte) inValue;
 		}
 
-		byte getValue()
+		public byte getValue()
 		{
 			return value;
 		}
@@ -147,7 +177,7 @@ public class CardDataConstants
 		
 		private byte value;
 		
-		BoosterPack(int inValue)
+		private BoosterPack(int inValue)
 		{
 			// stored in upper half of byte with set in the lower half
 			if (inValue > Byte.MAX_VALUE || inValue < (Byte.MIN_VALUE << 4))
@@ -158,7 +188,7 @@ public class CardDataConstants
 			value = (byte) inValue;
 		}
 
-		byte getValue()
+		public byte getValue()
 		{
 			return value;
 		}
@@ -185,7 +215,7 @@ public class CardDataConstants
 
 		private byte value;
 		
-		CardSet(int inValue)
+		private CardSet(int inValue)
 		{
 			// stored in lower half of byte with pack in the upper half
 			if (inValue > (Byte.MAX_VALUE >> 4) || inValue < Byte.MIN_VALUE)
@@ -196,7 +226,7 @@ public class CardDataConstants
 			value = (byte) inValue;
 		}
 
-		byte getValue()
+		public byte getValue()
 		{
 			return value;
 		}
@@ -221,7 +251,7 @@ public class CardDataConstants
 		STAGE2 (0x02);
 
 		private byte value;
-		EvolutionStage(int inValue)
+		private EvolutionStage(int inValue)
 		{
 			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
 			{
@@ -231,7 +261,7 @@ public class CardDataConstants
 			value = (byte) inValue;
 		}
 
-		byte getValue()
+		public byte getValue()
 		{
 			return value;
 		}
@@ -261,7 +291,7 @@ public class CardDataConstants
 		// TODO: Colorless 0x02?
 
 		private byte value;
-		WeaknessResistanceType(int inValue)
+		private WeaknessResistanceType(int inValue)
 		{
 			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
 			{
@@ -271,7 +301,7 @@ public class CardDataConstants
 			value = (byte) inValue;
 		}
 
-		byte getValue()
+		public byte getValue()
 		{
 			return value;
 		}
@@ -300,7 +330,7 @@ public class CardDataConstants
 		//RESIDUAL      EQU 1 << RESIDUAL_F
 
 		private byte value;
-		MoveCategory(int inValue)
+		private MoveCategory(int inValue)
 		{
 			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
 			{
@@ -310,7 +340,7 @@ public class CardDataConstants
 			value = (byte) inValue;
 		}
 
-		byte getValue()
+		public byte getValue()
 		{
 			return value;
 		}
@@ -340,7 +370,7 @@ public class CardDataConstants
 		DRAW_CARD                (1 << 7);
 		
 		private byte value;
-		MoveEffect1(int inValue)
+		private MoveEffect1(int inValue)
 		{
 			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
 			{
@@ -350,7 +380,7 @@ public class CardDataConstants
 			value = (byte) inValue;
 		}
 
-		byte getValue()
+		public byte getValue()
 		{
 			return value;
 		}
@@ -395,7 +425,7 @@ public class CardDataConstants
 		FLAG_2_BIT_7             (1 << 7);
 
 		private byte value;
-		MoveEffect2(int inValue)
+		private MoveEffect2(int inValue)
 		{
 			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
 			{
@@ -405,7 +435,7 @@ public class CardDataConstants
 			value = (byte) inValue;
 		}
 
-		byte getValue()
+		public byte getValue()
 		{
 			return value;
 		}
@@ -445,7 +475,7 @@ public class CardDataConstants
 		FLAG_3_BIT_1             (1 << 1);
 
 		private byte value;
-		MoveEffect3(int inValue)
+		private MoveEffect3(int inValue)
 		{
 			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
 			{
@@ -455,7 +485,7 @@ public class CardDataConstants
 			value = (byte) inValue;
 		}
 
-		byte getValue()
+		public byte getValue()
 		{
 			return value;
 		}
