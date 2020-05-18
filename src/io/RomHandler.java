@@ -43,6 +43,7 @@ public class RomHandler
 			allCards[cardIndex] = Card.createCardAtIndex(romBytes, readIndex);
 			readIndex += allCards[cardIndex].getCardSizeInBytes();
 		}
+		
 		return allCards;
 	}
 	

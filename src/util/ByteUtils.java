@@ -29,7 +29,7 @@ public class ByteUtils
 	{	
 		//little endian
 		short value = byteArray[index];
-		value += byteArray[index+1] << 4;
+		value += byteArray[index+1] << 8;
 		return value;
 	}
 

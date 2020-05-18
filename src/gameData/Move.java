@@ -54,7 +54,6 @@ public class Move implements GameData
 		
 		// They are stored in octects corresponding to their energy type. Since we
 		// read them as bytes, we mask each byte and increment the index every other time
-		System.out.println(moveBytes[index] + ", " + moveBytes[index+1] + ", " + moveBytes[index+2] + ", " + moveBytes[index+3]);
 		energyCost = new byte[8];
 		setCost(EnergyType.FIRE, ByteUtils.readUpperHexChar(moveBytes[index]));
 		setCost(EnergyType.GRASS, ByteUtils.readLowerHexChar(moveBytes[index]));
@@ -87,9 +86,18 @@ public class Move implements GameData
 		
 		return index;
 	}
+
+	public byte getCost(EnergyType inType)
+	{
+		return energyCost[inType.getValue()];
+	}
 	
 	public void setCost(EnergyType inType, byte inCost)
 	{
+		if (inCost > ByteUtils.MAX_HEX_CHAR_VALUE || inCost < ByteUtils.MIN_BYTE_VALUE)
+		{
+			throw new IllegalArgumentException("Invalid value was passed for energy type " + inType + " cost: " + inCost);
+		}
 		energyCost[inType.getValue()] = inCost;
 	}
 
@@ -98,7 +106,11 @@ public class Move implements GameData
 	{
 		int index = startIndex;
 		
-		// TODO
+		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.FIRE), getCost(EnergyType.GRASS));
+		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.LIGHTNING), getCost(EnergyType.WATER));
+		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.FIGHTING), getCost(EnergyType.PSYCHIC));
+		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.COLORLESS), getCost(EnergyType.UNUSED_TYPE));
+		
 		ByteUtils.writeAsShort(name, moveBytes, index);
 		index += 2;
 		ByteUtils.writeAsShort(description, moveBytes, index);
