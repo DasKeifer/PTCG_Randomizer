@@ -10,7 +10,15 @@ public class RomConstants
 	
 	//Locations
 	public static final int HEADER_LOCATION = 0x134;
-	public static final int FIRST_CARD = 0x30e28;
+	
+	public static final int FIRST_CARD_BYTE = 0x30e28;
+	public static final int LAST_CARD_BYTE = 0x33fff; // used for padding data as needed
+
+	// There is alot of text that comes before this but for now we just
+	// care about the card texts which are all grouped at the end
+	public static final int FIRST_CARD_TEXT_ID = 0x07fc;
+	public static final int FIRST_CARD_TEXT_BYTE = 0x57397;
+	public static final int LAST_CARD_TEXT_BYTE = 0x67fff; // Used for padding data as needed
 	
 	//Misc
 	public static final byte[] HEADER = 
