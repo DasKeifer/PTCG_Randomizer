@@ -3,16 +3,14 @@ package gameData;
 import java.util.Set;
 
 import constants.CardDataConstants.*;
-import util.IoUtils;
+import util.ByteUtils;
 
 public class Move implements GameData 
 {
 	public static int moveSizeInBytes = 19;
 	
-	EnergyType energyType1;
-	byte numOfEnergyType1; // TODO: Max allowed?
-	EnergyType energyType2;
-	byte numOfEnergyType2; // TODO: Max allowed?
+	// TODO these need to be only 8 large at most
+	byte[] energyCost;
 	short name;
 	short description;
 	short descriptionExtended;
@@ -25,24 +23,61 @@ public class Move implements GameData
 	byte unknownByte;
 	byte animation;
 
+	public String toString()
+	{
+		String tempString = "Move Name: " + name + "\nRequires:";
+		
+		boolean foundEnergy = false;
+		for (EnergyType energyType : EnergyType.values())
+		{
+			if (energyCost[energyType.getValue()] > 0)
+			{
+				tempString += "\n\t" + energyCost[energyType.getValue()] + " " + energyType;
+				foundEnergy = true;
+			}
+		}
+		if (!foundEnergy)
+		{
+			tempString += " No energies";
+		}
+				
+		return tempString + "\nDamage: " + damage +
+				"\nEffectCommands: " + effectCommands +
+				"\nEffectFlags: " + effect1 + ", " + effect2 + ", " + effect3;
+				
+	}
+	
 	@Override
 	public int readData(byte[] moveBytes, int startIndex) 
 	{
 		int index = startIndex;
 		
-		energyType1 = EnergyType.readFromByte(moveBytes[index++]);
-		numOfEnergyType1 = moveBytes[index++];
-		energyType2 = EnergyType.readFromByte(moveBytes[index++]);
-		numOfEnergyType2 = moveBytes[index++];
-		name = IoUtils.readShort(moveBytes, index);
+		// They are stored in octects corresponding to their energy type. Since we
+		// read them as bytes, we mask each byte and increment the index every other time
+		System.out.println(moveBytes[index] + ", " + moveBytes[index+1] + ", " + moveBytes[index+2] + ", " + moveBytes[index+3]);
+		energyCost = new byte[8];
+		setCost(EnergyType.FIRE, ByteUtils.readUpperHexChar(moveBytes[index]));
+		setCost(EnergyType.GRASS, ByteUtils.readLowerHexChar(moveBytes[index]));
+		index++;
+		setCost(EnergyType.LIGHTNING, ByteUtils.readUpperHexChar(moveBytes[index]));
+		setCost(EnergyType.WATER, ByteUtils.readLowerHexChar(moveBytes[index]));
+		index++;
+		setCost(EnergyType.FIGHTING, ByteUtils.readUpperHexChar(moveBytes[index]));
+		setCost(EnergyType.PSYCHIC, ByteUtils.readLowerHexChar(moveBytes[index]));
+		index++;
+		setCost(EnergyType.COLORLESS, ByteUtils.readUpperHexChar(moveBytes[index]));
+		setCost(EnergyType.UNUSED_TYPE, ByteUtils.readLowerHexChar(moveBytes[index]));
+		index++;
+		
+		name = ByteUtils.readAsShort(moveBytes, index);
 		index += 2;
-		description = IoUtils.readShort(moveBytes, index);
+		description = ByteUtils.readAsShort(moveBytes, index);
 		index += 2;
-		descriptionExtended = IoUtils.readShort(moveBytes, index);
+		descriptionExtended = ByteUtils.readAsShort(moveBytes, index);
 		index += 2;
 		damage = moveBytes[index++];
 		category = MoveCategory.readFromByte(moveBytes[index++]);
-		effectCommands = IoUtils.readShort(moveBytes, index);
+		effectCommands = ByteUtils.readAsShort(moveBytes, index);
 		index += 2;
 		effect1 = MoveEffect1.readFromByte(moveBytes[index++]);
 		effect2 = MoveEffect2.readFromByte(moveBytes[index++]);
@@ -52,25 +87,27 @@ public class Move implements GameData
 		
 		return index;
 	}
+	
+	public void setCost(EnergyType inType, byte inCost)
+	{
+		energyCost[inType.getValue()] = inCost;
+	}
 
 	@Override
 	public int writeData(byte[] moveBytes, int startIndex) 
 	{
 		int index = startIndex;
 		
-		moveBytes[index++] = energyType1.getValue();
-		moveBytes[index++] = numOfEnergyType1;
-		moveBytes[index++] = energyType2.getValue();
-		moveBytes[index++] = numOfEnergyType2;
-		IoUtils.writeShort(name, moveBytes, index);
+		// TODO
+		ByteUtils.writeAsShort(name, moveBytes, index);
 		index += 2;
-		IoUtils.writeShort(description, moveBytes, index);
+		ByteUtils.writeAsShort(description, moveBytes, index);
 		index += 2;
-		IoUtils.writeShort(descriptionExtended, moveBytes, index);
+		ByteUtils.writeAsShort(descriptionExtended, moveBytes, index);
 		index += 2;
 		moveBytes[index++] = damage;
 		moveBytes[index++] = category.getValue();
-		IoUtils.writeShort(effectCommands, moveBytes, index);
+		ByteUtils.writeAsShort(effectCommands, moveBytes, index);
 		index += 2;
 		moveBytes[index++] = MoveEffect1.storeAsByte(effect1);
 		moveBytes[index++] = MoveEffect2.storeAsByte(effect2);

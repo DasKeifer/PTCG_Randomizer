@@ -1,5 +1,7 @@
 package constants;
 
+import util.ByteUtils;
+
 public class CardConstants 
 {
 	public enum CardId
@@ -239,7 +241,7 @@ public class CardConstants
 		
 		private CardId(int inValue)
 		{
-			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
 						+ "DeckValues enum: " + inValue);
@@ -250,7 +252,7 @@ public class CardConstants
 		
 		private CardId(int inValue, boolean isValidCard)
 		{
-			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
 						+ "DeckValues enum: " + inValue);

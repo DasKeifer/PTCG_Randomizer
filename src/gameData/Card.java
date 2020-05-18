@@ -5,7 +5,7 @@ import constants.CardDataConstants.BoosterPack;
 import constants.CardDataConstants.CardRarity;
 import constants.CardDataConstants.CardSet;
 import constants.CardDataConstants.CardType;
-import util.IoUtils;
+import util.ByteUtils;
 
 import java.security.InvalidParameterException;
 
@@ -13,7 +13,8 @@ public abstract class Card implements GameData
 {
 	public static final int CARD_COMMON_SIZE = 8;
 	
-	CardType type;
+	// TODO encapsulate these or make public
+	public CardType type;
 	short gfx; // Card art
 	short name; // No gameplay impact
 	CardRarity rarity;
@@ -28,38 +29,54 @@ public abstract class Card implements GameData
 	{
 		CardType type = CardType.readFromByte(cardBytes[startIndex]);
 		
+		Card card;
 		if(type.isPokemonCard())
 		{
-			return new PokemonCard();
+			card = new PokemonCard();
 		}
 		else if (type.isEnergyCard())
 		{
-			return new NonPokemonCard();
+			card = new NonPokemonCard();
 		}
 		else if (type.isTrainerCard())
 		{
-			return new NonPokemonCard();
+			card = new NonPokemonCard();
 		}
 		else
 		{
 			throw new InvalidParameterException("Failed to determine type of card at index " + 
 					startIndex + " that is of type " + type);
 		}
+
+		card.readData(cardBytes, startIndex);
+		return card;
 	}
+	
+	public String toString()
+	{
+		return "ID = " + id + 
+				"\nType = " + type + 
+				"\nName = " + name + 
+				"\nRarity = " + rarity + 
+				"\nSet = " + set + 
+				"\nPack = " + pack;
+	}
+	
+	public abstract int getCardSizeInBytes();
 	
 	protected int readCommonData(byte[] cardBytes, int startIndex) 
 	{
 		int index = startIndex;
 		
 		type = CardType.readFromByte(cardBytes[index++]);
-		gfx = IoUtils.readShort(cardBytes, index);
+		gfx = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
-		name = IoUtils.readShort(cardBytes, index);
+		name = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 		rarity = CardRarity.readFromByte(cardBytes[index++]);
-		
-		set = CardSet.readFromByte(cardBytes[index]); // no ++, this reads only half the byte
-		pack = BoosterPack.readFromByte(cardBytes[index++]);
+
+		pack = BoosterPack.readFromHexChar(ByteUtils.readUpperHexChar(cardBytes[index])); // no ++ - this reads only half the byte
+		set = CardSet.readFromHexChar(ByteUtils.readLowerHexChar(cardBytes[index++]));
 		
 		id = CardId.readFromByte(cardBytes[index++]);
 		
@@ -71,14 +88,13 @@ public abstract class Card implements GameData
 		int index = startIndex;
 		
 		cardBytes[index++] = type.getValue();
-		IoUtils.writeShort(gfx, cardBytes, index);
+		ByteUtils.writeAsShort(gfx, cardBytes, index);
 		index += 2;
-		IoUtils.writeShort(name, cardBytes, index);
+		ByteUtils.writeAsShort(name, cardBytes, index);
 		index += 2;
 		cardBytes[index++] = rarity.getValue();
 
-		cardBytes[index] = set.getValue(); // no ++, this reads only half the byte
-		cardBytes[index++] += pack.getValue();
+		cardBytes[index++] = ByteUtils.packHexCharsToByte(pack.getValue(), set.getValue());
 		
 		cardBytes[index++] = id.getValue();
 		

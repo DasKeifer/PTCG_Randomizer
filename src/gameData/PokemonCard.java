@@ -1,16 +1,16 @@
 package gameData;
 
-import constants.CardConstants.*;
 import constants.CardDataConstants.*;
-import util.IoUtils;
+import util.ByteUtils;
 
 public class PokemonCard extends Card 
 {
-	public static final int SIZE_OF_PAYLOAD_IN_BYTES = 65 - CARD_COMMON_SIZE;
+	public static final int TOTAL_SIZE_IN_BYTES = 65;
+	public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
 	
 	byte hp; // TODO: non multiples of 10?
 	EvolutionStage stage;
-	CardId prevEvolution;
+	short prevEvoName;
 	
 	Move move1;
 	Move move2;
@@ -28,13 +28,34 @@ public class PokemonCard extends Card
 	byte unknownByte2;
 	
 	@Override
+	public String toString()
+	{
+		return super.toString() + 
+				"\nPokedex Number = " + pokedexNumber + 
+				"\nHP = " + hp +
+				"\nStage = " + stage +
+				"\nPrevEvolition = " + prevEvoName +
+				"\nRetreatCost = " + retreatCost +
+				"\nWeakness = " + weakness +
+				"\nResistance = " + resistance  +
+				"\nMoves\n" + move1.toString() + "\n" + move2.toString();
+	}
+
+	@Override
+	public int getCardSizeInBytes() 
+	{
+		return TOTAL_SIZE_IN_BYTES;
+	}
+	
+	@Override
 	public int readData(byte[] cardBytes, int startIndex) 
 	{
 		int index = readCommonData(cardBytes, startIndex);
 		
 		hp = cardBytes[index++];
 		stage = EvolutionStage.readFromByte(cardBytes[index++]);
-		prevEvolution = CardId.readFromByte(cardBytes[index++]);
+		prevEvoName = ByteUtils.readAsShort(cardBytes, index);
+		index += 2;
 		
 		move1 = new Move();
 		index = move1.readData(cardBytes, index);
@@ -44,16 +65,16 @@ public class PokemonCard extends Card
 		retreatCost = cardBytes[index++];
 		weakness = WeaknessResistanceType.readFromByte(cardBytes[index++]);
 		resistance = WeaknessResistanceType.readFromByte(cardBytes[index++]);
-		pokemonCategory = IoUtils.readShort(cardBytes, index);
+		pokemonCategory = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 		pokedexNumber = cardBytes[index++];
 		unknownByte1 = cardBytes[index++];
 		level = cardBytes[index++];
-		length = IoUtils.readShort(cardBytes, index);
+		length = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
-		weight = IoUtils.readShort(cardBytes, index);
+		weight = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
-		description = IoUtils.readShort(cardBytes, index);
+		description = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 		unknownByte2 = cardBytes[index++];
 		
@@ -67,7 +88,8 @@ public class PokemonCard extends Card
 		
 		cardBytes[index++] = hp;
 		cardBytes[index++] = stage.getValue();
-		cardBytes[index++] = prevEvolution.getValue();
+		ByteUtils.writeAsShort(prevEvoName, cardBytes, index);
+		index += 2;
 		
 		index = move1.writeData(cardBytes, index);
 		index = move2.writeData(cardBytes, index);
@@ -75,16 +97,16 @@ public class PokemonCard extends Card
 		cardBytes[index++] = retreatCost;
 		cardBytes[index++] = weakness.getValue();
 		cardBytes[index++] = resistance.getValue();
-		IoUtils.writeShort(pokemonCategory, cardBytes, index);
+		ByteUtils.writeAsShort(pokemonCategory, cardBytes, index);
 		index += 2;
 		cardBytes[index++] = pokedexNumber;
 		cardBytes[index++] = unknownByte1;
 		cardBytes[index++] = level;
-		IoUtils.writeShort(length, cardBytes, index);
+		ByteUtils.writeAsShort(length, cardBytes, index);
 		index += 2;
-		IoUtils.writeShort(weight, cardBytes, index);
+		ByteUtils.writeAsShort(weight, cardBytes, index);
 		index += 2;
-		IoUtils.writeShort(description, cardBytes, index);
+		ByteUtils.writeAsShort(description, cardBytes, index);
 		index += 2;
 		cardBytes[index++] = unknownByte2;
 		

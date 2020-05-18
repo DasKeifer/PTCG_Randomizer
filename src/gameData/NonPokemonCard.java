@@ -1,14 +1,21 @@
 package gameData;
 
-import util.IoUtils;
+import util.ByteUtils;
 
 public class NonPokemonCard extends Card
 {
-	public static final int SIZE_OF_PAYLOAD_IN_BYTES = 14 - CARD_COMMON_SIZE;
+	public static final int TOTAL_SIZE_IN_BYTES = 14;
+	public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
 	
 	short effect;
 	short description;
 	short descriptionCont;
+
+	@Override
+	public int getCardSizeInBytes() 
+	{
+		return TOTAL_SIZE_IN_BYTES;
+	}
 	
 	@Override
 	public int readData(byte[] cardBytes, int startIndex) 
@@ -16,11 +23,11 @@ public class NonPokemonCard extends Card
 		int index = readCommonData(cardBytes, startIndex);
 		
 		// reading non pokemon specific data
-		effect = IoUtils.readShort(cardBytes, index);
+		effect = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
-		description = IoUtils.readShort(cardBytes, index);
+		description = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
-		descriptionCont = IoUtils.readShort(cardBytes, index);
+		descriptionCont = ByteUtils.readAsShort(cardBytes, index);
 		return index + 2;
 	}
 	
@@ -30,11 +37,11 @@ public class NonPokemonCard extends Card
 		int index = writeCommonData(cardBytes, startIndex);
 		
 		// write non pokemon specific data
-		IoUtils.writeShort(effect, cardBytes, index);
+		ByteUtils.writeAsShort(effect, cardBytes, index);
 		index += 2;
-		IoUtils.writeShort(description, cardBytes, index);
+		ByteUtils.writeAsShort(description, cardBytes, index);
 		index += 2;
-		IoUtils.writeShort(descriptionCont, cardBytes, index);		
+		ByteUtils.writeAsShort(descriptionCont, cardBytes, index);		
 		return index + 2;
 	}
 }
