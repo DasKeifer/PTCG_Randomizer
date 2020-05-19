@@ -6,10 +6,13 @@ public class NonPokemonCard extends Card
 {
 	public static final int TOTAL_SIZE_IN_BYTES = 14;
 	public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
+
+	// Internal pointers used when reading and storing data to the rom
+	private short descriptionPtr;
+	private short descriptionExtendedPtr;
 	
-	short effect;
-	short description;
-	short descriptionCont;
+	short effectPtr;
+	String desciption;
 
 	@Override
 	public int getCardSizeInBytes() 
@@ -23,11 +26,11 @@ public class NonPokemonCard extends Card
 		int index = readCommonData(cardBytes, startIndex);
 		
 		// reading non pokemon specific data
-		effect = ByteUtils.readAsShort(cardBytes, index);
+		effectPtr = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
-		description = ByteUtils.readAsShort(cardBytes, index);
+		descriptionPtr = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
-		descriptionCont = ByteUtils.readAsShort(cardBytes, index);
+		descriptionExtendedPtr = ByteUtils.readAsShort(cardBytes, index);
 		return index + 2;
 	}
 	
@@ -37,11 +40,11 @@ public class NonPokemonCard extends Card
 		int index = writeCommonData(cardBytes, startIndex);
 		
 		// write non pokemon specific data
-		ByteUtils.writeAsShort(effect, cardBytes, index);
+		ByteUtils.writeAsShort(effectPtr, cardBytes, index);
 		index += 2;
-		ByteUtils.writeAsShort(description, cardBytes, index);
+		ByteUtils.writeAsShort(descriptionPtr, cardBytes, index);
 		index += 2;
-		ByteUtils.writeAsShort(descriptionCont, cardBytes, index);		
+		ByteUtils.writeAsShort(descriptionExtendedPtr, cardBytes, index);		
 		return index + 2;
 	}
 }

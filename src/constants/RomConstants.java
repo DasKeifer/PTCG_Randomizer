@@ -16,9 +16,8 @@ public class RomConstants
 
 	// There is alot of text that comes before this but for now we just
 	// care about the card texts which are all grouped at the end
-	public static final int FIRST_CARD_TEXT_ID = 0x07fc;
-	public static final int FIRST_CARD_TEXT_BYTE = 0x57397;
-	public static final int LAST_CARD_TEXT_BYTE = 0x67fff; // Used for padding data as needed
+	public static final int FIRST_TEXT_BYTE = 0x3630a;
+	public static final int LAST_TEXT_BYTE = 0x67fff; // Used for padding data as needed
 	
 	//Misc
 	public static final byte[] HEADER = 

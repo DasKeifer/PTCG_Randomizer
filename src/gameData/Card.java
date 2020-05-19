@@ -12,11 +12,14 @@ import java.security.InvalidParameterException;
 public abstract class Card implements GameData
 {
 	public static final int CARD_COMMON_SIZE = 8;
+
+	// Internal pointers used when reading and storing data to the rom
+	protected short namePtr;
 	
 	// TODO encapsulate these or make public
 	public CardType type;
 	short gfx; // Card art
-	short name; // No gameplay impact
+	String name;
 	CardRarity rarity;
 
 	// IMPORTANT! in the data the set and pack are stored in one byte:
@@ -71,7 +74,7 @@ public abstract class Card implements GameData
 		type = CardType.readFromByte(cardBytes[index++]);
 		gfx = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
-		name = ByteUtils.readAsShort(cardBytes, index);
+		namePtr = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 		rarity = CardRarity.readFromByte(cardBytes[index++]);
 
@@ -90,7 +93,7 @@ public abstract class Card implements GameData
 		cardBytes[index++] = type.getValue();
 		ByteUtils.writeAsShort(gfx, cardBytes, index);
 		index += 2;
-		ByteUtils.writeAsShort(name, cardBytes, index);
+		ByteUtils.writeAsShort(namePtr, cardBytes, index);
 		index += 2;
 		cardBytes[index++] = rarity.getValue();
 

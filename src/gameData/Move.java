@@ -5,18 +5,21 @@ import java.util.Set;
 import constants.CardDataConstants.*;
 import util.ByteUtils;
 
-public class Move implements GameData 
+public class Move implements GameData
 {
-	public static int moveSizeInBytes = 19;
+	public static final int TOTAL_SIZE_IN_BYTES = 19;
+
+	// Internal pointers used when reading and storing data to the rom
+	private short namePtr;
+	private short descriptionPtr;
+	private short descriptionExtendedPtr;
 	
-	// TODO these need to be only 8 large at most
 	byte[] energyCost;
-	short name;
-	short description;
-	short descriptionExtended;
+	String name;
+	String desciption;
 	byte damage; // TODO: non multiple of 10?
 	MoveCategory category;
-	short effectCommands; // TODO: Make enum
+	short effectPtr; // TODO: Make enum?
 	Set<MoveEffect1> effect1;
 	Set<MoveEffect2> effect2;
 	Set<MoveEffect3> effect3;
@@ -42,7 +45,7 @@ public class Move implements GameData
 		}
 				
 		return tempString + "\nDamage: " + damage +
-				"\nEffectCommands: " + effectCommands +
+				"\nEffectPtr: " + effectPtr +
 				"\nEffectFlags: " + effect1 + ", " + effect2 + ", " + effect3;
 				
 	}
@@ -68,15 +71,15 @@ public class Move implements GameData
 		setCost(EnergyType.UNUSED_TYPE, ByteUtils.readLowerHexChar(moveBytes[index]));
 		index++;
 		
-		name = ByteUtils.readAsShort(moveBytes, index);
+		namePtr = ByteUtils.readAsShort(moveBytes, index);
 		index += 2;
-		description = ByteUtils.readAsShort(moveBytes, index);
+		descriptionPtr = ByteUtils.readAsShort(moveBytes, index);
 		index += 2;
-		descriptionExtended = ByteUtils.readAsShort(moveBytes, index);
+		descriptionExtendedPtr = ByteUtils.readAsShort(moveBytes, index);
 		index += 2;
 		damage = moveBytes[index++];
 		category = MoveCategory.readFromByte(moveBytes[index++]);
-		effectCommands = ByteUtils.readAsShort(moveBytes, index);
+		effectPtr = ByteUtils.readAsShort(moveBytes, index);
 		index += 2;
 		effect1 = MoveEffect1.readFromByte(moveBytes[index++]);
 		effect2 = MoveEffect2.readFromByte(moveBytes[index++]);
@@ -111,15 +114,15 @@ public class Move implements GameData
 		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.FIGHTING), getCost(EnergyType.PSYCHIC));
 		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.COLORLESS), getCost(EnergyType.UNUSED_TYPE));
 		
-		ByteUtils.writeAsShort(name, moveBytes, index);
+		ByteUtils.writeAsShort(namePtr, moveBytes, index);
 		index += 2;
-		ByteUtils.writeAsShort(description, moveBytes, index);
+		ByteUtils.writeAsShort(descriptionPtr, moveBytes, index);
 		index += 2;
-		ByteUtils.writeAsShort(descriptionExtended, moveBytes, index);
+		ByteUtils.writeAsShort(descriptionExtendedPtr, moveBytes, index);
 		index += 2;
 		moveBytes[index++] = damage;
 		moveBytes[index++] = category.getValue();
-		ByteUtils.writeAsShort(effectCommands, moveBytes, index);
+		ByteUtils.writeAsShort(effectPtr, moveBytes, index);
 		index += 2;
 		moveBytes[index++] = MoveEffect1.storeAsByte(effect1);
 		moveBytes[index++] = MoveEffect2.storeAsByte(effect2);

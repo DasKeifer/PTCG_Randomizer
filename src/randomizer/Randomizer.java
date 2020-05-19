@@ -1,21 +1,20 @@
 package randomizer;
 
+import java.io.IOException;
 import java.util.List;
 
 import gameData.Card;
-import io.RomHandler;
+import rom.RomData;
+import rom.RomHandler;
 
 public class Randomizer 
 {
-	public static void main(String[] args)
+	public static void main(String[] args) throws IOException //Temp
 	{
-		RomHandler rom = new RomHandler();
-		rom.readRaw();
-		Card[] allCards = rom.readAllCards();
-		List<String> allText = rom.readAllText();
-		test(allCards);
-		test(allText);
-		rom.writeRaw();
+		RomData rom = RomHandler.readRom();
+		test(rom.cards);
+		test(rom.text);
+		RomHandler.writeRom(rom);
 	}
 	
 	public static void test(Card[] cards)

@@ -7,10 +7,14 @@ public class PokemonCard extends Card
 {
 	public static final int TOTAL_SIZE_IN_BYTES = 65;
 	public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
+
+	// Internal pointers used when reading and storing data to the rom
+	private short prevEvoNamePtr;
+	private short descriptionPtr;
 	
 	byte hp; // TODO: non multiples of 10?
 	EvolutionStage stage;
-	short prevEvoName;
+	Card prevEvo; // Not pokemon card because of mysterious fossil
 	
 	Move move1;
 	Move move2;
@@ -24,21 +28,31 @@ public class PokemonCard extends Card
 	byte level; // TODO: Investigate No gameplay impact?
 	short length; //TODO: One byte is feet, another is inches - separate them // TODO: Investigate No gameplay impact?
 	short weight; // TODO: Investigate No gameplay impact?
-	short description; // Shouldn't need to change - No gameplay impact
+	String description;
 	byte unknownByte2;
 	
 	@Override
 	public String toString()
 	{
-		return super.toString() + 
+		String string = super.toString() + 
 				"\nPokedex Number = " + pokedexNumber + 
 				"\nHP = " + hp +
-				"\nStage = " + stage +
-				"\nPrevEvolition = " + prevEvoName +
-				"\nRetreatCost = " + retreatCost +
+				"\nStage = " + stage + 
+				"\nPrevEvolution = ";
+		if (prevEvo != null)
+		{
+			string += prevEvo.name;
+		}
+		else
+		{
+			string = "None";
+		}
+		
+		string += "\nRetreatCost = " + retreatCost +
 				"\nWeakness = " + weakness +
 				"\nResistance = " + resistance  +
 				"\nMoves\n" + move1.toString() + "\n" + move2.toString();
+		return string;
 	}
 
 	@Override
@@ -54,7 +68,7 @@ public class PokemonCard extends Card
 		
 		hp = cardBytes[index++];
 		stage = EvolutionStage.readFromByte(cardBytes[index++]);
-		prevEvoName = ByteUtils.readAsShort(cardBytes, index);
+		prevEvoNamePtr = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 		
 		move1 = new Move();
@@ -74,7 +88,7 @@ public class PokemonCard extends Card
 		index += 2;
 		weight = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
-		description = ByteUtils.readAsShort(cardBytes, index);
+		descriptionPtr = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 		unknownByte2 = cardBytes[index++];
 		
@@ -88,7 +102,7 @@ public class PokemonCard extends Card
 		
 		cardBytes[index++] = hp;
 		cardBytes[index++] = stage.getValue();
-		ByteUtils.writeAsShort(prevEvoName, cardBytes, index);
+		ByteUtils.writeAsShort(prevEvoNamePtr, cardBytes, index);
 		index += 2;
 		
 		index = move1.writeData(cardBytes, index);
@@ -106,7 +120,7 @@ public class PokemonCard extends Card
 		index += 2;
 		ByteUtils.writeAsShort(weight, cardBytes, index);
 		index += 2;
-		ByteUtils.writeAsShort(description, cardBytes, index);
+		ByteUtils.writeAsShort(descriptionPtr, cardBytes, index);
 		index += 2;
 		cardBytes[index++] = unknownByte2;
 		
