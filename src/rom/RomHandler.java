@@ -5,9 +5,15 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import constants.RomConstants;
 import gameData.Card;
+import util.ByteUtils;
 
 public class RomHandler
 {
@@ -36,17 +42,30 @@ public class RomHandler
 		
 		readRaw(rom);
 		verifyRom(rom);
+
+		System.out.println("starting");
+		ByteUtils.printBytes(rom.rawBytes, 0x30c5c, 2, 10);
+		System.out.println();
+		//printBytes(rom.rawBytes, 0x30c5c, 240*2, 2);
+		//printBytes(rom.rawBytes, 0x30e28, 65, 1);
+
+		//readAllText(rom);
+		//readAllCardsAndProcessPointers(rom);
 		
-		readAllCards(rom);
-		readAllText(rom);
+		//groupByNameAndUpdateDesc();
 		
 		return rom;
 	}
 	
 	public static void writeRom(RomData rom) throws IOException
 	{
-		setAllCards(rom);
-		setAllText(rom);
+		//insertNameInDesc();
+		
+		//createCardPointers();
+		
+		//setAllCards(rom);
+		//setAllText(rom);		
+		
 		writeRaw(rom);
 	}
 	
@@ -54,8 +73,8 @@ public class RomHandler
 	{
 		File file = new File(FILE_NAME_IN);
 		rom.rawBytes = Files.readAllBytes(file.toPath());
-		rom.cards = new Card[0];
-		rom.text.clear();
+		rom.cardsByName.clear();
+		rom.ptrToText.clear();
 	}
 	
 	private static void writeRaw(RomData rom)
@@ -73,16 +92,31 @@ public class RomHandler
 		}
 	}
 	
-	private static void readAllCards(RomData rom)
+	private static void readAllCardsAndProcessPointers(RomData rom)
 	{
-		int readIndex = RomConstants.FIRST_CARD_BYTE;
-		rom.cards = new Card[RomConstants.TOTAL_NUM_CARDS];
+		Set<Short> convertedTextPtrs = new HashSet<>();
 		
-		for (int cardIndex = 0; cardIndex < rom.cards.length; cardIndex++)
+		int readIndex = RomConstants.FIRST_CARD_BYTE;
+		while (readIndex < RomConstants.LAST_CARD_BYTE)
 		{
-			rom.cards[cardIndex] = Card.createCardAtIndex(rom.rawBytes, readIndex);
-			readIndex += rom.cards[cardIndex].getCardSizeInBytes();
+			Card card = Card.createCardAtIndex(rom.rawBytes, readIndex, rom.ptrToText, convertedTextPtrs);
+			
+			if (!rom.cardsByName.containsKey(card.name))
+			{
+				rom.cardsByName.put(card.name, new ArrayList<>());
+			}
+			rom.cardsByName.get(card.name).add(card);
+			
+			readIndex += card.getCardSizeInBytes();
+			if (rom.rawBytes[readIndex] == (byte) 0xff)
+			{
+				// No more cards
+				break;
+			}
+			
 		}
+		
+		//rom.ptrToText.keySet().removeAll(convertedTextPtrs);
 	}
 	
 	private static void readAllText(RomData rom)
@@ -90,6 +124,7 @@ public class RomHandler
 		// To be more generic, we will read each one at a time until there are no more
 		int readIndex = RomConstants.FIRST_TEXT_BYTE;
 		int lastReadIndex = readIndex;
+		short counter = 1; // Starts with 1 - 0 is a "null" text
 		
 		// This will read all the padding bytes but since a null wont be encountered,
 		// it won't be saved in the read in text list
@@ -99,7 +134,8 @@ public class RomHandler
 			if (rom.rawBytes[readIndex] == 0x00)
 			{
 				// Read to the null char (but not including it)
-				rom.text.add(new String(rom.rawBytes, lastReadIndex, readIndex - lastReadIndex));
+				rom.ptrToText.put(counter++, new String(rom.rawBytes, lastReadIndex, readIndex - lastReadIndex));
+				//System.out.println(counter + ", " + rom.ptrToText.get((short)(counter - 1)));
 				lastReadIndex = readIndex + 1;
 			}
 			
@@ -111,14 +147,19 @@ public class RomHandler
 	{
 		int writeIndex = RomConstants.FIRST_CARD_BYTE;
 		
+		// TODO: need to flatten and reorder
+		
 		// Write each card. We do not need to overflow check
 		// since there is currently a fixed number of the cards
 		// and the cards themselves are fixed sizes. If more cards
 		// are ever added, this logic will need to change to 
 		// span gaps of code
-		for (Card card : rom.cards)
+		for (Entry<String, List<Card>> cards : rom.cardsByName.entrySet())
 		{
-			writeIndex = card.writeData(rom.rawBytes, writeIndex);
+			for (Card version : cards.getValue())
+			{
+				writeIndex = version.writeData(rom.rawBytes, writeIndex);
+			}
 		}
 
 		// Pad with 0xff like the rom does
@@ -132,9 +173,10 @@ public class RomHandler
 	{
 		int writeIndex = RomConstants.FIRST_TEXT_BYTE;
 		
-		for (String text : rom.text)
+		// TODO Check the ids don't have gaps
+		for (Entry<Short, String> text : rom.ptrToText.entrySet())
 		{
-			byte[] textBytes = text.getBytes();
+			byte[] textBytes = text.getValue().getBytes();
 			
 			// Overflow protection
 			if (writeIndex + textBytes.length + 1 >  RomConstants.LAST_TEXT_BYTE)

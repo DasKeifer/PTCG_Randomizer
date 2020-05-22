@@ -1,7 +1,8 @@
 package rom;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import gameData.Card;
 
@@ -11,6 +12,6 @@ public class RomData
 	byte[] rawBytes;
 	
 	// Make public - we will be modifying these
-	public Card[] cards;
-	public List<String> text = new ArrayList<>();
+	public Map<String, List<Card>> cardsByName = new HashMap<>();
+	public Map<Short, String> ptrToText = new HashMap<>();
 }

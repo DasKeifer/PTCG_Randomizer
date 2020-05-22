@@ -1,5 +1,6 @@
 package gameData;
 
+import java.util.Map;
 import java.util.Set;
 
 import constants.CardDataConstants.*;
@@ -16,7 +17,7 @@ public class Move implements GameData
 	
 	byte[] energyCost;
 	String name;
-	String desciption;
+	String description;
 	byte damage; // TODO: non multiple of 10?
 	MoveCategory category;
 	short effectPtr; // TODO: Make enum?
@@ -48,6 +49,14 @@ public class Move implements GameData
 				"\nEffectPtr: " + effectPtr +
 				"\nEffectFlags: " + effect1 + ", " + effect2 + ", " + effect3;
 				
+	}
+
+	@Override
+	public void convertPointers(Map<Short, String> ptrToText, Set<Short> ptrsUsed)
+	{
+		description = ptrToText.get(descriptionPtr) + (char) 0x0C + ptrToText.get(descriptionExtendedPtr);
+		ptrsUsed.add(descriptionPtr);
+		ptrsUsed.add(descriptionExtendedPtr);
 	}
 	
 	@Override

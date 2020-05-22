@@ -1,7 +1,9 @@
 package randomizer;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import gameData.Card;
 import rom.RomData;
@@ -12,12 +14,12 @@ public class Randomizer
 	public static void main(String[] args) throws IOException //Temp
 	{
 		RomData rom = RomHandler.readRom();
-		test(rom.cards);
-		test(rom.text);
+		//test(rom.cardsByName.values().iterator().next());
+		//test(rom.ptrToText);
 		RomHandler.writeRom(rom);
 	}
 	
-	public static void test(Card[] cards)
+	public static void test(List<Card> cards)
 	{
 		for (Card card : cards)
 		{
@@ -25,7 +27,7 @@ public class Randomizer
 		}
 	}
 	
-	public static void test(List<String> allText)
+	public static void test(Map<Short, String> allText)
 	{
 		for (int i = 0; i < 20; i++) //String text : allText)
 		{

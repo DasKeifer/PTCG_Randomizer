@@ -1,5 +1,8 @@
 package gameData;
 
+import java.util.Map;
+import java.util.Set;
+
 import constants.CardDataConstants.*;
 import util.ByteUtils;
 
@@ -45,7 +48,7 @@ public class PokemonCard extends Card
 		}
 		else
 		{
-			string = "None";
+			string += "None";
 		}
 		
 		string += "\nRetreatCost = " + retreatCost +
@@ -55,6 +58,17 @@ public class PokemonCard extends Card
 		return string;
 	}
 
+	@Override
+	public void convertPointers(Map<Short, String> ptrToText, Set<Short> ptrsUsed)
+	{
+		convertCommonPointers(ptrToText, ptrsUsed);
+		description = ptrToText.get(descriptionPtr);
+		ptrsUsed.add(descriptionPtr);
+		
+		move1.convertPointers(ptrToText, ptrsUsed);	
+		move2.convertPointers(ptrToText, ptrsUsed);
+	}
+	
 	@Override
 	public int getCardSizeInBytes() 
 	{

@@ -1,5 +1,8 @@
 package gameData;
 
+import java.util.Map;
+import java.util.Set;
+
 import util.ByteUtils;
 
 public class NonPokemonCard extends Card
@@ -12,8 +15,17 @@ public class NonPokemonCard extends Card
 	private short descriptionExtendedPtr;
 	
 	short effectPtr;
-	String desciption;
+	String description;
 
+	@Override
+	public void convertPointers(Map<Short, String> ptrToText, Set<Short> ptrsUsed)
+	{
+		convertCommonPointers(ptrToText, ptrsUsed);
+		description = ptrToText.get(descriptionPtr) + (char) 0x0C + ptrToText.get(descriptionExtendedPtr);
+		ptrsUsed.add(descriptionPtr);
+		ptrsUsed.add(descriptionExtendedPtr);
+	}
+	
 	@Override
 	public int getCardSizeInBytes() 
 	{

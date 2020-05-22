@@ -8,6 +8,8 @@ import constants.CardDataConstants.CardType;
 import util.ByteUtils;
 
 import java.security.InvalidParameterException;
+import java.util.Map;
+import java.util.Set;
 
 public abstract class Card implements GameData
 {
@@ -19,16 +21,17 @@ public abstract class Card implements GameData
 	// TODO encapsulate these or make public
 	public CardType type;
 	short gfx; // Card art
-	String name;
+	// TODO: Maybe we don't store it here but it the higher level?
+	public String name;
 	CardRarity rarity;
 
 	// IMPORTANT! in the data the set and pack are stored in one byte:
 	// bits 0-3 are the set, bits 4-7 are the booster pack they can be found in
 	CardSet set;
 	BoosterPack pack;
-	CardId id; // This is used to calculate the offset of the card data and is used to reference other cards
+	CardId id;
 	
-	public static Card createCardAtIndex(byte[] cardBytes, int startIndex)
+	public static Card createCardAtIndex(byte[] cardBytes, int startIndex, Map<Short, String> ptrToText, Set<Short> ptrsUsed)
 	{
 		CardType type = CardType.readFromByte(cardBytes[startIndex]);
 		
@@ -52,6 +55,8 @@ public abstract class Card implements GameData
 		}
 
 		card.readData(cardBytes, startIndex);
+		card.convertPointers(ptrToText, ptrsUsed);
+		
 		return card;
 	}
 	
@@ -66,6 +71,12 @@ public abstract class Card implements GameData
 	}
 	
 	public abstract int getCardSizeInBytes();
+	
+	protected void convertCommonPointers(Map<Short, String> ptrToText, Set<Short> ptrsUsed) 
+	{
+		name = ptrToText.get(namePtr);
+		ptrsUsed.add(namePtr);
+	}
 	
 	protected int readCommonData(byte[] cardBytes, int startIndex) 
 	{
