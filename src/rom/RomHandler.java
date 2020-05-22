@@ -42,10 +42,10 @@ public class RomHandler
 		
 		readRaw(rom);
 		verifyRom(rom);
+		
+		readTextFromPointers(rom);
 
-		System.out.println("starting");
-		ByteUtils.printBytes(rom.rawBytes, 0x30c5c, 2, 10);
-		System.out.println();
+		//ByteUtils.printBytes(rom.rawBytes, 0x34000, 3, 0xBAF);
 		//printBytes(rom.rawBytes, 0x30c5c, 240*2, 2);
 		//printBytes(rom.rawBytes, 0x30e28, 65, 1);
 
@@ -64,7 +64,8 @@ public class RomHandler
 		//createCardPointers();
 		
 		//setAllCards(rom);
-		//setAllText(rom);		
+		
+		setTextAndPointers(rom);
 		
 		writeRaw(rom);
 	}
@@ -119,27 +120,33 @@ public class RomHandler
 		//rom.ptrToText.keySet().removeAll(convertedTextPtrs);
 	}
 	
-	private static void readAllText(RomData rom)
+	private static void readTextFromPointers(RomData rom)
 	{
 		// To be more generic, we will read each one at a time until there are no more
-		int readIndex = RomConstants.FIRST_TEXT_BYTE;
-		int lastReadIndex = readIndex;
-		short counter = 1; // Starts with 1 - 0 is a "null" text
+		int ptrIndex = RomConstants.TEXT_POINTERS_LOC;
+		int ptr = 0;
+		int textIndex = 0;
+		short counter = 1; // Starts with 1 - 0 is a "null" ptr
+		int firstPtr = Integer.MAX_VALUE;
 		
-		// This will read all the padding bytes but since a null wont be encountered,
-		// it won't be saved in the read in text list
-		while (readIndex < RomConstants.LAST_TEXT_BYTE)
+		// Read each pointer one at a time until we reach the ending null pointer
+		while (ptrIndex < firstPtr)
 		{
-			// End of text
-			if (rom.rawBytes[readIndex] == 0x00)
+			ptr = (int) ByteUtils.readLittleEndian(
+					rom.rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES) + 
+					RomConstants.TEXT_POINTER_OFFSET;
+			if (ptr < firstPtr)
 			{
-				// Read to the null char (but not including it)
-				rom.ptrToText.put(counter++, new String(rom.rawBytes, lastReadIndex, readIndex - lastReadIndex));
-				//System.out.println(counter + ", " + rom.ptrToText.get((short)(counter - 1)));
-				lastReadIndex = readIndex + 1;
+				firstPtr = ptr;
 			}
 			
-			readIndex++;
+			textIndex = ptr;
+			while (rom.rawBytes[++textIndex] != 0x00);
+			// Read to the null char (but not including it)
+			rom.ptrToText.put(counter++, new String(rom.rawBytes, ptr, textIndex - ptr));
+			System.out.println(counter - 1 + ", " + rom.ptrToText.get((short)(counter - 1)));
+			
+			ptrIndex += RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 		}
 	}
 	
@@ -169,31 +176,36 @@ public class RomHandler
 		}
 	}
 	
-	private static void setAllText(RomData rom) throws IOException
+	private static void setTextAndPointers(RomData rom) throws IOException
 	{
-		int writeIndex = RomConstants.FIRST_TEXT_BYTE;
-		
-		// TODO Check the ids don't have gaps
-		for (Entry<Short, String> text : rom.ptrToText.entrySet())
+		// First write the 0 index "null" text pointer
+		int ptrIndex = RomConstants.TEXT_POINTER_OFFSET - RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+		for (int byteIndex = 0; byteIndex < RomConstants.TEXT_POINTER_SIZE_IN_BYTES; byteIndex++)
 		{
-			byte[] textBytes = text.getValue().getBytes();
-			
-			// Overflow protection
-			if (writeIndex + textBytes.length + 1 >  RomConstants.LAST_TEXT_BYTE)
-			{
-				throw new IOException("Ran out of memory to write text!");
-			}
-			
-			// All texts start with 0x06 and end with 0x00
-			System.arraycopy(textBytes, 0, rom.rawBytes, writeIndex, textBytes.length);
-			writeIndex += textBytes.length;
-			rom.rawBytes[writeIndex++] = 0x00;
+			rom.rawBytes[ptrIndex++] = 0;
 		}
 		
-		// Pad with 0xff like the rom does
-		while (writeIndex <= RomConstants.LAST_TEXT_BYTE)
+		// determine where the first text will go based off the number of text we have
+		// The null pointer was already taken care of so we don't need to handle it here
+		int textPtr = ptrIndex + rom.ptrToText.size() * RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+		
+		// Now for each text, write the pointer then write the text at that address
+		// Note we intentionally do a index based lookup instead of iteration in order to
+		// ensure that the IDs are sequential as they need to be (i.e. there are no gaps)
+		// We start at 1 because 0 is a null ptr
+		for (short textId = 1; textId < rom.ptrToText.size() + 1; textId++)
 		{
-			rom.rawBytes[writeIndex++] = (byte) 0xff;
+			ByteUtils.writeLittleEndian(textPtr, rom.rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES);
+			textPtr += RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+			
+			byte[] textBytes = rom.ptrToText.get(textId).getBytes();
+			System.arraycopy(textBytes, 0, rom.rawBytes, textPtr, textBytes.length);
+			textPtr += textBytes.length;
+			
+			// Write trailing null
+			rom.rawBytes[textPtr++] = 0x00;
 		}
+		
+		// Until it is determined to be necessary, don't worry about padding remaining space with 0xff
 	}
 }

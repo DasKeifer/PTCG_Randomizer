@@ -29,18 +29,18 @@ public class RomConstants
 	// so I'm shelving it for now but wanted to get some thoughts down first
 	
 	// Does NOT start with a null pointer but pointers to unnamed decks
-	public static final int DECK_POINTERS = 0x30000;
 	public static final int DECK_POINTER_SIZE_IN_BYTES = 2;
+	public static final int DECK_POINTERS_LOC = 0x30000;
 	public static final int DECK_POINTER_OFFSET = 0x30000;
 	
 	// Starts with a null pointer
-	public static final int CARD_POINTERS = 0x30c5c;
 	public static final int CARD_POINTER_SIZE_IN_BYTES = 2;
-	public static final int CARD_POINTER_OFFSET = 0x30000;
+	public static final int CARD_POINTERS_LOC = 0x30c5c + CARD_POINTER_SIZE_IN_BYTES;
+	public static final int TEXT = 0x30000;
 	
 	// Starts with a null pointer
-	public static final int TEXT_POINTERS = 0x34000; // TextOffsets
 	public static final int TEXT_POINTER_SIZE_IN_BYTES = 3;
+	public static final int TEXT_POINTERS_LOC = 0x34000 + TEXT_POINTER_SIZE_IN_BYTES; // TextOffsets
 	public static final int TEXT_POINTER_OFFSET = 0x34000;
 	
 	// TODO Remove - read from pointers

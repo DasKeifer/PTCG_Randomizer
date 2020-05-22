@@ -8,24 +8,14 @@ public class ByteUtils
 	public static final int MAX_HEX_CHAR_VALUE = 0xf;
 	public static final int BYTE_UPPER_HEX_CHAR_MASK = 0xf0;
 	public static final int BYTE_LOWER_HEX_CHAR_MASK = 0x0f;
-
-	public static void printBytes(byte[] bytes, int index, int bytesPerNumber, int numberToPrint)
-	{
-		printBytes(bytes, index, bytesPerNumber, numberToPrint, true);
-	}
 	
-	public static void printBytes(byte[] bytes, int index, int bytesPerNumber, int numberToPrint, boolean littleEndian)
+	public static void printBytes(byte[] bytes, int index, int bytesPerNumber, int numberToPrint)
 	{
 		String formatString = "0x%" + bytesPerNumber*2 + "X";
 		for (int i = 0; i < numberToPrint; i++)
 		{
-			int number = 0;
-			for (int j = bytesPerNumber - 1; j >= 0; j--)
-			{
-				number = number << 8;
-				number += bytes[index + i * bytesPerNumber + j];
-			}
-			System.out.println(String.format(formatString, number));
+			System.out.println(String.format(formatString, 
+					readLittleEndian(bytes, index + i * bytesPerNumber, bytesPerNumber)));
 		}
 	}
 	
@@ -47,30 +37,35 @@ public class ByteUtils
 	public static short readAsShort(byte[] byteArray, int index) 
 	{	
 		//little endian
-		return  (short) (byteArray[index] + 
-				         byteArray[index + 1] << 8);
+		return  (short) readLittleEndian(byteArray, index, 2);
 	}
 
 	public static void writeAsShort(short value, byte[] byteArray, int index) 
 	{	
-		//little endian
-		byteArray[index] =     (byte) (value & 0x00ff);
-		byteArray[index + 1] = (byte) (value & 0xff00);
+		writeLittleEndian(value, byteArray, index, 2);
 	}
 	
-	public static int readAsTriplet(byte[] byteArray, int index) 
+	public static long readLittleEndian(byte[] byteArray, int index, int numBytes) 
 	{	
-		//little endian
-		return  byteArray[index] + 
-				byteArray[index + 1] << 8 +
-				byteArray[index + 1] << 16;
+		long number = 0;
+		for (int j = numBytes - 1; j >= 0; j--)
+		{
+			number = number << 8;
+			// Its a pain because bytes are signed so we need to make sure when the
+			// byte is promoted here that it only takes the last digits or else if its
+			// > byte's max signed value, it will add FFs to promote it and keep the
+			// same negative value whereas we only want the byte values
+			number |= byteArray[index + j] & 0xff;
+		}
+		return number;
 	}
 
-	public static void writeAsTriplet(short value, byte[] byteArray, int index) 
+	public static void writeLittleEndian(long value, byte[] byteArray, int index, int numBytes) 
 	{	
-		//little endian
-		byteArray[index] =     (byte) (value & 0x0000ff);
-		byteArray[index + 1] = (byte) (value & 0x00ff00);
-		byteArray[index + 2] = (byte) (value & 0xff0000);
+		for (int j = 0; j < numBytes; j++)
+		{
+			byteArray[index + j] = (byte) (value & 0xff);
+			value = value >> 8;
+		}
 	}
 }
