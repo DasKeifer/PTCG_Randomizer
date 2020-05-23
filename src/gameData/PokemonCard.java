@@ -39,6 +39,7 @@ public class PokemonCard extends Card
 	{
 		String string = super.toString() + 
 				"\nPokedex Number = " + pokedexNumber + 
+				"\nDesciption = " + description + 
 				"\nHP = " + hp +
 				"\nStage = " + stage + 
 				"\nPrevEvolution = ";

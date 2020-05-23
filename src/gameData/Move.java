@@ -46,6 +46,7 @@ public class Move implements GameData
 		}
 				
 		return tempString + "\nDamage: " + damage +
+				"\nDescription: " + description + 
 				"\nEffectPtr: " + effectPtr +
 				"\nEffectFlags: " + effect1 + ", " + effect2 + ", " + effect3;
 				
@@ -54,7 +55,15 @@ public class Move implements GameData
 	@Override
 	public void convertPointers(Map<Short, String> ptrToText, Set<Short> ptrsUsed)
 	{
-		description = ptrToText.get(descriptionPtr) + (char) 0x0C + ptrToText.get(descriptionExtendedPtr);
+		name = ptrToText.get(namePtr);
+		description = ptrToText.get(descriptionPtr);
+		String descCont = ptrToText.get(descriptionExtendedPtr);
+		if (descCont != null)
+		{
+			// 0x0C is the page break character. In the future we will want to control
+			// newlines and page breaks to make the text fit nicely
+			description += (char)0x0c + descCont;
+		}
 		ptrsUsed.add(descriptionPtr);
 		ptrsUsed.add(descriptionExtendedPtr);
 	}

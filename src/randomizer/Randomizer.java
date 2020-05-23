@@ -15,7 +15,7 @@ public class Randomizer
 		RomData rom = RomHandler.readRom();
 		System.out.println(rom.ptrToText.get((short)0x080a));
 		rom.ptrToText.put((short)0x080a, (char)0x06 + "BlahBlahSaur");
-		//test(rom.cardsByName.values().iterator().next());
+		test(rom.cardsByName.get((char)0x06 + "Bulbasaur"));
 		test(rom.ptrToText);
 		RomHandler.writeRom(rom);
 	}

@@ -48,9 +48,7 @@ public class RomHandler
 		verifyRom(rom.rawBytes);
 		
 		Map<Short, String> allText = readAllTextFromPointers(rom.rawBytes);
-		System.out.println(allText.get(1));
-		System.out.println();
-		readCardsFromPointersAndConvertPointers(rom);
+		rom.cardsByName = readCardsFromPointersAndConvertPointers(rom.rawBytes, allText);
 		
 		rom.ptrToText = allText;
 
@@ -100,31 +98,37 @@ public class RomHandler
 		}
 	}
 	
-	private static void readCardsFromPointersAndConvertPointers(RomData rom)
+	private static Map<String, List<Card>> readCardsFromPointersAndConvertPointers(byte[] rawBytes, Map<Short, String> allText)
 	{
+		Map<String, List<Card>> cardsByName = new HashMap<>();
 		Set<Short> convertedTextPtrs = new HashSet<>();
-		
-		int readIndex = RomConstants.FIRST_CARD_BYTE;
-		while (readIndex < RomConstants.LAST_CARD_BYTE)
+
+		// Read the text based on the pointer map in the rom
+		int ptrIndex = RomConstants.CARD_POINTERS_LOC;
+		int cardIndex = 0;
+
+		// Read each pointer one at a time until we reach the ending null pointer
+		while ((cardIndex = (short) ByteUtils.readLittleEndian(
+					rawBytes, ptrIndex, RomConstants.CARD_POINTER_SIZE_IN_BYTES)
+				) != 0)
 		{
-			Card card = Card.createCardAtIndex(rom.rawBytes, readIndex, rom.ptrToText, convertedTextPtrs);
+			cardIndex += RomConstants.CARD_POINTER_OFFSET;
+			Card card = Card.createCardAtIndex(rawBytes, cardIndex, allText, convertedTextPtrs);
 			
-			if (!rom.cardsByName.containsKey(card.name))
+			if (!cardsByName.containsKey(card.name))
 			{
-				rom.cardsByName.put(card.name, new ArrayList<>());
+				cardsByName.put(card.name, new ArrayList<>());
+				System.out.println("Created " + card.name);
 			}
-			rom.cardsByName.get(card.name).add(card);
-			
-			readIndex += card.getCardSizeInBytes();
-			if (rom.rawBytes[readIndex] == (byte) 0xff)
-			{
-				// No more cards
-				break;
-			}
-			
+			cardsByName.get(card.name).add(card);
+			System.out.println(cardsByName.get(card.name).size());
+
+			// Move our text pointer to the next pointer
+			ptrIndex += RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		}
 		
 		//rom.ptrToText.keySet().removeAll(convertedTextPtrs);
+		return cardsByName;
 	}
 	
 	private static Map<Short, String> readAllTextFromPointers(byte[] rawBytes)
