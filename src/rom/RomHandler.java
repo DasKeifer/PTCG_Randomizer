@@ -17,6 +17,7 @@ import java.util.Set;
 
 import constants.RomConstants;
 import gameData.Card;
+import gameData.CardVersions;
 import util.ByteUtils;
 
 public class RomHandler
@@ -98,9 +99,9 @@ public class RomHandler
 		}
 	}
 	
-	private static Map<String, List<Card>> readCardsFromPointersAndConvertPointers(byte[] rawBytes, Map<Short, String> allText)
+	private static Map<String, CardVersions> readCardsFromPointersAndConvertPointers(byte[] rawBytes, Map<Short, String> allText)
 	{
-		Map<String, List<Card>> cardsByName = new HashMap<>();
+		Map<String, CardVersions> cardsByName = new HashMap<>();
 		Set<Short> convertedTextPtrs = new HashSet<>();
 
 		// Read the text based on the pointer map in the rom
@@ -113,15 +114,7 @@ public class RomHandler
 				) != 0)
 		{
 			cardIndex += RomConstants.CARD_POINTER_OFFSET;
-			Card card = Card.createCardAtIndex(rawBytes, cardIndex, allText, convertedTextPtrs);
-			
-			if (!cardsByName.containsKey(card.name))
-			{
-				cardsByName.put(card.name, new ArrayList<>());
-				System.out.println("Created " + card.name);
-			}
-			cardsByName.get(card.name).add(card);
-			System.out.println(cardsByName.get(card.name).size());
+			Card.addCardAtIndex(rawBytes, cardIndex, cardsByName, allText, convertedTextPtrs);
 
 			// Move our text pointer to the next pointer
 			ptrIndex += RomConstants.CARD_POINTER_SIZE_IN_BYTES;
@@ -167,31 +160,31 @@ public class RomHandler
 		return textMap;
 	}
 	
-	private static void setAllCards(RomData rom)
-	{
-		int writeIndex = RomConstants.FIRST_CARD_BYTE;
-		
-		// TODO: need to flatten and reorder
-		
-		// Write each card. We do not need to overflow check
-		// since there is currently a fixed number of the cards
-		// and the cards themselves are fixed sizes. If more cards
-		// are ever added, this logic will need to change to 
-		// span gaps of code
-		for (Entry<String, List<Card>> cards : rom.cardsByName.entrySet())
-		{
-			for (Card version : cards.getValue())
-			{
-				writeIndex = version.writeData(rom.rawBytes, writeIndex);
-			}
-		}
-
-		// Pad with 0xff like the rom does
-		while (writeIndex <= RomConstants.LAST_CARD_BYTE)
-		{
-			rom.rawBytes[writeIndex++] = (byte) 0xff;
-		}
-	}
+//	private static void setAllCards(RomData rom)
+//	{
+//		int writeIndex = RomConstants.FIRST_CARD_BYTE;
+//		
+//		// TODO: need to flatten and reorder
+//		
+//		// Write each card. We do not need to overflow check
+//		// since there is currently a fixed number of the cards
+//		// and the cards themselves are fixed sizes. If more cards
+//		// are ever added, this logic will need to change to 
+//		// span gaps of code
+//		for (Entry<String, List<Card>> cards : rom.cardsByName.entrySet())
+//		{
+//			for (Card version : cards.getValue())
+//			{
+//				writeIndex = version.writeData(rom.rawBytes, writeIndex);
+//			}
+//		}
+//
+//		// Pad with 0xff like the rom does
+//		while (writeIndex <= RomConstants.LAST_CARD_BYTE)
+//		{
+//			rom.rawBytes[writeIndex++] = (byte) 0xff;
+//		}
+//	}
 	
 	private static void setTextAndPointers(byte[] rawBytes, Map<Short, String> ptrToText) throws IOException
 	{

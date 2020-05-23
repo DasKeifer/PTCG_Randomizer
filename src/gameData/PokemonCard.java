@@ -13,11 +13,10 @@ public class PokemonCard extends Card
 
 	// Internal pointers used when reading and storing data to the rom
 	private short prevEvoNamePtr;
-	private short descriptionPtr;
 	
 	byte hp; // TODO: non multiples of 10?
 	EvolutionStage stage;
-	Card prevEvo; // Not pokemon card because of mysterious fossil
+	CardVersions prevEvo; // Not pokemon card because of mysterious fossil
 	
 	Move move1;
 	Move move2;
@@ -60,36 +59,26 @@ public class PokemonCard extends Card
 	}
 
 	@Override
-	public void convertPointers(Map<Short, String> ptrToText, Set<Short> ptrsUsed)
-	{
-		convertCommonPointers(ptrToText, ptrsUsed);
-		description = ptrToText.get(descriptionPtr);
-		ptrsUsed.add(descriptionPtr);
-		
-		move1.convertPointers(ptrToText, ptrsUsed);	
-		move2.convertPointers(ptrToText, ptrsUsed);
-	}
-	
-	@Override
 	public int getCardSizeInBytes() 
 	{
 		return TOTAL_SIZE_IN_BYTES;
 	}
 	
 	@Override
-	public int readData(byte[] cardBytes, int startIndex) 
+	public String readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Map<Short, String> ptrToText, Set<Short> ptrsUsed) 
 	{
-		int index = readCommonData(cardBytes, startIndex);
+		String name = readCommonNameAndDataAndConvertIds(cardBytes, startIndex, ptrToText, ptrsUsed);
 		
+		int index = startIndex + Card.CARD_COMMON_SIZE;
 		hp = cardBytes[index++];
 		stage = EvolutionStage.readFromByte(cardBytes[index++]);
 		prevEvoNamePtr = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 		
 		move1 = new Move();
-		index = move1.readData(cardBytes, index);
+		index = move1.readNameAndDataAndConvertIds(cardBytes, index, ptrToText, ptrsUsed);
 		move2 = new Move();
-		index = move2.readData(cardBytes, index);
+		index = move2.readNameAndDataAndConvertIds(cardBytes, index, ptrToText, ptrsUsed);;
 		
 		retreatCost = cardBytes[index++];
 		weakness = WeaknessResistanceType.readFromByte(cardBytes[index++]);
@@ -103,25 +92,29 @@ public class PokemonCard extends Card
 		index += 2;
 		weight = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
-		descriptionPtr = ByteUtils.readAsShort(cardBytes, index);
+		
+		short descriptionPtr = ByteUtils.readAsShort(cardBytes, index);
+		description = ptrToText.get(descriptionPtr);
+		ptrsUsed.add(descriptionPtr);
 		index += 2;
+		
 		unknownByte2 = cardBytes[index++];
 		
-		return index;
+		return name;
 	}
 
 	@Override
-	public int writeData(byte[] cardBytes, int startIndex) 
+	public void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, short nameId, Map<Short, String> ptrToText) 
 	{
-		int index = writeCommonData(cardBytes, startIndex);
+		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex, nameId, ptrToText);
 		
 		cardBytes[index++] = hp;
 		cardBytes[index++] = stage.getValue();
 		ByteUtils.writeAsShort(prevEvoNamePtr, cardBytes, index);
 		index += 2;
 		
-		index = move1.writeData(cardBytes, index);
-		index = move2.writeData(cardBytes, index);
+		index = move1.convertToIdsAndWriteData(cardBytes, index, ptrToText);
+		index = move2.convertToIdsAndWriteData(cardBytes, index, ptrToText);
 		
 		cardBytes[index++] = retreatCost;
 		cardBytes[index++] = weakness.getValue();
@@ -135,10 +128,11 @@ public class PokemonCard extends Card
 		index += 2;
 		ByteUtils.writeAsShort(weight, cardBytes, index);
 		index += 2;
-		ByteUtils.writeAsShort(descriptionPtr, cardBytes, index);
-		index += 2;
-		cardBytes[index++] = unknownByte2;
 		
-		return index;
+		ptrToText.put((short) (ptrToText.size() + 1), description);
+		ByteUtils.writeAsShort((short) ptrToText.size(), cardBytes, index);
+		index += 2;
+		
+		cardBytes[index++] = unknownByte2;
 	}
 }

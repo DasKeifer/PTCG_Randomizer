@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import gameData.Card;
+import gameData.CardVersions;
 import rom.RomData;
 import rom.RomHandler;
 
@@ -20,9 +21,9 @@ public class Randomizer
 		RomHandler.writeRom(rom);
 	}
 	
-	public static void test(List<Card> cards)
+	public static void test(CardVersions cards)
 	{
-		for (Card card : cards)
+		for (Card card : cards.versions)
 		{
 			System.out.println(card.toString() + "\n");
 		}

@@ -11,18 +11,13 @@ import java.security.InvalidParameterException;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class Card implements GameData
+public abstract class Card
 {
 	public static final int CARD_COMMON_SIZE = 8;
-
-	// Internal pointers used when reading and storing data to the rom
-	protected short namePtr;
 	
 	// TODO encapsulate these or make public
 	public CardType type;
 	short gfx; // Card art
-	// TODO: Maybe we don't store it here but it the higher level?
-	public String name;
 	CardRarity rarity;
 
 	// IMPORTANT! in the data the set and pack are stored in one byte:
@@ -31,7 +26,7 @@ public abstract class Card implements GameData
 	BoosterPack pack;
 	CardId id;
 	
-	public static Card createCardAtIndex(byte[] cardBytes, int startIndex, Map<Short, String> ptrToText, Set<Short> ptrsUsed)
+	public static void addCardAtIndex(byte[] cardBytes, int startIndex, Map<String, CardVersions> cardsByName, Map<Short, String> ptrToText, Set<Short> ptrsUsed)
 	{
 		CardType type = CardType.readFromByte(cardBytes[startIndex]);
 		
@@ -54,39 +49,41 @@ public abstract class Card implements GameData
 					startIndex + " that is of type " + type);
 		}
 
-		card.readData(cardBytes, startIndex);
-		card.convertPointers(ptrToText, ptrsUsed);
-		
-		return card;
+		String name = card.readNameAndDataAndConvertIds(cardBytes, startIndex, ptrToText, ptrsUsed);
+
+		if (!cardsByName.containsKey(name))
+		{
+			cardsByName.put(name, new CardVersions());
+		}
+		cardsByName.get(name).versions.add(card);
 	}
 	
 	public String toString()
 	{
 		return "ID = " + id + 
 				"\nType = " + type + 
-				"\nName = " + name + 
 				"\nRarity = " + rarity + 
 				"\nSet = " + set + 
 				"\nPack = " + pack;
 	}
 	
+	public abstract String readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Map<Short, String> ptrToText, Set<Short> ptrsUsed);
+	public abstract void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, short nameId, Map<Short, String> ptrToText);
 	public abstract int getCardSizeInBytes();
 	
-	protected void convertCommonPointers(Map<Short, String> ptrToText, Set<Short> ptrsUsed) 
-	{
-		name = ptrToText.get(namePtr);
-		ptrsUsed.add(namePtr);
-	}
-	
-	protected int readCommonData(byte[] cardBytes, int startIndex) 
+	protected String readCommonNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Map<Short, String> ptrToText, Set<Short> ptrsUsed) 
 	{
 		int index = startIndex;
 		
 		type = CardType.readFromByte(cardBytes[index++]);
 		gfx = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
-		namePtr = ByteUtils.readAsShort(cardBytes, index);
+		
+		short nameId = ByteUtils.readAsShort(cardBytes, index);
+		String name = ptrToText.get(nameId);
+		ptrsUsed.add(nameId);
 		index += 2;
+		
 		rarity = CardRarity.readFromByte(cardBytes[index++]);
 
 		pack = BoosterPack.readFromHexChar(ByteUtils.readUpperHexChar(cardBytes[index])); // no ++ - this reads only half the byte
@@ -94,17 +91,17 @@ public abstract class Card implements GameData
 		
 		id = CardId.readFromByte(cardBytes[index++]);
 		
-		return index;
+		return name;
 	}
 	
-	protected int writeCommonData(byte[] cardBytes, int startIndex) 
+	protected int convertCommonToIdsAndWriteData(byte[] cardBytes, int startIndex, short nameId, Map<Short, String> ptrToText) 
 	{
 		int index = startIndex;
 		
 		cardBytes[index++] = type.getValue();
 		ByteUtils.writeAsShort(gfx, cardBytes, index);
 		index += 2;
-		ByteUtils.writeAsShort(namePtr, cardBytes, index);
+		ByteUtils.writeAsShort(nameId, cardBytes, index);
 		index += 2;
 		cardBytes[index++] = rarity.getValue();
 

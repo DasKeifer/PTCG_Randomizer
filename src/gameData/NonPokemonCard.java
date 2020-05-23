@@ -9,23 +9,10 @@ public class NonPokemonCard extends Card
 {
 	public static final int TOTAL_SIZE_IN_BYTES = 14;
 	public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
-
-	// Internal pointers used when reading and storing data to the rom
-	private short descriptionPtr;
-	private short descriptionExtendedPtr;
 	
 	short effectPtr;
 	String description;
 
-	@Override
-	public void convertPointers(Map<Short, String> ptrToText, Set<Short> ptrsUsed)
-	{
-		convertCommonPointers(ptrToText, ptrsUsed);
-		description = ptrToText.get(descriptionPtr) + (char) 0x0C + ptrToText.get(descriptionExtendedPtr);
-		ptrsUsed.add(descriptionPtr);
-		ptrsUsed.add(descriptionExtendedPtr);
-	}
-	
 	@Override
 	public int getCardSizeInBytes() 
 	{
@@ -33,30 +20,54 @@ public class NonPokemonCard extends Card
 	}
 	
 	@Override
-	public int readData(byte[] cardBytes, int startIndex) 
+	public String readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Map<Short, String> ptrToText, Set<Short> ptrsUsed) 
 	{
-		int index = readCommonData(cardBytes, startIndex);
+		String name = readCommonNameAndDataAndConvertIds(cardBytes, startIndex, ptrToText, ptrsUsed);
+		int index = startIndex + Card.CARD_COMMON_SIZE;
 		
 		// reading non pokemon specific data
 		effectPtr = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
-		descriptionPtr = ByteUtils.readAsShort(cardBytes, index);
+
+		short descriptionPtr = ByteUtils.readAsShort(cardBytes, index);
+		description = ptrToText.get(descriptionPtr);
+		ptrsUsed.add(descriptionPtr);
 		index += 2;
-		descriptionExtendedPtr = ByteUtils.readAsShort(cardBytes, index);
-		return index + 2;
+		short descriptionExtendedPtr = ByteUtils.readAsShort(cardBytes, index);
+		if (descriptionExtendedPtr != 0)
+		{
+			description += (char)0x0C + ptrToText.get(descriptionExtendedPtr);
+			ptrsUsed.add(descriptionExtendedPtr);
+		}
+		
+		return name;
 	}
 	
 	@Override
-	public int writeData(byte[] cardBytes, int startIndex) 
+	public void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, short nameId, Map<Short, String> ptrToText) 
 	{
-		int index = writeCommonData(cardBytes, startIndex);
+		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex, nameId, ptrToText);
 		
 		// write non pokemon specific data
 		ByteUtils.writeAsShort(effectPtr, cardBytes, index);
 		index += 2;
-		ByteUtils.writeAsShort(descriptionPtr, cardBytes, index);
-		index += 2;
-		ByteUtils.writeAsShort(descriptionExtendedPtr, cardBytes, index);		
-		return index + 2;
+		
+
+		int splitChar = description.indexOf(0x0C);
+		if (splitChar != -1)
+		{
+			ptrToText.put((short) (ptrToText.size() + 1), description.substring(0, splitChar));
+			ByteUtils.writeAsShort((short) ptrToText.size(), cardBytes, index);
+			index += 2;
+			ptrToText.put((short) (ptrToText.size() + 1), description.substring(splitChar + 1));
+			ByteUtils.writeAsShort((short) ptrToText.size(), cardBytes, index);
+		}
+		else
+		{
+			ptrToText.put((short) (ptrToText.size() + 1), description);
+			ByteUtils.writeAsShort((short) ptrToText.size(), cardBytes, index);
+			index += 2;
+			ByteUtils.writeAsShort((short) 0, cardBytes, index);
+		}
 	}
 }

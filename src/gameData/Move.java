@@ -6,14 +6,9 @@ import java.util.Set;
 import constants.CardDataConstants.*;
 import util.ByteUtils;
 
-public class Move implements GameData
+public class Move
 {
 	public static final int TOTAL_SIZE_IN_BYTES = 19;
-
-	// Internal pointers used when reading and storing data to the rom
-	private short namePtr;
-	private short descriptionPtr;
-	private short descriptionExtendedPtr;
 	
 	byte[] energyCost;
 	String name;
@@ -51,25 +46,8 @@ public class Move implements GameData
 				"\nEffectFlags: " + effect1 + ", " + effect2 + ", " + effect3;
 				
 	}
-
-	@Override
-	public void convertPointers(Map<Short, String> ptrToText, Set<Short> ptrsUsed)
-	{
-		name = ptrToText.get(namePtr);
-		description = ptrToText.get(descriptionPtr);
-		String descCont = ptrToText.get(descriptionExtendedPtr);
-		if (descCont != null)
-		{
-			// 0x0C is the page break character. In the future we will want to control
-			// newlines and page breaks to make the text fit nicely
-			description += (char)0x0c + descCont;
-		}
-		ptrsUsed.add(descriptionPtr);
-		ptrsUsed.add(descriptionExtendedPtr);
-	}
 	
-	@Override
-	public int readData(byte[] moveBytes, int startIndex) 
+	public int readNameAndDataAndConvertIds(byte[] moveBytes, int startIndex, Map<Short, String> ptrToText, Set<Short> ptrsUsed) 
 	{
 		int index = startIndex;
 		
@@ -89,12 +67,24 @@ public class Move implements GameData
 		setCost(EnergyType.UNUSED_TYPE, ByteUtils.readLowerHexChar(moveBytes[index]));
 		index++;
 		
-		namePtr = ByteUtils.readAsShort(moveBytes, index);
+		short namePtr = ByteUtils.readAsShort(moveBytes, index);
+		name = ptrToText.get(namePtr);
+		ptrsUsed.add(namePtr);
+		index += 2;		
+		
+		short descriptionPtr = ByteUtils.readAsShort(moveBytes, index);
+		description = ptrToText.get(descriptionPtr);
+		ptrsUsed.add(descriptionPtr);
 		index += 2;
-		descriptionPtr = ByteUtils.readAsShort(moveBytes, index);
+		short descriptionExtendedPtr = ByteUtils.readAsShort(moveBytes, index);
+		if (descriptionExtendedPtr != 0)
+		{
+			description += (char)0x0C + ptrToText.get(descriptionExtendedPtr);
+			ptrsUsed.add(descriptionExtendedPtr);
+		}
 		index += 2;
-		descriptionExtendedPtr = ByteUtils.readAsShort(moveBytes, index);
-		index += 2;
+		
+		
 		damage = moveBytes[index++];
 		category = MoveCategory.readFromByte(moveBytes[index++]);
 		effectPtr = ByteUtils.readAsShort(moveBytes, index);
@@ -122,8 +112,7 @@ public class Move implements GameData
 		energyCost[inType.getValue()] = inCost;
 	}
 
-	@Override
-	public int writeData(byte[] moveBytes, int startIndex) 
+	public int convertToIdsAndWriteData(byte[] moveBytes, int startIndex, Map<Short, String> ptrToText) 
 	{
 		int index = startIndex;
 		
@@ -131,13 +120,30 @@ public class Move implements GameData
 		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.LIGHTNING), getCost(EnergyType.WATER));
 		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.FIGHTING), getCost(EnergyType.PSYCHIC));
 		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.COLORLESS), getCost(EnergyType.UNUSED_TYPE));
+
+		ptrToText.put((short) (ptrToText.size() + 1), name);
+		ByteUtils.writeAsShort((short) ptrToText.size(), moveBytes, index);
+		index += 2;
 		
-		ByteUtils.writeAsShort(namePtr, moveBytes, index);
-		index += 2;
-		ByteUtils.writeAsShort(descriptionPtr, moveBytes, index);
-		index += 2;
-		ByteUtils.writeAsShort(descriptionExtendedPtr, moveBytes, index);
-		index += 2;
+		int splitChar = description.indexOf(0x0C);
+		if (splitChar != -1)
+		{
+			ptrToText.put((short) (ptrToText.size() + 1), description.substring(0, splitChar));
+			ByteUtils.writeAsShort((short) ptrToText.size(), moveBytes, index);
+			index += 2;
+			ptrToText.put((short) (ptrToText.size() + 1), description.substring(splitChar + 1));
+			ByteUtils.writeAsShort((short) ptrToText.size(), moveBytes, index);
+			index += 2;
+		}
+		else
+		{
+			ptrToText.put((short) (ptrToText.size() + 1), description);
+			ByteUtils.writeAsShort((short) ptrToText.size(), moveBytes, index);
+			index += 2;
+			ByteUtils.writeAsShort((short) 0, moveBytes, index);
+			index += 2;
+		}
+		
 		moveBytes[index++] = damage;
 		moveBytes[index++] = category.getValue();
 		ByteUtils.writeAsShort(effectPtr, moveBytes, index);
