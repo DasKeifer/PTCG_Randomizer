@@ -1,7 +1,6 @@
 package randomizer;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -14,8 +13,10 @@ public class Randomizer
 	public static void main(String[] args) throws IOException //Temp
 	{
 		RomData rom = RomHandler.readRom();
+		System.out.println(rom.ptrToText.get((short)0x080a));
+		rom.ptrToText.put((short)0x080a, (char)0x06 + "BlahBlahSaur");
 		//test(rom.cardsByName.values().iterator().next());
-		//test(rom.ptrToText);
+		test(rom.ptrToText);
 		RomHandler.writeRom(rom);
 	}
 	
@@ -29,7 +30,7 @@ public class Randomizer
 	
 	public static void test(Map<Short, String> allText)
 	{
-		for (int i = 0; i < 20; i++) //String text : allText)
+		for (short i = 1; i < 20; i++) //String text : allText)
 		{
 			System.out.println(allText.get(i));
 		}

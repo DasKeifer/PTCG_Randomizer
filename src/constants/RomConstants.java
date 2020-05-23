@@ -36,7 +36,7 @@ public class RomConstants
 	// Starts with a null pointer
 	public static final int CARD_POINTER_SIZE_IN_BYTES = 2;
 	public static final int CARD_POINTERS_LOC = 0x30c5c + CARD_POINTER_SIZE_IN_BYTES;
-	public static final int TEXT = 0x30000;
+	public static final int CARD_POINTER_OFFSET = 0x30000;
 	
 	// Starts with a null pointer
 	public static final int TEXT_POINTER_SIZE_IN_BYTES = 3;

@@ -5,9 +5,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.sql.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -22,12 +26,12 @@ public class RomHandler
 	static final String FILE_NAME_IN  = "ptcg.gbc";
 	static final String FILE_NAME_OUT = "ptcg_randomized.gbc";
 	
-	static boolean verifyRom(RomData rom)
+	static boolean verifyRom(byte[] rawBytes)
 	{
 		int index = RomConstants.HEADER_LOCATION;
 		for (byte headerByte : RomConstants.HEADER)
 		{
-			if (headerByte != rom.rawBytes[index++])
+			if (headerByte != rawBytes[index++])
 			{
 				return false;
 			}
@@ -40,10 +44,15 @@ public class RomHandler
 	{
 		RomData rom = new RomData();
 		
-		readRaw(rom);
-		verifyRom(rom);
+		rom.rawBytes = readRaw();
+		verifyRom(rom.rawBytes);
 		
-		readTextFromPointers(rom);
+		Map<Short, String> allText = readAllTextFromPointers(rom.rawBytes);
+		System.out.println(allText.get(1));
+		System.out.println();
+		readCardsFromPointersAndConvertPointers(rom);
+		
+		rom.ptrToText = allText;
 
 		//ByteUtils.printBytes(rom.rawBytes, 0x34000, 3, 0xBAF);
 		//printBytes(rom.rawBytes, 0x30c5c, 240*2, 2);
@@ -65,24 +74,22 @@ public class RomHandler
 		
 		//setAllCards(rom);
 		
-		setTextAndPointers(rom);
+		setTextAndPointers(rom.rawBytes, rom.ptrToText);
 		
-		writeRaw(rom);
+		writeRaw(rom.rawBytes);
 	}
 	
-	private static void readRaw(RomData rom) throws IOException 
+	private static byte[] readRaw() throws IOException 
 	{
 		File file = new File(FILE_NAME_IN);
-		rom.rawBytes = Files.readAllBytes(file.toPath());
-		rom.cardsByName.clear();
-		rom.ptrToText.clear();
+		return Files.readAllBytes(file.toPath());
 	}
 	
-	private static void writeRaw(RomData rom)
+	private static void writeRaw(byte[] rawBytes)
 	{
 		try {
 			FileOutputStream fos = new FileOutputStream(FILE_NAME_OUT);
-			fos.write(rom.rawBytes);
+			fos.write(rawBytes);
 			fos.close();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -93,7 +100,7 @@ public class RomHandler
 		}
 	}
 	
-	private static void readAllCardsAndProcessPointers(RomData rom)
+	private static void readCardsFromPointersAndConvertPointers(RomData rom)
 	{
 		Set<Short> convertedTextPtrs = new HashSet<>();
 		
@@ -120,9 +127,11 @@ public class RomHandler
 		//rom.ptrToText.keySet().removeAll(convertedTextPtrs);
 	}
 	
-	private static void readTextFromPointers(RomData rom)
+	private static Map<Short, String> readAllTextFromPointers(byte[] rawBytes)
 	{
-		// To be more generic, we will read each one at a time until there are no more
+		 Map<Short, String> textMap = new HashMap<>();
+		 
+		 // Read the text based on the pointer map in the rom
 		int ptrIndex = RomConstants.TEXT_POINTERS_LOC;
 		int ptr = 0;
 		int textIndex = 0;
@@ -133,21 +142,25 @@ public class RomHandler
 		while (ptrIndex < firstPtr)
 		{
 			ptr = (int) ByteUtils.readLittleEndian(
-					rom.rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES) + 
+					rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES) + 
 					RomConstants.TEXT_POINTER_OFFSET;
 			if (ptr < firstPtr)
 			{
 				firstPtr = ptr;
 			}
 			
+			// Find the ending null byte
 			textIndex = ptr;
-			while (rom.rawBytes[++textIndex] != 0x00);
-			// Read to the null char (but not including it)
-			rom.ptrToText.put(counter++, new String(rom.rawBytes, ptr, textIndex - ptr));
-			System.out.println(counter - 1 + ", " + rom.ptrToText.get((short)(counter - 1)));
+			while (rawBytes[++textIndex] != 0x00);
 			
+			// Read the string to the null char (but not including it)
+			textMap.put(counter++, new String(rawBytes, ptr, textIndex - ptr));
+
+			// Move our text pointer to the next pointer
 			ptrIndex += RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 		}
+		
+		return textMap;
 	}
 	
 	private static void setAllCards(RomData rom)
@@ -176,34 +189,38 @@ public class RomHandler
 		}
 	}
 	
-	private static void setTextAndPointers(RomData rom) throws IOException
+	private static void setTextAndPointers(byte[] rawBytes, Map<Short, String> ptrToText) throws IOException
 	{
 		// First write the 0 index "null" text pointer
-		int ptrIndex = RomConstants.TEXT_POINTER_OFFSET - RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+		int ptrIndex = RomConstants.TEXT_POINTERS_LOC - RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 		for (int byteIndex = 0; byteIndex < RomConstants.TEXT_POINTER_SIZE_IN_BYTES; byteIndex++)
 		{
-			rom.rawBytes[ptrIndex++] = 0;
+			rawBytes[ptrIndex++] = 0;
 		}
 		
 		// determine where the first text will go based off the number of text we have
 		// The null pointer was already taken care of so we don't need to handle it here
-		int textPtr = ptrIndex + rom.ptrToText.size() * RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+		int textIndex = RomConstants.TEXT_POINTER_OFFSET + (ptrToText.size() + 1) * RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 		
 		// Now for each text, write the pointer then write the text at that address
 		// Note we intentionally do a index based lookup instead of iteration in order to
 		// ensure that the IDs are sequential as they need to be (i.e. there are no gaps)
 		// We start at 1 because 0 is a null ptr
-		for (short textId = 1; textId < rom.ptrToText.size() + 1; textId++)
+		for (short textId = 1; textId < ptrToText.size() + 1; textId++)
 		{
-			ByteUtils.writeLittleEndian(textPtr, rom.rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES);
-			textPtr += RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+			if (textId < 20)
+			{
+				System.out.println(ptrToText.get(textId) + ", " + Arrays.toString(ptrToText.get(textId).getBytes()) + ", " + ptrToText.get(textId).getBytes().length + ", " + textIndex);
+			}
+			ByteUtils.writeLittleEndian(textIndex - RomConstants.TEXT_POINTER_OFFSET, rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES);
+			ptrIndex += RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 			
-			byte[] textBytes = rom.ptrToText.get(textId).getBytes();
-			System.arraycopy(textBytes, 0, rom.rawBytes, textPtr, textBytes.length);
-			textPtr += textBytes.length;
+			byte[] textBytes = ptrToText.get(textId).getBytes();
+			System.arraycopy(textBytes, 0, rawBytes, textIndex, textBytes.length);
+			textIndex += textBytes.length;
 			
 			// Write trailing null
-			rom.rawBytes[textPtr++] = 0x00;
+			rawBytes[textIndex++] = 0x00;
 		}
 		
 		// Until it is determined to be necessary, don't worry about padding remaining space with 0xff

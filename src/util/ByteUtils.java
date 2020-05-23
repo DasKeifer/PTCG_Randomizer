@@ -47,6 +47,13 @@ public class ByteUtils
 	
 	public static long readLittleEndian(byte[] byteArray, int index, int numBytes) 
 	{	
+		if (numBytes > 8)
+		{
+			throw new IllegalArgumentException(
+					"readLittleEndian: Bytes must fit in a long (i.e. be less than 8)" +
+					" Was given " + numBytes);
+		}
+		
 		long number = 0;
 		for (int j = numBytes - 1; j >= 0; j--)
 		{
@@ -62,6 +69,13 @@ public class ByteUtils
 
 	public static void writeLittleEndian(long value, byte[] byteArray, int index, int numBytes) 
 	{	
+		if (numBytes > 8)
+		{
+			throw new IllegalArgumentException(
+					"writeLittleEndian: Bytes must fit in a long (i.e. be less than 8)." +
+					" Was given " + numBytes);
+		}
+		
 		for (int j = 0; j < numBytes; j++)
 		{
 			byteArray[index + j] = (byte) (value & 0xff);
