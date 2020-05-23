@@ -1,9 +1,9 @@
 package gameData;
 
-import java.util.Map;
 import java.util.Set;
 
 import constants.CardDataConstants.*;
+import rom.IdsToText;
 import util.ByteUtils;
 
 public class Move
@@ -12,7 +12,7 @@ public class Move
 	
 	byte[] energyCost;
 	String name;
-	String description;
+	Description description = new Description();
 	byte damage; // TODO: non multiple of 10?
 	MoveCategory category;
 	short effectPtr; // TODO: Make enum?
@@ -47,7 +47,7 @@ public class Move
 				
 	}
 	
-	public int readNameAndDataAndConvertIds(byte[] moveBytes, int startIndex, Map<Short, String> ptrToText, Set<Short> ptrsUsed) 
+	public int readNameAndDataAndConvertIds(byte[] moveBytes, int startIndex, IdsToText ptrToText, Set<Short> ptrsUsed) 
 	{
 		int index = startIndex;
 		
@@ -68,22 +68,11 @@ public class Move
 		index++;
 		
 		short namePtr = ByteUtils.readAsShort(moveBytes, index);
-		name = ptrToText.get(namePtr);
+		name = ptrToText.getAtId(namePtr);
 		ptrsUsed.add(namePtr);
 		index += 2;		
 		
-		short descriptionPtr = ByteUtils.readAsShort(moveBytes, index);
-		description = ptrToText.get(descriptionPtr);
-		ptrsUsed.add(descriptionPtr);
-		index += 2;
-		short descriptionExtendedPtr = ByteUtils.readAsShort(moveBytes, index);
-		if (descriptionExtendedPtr != 0)
-		{
-			description += (char)0x0C + ptrToText.get(descriptionExtendedPtr);
-			ptrsUsed.add(descriptionExtendedPtr);
-		}
-		index += 2;
-		
+		index = description.readTextFromIds(moveBytes, index, true, ptrToText, ptrsUsed); // Two blocks of text
 		
 		damage = moveBytes[index++];
 		category = MoveCategory.readFromByte(moveBytes[index++]);
@@ -112,7 +101,7 @@ public class Move
 		energyCost[inType.getValue()] = inCost;
 	}
 
-	public int convertToIdsAndWriteData(byte[] moveBytes, int startIndex, Map<Short, String> ptrToText) 
+	public int convertToIdsAndWriteData(byte[] moveBytes, int startIndex, IdsToText ptrToText) 
 	{
 		int index = startIndex;
 		
@@ -121,28 +110,11 @@ public class Move
 		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.FIGHTING), getCost(EnergyType.PSYCHIC));
 		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.COLORLESS), getCost(EnergyType.UNUSED_TYPE));
 
-		ptrToText.put((short) (ptrToText.size() + 1), name);
-		ByteUtils.writeAsShort((short) ptrToText.size(), moveBytes, index);
+		short id = ptrToText.insertTextAtNextId(name);
+		ByteUtils.writeAsShort(id, moveBytes, index);
 		index += 2;
 		
-		int splitChar = description.indexOf(0x0C);
-		if (splitChar != -1)
-		{
-			ptrToText.put((short) (ptrToText.size() + 1), description.substring(0, splitChar));
-			ByteUtils.writeAsShort((short) ptrToText.size(), moveBytes, index);
-			index += 2;
-			ptrToText.put((short) (ptrToText.size() + 1), description.substring(splitChar + 1));
-			ByteUtils.writeAsShort((short) ptrToText.size(), moveBytes, index);
-			index += 2;
-		}
-		else
-		{
-			ptrToText.put((short) (ptrToText.size() + 1), description);
-			ByteUtils.writeAsShort((short) ptrToText.size(), moveBytes, index);
-			index += 2;
-			ByteUtils.writeAsShort((short) 0, moveBytes, index);
-			index += 2;
-		}
+		index = description.convertToIdsAndWriteText(moveBytes, index, ptrToText);
 		
 		moveBytes[index++] = damage;
 		moveBytes[index++] = category.getValue();

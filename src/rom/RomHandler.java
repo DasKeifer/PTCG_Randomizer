@@ -5,14 +5,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.sql.Array;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import constants.RomConstants;
@@ -48,10 +44,10 @@ public class RomHandler
 		rom.rawBytes = readRaw();
 		verifyRom(rom.rawBytes);
 		
-		Map<Short, String> allText = readAllTextFromPointers(rom.rawBytes);
+		IdsToText allText = readAllTextFromPointers(rom.rawBytes);
 		rom.cardsByName = readCardsFromPointersAndConvertPointers(rom.rawBytes, allText);
 		
-		rom.ptrToText = allText;
+		rom.idsToText = allText;
 
 		//ByteUtils.printBytes(rom.rawBytes, 0x34000, 3, 0xBAF);
 		//printBytes(rom.rawBytes, 0x30c5c, 240*2, 2);
@@ -73,7 +69,7 @@ public class RomHandler
 		
 		//setAllCards(rom);
 		
-		setTextAndPointers(rom.rawBytes, rom.ptrToText);
+		setTextAndPointers(rom.rawBytes, rom.idsToText);
 		
 		writeRaw(rom.rawBytes);
 	}
@@ -99,7 +95,7 @@ public class RomHandler
 		}
 	}
 	
-	private static Map<String, CardVersions> readCardsFromPointersAndConvertPointers(byte[] rawBytes, Map<Short, String> allText)
+	private static Map<String, CardVersions> readCardsFromPointersAndConvertPointers(byte[] rawBytes, IdsToText allText)
 	{
 		Map<String, CardVersions> cardsByName = new HashMap<>();
 		Set<Short> convertedTextPtrs = new HashSet<>();
@@ -124,15 +120,14 @@ public class RomHandler
 		return cardsByName;
 	}
 	
-	private static Map<Short, String> readAllTextFromPointers(byte[] rawBytes)
+	private static IdsToText readAllTextFromPointers(byte[] rawBytes)
 	{
-		 Map<Short, String> textMap = new HashMap<>();
+		IdsToText textMap = new IdsToText();
 		 
 		 // Read the text based on the pointer map in the rom
 		int ptrIndex = RomConstants.TEXT_POINTERS_LOC;
 		int ptr = 0;
 		int textIndex = 0;
-		short counter = 1; // Starts with 1 - 0 is a "null" ptr
 		int firstPtr = Integer.MAX_VALUE;
 		
 		// Read each pointer one at a time until we reach the ending null pointer
@@ -151,7 +146,7 @@ public class RomHandler
 			while (rawBytes[++textIndex] != 0x00);
 			
 			// Read the string to the null char (but not including it)
-			textMap.put(counter++, new String(rawBytes, ptr, textIndex - ptr));
+			textMap.insertTextAtNextId(new String(rawBytes, ptr, textIndex - ptr));
 
 			// Move our text pointer to the next pointer
 			ptrIndex += RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
@@ -186,7 +181,7 @@ public class RomHandler
 //		}
 //	}
 	
-	private static void setTextAndPointers(byte[] rawBytes, Map<Short, String> ptrToText) throws IOException
+	private static void setTextAndPointers(byte[] rawBytes, IdsToText ptrToText) throws IOException
 	{
 		// First write the 0 index "null" text pointer
 		int ptrIndex = RomConstants.TEXT_POINTERS_LOC - RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
@@ -197,22 +192,24 @@ public class RomHandler
 		
 		// determine where the first text will go based off the number of text we have
 		// The null pointer was already taken care of so we don't need to handle it here
-		int textIndex = RomConstants.TEXT_POINTER_OFFSET + (ptrToText.size() + 1) * RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+		int textIndex = RomConstants.TEXT_POINTER_OFFSET + (ptrToText.count() + 1) * RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 		
 		// Now for each text, write the pointer then write the text at that address
 		// Note we intentionally do a index based lookup instead of iteration in order to
 		// ensure that the IDs are sequential as they need to be (i.e. there are no gaps)
 		// We start at 1 because 0 is a null ptr
-		for (short textId = 1; textId < ptrToText.size() + 1; textId++)
+		for (short textId = 1; textId < ptrToText.count() + 1; textId++)
 		{
 			if (textId < 20)
 			{
-				System.out.println(ptrToText.get(textId) + ", " + Arrays.toString(ptrToText.get(textId).getBytes()) + ", " + ptrToText.get(textId).getBytes().length + ", " + textIndex);
+				System.out.println(ptrToText.getAtId(textId) + ", " + 
+						Arrays.toString(ptrToText.getAtId(textId).getBytes()) + ", " + 
+						ptrToText.getAtId(textId).getBytes().length + ", " + textIndex);
 			}
 			ByteUtils.writeLittleEndian(textIndex - RomConstants.TEXT_POINTER_OFFSET, rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES);
 			ptrIndex += RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 			
-			byte[] textBytes = ptrToText.get(textId).getBytes();
+			byte[] textBytes = ptrToText.getAtId(textId).getBytes();
 			System.arraycopy(textBytes, 0, rawBytes, textIndex, textBytes.length);
 			textIndex += textBytes.length;
 			

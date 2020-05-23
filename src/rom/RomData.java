@@ -12,5 +12,5 @@ public class RomData
 	
 	// Make public - we will be modifying these
 	public Map<String, CardVersions> cardsByName = new HashMap<>();
-	public Map<Short, String> ptrToText = new HashMap<>();
+	public IdsToText idsToText = new IdsToText();
 }

@@ -1,9 +1,9 @@
 package gameData;
 
-import java.util.Map;
 import java.util.Set;
 
 import constants.CardDataConstants.*;
+import rom.IdsToText;
 import util.ByteUtils;
 
 public class PokemonCard extends Card 
@@ -30,7 +30,7 @@ public class PokemonCard extends Card
 	byte level; // TODO: Investigate No gameplay impact?
 	short length; //TODO: One byte is feet, another is inches - separate them // TODO: Investigate No gameplay impact?
 	short weight; // TODO: Investigate No gameplay impact?
-	String description;
+	Description description = new Description();
 	byte unknownByte2;
 	
 	@Override
@@ -65,7 +65,7 @@ public class PokemonCard extends Card
 	}
 	
 	@Override
-	public String readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Map<Short, String> ptrToText, Set<Short> ptrsUsed) 
+	public String readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, IdsToText ptrToText, Set<Short> ptrsUsed) 
 	{
 		String name = readCommonNameAndDataAndConvertIds(cardBytes, startIndex, ptrToText, ptrsUsed);
 		
@@ -93,10 +93,7 @@ public class PokemonCard extends Card
 		weight = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 		
-		short descriptionPtr = ByteUtils.readAsShort(cardBytes, index);
-		description = ptrToText.get(descriptionPtr);
-		ptrsUsed.add(descriptionPtr);
-		index += 2;
+        index = description.readTextFromIds(cardBytes, index, false, ptrToText, ptrsUsed); // one block of text
 		
 		unknownByte2 = cardBytes[index++];
 		
@@ -104,7 +101,7 @@ public class PokemonCard extends Card
 	}
 
 	@Override
-	public void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, short nameId, Map<Short, String> ptrToText) 
+	public void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, short nameId, IdsToText ptrToText) 
 	{
 		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex, nameId, ptrToText);
 		
@@ -129,9 +126,7 @@ public class PokemonCard extends Card
 		ByteUtils.writeAsShort(weight, cardBytes, index);
 		index += 2;
 		
-		ptrToText.put((short) (ptrToText.size() + 1), description);
-		ByteUtils.writeAsShort((short) ptrToText.size(), cardBytes, index);
-		index += 2;
+		index = description.convertToIdsAndWriteText(cardBytes, index, ptrToText);
 		
 		cardBytes[index++] = unknownByte2;
 	}
