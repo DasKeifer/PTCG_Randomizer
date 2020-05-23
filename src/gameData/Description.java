@@ -2,7 +2,7 @@ package gameData;
 
 import java.util.Set;
 
-import rom.IdsToText;
+import rom.Texts;
 import util.ByteUtils;
 
 public class Description 
@@ -10,7 +10,7 @@ public class Description
 	String desc;
 	boolean isTwoBlocks;
 	
-	public int readTextFromIds(byte[] bytes, int startIndex, boolean twoBlocks, IdsToText ptrToText, Set<Short> ptrsUsed)
+	public int readTextFromIds(byte[] bytes, int startIndex, boolean twoBlocks, Texts ptrToText, Set<Short> ptrsUsed)
 	{
 		// TODO remove text formatting
 		short textPtr = ByteUtils.readAsShort(bytes, startIndex);
@@ -32,7 +32,7 @@ public class Description
 		return startIndex;
 	}
 
-	public int convertToIdsAndWriteText(byte[] bytes, int startIndex, IdsToText ptrToText) 
+	public int convertToIdsAndWriteText(byte[] bytes, int startIndex, Texts ptrToText) 
 	{
 		// TODO: Auto format text
 		if (isTwoBlocks)

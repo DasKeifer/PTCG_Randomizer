@@ -5,11 +5,11 @@ import constants.CardDataConstants.BoosterPack;
 import constants.CardDataConstants.CardRarity;
 import constants.CardDataConstants.CardSet;
 import constants.CardDataConstants.CardType;
-import rom.IdsToText;
+import rom.Cards;
+import rom.Texts;
 import util.ByteUtils;
 
 import java.security.InvalidParameterException;
-import java.util.Map;
 import java.util.Set;
 
 public abstract class Card
@@ -27,7 +27,7 @@ public abstract class Card
 	BoosterPack pack;
 	CardId id;
 	
-	public static void addCardAtIndex(byte[] cardBytes, int startIndex, Map<String, CardVersions> cardsByName, IdsToText ptrToText, Set<Short> ptrsUsed)
+	public static void addCardAtIndex(byte[] cardBytes, int startIndex, Cards cardsByName, Texts ptrToText, Set<Short> ptrsUsed)
 	{
 		CardType type = CardType.readFromByte(cardBytes[startIndex]);
 		
@@ -52,11 +52,7 @@ public abstract class Card
 
 		String name = card.readNameAndDataAndConvertIds(cardBytes, startIndex, ptrToText, ptrsUsed);
 
-		if (!cardsByName.containsKey(name))
-		{
-			cardsByName.put(name, new CardVersions());
-		}
-		cardsByName.get(name).versions.add(card);
+		cardsByName.addCard(name, card);
 	}
 	
 	public String toString()
@@ -68,11 +64,11 @@ public abstract class Card
 				"\nPack = " + pack;
 	}
 	
-	public abstract String readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, IdsToText ptrToText, Set<Short> ptrsUsed);
-	public abstract void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, short nameId, IdsToText ptrToText);
+	public abstract String readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Texts ptrToText, Set<Short> ptrsUsed);
+	public abstract void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, short nameId, Texts ptrToText);
 	public abstract int getCardSizeInBytes();
 	
-	protected String readCommonNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, IdsToText ptrToText, Set<Short> ptrsUsed) 
+	protected String readCommonNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Texts ptrToText, Set<Short> ptrsUsed) 
 	{
 		int index = startIndex;
 		
@@ -95,7 +91,7 @@ public abstract class Card
 		return name;
 	}
 	
-	protected int convertCommonToIdsAndWriteData(byte[] cardBytes, int startIndex, short nameId, IdsToText ptrToText) 
+	protected int convertCommonToIdsAndWriteData(byte[] cardBytes, int startIndex, short nameId, Texts ptrToText) 
 	{
 		int index = startIndex;
 		

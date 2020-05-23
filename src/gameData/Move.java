@@ -3,7 +3,7 @@ package gameData;
 import java.util.Set;
 
 import constants.CardDataConstants.*;
-import rom.IdsToText;
+import rom.Texts;
 import util.ByteUtils;
 
 public class Move
@@ -47,7 +47,7 @@ public class Move
 				
 	}
 	
-	public int readNameAndDataAndConvertIds(byte[] moveBytes, int startIndex, IdsToText ptrToText, Set<Short> ptrsUsed) 
+	public int readNameAndDataAndConvertIds(byte[] moveBytes, int startIndex, Texts ptrToText, Set<Short> ptrsUsed) 
 	{
 		int index = startIndex;
 		
@@ -101,7 +101,7 @@ public class Move
 		energyCost[inType.getValue()] = inCost;
 	}
 
-	public int convertToIdsAndWriteData(byte[] moveBytes, int startIndex, IdsToText ptrToText) 
+	public int convertToIdsAndWriteData(byte[] moveBytes, int startIndex, Texts ptrToText) 
 	{
 		int index = startIndex;
 		

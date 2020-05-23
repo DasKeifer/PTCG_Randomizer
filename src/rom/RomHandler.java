@@ -6,14 +6,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import constants.RomConstants;
 import gameData.Card;
-import gameData.CardVersions;
 import util.ByteUtils;
 
 public class RomHandler
@@ -44,7 +41,7 @@ public class RomHandler
 		rom.rawBytes = readRaw();
 		verifyRom(rom.rawBytes);
 		
-		IdsToText allText = readAllTextFromPointers(rom.rawBytes);
+		Texts allText = readAllTextFromPointers(rom.rawBytes);
 		rom.cardsByName = readCardsFromPointersAndConvertPointers(rom.rawBytes, allText);
 		
 		rom.idsToText = allText;
@@ -95,9 +92,9 @@ public class RomHandler
 		}
 	}
 	
-	private static Map<String, CardVersions> readCardsFromPointersAndConvertPointers(byte[] rawBytes, IdsToText allText)
+	private static Cards readCardsFromPointersAndConvertPointers(byte[] rawBytes, Texts allText)
 	{
-		Map<String, CardVersions> cardsByName = new HashMap<>();
+		Cards cardsByName = new Cards();
 		Set<Short> convertedTextPtrs = new HashSet<>();
 
 		// Read the text based on the pointer map in the rom
@@ -120,9 +117,9 @@ public class RomHandler
 		return cardsByName;
 	}
 	
-	private static IdsToText readAllTextFromPointers(byte[] rawBytes)
+	private static Texts readAllTextFromPointers(byte[] rawBytes)
 	{
-		IdsToText textMap = new IdsToText();
+		Texts textMap = new Texts();
 		 
 		 // Read the text based on the pointer map in the rom
 		int ptrIndex = RomConstants.TEXT_POINTERS_LOC;
@@ -181,7 +178,7 @@ public class RomHandler
 //		}
 //	}
 	
-	private static void setTextAndPointers(byte[] rawBytes, IdsToText ptrToText) throws IOException
+	private static void setTextAndPointers(byte[] rawBytes, Texts ptrToText) throws IOException
 	{
 		// First write the 0 index "null" text pointer
 		int ptrIndex = RomConstants.TEXT_POINTERS_LOC - RomConstants.TEXT_POINTER_SIZE_IN_BYTES;

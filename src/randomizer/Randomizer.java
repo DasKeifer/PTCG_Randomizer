@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import gameData.Card;
 import gameData.CardVersions;
-import rom.IdsToText;
+import rom.Texts;
 import rom.RomData;
 import rom.RomHandler;
 
@@ -14,8 +14,8 @@ public class Randomizer
 	{
 		RomData rom = RomHandler.readRom();
 		System.out.println(rom.idsToText.getAtId((short)0x080a));
-		rom.idsToText.ptrToText.put((short)0x080a, (char)0x06 + "BlahBlahSaur");
-		test(rom.cardsByName.get((char)0x06 + "Bulbasaur"));
+		rom.idsToText.setAtId((short)0x080a, "BlahBlahSaur");
+		test(rom.cardsByName.getCardsWithName("Bulbasaur"));
 		test(rom.idsToText);
 		RomHandler.writeRom(rom);
 	}
@@ -28,7 +28,7 @@ public class Randomizer
 		}
 	}
 	
-	public static void test(IdsToText allText)
+	public static void test(Texts allText)
 	{
 		for (short i = 1; i < 20; i++) //String text : allText)
 		{

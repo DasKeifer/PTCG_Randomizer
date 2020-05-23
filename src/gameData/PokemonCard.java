@@ -3,7 +3,7 @@ package gameData;
 import java.util.Set;
 
 import constants.CardDataConstants.*;
-import rom.IdsToText;
+import rom.Texts;
 import util.ByteUtils;
 
 public class PokemonCard extends Card 
@@ -65,7 +65,7 @@ public class PokemonCard extends Card
 	}
 	
 	@Override
-	public String readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, IdsToText ptrToText, Set<Short> ptrsUsed) 
+	public String readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Texts ptrToText, Set<Short> ptrsUsed) 
 	{
 		String name = readCommonNameAndDataAndConvertIds(cardBytes, startIndex, ptrToText, ptrsUsed);
 		
@@ -101,7 +101,7 @@ public class PokemonCard extends Card
 	}
 
 	@Override
-	public void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, short nameId, IdsToText ptrToText) 
+	public void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, short nameId, Texts ptrToText) 
 	{
 		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex, nameId, ptrToText);
 		
