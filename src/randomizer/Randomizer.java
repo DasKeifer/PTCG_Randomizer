@@ -1,9 +1,9 @@
 package randomizer;
 
 import java.io.IOException;
+import java.util.List;
 
 import gameData.Card;
-import gameData.CardVersions;
 import rom.Texts;
 import rom.RomData;
 import rom.RomHandler;
@@ -13,16 +13,15 @@ public class Randomizer
 	public static void main(String[] args) throws IOException //Temp
 	{
 		RomData rom = RomHandler.readRom();
-		System.out.println(rom.idsToText.getAtId((short)0x080a));
-		rom.idsToText.setAtId((short)0x080a, "BlahBlahSaur");
-		test(rom.cardsByName.getCardsWithName("Flareon"));
+		//System.out.println(rom.idsToText.getAtId((short)0x080a));
+		//test(rom.cardsByName.getCardsWithName("Flareon"));
 		//test(rom.idsToText);
 		RomHandler.writeRom(rom);
 	}
 	
-	public static void test(CardVersions cards)
+	public static void test(List<Card> cards)
 	{
-		for (Card card : cards.versions)
+		for (Card card : cards)
 		{
 			System.out.println(card.toString() + "\n");
 		}

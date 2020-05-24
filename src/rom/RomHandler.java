@@ -5,10 +5,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import constants.CardDataConstants.EnergyType;
 import constants.RomConstants;
 import gameData.Card;
 import util.ByteUtils;
@@ -98,7 +99,14 @@ public class RomHandler
 			ptrIndex += RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		}
 		
+		System.out.println(allText.count());
+		System.out.println(convertedTextPtrs.size());
+//		for (Short id : convertedTextPtrs)
+//		{
+//			System.out.println(id + " " + allText.getAtId(id));
+//		}
 		allText.removeTextAtIds(convertedTextPtrs);
+		System.out.println(allText.count());
 		return cardsByName;
 	}
 	
@@ -137,13 +145,13 @@ public class RomHandler
 		return textMap;
 	}
 	
-	private static void setAllCardsAnPointers(byte[] rawBytes, Cards cards, Texts allText)
+	private static void setAllCardsAnPointers(byte[] bytes, Cards cards, Texts allText)
 	{
 		// First write the 0 index "null" text pointer
 		int ptrIndex = RomConstants.CARD_POINTERS_LOC - RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		for (int byteIndex = 0; byteIndex < RomConstants.CARD_POINTER_SIZE_IN_BYTES; byteIndex++)
 		{
-			rawBytes[ptrIndex++] = 0;
+			bytes[ptrIndex++] = 0;
 		}
 		
 		// determine where the first text will go based off the number of text we have
@@ -151,12 +159,24 @@ public class RomHandler
 		// here but we still need to handle the last null pointer
 		int cardIndex = RomConstants.CARD_POINTER_OFFSET + (cards.count() + 2) * RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		
-		List<Card> sorted = Card.flattenAndSortCards(cards);
+		List<Card> sorted = cards.getCards();
+		Collections.sort(sorted, new Card.TypeIdSorter());
+		for (Card card : sorted)
+		{
+			// Write the pointer
+			ByteUtils.writeLittleEndian(cardIndex - RomConstants.CARD_POINTER_OFFSET, bytes, ptrIndex, RomConstants.CARD_POINTER_SIZE_IN_BYTES);
+			ptrIndex += RomConstants.CARD_POINTER_SIZE_IN_BYTES;
+			
+			// Write the card
+			//System.out.println(card.name);
+			card.convertToIdsAndWriteData(bytes, cardIndex, allText);
+			cardIndex += card.getCardSizeInBytes();
+		}
 
 		// Write the null pointer at the end of the cards pointers
 		for (int byteIndex = 0; byteIndex < RomConstants.CARD_POINTER_SIZE_IN_BYTES; byteIndex++)
 		{
-			rawBytes[ptrIndex++] = 0;
+			bytes[ptrIndex++] = 0;
 		}
 		
 		// Until it is determined to be necessary, don't worry about padding remaining space with 0xff
@@ -181,9 +201,12 @@ public class RomHandler
 		// We start at 1 because 0 is a null ptr
 		for (short textId = 1; textId < ptrToText.count() + 1; textId++)
 		{
+			//System.out.println(textId + ", " + ptrToText.getAtId(textId));
+			// Write the pointer
 			ByteUtils.writeLittleEndian(textIndex - RomConstants.TEXT_POINTER_OFFSET, rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES);
 			ptrIndex += RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 			
+			// Now write the text
 			byte[] textBytes = ptrToText.getAtId(textId).getBytes();
 			System.arraycopy(textBytes, 0, rawBytes, textIndex, textBytes.length);
 			textIndex += textBytes.length;

@@ -10,21 +10,16 @@ import rom.Texts;
 import util.ByteUtils;
 
 import java.security.InvalidParameterException;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 public abstract class Card
 {
 	public static final int CARD_COMMON_SIZE = 8;
 	
-	// Used only temporarily when writing to the rom
-	protected String name;
-	
 	// TODO encapsulate these or make public
 	public CardType type;
+	public String name;
 	short gfx; // Card art
 	CardRarity rarity;
 
@@ -57,9 +52,9 @@ public abstract class Card
 					startIndex + " that is of type " + type);
 		}
 
-		String name = card.readNameAndDataAndConvertIds(cardBytes, startIndex, cardsByName, ptrToText, ptrsUsed);
+		card.readNameAndDataAndConvertIds(cardBytes, startIndex, cardsByName, ptrToText, ptrsUsed);
 
-		cardsByName.addCard(name, card);
+		cardsByName.add(card);
 	}
 	
 	public String toString()
@@ -71,11 +66,11 @@ public abstract class Card
 				"\nPack = " + pack;
 	}
 	
-	public abstract String readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Cards cards, Texts ptrToText, Set<Short> ptrsUsed);
+	public abstract void readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Cards cards, Texts ptrToText, Set<Short> ptrsUsed);
 	public abstract void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts ptrToText);
 	public abstract int getCardSizeInBytes();
 	
-	protected String readCommonNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Texts ptrToText, Set<Short> ptrsUsed) 
+	protected void readCommonNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Texts ptrToText, Set<Short> ptrsUsed) 
 	{
 		int index = startIndex;
 		
@@ -84,7 +79,7 @@ public abstract class Card
 		index += 2;
 		
 		short nameId = ByteUtils.readAsShort(cardBytes, index);
-		String name = ptrToText.getAtId(nameId);
+		name = ptrToText.getAtId(nameId);
 		ptrsUsed.add(nameId);
 		index += 2;
 		
@@ -94,11 +89,9 @@ public abstract class Card
 		set = CardSet.readFromHexChar(ByteUtils.readLowerHexChar(cardBytes[index++]));
 		
 		id = CardId.readFromByte(cardBytes[index++]);
-		
-		return name;
 	}
 	
-	protected int convertCommonToIdsAndWriteData(byte[] cardBytes, int startIndex, String name, Texts ptrToText) 
+	protected int convertCommonToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts ptrToText) 
 	{
 		int index = startIndex;
 		
@@ -117,8 +110,25 @@ public abstract class Card
 		
 		return index;
 	}
-	
-	 static class CardSorter implements Comparator<Card>
+
+	 public static class NameIdSorter implements Comparator<Card>
+	 {
+	     public int compare(Card c1, Card c2)
+	     {
+	    	 int val = c1.name.compareTo(c2.name);
+	    	 if (val == 0)
+	    	 {
+	    		 if (c1.id.getValue() < c2.id.getValue())
+	    		 {
+	    			 return -1;
+	    		 }
+	    		 return 1;
+	    	 }
+	    	 return val;
+	     }
+	 }
+	 
+	 public static class TypeIdSorter implements Comparator<Card>
 	 {
 	     public int compare(Card c1, Card c2)
 	     {
@@ -138,21 +148,4 @@ public abstract class Card
 	         return 1;
 	     }
 	 }
-	
-	public List<Card> flattenAndSortCards(Cards cards)
-	{
-		List<Card> flatCards = new LinkedList<>();
-		for (CardVersions versions : cards.getCards())
-		{
-			for (Card card : versions.versions)
-			{
-				card.name = versions.name;
-				flatCards.add(card);
-			}
-		}
-		
-		Collections.sort(flatCards, new CardSorter());
-		
-		return flatCards;
-	}
 }

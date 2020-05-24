@@ -12,8 +12,12 @@ public class Texts
 	public short insertTextAtNextId(String text)
 	{
 		short nextId = (short) (count() + 1); // 0 is a null pointer
+		if (nextId < 2080)
+		{
+		System.out.println(textMap.size() + " - " + usedText.size() + " - " + text);
+		}
 		textMap.put(nextId, text);
-		usedText.put(text, nextId);
+		//System.out.println("Added " + nextId + ", " + text);
 		return nextId;
 	}
 	
@@ -22,10 +26,14 @@ public class Texts
 		Short id = usedText.get(text);
 		if (id != null)
 		{
+			//System.out.println("Found " + id + ", " + text);
 			return id;
 		}
-		
-		return insertTextAtNextId(text);
+
+		id = insertTextAtNextId(text);
+		//System.out.println("Added " + id + ", " + text);
+		usedText.put(text, id);
+		return id;
 	}
 	
 	public void removeTextAtIds(Set<Short> idsToRemove)

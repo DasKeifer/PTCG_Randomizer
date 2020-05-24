@@ -14,7 +14,7 @@ public class PokemonCard extends Card
 	
 	byte hp; // TODO: non multiples of 10?
 	EvolutionStage stage;
-	CardVersions prevEvo;
+	String prevEvoName;
 	
 	Move move1;
 	Move move2;
@@ -22,7 +22,7 @@ public class PokemonCard extends Card
 	byte retreatCost; // TODO: max allowed?
 	WeaknessResistanceType weakness; // TODO: Allows multiple?
 	WeaknessResistanceType resistance; // TODO: Allows multiple?
-	short pokemonCategory; // TODO: Investigate - i.e cocoon, hairy bug, etc. Shouldn't need to change
+	Description pokemonCategory = new Description(); // TODO: Investigate
 	byte pokedexNumber;
 	byte unknownByte1;
 	byte level; // TODO: Investigate No gameplay impact?
@@ -34,26 +34,16 @@ public class PokemonCard extends Card
 	@Override
 	public String toString()
 	{
-		String string = super.toString() + 
+		return super.toString() + 
 				"\nPokedex Number = " + pokedexNumber + 
 				"\nDesciption = " + description + 
 				"\nHP = " + hp +
 				"\nStage = " + stage + 
-				"\nPrevEvolution = ";
-		if (prevEvo != null)
-		{
-			string += prevEvo.name;
-		}
-		else
-		{
-			string += "None";
-		}
-		
-		string += "\nRetreatCost = " + retreatCost +
+				"\nPrevEvolution = " + prevEvoName +
+				"\nRetreatCost = " + retreatCost +
 				"\nWeakness = " + weakness +
 				"\nResistance = " + resistance  +
 				"\nMoves\n" + move1.toString() + "\n" + move2.toString();
-		return string;
 	}
 
 	@Override
@@ -63,9 +53,9 @@ public class PokemonCard extends Card
 	}
 	
 	@Override
-	public String readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Cards cards, Texts ptrToText, Set<Short> ptrsUsed) 
+	public void readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Cards cards, Texts ptrToText, Set<Short> ptrsUsed) 
 	{
-		String name = readCommonNameAndDataAndConvertIds(cardBytes, startIndex, ptrToText, ptrsUsed);
+		readCommonNameAndDataAndConvertIds(cardBytes, startIndex, ptrToText, ptrsUsed);
 		
 		int index = startIndex + Card.CARD_COMMON_SIZE;
 		hp = cardBytes[index++];
@@ -75,7 +65,7 @@ public class PokemonCard extends Card
 		short id = ByteUtils.readAsShort(cardBytes, index);
 		if (id != 0)
 		{
-			prevEvo = cards.getCardsWithName(ptrToText.getAtId(id));
+			prevEvoName = ptrToText.getAtId(id);
 		}
 		index += 2;
 		
@@ -87,8 +77,9 @@ public class PokemonCard extends Card
 		retreatCost = cardBytes[index++];
 		weakness = WeaknessResistanceType.readFromByte(cardBytes[index++]);
 		resistance = WeaknessResistanceType.readFromByte(cardBytes[index++]);
-		pokemonCategory = ByteUtils.readAsShort(cardBytes, index);
-		index += 2;
+
+        index = pokemonCategory.readTextFromIds(cardBytes, index, false, ptrToText, ptrsUsed); // one block of text
+		
 		pokedexNumber = cardBytes[index++];
 		unknownByte1 = cardBytes[index++];
 		level = cardBytes[index++];
@@ -100,21 +91,19 @@ public class PokemonCard extends Card
         index = description.readTextFromIds(cardBytes, index, false, ptrToText, ptrsUsed); // one block of text
 		
 		unknownByte2 = cardBytes[index++];
-		
-		return name;
 	}
 
 	@Override
 	public void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts ptrToText) 
 	{
-		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex, name, ptrToText);
+		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex, ptrToText);
 		
 		cardBytes[index++] = hp;
 		cardBytes[index++] = stage.getValue();
 		
-		if (prevEvo != null)
+		if (prevEvoName != null)
 		{
-			ByteUtils.writeAsShort(ptrToText.insertTextOrGetId(prevEvo.name), cardBytes, index);
+			ByteUtils.writeAsShort(ptrToText.insertTextOrGetId(prevEvoName), cardBytes, index);
 		}
 		else
 		{
@@ -128,7 +117,9 @@ public class PokemonCard extends Card
 		cardBytes[index++] = retreatCost;
 		cardBytes[index++] = weakness.getValue();
 		cardBytes[index++] = resistance.getValue();
-		ByteUtils.writeAsShort(pokemonCategory, cardBytes, index);
+
+		index = pokemonCategory.convertToIdsAndWriteText(cardBytes, index, ptrToText);
+		
 		index += 2;
 		cardBytes[index++] = pokedexNumber;
 		cardBytes[index++] = unknownByte1;

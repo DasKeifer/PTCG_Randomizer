@@ -7,24 +7,35 @@ import util.ByteUtils;
 
 public class Description 
 {
-	String desc;
+	String desc = "";
 	boolean isTwoBlocks;
 	
 	public int readTextFromIds(byte[] bytes, int startIndex, boolean twoBlocks, Texts ptrToText, Set<Short> ptrsUsed)
 	{
-		// TODO remove text formatting
+		isTwoBlocks = twoBlocks;
+		
 		short textPtr = ByteUtils.readAsShort(bytes, startIndex);
+		if (textPtr == 0)
+		{
+			desc = "";
+			if (isTwoBlocks)
+			{
+				return startIndex + 4;
+			}
+			return startIndex + 2;
+		}
+		
+		// TODO remove text formatting
 		desc = ptrToText.getAtId(textPtr);
 		ptrsUsed.add(textPtr);
 		startIndex += 2;
 		
-		isTwoBlocks = twoBlocks;
 		if (isTwoBlocks)
 		{
 			short textExtendedPtr = ByteUtils.readAsShort(bytes, startIndex);
 			if (textExtendedPtr != 0)
 			{
-				desc += (char) 0x06 + ptrToText.getAtId(textExtendedPtr);
+				desc += (char) 0x0C + ptrToText.getAtId(textExtendedPtr);
 				ptrsUsed.add(textExtendedPtr);
 			}
 			startIndex += 2;
@@ -37,7 +48,13 @@ public class Description
 		// TODO: Auto format text
 		if (isTwoBlocks)
 		{
-			int splitChar = desc.indexOf((char)0x06);
+			if (desc == null || desc.isEmpty())
+			{
+				ByteUtils.writeLittleEndian(0, bytes, startIndex, 4);
+				return startIndex + 4;
+			}
+			
+			int splitChar = desc.indexOf((char)0x0C);
 			if (splitChar != -1)
 			{
 				short id = ptrToText.insertTextOrGetId(desc.substring(0, splitChar));
@@ -58,6 +75,12 @@ public class Description
 		}
 		else
 		{
+			if (desc == null || desc.isEmpty())
+			{
+				ByteUtils.writeLittleEndian(0, bytes, startIndex, 2);
+				return startIndex + 2;
+			}
+			
 			short id = ptrToText.insertTextOrGetId(desc);
 			ByteUtils.writeAsShort(id, bytes, startIndex);
 			startIndex += 2;
