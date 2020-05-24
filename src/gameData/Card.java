@@ -27,7 +27,7 @@ public abstract class Card
 	// bits 0-3 are the set, bits 4-7 are the booster pack they can be found in
 	CardSet set;
 	BoosterPack pack;
-	CardId id;
+	public CardId id;
 	
 	public static void addCardAtIndex(byte[] cardBytes, int startIndex, Cards cardsByName, Texts ptrToText, Set<Short> ptrsUsed)
 	{
@@ -128,27 +128,63 @@ public abstract class Card
 	     }
 	 }
 	 
-	 public static class TypeIdSorter implements Comparator<Card>
+	 public static class RomSorter implements Comparator<Card>
+	 {
+		 // This is used if we randomize evos so we can shuffle poke to be next to each other
+	     public int compare(Card c1, Card c2)
+	     {             
+	    	 // If either is an energy or trainer, the natural sort order will work
+	    	 if (c1.type.isEnergyCard() || c2.type.isEnergyCard() ||
+	    			 c1.type.isTrainerCard() || c2.type.isTrainerCard())
+	    	 {
+	    		 return unsignedCompareShorts(c1.id.getValue(), c2.id.getValue());
+	    	 }
+	    	 
+	    	 // Otherwise both are pokemon - sort by pokedex id then cardId if they are the same
+	    	 PokemonCard pc1 = (PokemonCard) c1;
+	    	 PokemonCard pc2 = (PokemonCard) c2;
+	    	 int pokedexCompare = unsignedCompareShorts(pc1.pokedexNumber, pc2.pokedexNumber);
+	    	 if (pokedexCompare == 0)
+	    	 {
+	    		 return unsignedCompareShorts(c1.id.getValue(), c2.id.getValue());
+	    	 }
+	    	 return pokedexCompare;
+	     }
+	 }
+	 
+	 public static class IdSorter implements Comparator<Card>
 	 {
 	     public int compare(Card c1, Card c2)
 	     {
-	    	 // TODO: Keep it in the same order as the rom - energies, pokes, trainers
-	    	 // Grass, Fire, Water, Lightning, Fighting, Psychic, Colorless. It will help
-	    	 // keep some semblance of the album if using old save data
-	    	 if (c1.type != c2.type)
-	    	 {
-	    		 if (c1.type.getValue() < c2.type.getValue())
-	    		 {
-	    			 return -1;
-	    		 }
-	    		 return 1;
-	    	 }
-	    	 
-	    	 if (c1.id.getValue() < c2.id.getValue())
-	    	 {
-	    		 return -1;
-	    	 }
-	         return 1;
+	    	 return unsignedCompareShorts(c1.id.getValue(), c2.id.getValue());
 	     }
+	 }
+	 
+	 private static int unsignedCompareShorts(short s1, short s2)
+	 {
+    	 // Since shorts are signed, we need to do some bit magic
+    	 // to get them to their unsigned values so we sort correctly
+		 int i1 = s1;
+    	 if (i1 < 0)
+    	 {
+    		 i1 = 0 | (i1 & 0xff);
+    	 }
+    	 
+		 int i2 = s2;
+    	 if (i2 < 0)
+    	 {
+    		 i2 = 0 | (i2 & 0xff);
+    	 }
+    	 
+    	 
+    	 if (i1 < i2)
+    	 {
+    		 return -1;
+    	 }
+    	 else if (i1 > i2)
+    	 {
+    		 return 1;
+    	 }
+         return 0;
 	 }
 }
