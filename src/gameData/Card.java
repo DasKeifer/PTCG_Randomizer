@@ -133,7 +133,8 @@ public abstract class Card
 	     public int compare(Card c1, Card c2)
 	     {
 	    	 // TODO: Keep it in the same order as the rom - energies, pokes, trainers
-	    	 // Grass, Fire, Water, Lightning, Fighting, Psychic, Colorless
+	    	 // Grass, Fire, Water, Lightning, Fighting, Psychic, Colorless. It will help
+	    	 // keep some semblance of the album if using old save data
 	    	 if (c1.type != c2.type)
 	    	 {
 	    		 if (c1.type.getValue() < c2.type.getValue())

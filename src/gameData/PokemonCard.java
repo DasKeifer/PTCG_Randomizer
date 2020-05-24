@@ -23,12 +23,14 @@ public class PokemonCard extends Card
 	WeaknessResistanceType weakness; // TODO: Allows multiple?
 	WeaknessResistanceType resistance; // TODO: Allows multiple?
 	Description pokemonCategory = new Description(); // TODO: Investigate
-	byte pokedexNumber;
-	byte unknownByte1;
+	public byte pokedexNumber;
+	byte unknownByte1; // TODO: Always 0?
 	byte level; // TODO: Investigate No gameplay impact?
 	short length; //TODO: One byte is feet, another is inches - separate them // TODO: Investigate No gameplay impact?
 	short weight; // TODO: Investigate No gameplay impact?
 	Description description = new Description();
+	
+	 // TODO: At least somewhat tracks with evo stage in asm files - 19 for first stage, 16 for second stage, 0 for final stage?
 	byte unknownByte2;
 	
 	@Override
@@ -120,7 +122,6 @@ public class PokemonCard extends Card
 
 		index = pokemonCategory.convertToIdsAndWriteText(cardBytes, index, ptrToText);
 		
-		index += 2;
 		cardBytes[index++] = pokedexNumber;
 		cardBytes[index++] = unknownByte1;
 		cardBytes[index++] = level;
@@ -128,7 +129,7 @@ public class PokemonCard extends Card
 		index += 2;
 		ByteUtils.writeAsShort(weight, cardBytes, index);
 		index += 2;
-		
+
 		index = description.convertToIdsAndWriteText(cardBytes, index, ptrToText);
 		
 		cardBytes[index++] = unknownByte2;
