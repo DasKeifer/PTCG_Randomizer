@@ -1,5 +1,6 @@
 package rom;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,7 +38,24 @@ public class Cards
 	{
 		if (!cardsByName.containsKey(name))
 		{
-			cardsByName.put(name, new CardVersions());
+			CardVersions versions = new CardVersions();
+			versions.name = name;
+			cardsByName.put(name, versions);
 		}
+	}
+
+	public int count()
+	{
+		int count = 0;
+		for (CardVersions versions : cardsByName.values())
+		{
+			count += versions.count();
+		}
+		return count;
+	}
+
+	public Collection<CardVersions> getCards() 
+	{
+		return cardsByName.values();
 	}
 }

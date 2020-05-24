@@ -5,10 +5,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import constants.CardDataConstants.EnergyType;
 import constants.RomConstants;
 import gameData.Card;
 import util.ByteUtils;
@@ -42,30 +42,15 @@ public class RomHandler
 		verifyRom(rom.rawBytes);
 		
 		Texts allText = readAllTextFromPointers(rom.rawBytes);
-		rom.cardsByName = readCardsFromPointersAndConvertPointers(rom.rawBytes, allText);
-		
+		rom.cardsByName = readAllCardsFromPointers(rom.rawBytes, allText);
 		rom.idsToText = allText;
-
-		//ByteUtils.printBytes(rom.rawBytes, 0x34000, 3, 0xBAF);
-		//printBytes(rom.rawBytes, 0x30c5c, 240*2, 2);
-		//printBytes(rom.rawBytes, 0x30e28, 65, 1);
-
-		//readAllText(rom);
-		//readAllCardsAndProcessPointers(rom);
-		
-		//groupByNameAndUpdateDesc();
 		
 		return rom;
 	}
 	
 	public static void writeRom(RomData rom) throws IOException
 	{
-		//insertNameInDesc();
-		
-		//createCardPointers();
-		
-		//setAllCards(rom);
-		
+		setAllCardsAnPointers(rom.rawBytes, rom.cardsByName, rom.idsToText);
 		setTextAndPointers(rom.rawBytes, rom.idsToText);
 		
 		writeRaw(rom.rawBytes);
@@ -92,7 +77,7 @@ public class RomHandler
 		}
 	}
 	
-	private static Cards readCardsFromPointersAndConvertPointers(byte[] rawBytes, Texts allText)
+	private static Cards readAllCardsFromPointers(byte[] rawBytes, Texts allText)
 	{
 		Cards cardsByName = new Cards();
 		Set<Short> convertedTextPtrs = new HashSet<>();
@@ -113,7 +98,7 @@ public class RomHandler
 			ptrIndex += RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		}
 		
-		//rom.ptrToText.keySet().removeAll(convertedTextPtrs);
+		allText.removeTextAtIds(convertedTextPtrs);
 		return cardsByName;
 	}
 	
@@ -152,31 +137,30 @@ public class RomHandler
 		return textMap;
 	}
 	
-//	private static void setAllCards(RomData rom)
-//	{
-//		int writeIndex = RomConstants.FIRST_CARD_BYTE;
-//		
-//		// TODO: need to flatten and reorder
-//		
-//		// Write each card. We do not need to overflow check
-//		// since there is currently a fixed number of the cards
-//		// and the cards themselves are fixed sizes. If more cards
-//		// are ever added, this logic will need to change to 
-//		// span gaps of code
-//		for (Entry<String, List<Card>> cards : rom.cardsByName.entrySet())
-//		{
-//			for (Card version : cards.getValue())
-//			{
-//				writeIndex = version.writeData(rom.rawBytes, writeIndex);
-//			}
-//		}
-//
-//		// Pad with 0xff like the rom does
-//		while (writeIndex <= RomConstants.LAST_CARD_BYTE)
-//		{
-//			rom.rawBytes[writeIndex++] = (byte) 0xff;
-//		}
-//	}
+	private static void setAllCardsAnPointers(byte[] rawBytes, Cards cards, Texts allText)
+	{
+		// First write the 0 index "null" text pointer
+		int ptrIndex = RomConstants.CARD_POINTERS_LOC - RomConstants.CARD_POINTER_SIZE_IN_BYTES;
+		for (int byteIndex = 0; byteIndex < RomConstants.CARD_POINTER_SIZE_IN_BYTES; byteIndex++)
+		{
+			rawBytes[ptrIndex++] = 0;
+		}
+		
+		// determine where the first text will go based off the number of text we have
+		// The first null pointer was already taken care of so we don't need to handle it 
+		// here but we still need to handle the last null pointer
+		int cardIndex = RomConstants.CARD_POINTER_OFFSET + (cards.count() + 2) * RomConstants.CARD_POINTER_SIZE_IN_BYTES;
+		
+		List<Card> sorted = Card.flattenAndSortCards(cards);
+
+		// Write the null pointer at the end of the cards pointers
+		for (int byteIndex = 0; byteIndex < RomConstants.CARD_POINTER_SIZE_IN_BYTES; byteIndex++)
+		{
+			rawBytes[ptrIndex++] = 0;
+		}
+		
+		// Until it is determined to be necessary, don't worry about padding remaining space with 0xff
+	}
 	
 	private static void setTextAndPointers(byte[] rawBytes, Texts ptrToText) throws IOException
 	{
@@ -197,12 +181,6 @@ public class RomHandler
 		// We start at 1 because 0 is a null ptr
 		for (short textId = 1; textId < ptrToText.count() + 1; textId++)
 		{
-			if (textId < 20)
-			{
-				System.out.println(ptrToText.getAtId(textId) + ", " + 
-						Arrays.toString(ptrToText.getAtId(textId).getBytes()) + ", " + 
-						ptrToText.getAtId(textId).getBytes().length + ", " + textIndex);
-			}
 			ByteUtils.writeLittleEndian(textIndex - RomConstants.TEXT_POINTER_OFFSET, rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES);
 			ptrIndex += RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 			

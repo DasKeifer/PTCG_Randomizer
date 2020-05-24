@@ -2,6 +2,7 @@ package gameData;
 
 import java.util.Set;
 
+import rom.Cards;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -20,7 +21,7 @@ public class NonPokemonCard extends Card
 	}
 	
 	@Override
-	public String readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Texts ptrToText, Set<Short> ptrsUsed) 
+	public String readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Cards cards, Texts ptrToText, Set<Short> ptrsUsed) 
 	{
 		String name = readCommonNameAndDataAndConvertIds(cardBytes, startIndex, ptrToText, ptrsUsed);
 		int index = startIndex + Card.CARD_COMMON_SIZE;
@@ -35,9 +36,9 @@ public class NonPokemonCard extends Card
 	}
 	
 	@Override
-	public void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, short nameId, Texts ptrToText) 
+	public void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts ptrToText) 
 	{
-		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex, nameId, ptrToText);
+		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex, name, ptrToText);
 		
 		// write non pokemon specific data
 		ByteUtils.writeAsShort(effectPtr, cardBytes, index);

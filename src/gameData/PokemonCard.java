@@ -3,6 +3,7 @@ package gameData;
 import java.util.Set;
 
 import constants.CardDataConstants.*;
+import rom.Cards;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -10,13 +11,10 @@ public class PokemonCard extends Card
 {
 	public static final int TOTAL_SIZE_IN_BYTES = 65;
 	public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
-
-	// Internal pointers used when reading and storing data to the rom
-	private short prevEvoNamePtr;
 	
 	byte hp; // TODO: non multiples of 10?
 	EvolutionStage stage;
-	CardVersions prevEvo; // Not pokemon card because of mysterious fossil
+	CardVersions prevEvo;
 	
 	Move move1;
 	Move move2;
@@ -65,14 +63,20 @@ public class PokemonCard extends Card
 	}
 	
 	@Override
-	public String readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Texts ptrToText, Set<Short> ptrsUsed) 
+	public String readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Cards cards, Texts ptrToText, Set<Short> ptrsUsed) 
 	{
 		String name = readCommonNameAndDataAndConvertIds(cardBytes, startIndex, ptrToText, ptrsUsed);
 		
 		int index = startIndex + Card.CARD_COMMON_SIZE;
 		hp = cardBytes[index++];
 		stage = EvolutionStage.readFromByte(cardBytes[index++]);
-		prevEvoNamePtr = ByteUtils.readAsShort(cardBytes, index);
+		
+		// Read the prev evolution
+		short id = ByteUtils.readAsShort(cardBytes, index);
+		if (id != 0)
+		{
+			prevEvo = cards.getCardsWithName(ptrToText.getAtId(id));
+		}
 		index += 2;
 		
 		move1 = new Move();
@@ -101,13 +105,21 @@ public class PokemonCard extends Card
 	}
 
 	@Override
-	public void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, short nameId, Texts ptrToText) 
+	public void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts ptrToText) 
 	{
-		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex, nameId, ptrToText);
+		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex, name, ptrToText);
 		
 		cardBytes[index++] = hp;
 		cardBytes[index++] = stage.getValue();
-		ByteUtils.writeAsShort(prevEvoNamePtr, cardBytes, index);
+		
+		if (prevEvo != null)
+		{
+			ByteUtils.writeAsShort(ptrToText.insertTextOrGetId(prevEvo.name), cardBytes, index);
+		}
+		else
+		{
+			ByteUtils.writeAsShort((short) 0, cardBytes, index);
+		}
 		index += 2;
 		
 		index = move1.convertToIdsAndWriteData(cardBytes, index, ptrToText);

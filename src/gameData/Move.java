@@ -110,8 +110,7 @@ public class Move
 		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.FIGHTING), getCost(EnergyType.PSYCHIC));
 		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.COLORLESS), getCost(EnergyType.UNUSED_TYPE));
 
-		short id = ptrToText.insertTextAtNextId(name);
-		ByteUtils.writeAsShort(id, moveBytes, index);
+		ByteUtils.writeAsShort(ptrToText.insertTextOrGetId(name), moveBytes, index);
 		index += 2;
 		
 		index = description.convertToIdsAndWriteText(moveBytes, index, ptrToText);

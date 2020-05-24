@@ -40,16 +40,16 @@ public class Description
 			int splitChar = desc.indexOf((char)0x06);
 			if (splitChar != -1)
 			{
-				short id = ptrToText.insertTextAtNextId(desc.substring(0, splitChar));
+				short id = ptrToText.insertTextOrGetId(desc.substring(0, splitChar));
 				ByteUtils.writeAsShort(id, bytes, startIndex);
 				startIndex += 2;
-				id = ptrToText.insertTextAtNextId(desc.substring(splitChar + 1));
+				id = ptrToText.insertTextOrGetId(desc.substring(splitChar + 1));
 				ByteUtils.writeAsShort(id, bytes, startIndex);
 				startIndex += 2;
 			}
 			else
 			{
-				short id = ptrToText.insertTextAtNextId(desc);
+				short id = ptrToText.insertTextOrGetId(desc);
 				ByteUtils.writeAsShort((short) id, bytes, startIndex);
 				startIndex += 2;
 				ByteUtils.writeAsShort((short) 0, bytes, startIndex);
@@ -58,7 +58,7 @@ public class Description
 		}
 		else
 		{
-			short id = ptrToText.insertTextAtNextId(desc);
+			short id = ptrToText.insertTextOrGetId(desc);
 			ByteUtils.writeAsShort(id, bytes, startIndex);
 			startIndex += 2;
 		}
