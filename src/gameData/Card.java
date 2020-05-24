@@ -132,6 +132,8 @@ public abstract class Card
 	 {
 	     public int compare(Card c1, Card c2)
 	     {
+	    	 // TODO: Keep it in the same order as the rom - energies, pokes, trainers
+	    	 // Grass, Fire, Water, Lightning, Fighting, Psychic, Colorless
 	    	 if (c1.type != c2.type)
 	    	 {
 	    		 if (c1.type.getValue() < c2.type.getValue())

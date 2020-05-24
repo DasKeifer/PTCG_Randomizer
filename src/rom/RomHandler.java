@@ -99,14 +99,7 @@ public class RomHandler
 			ptrIndex += RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		}
 		
-		System.out.println(allText.count());
-		System.out.println(convertedTextPtrs.size());
-//		for (Short id : convertedTextPtrs)
-//		{
-//			System.out.println(id + " " + allText.getAtId(id));
-//		}
 		allText.removeTextAtIds(convertedTextPtrs);
-		System.out.println(allText.count());
 		return cardsByName;
 	}
 	
@@ -157,7 +150,7 @@ public class RomHandler
 		// determine where the first text will go based off the number of text we have
 		// The first null pointer was already taken care of so we don't need to handle it 
 		// here but we still need to handle the last null pointer
-		int cardIndex = RomConstants.CARD_POINTER_OFFSET + (cards.count() + 2) * RomConstants.CARD_POINTER_SIZE_IN_BYTES;
+		int cardIndex = RomConstants.CARD_POINTERS_LOC + (cards.count() + 1) * RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		
 		List<Card> sorted = cards.getCards();
 		Collections.sort(sorted, new Card.TypeIdSorter());
@@ -193,7 +186,7 @@ public class RomHandler
 		
 		// determine where the first text will go based off the number of text we have
 		// The null pointer was already taken care of so we don't need to handle it here
-		int textIndex = RomConstants.TEXT_POINTER_OFFSET + (ptrToText.count() + 1) * RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+		int textIndex = RomConstants.TEXT_POINTERS_LOC + ptrToText.count() * RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 		
 		// Now for each text, write the pointer then write the text at that address
 		// Note we intentionally do a index based lookup instead of iteration in order to
