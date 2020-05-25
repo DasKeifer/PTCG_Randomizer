@@ -12,7 +12,7 @@ public class NonPokemonCard extends Card
 	public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
 	
 	short effectPtr;
-	Description description = new Description();
+	public Description description = new Description();
 
 	@Override
 	public int getCardSizeInBytes() 
@@ -30,7 +30,7 @@ public class NonPokemonCard extends Card
 		effectPtr = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 
-		description.readTextFromIds(cardBytes, index, true, ptrToText, ptrsUsed); // Two blocks of text
+		description.readTextFromIds(cardBytes, index, name, true, ptrToText, ptrsUsed); // effect description
 	}
 	
 	@Override
@@ -42,6 +42,6 @@ public class NonPokemonCard extends Card
 		ByteUtils.writeAsShort(effectPtr, cardBytes, index);
 		index += 2;
 		
-		description.convertToIdsAndWriteText(cardBytes, index, ptrToText);
+		description.convertToIdsAndWriteText(cardBytes, index, name, ptrToText);
 	}
 }

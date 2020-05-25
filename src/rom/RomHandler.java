@@ -153,16 +153,14 @@ public class RomHandler
 		int cardIndex = RomConstants.CARD_POINTERS_LOC + (cards.count() + 1) * RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		
 		List<Card> sorted = cards.getCards();
-		Collections.sort(sorted, new Card.RomSorter());
+		Collections.sort(sorted, new Card.IdSorter());
 		for (Card card : sorted)
 		{
-			System.out.println(card.id.getValue() + " " + card.name);
 			// Write the pointer
 			ByteUtils.writeLittleEndian(cardIndex - RomConstants.CARD_POINTER_OFFSET, bytes, ptrIndex, RomConstants.CARD_POINTER_SIZE_IN_BYTES);
 			ptrIndex += RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 			
 			// Write the card
-			//System.out.println(card.name);
 			card.convertToIdsAndWriteData(bytes, cardIndex, allText);
 			cardIndex += card.getCardSizeInBytes();
 		}

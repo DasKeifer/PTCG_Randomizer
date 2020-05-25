@@ -12,7 +12,7 @@ public class Move
 	
 	byte[] energyCost;
 	String name;
-	Description description = new Description();
+	public Description description = new Description();
 	byte damage; // TODO: non multiple of 10?
 	MoveCategory category;
 	short effectPtr; // TODO: Make enum?
@@ -47,7 +47,7 @@ public class Move
 				
 	}
 	
-	public int readNameAndDataAndConvertIds(byte[] moveBytes, int startIndex, Texts ptrToText, Set<Short> ptrsUsed) 
+	public int readNameAndDataAndConvertIds(byte[] moveBytes, int startIndex, String cardName, Texts ptrToText, Set<Short> ptrsUsed) 
 	{
 		int index = startIndex;
 		
@@ -72,7 +72,7 @@ public class Move
 		ptrsUsed.add(namePtr);
 		index += 2;		
 		
-		index = description.readTextFromIds(moveBytes, index, true, ptrToText, ptrsUsed); // Two blocks of text
+		index = description.readTextFromIds(moveBytes, index, cardName, true, ptrToText, ptrsUsed); // Effect desc
 		
 		damage = moveBytes[index++];
 		category = MoveCategory.readFromByte(moveBytes[index++]);
@@ -101,7 +101,7 @@ public class Move
 		energyCost[inType.getValue()] = inCost;
 	}
 
-	public int convertToIdsAndWriteData(byte[] moveBytes, int startIndex, Texts ptrToText) 
+	public int convertToIdsAndWriteData(byte[] moveBytes, int startIndex, String cardName, Texts ptrToText) 
 	{
 		int index = startIndex;
 		
@@ -120,7 +120,7 @@ public class Move
 		}
 		index += 2;
 		
-		index = description.convertToIdsAndWriteText(moveBytes, index, ptrToText);
+		index = description.convertToIdsAndWriteText(moveBytes, index, cardName, ptrToText);
 		
 		moveBytes[index++] = damage;
 		moveBytes[index++] = category.getValue();

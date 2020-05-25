@@ -33,11 +33,20 @@ public class Cards
 		return cardsByName.size();
 	}
 	
-	private String addEnglishCharTypeCharIfNotSet(String name)
+	private static String addEnglishCharTypeCharIfNotSet(String name)
 	{
 		if (name.getBytes()[0] != ((char)0x06))
 		{
 			name = (char)0x06 + name;
+		}
+		return name;
+	}
+	
+	public static String removeEnglishCharTypeCharIfNotSet(String name)
+	{
+		if (name.startsWith("" + (char)0x06))
+		{
+			name = name.substring(1);
 		}
 		return name;
 	}

@@ -16,7 +16,7 @@ public class PokemonCard extends Card
 	EvolutionStage stage;
 	String prevEvoName;
 	
-	Move move1;
+	public Move move1;
 	Move move2;
 	
 	byte retreatCost; // TODO: max allowed?
@@ -72,15 +72,15 @@ public class PokemonCard extends Card
 		index += 2;
 		
 		move1 = new Move();
-		index = move1.readNameAndDataAndConvertIds(cardBytes, index, ptrToText, ptrsUsed);
+		index = move1.readNameAndDataAndConvertIds(cardBytes, index, name, ptrToText, ptrsUsed);
 		move2 = new Move();
-		index = move2.readNameAndDataAndConvertIds(cardBytes, index, ptrToText, ptrsUsed);;
+		index = move2.readNameAndDataAndConvertIds(cardBytes, index, name, ptrToText, ptrsUsed);;
 		
 		retreatCost = cardBytes[index++];
 		weakness = WeaknessResistanceType.readFromByte(cardBytes[index++]);
 		resistance = WeaknessResistanceType.readFromByte(cardBytes[index++]);
 
-        index = pokemonCategory.readTextFromIds(cardBytes, index, false, ptrToText, ptrsUsed); // one block of text
+        index = pokemonCategory.readTextFromIds(cardBytes, index, name, false, ptrToText, ptrsUsed); // non effect text
 		
 		pokedexNumber = cardBytes[index++];
 		unknownByte1 = cardBytes[index++];
@@ -90,7 +90,7 @@ public class PokemonCard extends Card
 		weight = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 		
-        index = description.readTextFromIds(cardBytes, index, false, ptrToText, ptrsUsed); // one block of text
+        index = description.readTextFromIds(cardBytes, index, name, false, ptrToText, ptrsUsed); // non effect text
 		
 		unknownByte2 = cardBytes[index++];
 	}
@@ -113,14 +113,14 @@ public class PokemonCard extends Card
 		}
 		index += 2;
 		
-		index = move1.convertToIdsAndWriteData(cardBytes, index, ptrToText);
-		index = move2.convertToIdsAndWriteData(cardBytes, index, ptrToText);
+		index = move1.convertToIdsAndWriteData(cardBytes, index, name, ptrToText);
+		index = move2.convertToIdsAndWriteData(cardBytes, index, name, ptrToText);
 		
 		cardBytes[index++] = retreatCost;
 		cardBytes[index++] = weakness.getValue();
 		cardBytes[index++] = resistance.getValue();
 
-		index = pokemonCategory.convertToIdsAndWriteText(cardBytes, index, ptrToText);
+		index = pokemonCategory.convertToIdsAndWriteText(cardBytes, index, name, ptrToText);
 		
 		cardBytes[index++] = pokedexNumber;
 		cardBytes[index++] = unknownByte1;
@@ -130,7 +130,7 @@ public class PokemonCard extends Card
 		ByteUtils.writeAsShort(weight, cardBytes, index);
 		index += 2;
 
-		index = description.convertToIdsAndWriteText(cardBytes, index, ptrToText);
+		index = description.convertToIdsAndWriteText(cardBytes, index, name, ptrToText);
 		
 		cardBytes[index++] = unknownByte2;
 	}

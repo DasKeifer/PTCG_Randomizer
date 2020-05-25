@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import gameData.Card;
+import gameData.NonPokemonCard;
 import gameData.PokemonCard;
 import rom.Texts;
 import rom.RomData;
@@ -14,10 +15,11 @@ public class Randomizer
 	public static void main(String[] args) throws IOException //Temp
 	{
 		RomData rom = RomHandler.readRom();
-		//System.out.println(rom.idsToText.getAtId((short)0x080a));
-		//rom.idsToText.setAtId((short)0x080a, (char) 0x06 + "BlahBlahSaur");
 		List<Card> venu = rom.cardsByName.getCardsWithName("Venusaur");
+		List<Card> bulba = rom.cardsByName.getCardsWithName("Bulbasaur");
+		((PokemonCard)bulba.get(0)).move1 = ((PokemonCard)venu.get(1)).move1;
 		venu.get(1).name = (char)0x06 + "Blahblahsaur";
+		
 		//((PokemonCard)venu.get(1)).pokedexNumber = 1;
 		
 		test(rom.cardsByName.getCardsWithName("Venusaur"));
