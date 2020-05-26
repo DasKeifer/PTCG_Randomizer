@@ -9,7 +9,9 @@ public class RomConstants
 	public static final int TOTAL_NUM_CARDS = TOTAL_NUM_POKEMON_CARDS + TOTAL_NUM_ENERGY_CARDS + TOTAL_NUM_TRAINER_CARDS;
 	
 	// Text info
-	public static final int MAX_CHARS_PER_LINE = 36; // Not including newline
+	public static final int MAX_CHARS_PER_POKE_NAME = 20; // not including starting char
+	public static final int MAX_CHARS_PER_LINE = 36; // Not including newline or starting char
+	
 	public static final int MAX_LINES_PER_POKE_DESC = 3;
 	public static final int PREFERRED_LINES_PER_EFFECT_DESC = 6;
 	public static final int MAX_LINES_PER_EFFECT_DESC = 7;

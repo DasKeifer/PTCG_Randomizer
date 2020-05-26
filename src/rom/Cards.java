@@ -42,7 +42,7 @@ public class Cards
 		return name;
 	}
 	
-	public static String removeEnglishCharTypeCharIfNotSet(String name)
+	public static String removeEnglishCharTypeCharIfPresent(String name)
 	{
 		if (name.startsWith("" + (char)0x06))
 		{
