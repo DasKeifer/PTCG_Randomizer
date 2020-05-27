@@ -1,35 +1,38 @@
-package gameData;
+package data;
 
 import java.util.Set;
 
 import constants.RomConstants;
 import rom.Texts;
-import util.TextUtils;
+import util.StringUtils;
 
-public class EffectDescription extends Description
+public class EffectDescription extends RomText
 {	
+	protected static final String NAME_PLACEHOLDER = "" + (char) 0x15; // NACK - just because
+	
 	private static final int NUM_POINTERS_IN_FILE = 2;
 
-	public void readTextFromIds(byte[] bytes, int[] textIdIndexes, String cardName, Texts ptrToText, Set<Short> ptrsUsed)
+	public void readTextFromIds(byte[] bytes, int[] textIdIndexes, RomText cardName, Texts ptrToText, Set<Short> ptrsUsed)
 	{
 		if (textIdIndexes.length != NUM_POINTERS_IN_FILE)
 		{
 			throw new IllegalArgumentException("Reading effect description was passed the wrong number of id indexes :" + 
 					textIdIndexes.length);
 		}
-		genericReadTextFromIds(bytes, textIdIndexes, cardName, ptrToText, ptrsUsed);
+		genericReadTextFromIds(bytes, textIdIndexes, ptrToText, ptrsUsed);
+		replaceAll(cardName.getText(), NAME_PLACEHOLDER);
 	}
 
-	public void convertToIdsAndWriteText(byte[] bytes, int[] textIdIndexes, String cardName, Texts ptrToText)
+	public void convertToIdsAndWriteText(byte[] bytes, int[] textIdIndexes, RomText cardName, Texts ptrToText)
 	{
 		if (textIdIndexes.length != NUM_POINTERS_IN_FILE)
 		{
 			throw new IllegalArgumentException("Writing effect description was passed the wrong number of id indexes :" + 
 					textIdIndexes.length);
 		}
-		String descToWrite = prepareDescForFormatting(cardName);
-		descToWrite = formatDescription(descToWrite);
-		genericConvertToIdsAndWriteText(bytes, textIdIndexes, descToWrite, ptrToText);
+		replaceAll(NAME_PLACEHOLDER, cardName.getText());
+		setTextPreservingNewlines(formatDescription(getText()));
+		genericConvertToIdsAndWriteText(bytes, textIdIndexes, ptrToText);
 	}
 	
 	private String formatDescription(String descExpanded)
@@ -37,15 +40,15 @@ public class EffectDescription extends Description
 		String formatted = "";
 		String tempText;
 		boolean failedFormatting = false;
-		boolean hasLineBreak = descExpanded.contains(TextUtils.BLOCK_BREAK);
+		boolean hasLineBreak = descExpanded.contains(StringUtils.BLOCK_BREAK);
 		
 		if (hasLineBreak)
 		{		
 			// First try to preserve any block breaks
-			String[] blocks = descExpanded.split(TextUtils.BLOCK_BREAK);
+			String[] blocks = descExpanded.split(StringUtils.BLOCK_BREAK);
 			for (int blockIndex = 0; blockIndex < blocks.length; blockIndex++)
 			{
-				tempText = TextUtils.prettyFormatText(blocks[blockIndex],
+				tempText = StringUtils.prettyFormatText(blocks[blockIndex],
 						RomConstants.MAX_CHARS_PER_LINE, RomConstants.MAX_LINES_PER_EFFECT_DESC);
 				if (tempText != null)
 				{
@@ -69,8 +72,8 @@ public class EffectDescription extends Description
 		if (!hasLineBreak || failedFormatting)
 		{
 			// Next try making our own blocks
-			tempText = descExpanded.replace(TextUtils.BLOCK_BREAK, " ");
-			formatted = TextUtils.prettyFormatText(tempText,
+			tempText = descExpanded.replace(StringUtils.BLOCK_BREAK, " ");
+			formatted = StringUtils.prettyFormatText(tempText,
 					RomConstants.MAX_CHARS_PER_LINE, RomConstants.PREFERRED_LINES_PER_EFFECT_DESC,
 					RomConstants.MAX_LINES_PER_EFFECT_DESC, NUM_POINTERS_IN_FILE);
 			
@@ -80,7 +83,7 @@ public class EffectDescription extends Description
 						"split words over lines to get it to fit for \"" + tempText + "\"");
 				
 				// If all else fails, just pack as tight as possible
-				formatted = TextUtils.packFormatText(tempText,
+				formatted = StringUtils.packFormatText(tempText,
 					RomConstants.MAX_CHARS_PER_LINE, RomConstants.MAX_LINES_PER_EFFECT_DESC,
 					NUM_POINTERS_IN_FILE);
 			}

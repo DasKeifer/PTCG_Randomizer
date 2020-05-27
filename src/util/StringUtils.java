@@ -3,7 +3,7 @@ package util;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TextUtils 
+public class StringUtils 
 {
 	public static final String BLOCK_BREAK = "" + (char) 0x0C;
 	

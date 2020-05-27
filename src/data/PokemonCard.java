@@ -1,4 +1,4 @@
-package gameData;
+package data;
 
 import java.util.Set;
 
@@ -39,10 +39,10 @@ public class PokemonCard extends Card
 	{
 		return super.toString() + 
 				"\nPokedex Number = " + pokedexNumber + 
-				"\nDesciption = " + description + 
+				"\nDesciption = " + description.getText() + 
 				"\nHP = " + hp +
 				"\nStage = " + stage + 
-				"\nPrevEvolution = " + prevEvoName +
+				"\nPrevEvolution = " + prevEvoName.getText() +
 				"\nRetreatCost = " + retreatCost +
 				"\nWeakness = " + weakness +
 				"\nResistance = " + resistance  +
@@ -69,9 +69,9 @@ public class PokemonCard extends Card
 		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
 		
 		move1 = new Move();
-		index = move1.readNameAndDataAndConvertIds(cardBytes, index, name.text, ptrToText, ptrsUsed);
+		index = move1.readNameAndDataAndConvertIds(cardBytes, index, name, ptrToText, ptrsUsed);
 		move2 = new Move();
-		index = move2.readNameAndDataAndConvertIds(cardBytes, index, name.text, ptrToText, ptrsUsed);
+		index = move2.readNameAndDataAndConvertIds(cardBytes, index, name, ptrToText, ptrsUsed);
 		
 		retreatCost = cardBytes[index++];
 		weakness = WeaknessResistanceType.readFromByte(cardBytes[index++]);
@@ -88,7 +88,7 @@ public class PokemonCard extends Card
 		weight = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 		
-        description.readTextFromIds(cardBytes, index, name.text, ptrToText, ptrsUsed);
+        description.readTextFromIds(cardBytes, index, ptrToText, ptrsUsed);
         index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
 		
 		unknownByte2 = cardBytes[index];
@@ -105,8 +105,8 @@ public class PokemonCard extends Card
 		prevEvoName.convertToIdsAndWriteText(cardBytes, index, ptrToText);
 		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
 		
-		index = move1.convertToIdsAndWriteData(cardBytes, index, name.text, ptrToText);
-		index = move2.convertToIdsAndWriteData(cardBytes, index, name.text, ptrToText);
+		index = move1.convertToIdsAndWriteData(cardBytes, index, name, ptrToText);
+		index = move2.convertToIdsAndWriteData(cardBytes, index, name, ptrToText);
 		
 		cardBytes[index++] = retreatCost;
 		cardBytes[index++] = weakness.getValue();
@@ -123,7 +123,7 @@ public class PokemonCard extends Card
 		ByteUtils.writeAsShort(weight, cardBytes, index);
 		index += 2;
 
-		description.convertToIdsAndWriteText(cardBytes, index, name.text, ptrToText);
+		description.convertToIdsAndWriteText(cardBytes, index, ptrToText);
 		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
 		
 		cardBytes[index] = unknownByte2;

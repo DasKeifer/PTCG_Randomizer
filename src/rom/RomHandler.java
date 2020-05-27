@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 import constants.RomConstants;
-import gameData.Card;
+import data.Card;
 import util.ByteUtils;
 
 public class RomHandler

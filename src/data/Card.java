@@ -1,4 +1,4 @@
-package gameData;
+package data;
 
 import constants.RomConstants;
 import constants.CardConstants.CardId;
@@ -59,7 +59,8 @@ public abstract class Card
 	
 	public String toString()
 	{
-		return "ID = " + id + 
+		return "Name = " + name.getText() + 
+				"\nID = " + id + 
 				"\nType = " + type + 
 				"\nRarity = " + rarity + 
 				"\nSet = " + set + 
@@ -113,7 +114,7 @@ public abstract class Card
 	 {
 	     public int compare(Card c1, Card c2)
 	     {
-	    	 int val = c1.name.text.compareTo(c2.name.text);
+	    	 int val = c1.name.toString().compareTo(c2.name.toString());
 	    	 if (val == 0)
 	    	 {
 	    		 return ByteUtils.unsignedCompareShorts(c1.id.getValue(), c2.id.getValue());

@@ -3,8 +3,8 @@ package randomizer;
 import java.io.IOException;
 import java.util.List;
 
-import gameData.Card;
-import gameData.PokemonCard;
+import data.Card;
+import data.PokemonCard;
 import rom.Texts;
 import rom.RomData;
 import rom.RomHandler;
@@ -17,11 +17,12 @@ public class Randomizer
 		List<Card> venu = rom.cardsByName.getCardsWithName("Venusaur");
 		
 		test(venu);
-		//test(rom.idsToText);
 
 		List<Card> bulba = rom.cardsByName.getCardsWithName("Bulbasaur");
 		((PokemonCard)bulba.get(0)).move1 = ((PokemonCard)venu.get(1)).move1;
-		venu.get(1).name.text = (char)0x06 + "Blahblahsaur";
+		venu.get(0).name.setText("Blahblahblahblahsaur");
+		
+		System.out.println(venu.get(0));
 		
 		RomHandler.writeRom(rom);
 	}

@@ -5,8 +5,7 @@ import java.util.LinkedList;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import gameData.Card;
-import gameData.GameTextUtils;
+import data.Card;
 
 public class Cards 
 {
@@ -14,9 +13,8 @@ public class Cards
 	
 	public List<Card> getCardsWithName(String name)
 	{
-		final String nameWithChar = GameTextUtils.addEnglishCharTypeCharIfNotSet(name);
 		return cardsByName.stream().filter(
-				card -> nameWithChar.equals(card.name.text)).collect(Collectors.toList());
+				card -> name.equals(card.name.getText())).collect(Collectors.toList());
 	}
 	
 	public List<Card> getCards()

@@ -1,4 +1,4 @@
-package gameData;
+package data;
 
 import java.util.Set;
 
@@ -32,7 +32,7 @@ public class NonPokemonCard extends Card
 		index += 2;
 
 		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
-		description.readTextFromIds(cardBytes, descIndexes, name.text, ptrToText, ptrsUsed);
+		description.readTextFromIds(cardBytes, descIndexes, name, ptrToText, ptrsUsed);
 	}
 	
 	@Override
@@ -45,6 +45,6 @@ public class NonPokemonCard extends Card
 		index += 2;
 
 		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
-		description.convertToIdsAndWriteText(cardBytes, descIndexes, name.text, ptrToText);
+		description.convertToIdsAndWriteText(cardBytes, descIndexes, name, ptrToText);
 	}
 }

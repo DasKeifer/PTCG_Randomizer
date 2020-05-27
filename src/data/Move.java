@@ -1,4 +1,4 @@
-package gameData;
+package data;
 
 import java.util.Set;
 
@@ -12,7 +12,7 @@ public class Move
 	public static final int TOTAL_SIZE_IN_BYTES = 19;
 	
 	byte[] energyCost;
-	String name;
+	OneLineText name = new OneLineText();
 	public EffectDescription description = new EffectDescription();
 	byte damage; // TODO: non multiple of 10?
 	MoveCategory category;
@@ -25,7 +25,7 @@ public class Move
 
 	public String toString()
 	{
-		String tempString = "Move Name: " + name + "\nRequires:";
+		String tempString = "Move Name: " + name.getText() + "\nRequires:";
 		
 		boolean foundEnergy = false;
 		for (EnergyType energyType : EnergyType.values())
@@ -42,13 +42,13 @@ public class Move
 		}
 				
 		return tempString + "\nDamage: " + damage +
-				"\nDescription: " + description + 
+				"\nDescription: " + description.getText() + 
 				"\nEffectPtr: " + effectPtr +
 				"\nEffectFlags: " + effect1 + ", " + effect2 + ", " + effect3;
 				
 	}
 	
-	public int readNameAndDataAndConvertIds(byte[] moveBytes, int startIndex, String cardName, Texts ptrToText, Set<Short> ptrsUsed) 
+	public int readNameAndDataAndConvertIds(byte[] moveBytes, int startIndex, RomText cardName, Texts ptrToText, Set<Short> ptrsUsed) 
 	{
 		int index = startIndex;
 		
@@ -68,10 +68,8 @@ public class Move
 		setCost(EnergyType.UNUSED_TYPE, ByteUtils.readLowerHexChar(moveBytes[index]));
 		index++;
 		
-		short namePtr = ByteUtils.readAsShort(moveBytes, index);
-		name = ptrToText.getAtId(namePtr);
-		ptrsUsed.add(namePtr);
-		index += 2;		
+		name.readTextFromIds(moveBytes, index, ptrToText, ptrsUsed);
+		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;		
 		
 		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
 		description.readTextFromIds(moveBytes, descIndexes, cardName, ptrToText, ptrsUsed);
@@ -104,7 +102,7 @@ public class Move
 		energyCost[inType.getValue()] = inCost;
 	}
 
-	public int convertToIdsAndWriteData(byte[] moveBytes, int startIndex, String cardName, Texts ptrToText) 
+	public int convertToIdsAndWriteData(byte[] moveBytes, int startIndex, RomText cardName, Texts ptrToText) 
 	{
 		int index = startIndex;
 		
@@ -113,19 +111,12 @@ public class Move
 		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.FIGHTING), getCost(EnergyType.PSYCHIC));
 		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.COLORLESS), getCost(EnergyType.UNUSED_TYPE));
 
-		if (name == null || name.isEmpty())
-		{
-			ByteUtils.writeAsShort((short)0, moveBytes, index);
-		}
-		else
-		{
-			ByteUtils.writeAsShort(ptrToText.insertTextOrGetId(name), moveBytes, index);
-		}
-		index += 2;
+		name.convertToIdsAndWriteText(moveBytes, index, ptrToText);
+		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
 
-		int[] descIndexes = {index, index + 2};
+		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
 		description.convertToIdsAndWriteText(moveBytes, descIndexes, cardName, ptrToText);
-		index += 4;
+		index += RomConstants.TEXT_ID_SIZE_IN_BYTES * 2;
 		
 		moveBytes[index++] = damage;
 		moveBytes[index++] = category.getValue();
