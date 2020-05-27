@@ -6,6 +6,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import gameData.Card;
+import gameData.GameTextUtils;
 
 public class Cards 
 {
@@ -13,9 +14,9 @@ public class Cards
 	
 	public List<Card> getCardsWithName(String name)
 	{
-		final String nameWithChar = addEnglishCharTypeCharIfNotSet(name);
+		final String nameWithChar = GameTextUtils.addEnglishCharTypeCharIfNotSet(name);
 		return cardsByName.stream().filter(
-				card -> nameWithChar.equals(card.name)).collect(Collectors.toList());
+				card -> nameWithChar.equals(card.name.text)).collect(Collectors.toList());
 	}
 	
 	public List<Card> getCards()
@@ -31,23 +32,5 @@ public class Cards
 	public int count()
 	{
 		return cardsByName.size();
-	}
-	
-	private static String addEnglishCharTypeCharIfNotSet(String name)
-	{
-		if (name.getBytes()[0] != ((char)0x06))
-		{
-			name = (char)0x06 + name;
-		}
-		return name;
-	}
-	
-	public static String removeEnglishCharTypeCharIfPresent(String name)
-	{
-		if (name.startsWith("" + (char)0x06))
-		{
-			name = name.substring(1);
-		}
-		return name;
 	}
 }

@@ -1,5 +1,6 @@
 package gameData;
 
+import constants.RomConstants;
 import constants.CardConstants.CardId;
 import constants.CardDataConstants.BoosterPack;
 import constants.CardDataConstants.CardRarity;
@@ -19,7 +20,7 @@ public abstract class Card
 	
 	// TODO encapsulate these or make public
 	public CardType type;
-	public String name;
+	public OneLineText name = new OneLineText();
 	short gfx; // Card art
 	CardRarity rarity;
 
@@ -53,7 +54,6 @@ public abstract class Card
 		}
 
 		card.readNameAndDataAndConvertIds(cardBytes, startIndex, cardsByName, ptrToText, ptrsUsed);
-
 		cardsByName.add(card);
 	}
 	
@@ -78,17 +78,15 @@ public abstract class Card
 		gfx = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 		
-		short nameId = ByteUtils.readAsShort(cardBytes, index);
-		name = ptrToText.getAtId(nameId);
-		ptrsUsed.add(nameId);
-		index += 2;
+		name.readTextFromIds(cardBytes, index, ptrToText, ptrsUsed);
+		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
 		
 		rarity = CardRarity.readFromByte(cardBytes[index++]);
 
 		pack = BoosterPack.readFromHexChar(ByteUtils.readUpperHexChar(cardBytes[index])); // no ++ - this reads only half the byte
 		set = CardSet.readFromHexChar(ByteUtils.readLowerHexChar(cardBytes[index++]));
 		
-		id = CardId.readFromByte(cardBytes[index++]);
+		id = CardId.readFromByte(cardBytes[index]);
 	}
 	
 	protected int convertCommonToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts ptrToText) 
@@ -99,8 +97,8 @@ public abstract class Card
 		ByteUtils.writeAsShort(gfx, cardBytes, index);
 		index += 2;
 		
-		ByteUtils.writeAsShort(ptrToText.insertTextOrGetId(name), cardBytes, index);
-		index += 2;
+		name.convertToIdsAndWriteText(cardBytes, index, ptrToText);
+		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
 		
 		cardBytes[index++] = rarity.getValue();
 
@@ -115,7 +113,7 @@ public abstract class Card
 	 {
 	     public int compare(Card c1, Card c2)
 	     {
-	    	 int val = c1.name.compareTo(c2.name);
+	    	 int val = c1.name.text.compareTo(c2.name.text);
 	    	 if (val == 0)
 	    	 {
 	    		 return ByteUtils.unsignedCompareShorts(c1.id.getValue(), c2.id.getValue());

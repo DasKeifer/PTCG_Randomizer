@@ -2,6 +2,7 @@ package gameData;
 
 import java.util.Set;
 
+import constants.RomConstants;
 import rom.Cards;
 import rom.Texts;
 import util.ByteUtils;
@@ -12,7 +13,7 @@ public class NonPokemonCard extends Card
 	public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
 	
 	short effectPtr;
-	public Description description = new Description();
+	public EffectDescription description = new EffectDescription();
 
 	@Override
 	public int getCardSizeInBytes() 
@@ -30,7 +31,8 @@ public class NonPokemonCard extends Card
 		effectPtr = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 
-		description.readTextFromIds(cardBytes, index, name, true, ptrToText, ptrsUsed); // effect description
+		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
+		description.readTextFromIds(cardBytes, descIndexes, name.text, ptrToText, ptrsUsed);
 	}
 	
 	@Override
@@ -41,7 +43,8 @@ public class NonPokemonCard extends Card
 		// write non pokemon specific data
 		ByteUtils.writeAsShort(effectPtr, cardBytes, index);
 		index += 2;
-		
-		description.convertToIdsAndWriteText(cardBytes, index, name, ptrToText);
+
+		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
+		description.convertToIdsAndWriteText(cardBytes, descIndexes, name.text, ptrToText);
 	}
 }

@@ -12,9 +12,12 @@ public class RomConstants
 	public static final int MAX_CHARS_PER_POKE_NAME = 20; // not including starting char
 	public static final int MAX_CHARS_PER_LINE = 36; // Not including newline or starting char
 	
-	public static final int MAX_LINES_PER_POKE_DESC = 3;
+	public static final int MAX_LINES_PER_POKE_DESC = 4;
 	public static final int PREFERRED_LINES_PER_EFFECT_DESC = 6;
 	public static final int MAX_LINES_PER_EFFECT_DESC = 7;
+	
+	// Text type chars
+	public static final char ENLGISH_TEXT_CHAR = 0x06;
 	
 	//Locations
 	public static final int HEADER_LOCATION = 0x134;
@@ -47,6 +50,7 @@ public class RomConstants
 	public static final int CARD_POINTER_OFFSET = 0x2C000; // Don't ask my why its this an not 0x30000... It just is
 	
 	// Starts with a null pointer
+	public static final int TEXT_ID_SIZE_IN_BYTES = 2;
 	public static final int TEXT_POINTER_SIZE_IN_BYTES = 3;
 	public static final int TEXT_POINTERS_LOC = 0x34000 + TEXT_POINTER_SIZE_IN_BYTES; // TextOffsets
 	public static final int TEXT_POINTER_OFFSET = 0x34000;

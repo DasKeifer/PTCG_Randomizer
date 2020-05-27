@@ -2,6 +2,7 @@ package gameData;
 
 import java.util.Set;
 
+import constants.RomConstants;
 import constants.CardDataConstants.*;
 import rom.Texts;
 import util.ByteUtils;
@@ -12,7 +13,7 @@ public class Move
 	
 	byte[] energyCost;
 	String name;
-	public Description description = new Description();
+	public EffectDescription description = new EffectDescription();
 	byte damage; // TODO: non multiple of 10?
 	MoveCategory category;
 	short effectPtr; // TODO: Make enum?
@@ -72,7 +73,9 @@ public class Move
 		ptrsUsed.add(namePtr);
 		index += 2;		
 		
-		index = description.readTextFromIds(moveBytes, index, cardName, true, ptrToText, ptrsUsed); // Effect desc
+		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
+		description.readTextFromIds(moveBytes, descIndexes, cardName, ptrToText, ptrsUsed);
+		index += RomConstants.TEXT_ID_SIZE_IN_BYTES * 2;
 		
 		damage = moveBytes[index++];
 		category = MoveCategory.readFromByte(moveBytes[index++]);
@@ -119,8 +122,10 @@ public class Move
 			ByteUtils.writeAsShort(ptrToText.insertTextOrGetId(name), moveBytes, index);
 		}
 		index += 2;
-		
-		index = description.convertToIdsAndWriteText(moveBytes, index, cardName, ptrToText);
+
+		int[] descIndexes = {index, index + 2};
+		description.convertToIdsAndWriteText(moveBytes, descIndexes, cardName, ptrToText);
+		index += 4;
 		
 		moveBytes[index++] = damage;
 		moveBytes[index++] = category.getValue();

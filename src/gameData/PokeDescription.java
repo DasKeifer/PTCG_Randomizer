@@ -7,9 +7,7 @@ import rom.Texts;
 import util.TextUtils;
 
 public class PokeDescription extends Description
-{	
-	private static final int NUM_POINTERS_IN_FILE = 1;
-	
+{		
 	public void readTextFromIds(byte[] bytes, int textIdIndex, String cardName, Texts ptrToText, Set<Short> ptrsUsed)
 	{
 		int[] textIdIndexes = {textIdIndex};
@@ -26,12 +24,13 @@ public class PokeDescription extends Description
 	
 	private String formatDescription(String descExpanded)
 	{
-		if (descExpanded.contains(BLOCK_BREAK))
+		if (descExpanded.contains(TextUtils.BLOCK_BREAK))
 		{
 			System.out.println("No block breaks are allowed in pokemon descriptions! Replacing with spaces and formatting");
-			descExpanded = descExpanded.replaceAll(BLOCK_BREAK, " ");
+			descExpanded = descExpanded.replaceAll(TextUtils.BLOCK_BREAK, " ");
 		}
 
+		// TODO If its 7 lines instead of 6 we need some extra character o somethin
 		String formatted = TextUtils.prettyFormatText(descExpanded, RomConstants.MAX_CHARS_PER_LINE, RomConstants.MAX_LINES_PER_POKE_DESC);
 		
 		// If it failed, pack the description
@@ -49,11 +48,5 @@ public class PokeDescription extends Description
 		}
 		
 		return formatted;
-	}
-
-	@Override
-	public int getNumPtrInFile() 
-	{
-		return NUM_POINTERS_IN_FILE;
 	}
 }

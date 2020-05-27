@@ -5,6 +5,8 @@ import java.util.List;
 
 public class TextUtils 
 {
+	public static final String BLOCK_BREAK = "" + (char) 0x0C;
+	
 	public static String prettyFormatText(String text, int maxCharsPerLine, int maxLines)
 	{
 		return prettyFormatText(text, maxCharsPerLine, maxLines, maxLines, 1);
@@ -17,7 +19,11 @@ public class TextUtils
 		String currLine = "";
 		for (String word : blockWords)
 		{
-			if (currLine.length() + 1 + word.length() < maxCharsPerLine)
+			if (currLine.isEmpty())
+			{
+				currLine = word;
+			}
+			else if (currLine.length() + 1 + word.length() <= maxCharsPerLine)
 			{
 				currLine += " " + word;
 			}
@@ -34,6 +40,10 @@ public class TextUtils
 		// See if there is enough space
 		if (formattedLines.size() > maxLinesPerBlock * maxNumberOfBlocks)
 		{
+			for (String text : formattedLines)
+			{
+				System.out.println(text);
+			}
 			return null;
 		}
 		
@@ -50,9 +60,9 @@ public class TextUtils
 		{
 			if (linesInBlock >= linesPerBlock)
 			{
-				formatted += (char)0x0C;
+				formatted += BLOCK_BREAK;
 			}
-			else
+			else if (!formatted.isEmpty())
 			{
 				formatted += "\n";
 			}
