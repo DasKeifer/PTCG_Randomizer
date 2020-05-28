@@ -30,6 +30,22 @@ public abstract class Card
 	BoosterPack pack;
 	public CardId id;
 	
+	public Card()
+	{
+		name = new OneLineText();
+	}
+	
+	public Card(Card toCopy)
+	{
+		type = toCopy.type;
+		name = new OneLineText(toCopy.name);
+		gfx = toCopy.gfx;
+		rarity = toCopy.rarity;
+		set = toCopy.set;
+		pack = toCopy.pack;
+		id = toCopy.id;
+	}
+	
 	public static void addCardAtIndex(byte[] cardBytes, int startIndex, Cards cardsByName, Texts ptrToText, Set<Short> ptrsUsed)
 	{
 		CardType type = CardType.readFromByte(cardBytes[startIndex]);
@@ -110,19 +126,6 @@ public abstract class Card
 		return index;
 	}
 
-	 public static class NameIdSorter implements Comparator<Card>
-	 {
-	     public int compare(Card c1, Card c2)
-	     {
-	    	 int val = c1.name.toString().compareTo(c2.name.toString());
-	    	 if (val == 0)
-	    	 {
-	    		 return ByteUtils.unsignedCompareShorts(c1.id.getValue(), c2.id.getValue());
-	    	 }
-	    	 return val;
-	     }
-	 }
-
 	 public static class IdSorter implements Comparator<Card>
 	 {
 		 public int compare(Card c1, Card c2)
@@ -130,6 +133,7 @@ public abstract class Card
     		 return ByteUtils.unsignedCompareShorts(c1.id.getValue(), c2.id.getValue());
 	     }
 	 }
+	 
 	 public static class RomSorter implements Comparator<Card>
 	 {
 		 // This is used if we randomize evos so we can shuffle poke to be next to each other

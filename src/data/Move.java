@@ -1,5 +1,6 @@
 package data;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import constants.RomConstants;
@@ -12,7 +13,7 @@ public class Move
 	public static final int TOTAL_SIZE_IN_BYTES = 19;
 	
 	byte[] energyCost;
-	OneLineText name = new OneLineText();
+	OneLineText name;
 	public EffectDescription description = new EffectDescription();
 	byte damage; // TODO: non multiple of 10?
 	MoveCategory category;
@@ -22,6 +23,30 @@ public class Move
 	Set<MoveEffect3> effect3;
 	byte unknownByte;
 	byte animation;
+
+	public Move()
+	{
+		name = new OneLineText();
+		description = new EffectDescription();
+		effect1 = new HashSet<>();
+		effect2 = new HashSet<>();
+		effect3 = new HashSet<>();
+	}
+	
+	public Move(Move toCopy) 
+	{
+		energyCost = toCopy.energyCost;
+		name = new OneLineText(toCopy.name);
+		description = new EffectDescription(toCopy.description);
+		damage = toCopy.damage;
+		category = toCopy.category;
+		effectPtr = toCopy.effectPtr;
+		effect1 = new HashSet<>(toCopy.effect1);
+		effect2 = new HashSet<>(toCopy.effect2);
+		effect3 = new HashSet<>(toCopy.effect3);
+		unknownByte = toCopy.unknownByte;
+		animation = toCopy.animation;
+	}
 
 	public String toString()
 	{

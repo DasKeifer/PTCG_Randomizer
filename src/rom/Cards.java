@@ -9,7 +9,7 @@ import data.Card;
 
 public class Cards 
 {
-	private TreeSet<Card> cardsByName = new TreeSet<>(new Card.NameIdSorter());
+	private TreeSet<Card> cardsByName = new TreeSet<>(new Card.IdSorter());
 	
 	public List<Card> getCardsWithName(String name)
 	{

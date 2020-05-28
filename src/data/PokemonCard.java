@@ -15,7 +15,7 @@ public class PokemonCard extends Card
 	
 	byte hp; // TODO: non multiples of 10?
 	EvolutionStage stage;
-	OneLineText prevEvoName = new OneLineText();
+	OneLineText prevEvoName;
 	
 	public Move move1;
 	Move move2;
@@ -23,16 +23,48 @@ public class PokemonCard extends Card
 	byte retreatCost; // TODO: max allowed?
 	WeaknessResistanceType weakness; // TODO: Allows multiple?
 	WeaknessResistanceType resistance; // TODO: Allows multiple?
-	OneLineText pokemonCategory = new OneLineText(); // TODO: Investigate
+	OneLineText pokemonCategory; // TODO: Investigate
 	public byte pokedexNumber;
 	byte unknownByte1; // TODO: Always 0?
 	byte level; // TODO: Investigate No gameplay impact?
 	short length; //TODO: One byte is feet, another is inches - separate them // TODO: Investigate No gameplay impact?
 	short weight; // TODO: Investigate No gameplay impact?
-	PokeDescription description = new PokeDescription();
-	
+	PokeDescription description;
 	 // TODO: At least somewhat tracks with evo stage in asm files - 19 for first stage, 16 for second stage, 0 for final stage?
 	byte unknownByte2;
+
+	public PokemonCard()
+	{
+		super();
+		
+		prevEvoName = new OneLineText();
+		move1 = new Move();
+		move2 = new Move();
+		pokemonCategory = new OneLineText();
+		description = new PokeDescription();
+	}
+	
+	public PokemonCard(PokemonCard toCopy)
+	{
+		super(toCopy);
+		
+		hp = toCopy.hp;
+		stage = toCopy.stage;
+		prevEvoName = new OneLineText(toCopy.prevEvoName);
+		move1 = new Move(toCopy.move1);
+		move2 = new Move(toCopy.move2);;
+		retreatCost = toCopy.retreatCost;
+		weakness = toCopy.weakness;
+		resistance = toCopy.resistance;
+		pokemonCategory = new OneLineText(toCopy.pokemonCategory);
+		pokedexNumber = toCopy.pokedexNumber;
+		unknownByte1 = toCopy.unknownByte1;
+		level = toCopy.level;
+		length = toCopy.length;
+		weight = toCopy.weight;
+		description = new PokeDescription(toCopy.description);
+		unknownByte2 = toCopy.unknownByte2;
+	}
 	
 	@Override
 	public String toString()
@@ -68,9 +100,7 @@ public class PokemonCard extends Card
 		prevEvoName.readTextFromIds(cardBytes, index, ptrToText, ptrsUsed);
 		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
 		
-		move1 = new Move();
 		index = move1.readNameAndDataAndConvertIds(cardBytes, index, name, ptrToText, ptrsUsed);
-		move2 = new Move();
 		index = move2.readNameAndDataAndConvertIds(cardBytes, index, name, ptrToText, ptrsUsed);
 		
 		retreatCost = cardBytes[index++];

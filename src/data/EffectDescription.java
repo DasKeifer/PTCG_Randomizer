@@ -8,9 +8,18 @@ import util.StringUtils;
 
 public class EffectDescription extends RomText
 {	
-	protected static final String NAME_PLACEHOLDER = "" + (char) 0x15; // NACK - just because
-	
+	private static final String NAME_PLACEHOLDER = "" + (char) 0x15; // NACK - just because
 	private static final int NUM_POINTERS_IN_FILE = 2;
+
+	public EffectDescription()
+	{
+		super();
+	}
+	
+	public EffectDescription(EffectDescription toCopy)
+	{
+		super(toCopy);
+	}
 
 	public void readTextFromIds(byte[] bytes, int[] textIdIndexes, RomText cardName, Texts ptrToText, Set<Short> ptrsUsed)
 	{
@@ -55,7 +64,7 @@ public class EffectDescription extends RomText
 					formatted += tempText;
 					if (blockIndex < blocks.length - 1)
 					{
-						formatted += (char)0x0C;
+						formatted += StringUtils.BLOCK_BREAK;
 					}
 				}
 				else

@@ -13,8 +13,23 @@ public class NonPokemonCard extends Card
 	public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
 	
 	short effectPtr;
-	public EffectDescription description = new EffectDescription();
+	public EffectDescription description;
 
+	public NonPokemonCard() 
+	{
+		super();
+		
+		description = new EffectDescription();
+	}
+	
+	public NonPokemonCard(NonPokemonCard toCopy) 
+	{
+		super(toCopy);
+		
+		effectPtr = toCopy.effectPtr;
+		description = new EffectDescription(toCopy.description);
+	}
+	
 	@Override
 	public int getCardSizeInBytes() 
 	{

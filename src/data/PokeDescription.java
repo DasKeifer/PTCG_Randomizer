@@ -8,6 +8,16 @@ import util.StringUtils;
 
 public class PokeDescription extends RomText
 {		
+	public PokeDescription() 
+	{
+		super();
+	}
+	
+	public PokeDescription(PokeDescription toCopy) 
+	{
+		super(toCopy);
+	}
+
 	public void readTextFromIds(byte[] bytes, int textIdIndex, Texts ptrToText, Set<Short> ptrsUsed)
 	{
 		int[] textIdIndexes = {textIdIndex};

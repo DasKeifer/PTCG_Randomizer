@@ -9,8 +9,18 @@ import util.StringUtils;
 
 public abstract class RomText 
 {	
-	private String text = "";
+	private String text;
 	
+	public RomText()
+	{
+		text = "";
+	}
+	
+	public RomText(RomText toCopy)
+	{
+		text = toCopy.text;
+	}
+
 	public String getText()
 	{
 		return text;
