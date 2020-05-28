@@ -6,7 +6,6 @@ import constants.CardDataConstants.BoosterPack;
 import constants.CardDataConstants.CardRarity;
 import constants.CardDataConstants.CardSet;
 import constants.CardDataConstants.CardType;
-import rom.Cards;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -46,7 +45,7 @@ public abstract class Card
 		id = toCopy.id;
 	}
 	
-	public static void addCardAtIndex(byte[] cardBytes, int startIndex, Cards cardsByName, Texts ptrToText, Set<Short> ptrsUsed)
+	public static Card createCardFromBytes(byte[] cardBytes, int startIndex, Texts ptrToText, Set<Short> ptrsUsed)
 	{
 		CardType type = CardType.readFromByte(cardBytes[startIndex]);
 		
@@ -69,13 +68,13 @@ public abstract class Card
 					startIndex + " that is of type " + type);
 		}
 
-		card.readNameAndDataAndConvertIds(cardBytes, startIndex, cardsByName, ptrToText, ptrsUsed);
-		cardsByName.add(card);
+		card.readNameAndDataAndConvertIds(cardBytes, startIndex, ptrToText, ptrsUsed);
+		return card;
 	}
 	
 	public String toString()
 	{
-		return "Name = " + name.getText() + 
+		return "Name = " + name.toString() + 
 				"\nID = " + id + 
 				"\nType = " + type + 
 				"\nRarity = " + rarity + 
@@ -83,7 +82,7 @@ public abstract class Card
 				"\nPack = " + pack;
 	}
 	
-	public abstract void readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Cards cards, Texts ptrToText, Set<Short> ptrsUsed);
+	public abstract void readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Texts ptrToText, Set<Short> ptrsUsed);
 	public abstract void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts ptrToText);
 	public abstract int getCardSizeInBytes();
 	
@@ -133,10 +132,10 @@ public abstract class Card
     		 return ByteUtils.unsignedCompareShorts(c1.id.getValue(), c2.id.getValue());
 	     }
 	 }
-	 
+
+	 // This should be used if we randomize evos so we can shuffle poke to be next to each other
 	 public static class RomSorter implements Comparator<Card>
 	 {
-		 // This is used if we randomize evos so we can shuffle poke to be next to each other
 	     public int compare(Card c1, Card c2)
 	     {             
 	    	 // If either is an energy or trainer, the natural sort order will work

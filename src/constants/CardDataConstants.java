@@ -221,7 +221,7 @@ public class CardDataConstants
 		
 		private CardSet(int inValue)
 		{
-			// stored in lower half of byte with set in the upper half
+			// stored in lower half of byte with pack in the upper half
 			if (inValue > ByteUtils.MAX_HEX_CHAR_VALUE  || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "

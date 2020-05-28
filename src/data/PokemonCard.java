@@ -4,7 +4,6 @@ import java.util.Set;
 
 import constants.CardDataConstants.*;
 import constants.RomConstants;
-import rom.Cards;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -71,10 +70,10 @@ public class PokemonCard extends Card
 	{
 		return super.toString() + 
 				"\nPokedex Number = " + pokedexNumber + 
-				"\nDesciption = " + description.getText() + 
+				"\nDesciption = " + description.toString() + 
 				"\nHP = " + hp +
 				"\nStage = " + stage + 
-				"\nPrevEvolution = " + prevEvoName.getText() +
+				"\nPrevEvolution = " + prevEvoName.toString() +
 				"\nRetreatCost = " + retreatCost +
 				"\nWeakness = " + weakness +
 				"\nResistance = " + resistance  +
@@ -88,7 +87,7 @@ public class PokemonCard extends Card
 	}
 	
 	@Override
-	public void readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Cards cards, Texts ptrToText, Set<Short> ptrsUsed) 
+	public void readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Texts ptrToText, Set<Short> ptrsUsed) 
 	{
 		readCommonNameAndDataAndConvertIds(cardBytes, startIndex, ptrToText, ptrsUsed);
 		

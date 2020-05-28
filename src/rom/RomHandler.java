@@ -92,7 +92,8 @@ public class RomHandler
 				) != 0)
 		{
 			cardIndex += RomConstants.CARD_POINTER_OFFSET;
-			Card.addCardAtIndex(rawBytes, cardIndex, cardsByName, allText, convertedTextPtrs);
+			Card card = Card.createCardFromBytes(rawBytes, cardIndex, allText, convertedTextPtrs);
+			cardsByName.add(card);
 
 			// Move our text pointer to the next pointer
 			ptrIndex += RomConstants.CARD_POINTER_SIZE_IN_BYTES;
@@ -151,7 +152,7 @@ public class RomHandler
 		// here but we still need to handle the last null pointer
 		int cardIndex = RomConstants.CARD_POINTERS_LOC + (cards.count() + 1) * RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		
-		List<Card> sorted = cards.getSortedCards();
+		List<Card> sorted = cards.toSortedList();
 		for (Card card : sorted)
 		{
 			// Write the pointer

@@ -26,6 +26,12 @@ public abstract class RomText
 		return text;
 	}
 	
+	@Override
+	public String toString()
+	{
+		return getText();
+	}
+	
 	public boolean isEmpty()
 	{
 		return text.isEmpty();

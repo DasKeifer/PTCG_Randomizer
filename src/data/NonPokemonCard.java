@@ -3,7 +3,6 @@ package data;
 import java.util.Set;
 
 import constants.RomConstants;
-import rom.Cards;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -37,7 +36,7 @@ public class NonPokemonCard extends Card
 	}
 	
 	@Override
-	public void readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Cards cards, Texts ptrToText, Set<Short> ptrsUsed) 
+	public void readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Texts ptrToText, Set<Short> ptrsUsed) 
 	{
 		readCommonNameAndDataAndConvertIds(cardBytes, startIndex, ptrToText, ptrsUsed);
 		int index = startIndex + Card.CARD_COMMON_SIZE;

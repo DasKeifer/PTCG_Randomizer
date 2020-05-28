@@ -50,7 +50,7 @@ public class Move
 
 	public String toString()
 	{
-		String tempString = "Move Name: " + name.getText() + "\nRequires:";
+		String tempString = "Move Name: " + name.toString() + "\nRequires:";
 		
 		boolean foundEnergy = false;
 		for (EnergyType energyType : EnergyType.values())
@@ -67,7 +67,7 @@ public class Move
 		}
 				
 		return tempString + "\nDamage: " + damage +
-				"\nDescription: " + description.getText() + 
+				"\nDescription: " + description.toString() + 
 				"\nEffectPtr: " + effectPtr +
 				"\nEffectFlags: " + effect1 + ", " + effect2 + ", " + effect3;
 				

@@ -11,24 +11,30 @@ import data.Card;
 
 public class Cards 
 {
-	private Comparator<Card> sorter = new Card.IdSorter();
-	private TreeSet<Card> cardSet = new TreeSet<>(sorter);
+	private Comparator<Card> defaultSorter = new Card.IdSorter();
+	private TreeSet<Card> cardSet = new TreeSet<>(defaultSorter);
 	
+	// TODO: Return Cards object instead?
 	public List<Card> getCardsWithName(String name)
 	{
 		return cardSet.stream().filter(
 				card -> name.equals(card.name.getText())).collect(Collectors.toList());
 	}
 	
-	public List<Card> getCards()
+	public List<Card> toList()
 	{
 		return new LinkedList<>(cardSet);
 	}
-	
-	public List<Card> getSortedCards()
+
+	public List<Card> toSortedList()
 	{
-		List<Card> cardsList = getCards();
-		Collections.sort(cardsList, sorter);
+		return toSortedList(defaultSorter);
+	}
+	
+	public List<Card> toSortedList(Comparator<Card> comparator)
+	{
+		List<Card> cardsList = toList();
+		Collections.sort(cardsList, comparator);
 		return cardsList;
 	}
 	
