@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -152,8 +151,7 @@ public class RomHandler
 		// here but we still need to handle the last null pointer
 		int cardIndex = RomConstants.CARD_POINTERS_LOC + (cards.count() + 1) * RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		
-		List<Card> sorted = cards.getCards();
-		Collections.sort(sorted, new Card.IdSorter());
+		List<Card> sorted = cards.getSortedCards();
 		for (Card card : sorted)
 		{
 			// Write the pointer

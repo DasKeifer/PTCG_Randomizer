@@ -14,7 +14,7 @@ public class Move
 	
 	byte[] energyCost;
 	OneLineText name;
-	public EffectDescription description = new EffectDescription();
+	public EffectDescription description;
 	byte damage; // TODO: non multiple of 10?
 	MoveCategory category;
 	short effectPtr; // TODO: Make enum?
