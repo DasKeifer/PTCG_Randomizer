@@ -3,7 +3,6 @@ package data;
 import java.util.Set;
 
 import constants.CardDataConstants.*;
-import constants.RomConstants;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -79,35 +78,27 @@ public class PokemonCard extends Card
 				"\nResistance = " + resistance  +
 				"\nMoves\n" + move1.toString() + "\n" + move2.toString();
 	}
-
-	@Override
-	public int getCardSizeInBytes() 
-	{
-		return TOTAL_SIZE_IN_BYTES;
-	}
 	
 	@Override
-	public void readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Texts ptrToText, Set<Short> ptrsUsed) 
+	public int readDataAndConvertIds(byte[] cardBytes, int startIndex, Texts idToText, Set<Short> textIdsUsed) 
 	{
-		readCommonNameAndDataAndConvertIds(cardBytes, startIndex, ptrToText, ptrsUsed);
+		readCommonNameAndDataAndConvertIds(cardBytes, startIndex, idToText, textIdsUsed);
 		
 		int index = startIndex + Card.CARD_COMMON_SIZE;
 		hp = cardBytes[index++];
 		stage = EvolutionStage.readFromByte(cardBytes[index++]);
 		
 		// Read the prev evolution
-		prevEvoName.readTextFromIds(cardBytes, index, ptrToText, ptrsUsed);
-		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
+		index = prevEvoName.readDataAndConvertIds(cardBytes, index, idToText, textIdsUsed);
 		
-		index = move1.readNameAndDataAndConvertIds(cardBytes, index, name, ptrToText, ptrsUsed);
-		index = move2.readNameAndDataAndConvertIds(cardBytes, index, name, ptrToText, ptrsUsed);
+		index = move1.readDataAndConvertIds(cardBytes, index, name, idToText, textIdsUsed);
+		index = move2.readDataAndConvertIds(cardBytes, index, name, idToText, textIdsUsed);
 		
 		retreatCost = cardBytes[index++];
 		weakness = WeaknessResistanceType.readFromByte(cardBytes[index++]);
 		resistance = WeaknessResistanceType.readFromByte(cardBytes[index++]);
 
-        pokemonCategory.readTextFromIds(cardBytes, index, ptrToText, ptrsUsed);
-        index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
+		index = pokemonCategory.readDataAndConvertIds(cardBytes, index, idToText, textIdsUsed);
 		
 		pokedexNumber = cardBytes[index++];
 		unknownByte1 = cardBytes[index++];
@@ -117,32 +108,31 @@ public class PokemonCard extends Card
 		weight = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 		
-        description.readTextFromIds(cardBytes, index, ptrToText, ptrsUsed);
-        index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
+		index = description.readDataAndConvertIds(cardBytes, index, idToText, textIdsUsed);
 		
-		unknownByte2 = cardBytes[index];
+		unknownByte2 = cardBytes[index++];
+		
+		return index;
 	}
 
 	@Override
-	public void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts ptrToText) 
+	public int convertToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts idToText) 
 	{
-		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex, ptrToText);
+		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex, idToText);
 		
 		cardBytes[index++] = hp;
 		cardBytes[index++] = stage.getValue();
 		
-		prevEvoName.convertToIdsAndWriteText(cardBytes, index, ptrToText);
-		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
+		index = prevEvoName.convertToIdsAndWriteData(cardBytes, index, idToText);
 		
-		index = move1.convertToIdsAndWriteData(cardBytes, index, name, ptrToText);
-		index = move2.convertToIdsAndWriteData(cardBytes, index, name, ptrToText);
+		index = move1.convertToIdsAndWriteData(cardBytes, index, name, idToText);
+		index = move2.convertToIdsAndWriteData(cardBytes, index, name, idToText);
 		
 		cardBytes[index++] = retreatCost;
 		cardBytes[index++] = weakness.getValue();
 		cardBytes[index++] = resistance.getValue();
 
-		pokemonCategory.convertToIdsAndWriteText(cardBytes, index, ptrToText);
-		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
+		index = pokemonCategory.convertToIdsAndWriteData(cardBytes, index, idToText);
 		
 		cardBytes[index++] = pokedexNumber;
 		cardBytes[index++] = unknownByte1;
@@ -152,9 +142,9 @@ public class PokemonCard extends Card
 		ByteUtils.writeAsShort(weight, cardBytes, index);
 		index += 2;
 
-		description.convertToIdsAndWriteText(cardBytes, index, ptrToText);
-		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
+		index = description.convertToIdsAndWriteData(cardBytes, index, idToText);
 		
-		cardBytes[index] = unknownByte2;
+		cardBytes[index++] = unknownByte2;
+		return index;
 	}
 }

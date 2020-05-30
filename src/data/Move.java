@@ -72,8 +72,22 @@ public class Move
 				"\nEffectFlags: " + effect1 + ", " + effect2 + ", " + effect3;
 				
 	}
+
+	public byte getCost(EnergyType inType)
+	{
+		return energyCost[inType.getValue()];
+	}
 	
-	public int readNameAndDataAndConvertIds(byte[] moveBytes, int startIndex, RomText cardName, Texts ptrToText, Set<Short> ptrsUsed) 
+	public void setCost(EnergyType inType, byte inCost)
+	{
+		if (inCost > ByteUtils.MAX_HEX_CHAR_VALUE || inCost < ByteUtils.MIN_BYTE_VALUE)
+		{
+			throw new IllegalArgumentException("Invalid value was passed for energy type " + inType + " cost: " + inCost);
+		}
+		energyCost[inType.getValue()] = inCost;
+	}
+	
+	public int readDataAndConvertIds(byte[] moveBytes, int startIndex, RomText cardName, Texts idToText, Set<Short> textIdsUsed) 
 	{
 		int index = startIndex;
 		
@@ -93,12 +107,11 @@ public class Move
 		setCost(EnergyType.UNUSED_TYPE, ByteUtils.readLowerHexChar(moveBytes[index]));
 		index++;
 		
-		name.readTextFromIds(moveBytes, index, ptrToText, ptrsUsed);
-		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;		
+		index = name.readDataAndConvertIds(moveBytes, index, idToText, textIdsUsed);
 		
 		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
-		description.readTextFromIds(moveBytes, descIndexes, cardName, ptrToText, ptrsUsed);
-		index += RomConstants.TEXT_ID_SIZE_IN_BYTES * 2;
+		description.readDataAndConvertIds(moveBytes, descIndexes, cardName, idToText, textIdsUsed);
+		index += RomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
 		
 		damage = moveBytes[index++];
 		category = MoveCategory.readFromByte(moveBytes[index++]);
@@ -113,21 +126,7 @@ public class Move
 		return index;
 	}
 
-	public byte getCost(EnergyType inType)
-	{
-		return energyCost[inType.getValue()];
-	}
-	
-	public void setCost(EnergyType inType, byte inCost)
-	{
-		if (inCost > ByteUtils.MAX_HEX_CHAR_VALUE || inCost < ByteUtils.MIN_BYTE_VALUE)
-		{
-			throw new IllegalArgumentException("Invalid value was passed for energy type " + inType + " cost: " + inCost);
-		}
-		energyCost[inType.getValue()] = inCost;
-	}
-
-	public int convertToIdsAndWriteData(byte[] moveBytes, int startIndex, RomText cardName, Texts ptrToText) 
+	public int convertToIdsAndWriteData(byte[] moveBytes, int startIndex, RomText cardName, Texts idToText) 
 	{
 		int index = startIndex;
 		
@@ -136,12 +135,12 @@ public class Move
 		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.FIGHTING), getCost(EnergyType.PSYCHIC));
 		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.COLORLESS), getCost(EnergyType.UNUSED_TYPE));
 
-		name.convertToIdsAndWriteText(moveBytes, index, ptrToText);
+		name.convertToIdsAndWriteData(moveBytes, index, idToText);
 		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
 
 		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
-		description.convertToIdsAndWriteText(moveBytes, descIndexes, cardName, ptrToText);
-		index += RomConstants.TEXT_ID_SIZE_IN_BYTES * 2;
+		description.convertToIdsAndWriteData(moveBytes, descIndexes, cardName, idToText);
+		index += RomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
 		
 		moveBytes[index++] = damage;
 		moveBytes[index++] = category.getValue();

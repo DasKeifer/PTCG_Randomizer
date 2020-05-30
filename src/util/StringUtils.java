@@ -12,12 +12,12 @@ public class StringUtils
 		return prettyFormatText(text, maxCharsPerLine, maxLines, maxLines, 1);
 	}
 	
-	public static String prettyFormatText(String block, int maxCharsPerLine, int maxLinesPerBlock, int preferedLinesPerBlock, int maxNumberOfBlocks)
+	public static String prettyFormatText(String text, int maxCharsPerLine, int maxLinesPerBlock, int preferedLinesPerBlock, int maxNumberOfBlocks)
 	{
-		String[] blockWords = block.split(" ");
+		String[] textWords = text.split(" ");
 		List<String> formattedLines = new ArrayList<>();
 		String currLine = "";
-		for (String word : blockWords)
+		for (String word : textWords)
 		{
 			if (currLine.isEmpty())
 			{
@@ -40,10 +40,6 @@ public class StringUtils
 		// See if there is enough space
 		if (formattedLines.size() > maxLinesPerBlock * maxNumberOfBlocks)
 		{
-			for (String text : formattedLines)
-			{
-				System.out.println(text);
-			}
 			return null;
 		}
 		
@@ -53,33 +49,55 @@ public class StringUtils
 		{
 			linesPerBlock = formattedLines.size() / maxNumberOfBlocks + 1;
 		}
+
+		return formatIntoBlocks(formattedLines, linesPerBlock);
+	}
+	
+	public static String packFormatText(String text, int charsPerLine, int maxLines)
+	{
+		return packFormatText(text, charsPerLine, maxLines, 1);
+	}
+	
+	public static String packFormatText(String text, int charsPerLine, int maxLinesPerBlock, int maxNumberOfBlocks)
+	{
+		List<String> packedLines = new ArrayList<>();
+		String remainingText = text;
+		int numCharsToTake = charsPerLine;
+		while(remainingText.length() > 0)
+		{
+			if (numCharsToTake > remainingText.length())
+			{
+				numCharsToTake = remainingText.length();
+			}
+			packedLines.add(text.substring(0, numCharsToTake).trim());
+			remainingText = remainingText.substring(numCharsToTake).trim();
+		}
 		
-		String formatted = "";
+		// Make sure it will fit
+		if (packedLines.size() > maxLinesPerBlock * maxNumberOfBlocks)
+		{
+			return null;
+		}
+		
+		return formatIntoBlocks(packedLines, maxLinesPerBlock);
+	}
+	
+	private static String formatIntoBlocks(List<String> lines, int linesPerBlock)
+	{
+		StringBuilder formatted = new StringBuilder();
 		int linesInBlock = 0;
-		for (String line : formattedLines)
+		for (String line : lines)
 		{
 			if (linesInBlock >= linesPerBlock)
 			{
-				formatted += BLOCK_BREAK;
+				formatted.append(BLOCK_BREAK);
 			}
-			else if (!formatted.isEmpty())
+			else if (formatted.length() != 0)
 			{
-				formatted += "\n";
+				formatted.append("\n");
 			}
-			formatted += line;
+			formatted.append(line);
 		}
-		
-		return formatted;
-	}
-	
-	public static String packFormatText(String text, int maxCharsPerLine, int maxLines)
-	{
-		return packFormatText(text, maxCharsPerLine, maxLines, 1);
-	}
-	
-	public static String packFormatText(String block, int maxCharsPerLine, int maxLinesPerBlock, int maxNumberOfBlocks)
-	{
-		// TODO:
-		return null;
+		return formatted.toString();
 	}
 }

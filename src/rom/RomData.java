@@ -1,5 +1,6 @@
 package rom;
 
+import data.Cards;
 
 public class RomData
 {

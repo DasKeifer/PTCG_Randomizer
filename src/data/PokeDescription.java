@@ -18,20 +18,22 @@ public class PokeDescription extends RomText
 		super(toCopy);
 	}
 
-	public void readTextFromIds(byte[] bytes, int textIdIndex, Texts ptrToText, Set<Short> ptrsUsed)
+	public int readDataAndConvertIds(byte[] bytes, int textIdIndex, Texts idToText, Set<Short> textIdsUsed)
 	{
 		int[] textIdIndexes = {textIdIndex};
-		genericReadTextFromIds(bytes, textIdIndexes, ptrToText, ptrsUsed);
+		genericReadTextFromIds(bytes, textIdIndexes, idToText, textIdsUsed);
+		return textIdIndex + RomConstants.TEXT_ID_SIZE_IN_BYTES;
 	}
 
-	public void convertToIdsAndWriteText(byte[] bytes, int textIdIndex, Texts ptrToText)
+	public int convertToIdsAndWriteData(byte[] bytes, int textIdIndex, Texts idToText)
 	{
 		int[] textIdIndexes = {textIdIndex};
-		setTextPreservingNewlines(formatDescription(getText()));
-		genericConvertToIdsAndWriteText(bytes, textIdIndexes, ptrToText);
+		setTextPreservingNewlines(format(getText()));
+		genericConvertToIdsAndWriteText(bytes, textIdIndexes, idToText);
+		return textIdIndex + RomConstants.TEXT_ID_SIZE_IN_BYTES;
 	}
 	
-	private String formatDescription(String descExpanded)
+	private String format(String descExpanded)
 	{
 		if (descExpanded.contains(StringUtils.BLOCK_BREAK))
 		{

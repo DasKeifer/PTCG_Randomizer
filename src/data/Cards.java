@@ -1,4 +1,4 @@
-package rom;
+package data;
 
 import java.util.List;
 import java.util.Collections;
@@ -7,18 +7,27 @@ import java.util.LinkedList;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import data.Card;
-
 public class Cards 
 {
 	private Comparator<Card> defaultSorter = new Card.IdSorter();
 	private TreeSet<Card> cardSet = new TreeSet<>(defaultSorter);
-	
-	// TODO: Return Cards object instead?
-	public List<Card> getCardsWithName(String name)
+
+	public Cards() 
 	{
-		return cardSet.stream().filter(
-				card -> name.equals(card.name.getText())).collect(Collectors.toList());
+		defaultSorter = new Card.IdSorter();
+		cardSet = new TreeSet<>(defaultSorter);
+	}
+	
+	public Cards(List<Card> collect) 
+	{
+		this();
+		cardSet.addAll(collect);
+	}
+
+	public Cards getCardsWithName(String name)
+	{
+		return new Cards(cardSet.stream().filter(
+				card -> name.equals(card.name.getText())).collect(Collectors.toList()));
 	}
 	
 	public List<Card> toList()

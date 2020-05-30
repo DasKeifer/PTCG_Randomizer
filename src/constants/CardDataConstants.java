@@ -183,7 +183,7 @@ public class CardDataConstants
 		{
 			// stored in upper half of byte with set in the lower half but we treat it as the lower 
 			// half to make things make more sense in this code
-			if (inValue > ByteUtils.MAX_HEX_CHAR_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
+			if (inValue > ByteUtils.MAX_HEX_CHAR_VALUE || inValue < ByteUtils.MIN_HEX_CHAR_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
 						+ "BoosterPack enum " + inValue + " (" + (inValue << 4) + " )");
@@ -222,7 +222,7 @@ public class CardDataConstants
 		private CardSet(int inValue)
 		{
 			// stored in lower half of byte with pack in the upper half
-			if (inValue > ByteUtils.MAX_HEX_CHAR_VALUE  || inValue < ByteUtils.MIN_BYTE_VALUE)
+			if (inValue > ByteUtils.MAX_HEX_CHAR_VALUE  || inValue < ByteUtils.MIN_HEX_CHAR_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
 						+ "CardSet enum: " + inValue);

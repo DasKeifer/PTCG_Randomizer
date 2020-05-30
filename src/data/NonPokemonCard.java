@@ -30,15 +30,9 @@ public class NonPokemonCard extends Card
 	}
 	
 	@Override
-	public int getCardSizeInBytes() 
+	public int readDataAndConvertIds(byte[] cardBytes, int startIndex, Texts idToText, Set<Short> textIdsUsed) 
 	{
-		return TOTAL_SIZE_IN_BYTES;
-	}
-	
-	@Override
-	public void readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Texts ptrToText, Set<Short> ptrsUsed) 
-	{
-		readCommonNameAndDataAndConvertIds(cardBytes, startIndex, ptrToText, ptrsUsed);
+		readCommonNameAndDataAndConvertIds(cardBytes, startIndex, idToText, textIdsUsed);
 		int index = startIndex + Card.CARD_COMMON_SIZE;
 		
 		// reading non pokemon specific data
@@ -46,19 +40,21 @@ public class NonPokemonCard extends Card
 		index += 2;
 
 		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
-		description.readTextFromIds(cardBytes, descIndexes, name, ptrToText, ptrsUsed);
+		description.readDataAndConvertIds(cardBytes, descIndexes, name, idToText, textIdsUsed);
+		return index + RomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
 	}
 	
 	@Override
-	public void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts ptrToText) 
+	public int convertToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts idToText) 
 	{
-		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex, ptrToText);
+		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex, idToText);
 		
 		// write non pokemon specific data
 		ByteUtils.writeAsShort(effectPtr, cardBytes, index);
 		index += 2;
 
 		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
-		description.convertToIdsAndWriteText(cardBytes, descIndexes, name, ptrToText);
+		description.convertToIdsAndWriteData(cardBytes, descIndexes, name, idToText);
+		return index + RomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
 	}
 }

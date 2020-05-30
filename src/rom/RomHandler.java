@@ -11,6 +11,7 @@ import java.util.Set;
 
 import constants.RomConstants;
 import data.Card;
+import data.Cards;
 import util.ByteUtils;
 
 public class RomHandler
@@ -79,7 +80,7 @@ public class RomHandler
 	
 	private static Cards readAllCardsFromPointers(byte[] rawBytes, Texts allText)
 	{
-		Cards cardsByName = new Cards();
+		Cards allCards = new Cards();
 		Set<Short> convertedTextPtrs = new HashSet<>();
 
 		// Read the text based on the pointer map in the rom
@@ -92,15 +93,14 @@ public class RomHandler
 				) != 0)
 		{
 			cardIndex += RomConstants.CARD_POINTER_OFFSET;
-			Card card = Card.createCardFromBytes(rawBytes, cardIndex, allText, convertedTextPtrs);
-			cardsByName.add(card);
+			Card.addCardFromBytes(rawBytes, cardIndex, allText, convertedTextPtrs, allCards);
 
 			// Move our text pointer to the next pointer
 			ptrIndex += RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		}
 		
 		allText.removeTextAtIds(convertedTextPtrs);
-		return cardsByName;
+		return allCards;
 	}
 	
 	private static Texts readAllTextFromPointers(byte[] rawBytes)
@@ -160,8 +160,7 @@ public class RomHandler
 			ptrIndex += RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 			
 			// Write the card
-			card.convertToIdsAndWriteData(bytes, cardIndex, allText);
-			cardIndex += card.getCardSizeInBytes();
+			cardIndex = card.convertToIdsAndWriteData(bytes, cardIndex, allText);
 		}
 
 		// Write the null pointer at the end of the cards pointers
@@ -192,7 +191,6 @@ public class RomHandler
 		// We start at 1 because 0 is a null ptr
 		for (short textId = 1; textId < ptrToText.count() + 1; textId++)
 		{
-			//System.out.println(textId + ", " + ptrToText.getAtId(textId));
 			// Write the pointer
 			ByteUtils.writeLittleEndian(textIndex - RomConstants.TEXT_POINTER_OFFSET, rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES);
 			ptrIndex += RomConstants.TEXT_POINTER_SIZE_IN_BYTES;

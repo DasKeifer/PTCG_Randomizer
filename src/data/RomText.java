@@ -7,7 +7,7 @@ import rom.Texts;
 import util.ByteUtils;
 import util.StringUtils;
 
-public abstract class RomText 
+public abstract class RomText
 {	
 	private String text;
 	
@@ -41,19 +41,25 @@ public abstract class RomText
 	{
 		if (inText == null)
 		{
-			inText = "";
+			text = "";
 		}
-		text = inText.replaceAll("\n", " ");
-		text = removeEnglishCharTypeChars(text);
+		else
+		{
+			text = inText.replaceAll("\n", " ");
+			text = removeEnglishCharTypeChars(text);
+		}
 	}
 	
 	public void setTextPreservingNewlines(String inText)
 	{
 		if (inText == null)
 		{
-			inText = "";
+			text = "";
 		}
-		text = removeEnglishCharTypeChars(inText);
+		else
+		{
+			text = removeEnglishCharTypeChars(inText);
+		}
 	}
 
 	public void replaceAll(String regex, String replacement)
@@ -61,13 +67,13 @@ public abstract class RomText
 		text = text.replaceAll(regex, replacement);
 	}
 	
-	protected void genericReadTextFromIds(byte[] bytes, int[] textIdIndexes, Texts ptrToText, Set<Short> ptrsUsed)
+	protected void genericReadTextFromIds(byte[] bytes, int[] textIdIndexes, Texts idsToText, Set<Short> textIdsUsed)
 	{
 		String readText = "";
 		for (int index : textIdIndexes)
 		{
-			short textPtr = ByteUtils.readAsShort(bytes, index);
-			if (textPtr == 0)
+			short textId = ByteUtils.readAsShort(bytes, index);
+			if (textId == 0)
 			{
 				break;
 			}
@@ -77,15 +83,15 @@ public abstract class RomText
 				readText += StringUtils.BLOCK_BREAK;
 			}
 			
-			readText += ptrToText.getAtId(textPtr);
-			ptrsUsed.add(textPtr);
+			readText += idsToText.getAtId(textId);
+			textIdsUsed.add(textId);
 		}
 		
 		// Will also unformat it
 		setText(readText);
 	}
 	
-	protected void genericConvertToIdsAndWriteText(byte[] bytes, int[] textIdIndexes, Texts ptrToText)
+	protected void genericConvertToIdsAndWriteText(byte[] bytes, int[] textIdIndexes, Texts idToText)
 	{
 		String[] blocks = text.split(StringUtils.BLOCK_BREAK);
 		int expectedBlocks = textIdIndexes.length;
@@ -109,7 +115,7 @@ public abstract class RomText
 				}
 				else
 				{
-					short id = ptrToText.insertTextOrGetId(block);
+					short id = idToText.insertTextOrGetId(block);
 					ByteUtils.writeAsShort(id, bytes, textIdIndexes[blockIndex]);
 				}
 				blockIndex++;

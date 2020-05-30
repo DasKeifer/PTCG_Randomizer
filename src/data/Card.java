@@ -1,6 +1,5 @@
 package data;
 
-import constants.RomConstants;
 import constants.CardConstants.CardId;
 import constants.CardDataConstants.BoosterPack;
 import constants.CardDataConstants.CardRarity;
@@ -19,7 +18,7 @@ public abstract class Card
 	
 	// TODO encapsulate these or make public
 	public CardType type;
-	public OneLineText name = new OneLineText();
+	public OneLineText name;
 	short gfx; // Card art
 	CardRarity rarity;
 
@@ -45,7 +44,7 @@ public abstract class Card
 		id = toCopy.id;
 	}
 	
-	public static Card createCardFromBytes(byte[] cardBytes, int startIndex, Texts ptrToText, Set<Short> ptrsUsed)
+	public static int addCardFromBytes(byte[] cardBytes, int startIndex, Texts idToText, Set<Short> textIdsUsed, Cards toAddTo)
 	{
 		CardType type = CardType.readFromByte(cardBytes[startIndex]);
 		
@@ -68,10 +67,14 @@ public abstract class Card
 					startIndex + " that is of type " + type);
 		}
 
-		card.readNameAndDataAndConvertIds(cardBytes, startIndex, ptrToText, ptrsUsed);
-		return card;
+		startIndex = card.readDataAndConvertIds(cardBytes, startIndex, idToText, textIdsUsed);
+		toAddTo.add(card);
+		return startIndex;
 	}
 	
+	public abstract int readDataAndConvertIds(byte[] cardBytes, int startIndex, Texts idToText, Set<Short> textIdsUsed);
+	public abstract int convertToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts idToText);
+
 	public String toString()
 	{
 		return "Name = " + name.toString() + 
@@ -82,11 +85,7 @@ public abstract class Card
 				"\nPack = " + pack;
 	}
 	
-	public abstract void readNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Texts ptrToText, Set<Short> ptrsUsed);
-	public abstract void convertToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts ptrToText);
-	public abstract int getCardSizeInBytes();
-	
-	protected void readCommonNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Texts ptrToText, Set<Short> ptrsUsed) 
+	protected int readCommonNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Texts idToText, Set<Short> textIdsUsed) 
 	{
 		int index = startIndex;
 		
@@ -94,18 +93,19 @@ public abstract class Card
 		gfx = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 		
-		name.readTextFromIds(cardBytes, index, ptrToText, ptrsUsed);
-		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
+		index = name.readDataAndConvertIds(cardBytes, index, idToText, textIdsUsed);
 		
 		rarity = CardRarity.readFromByte(cardBytes[index++]);
 
 		pack = BoosterPack.readFromHexChar(ByteUtils.readUpperHexChar(cardBytes[index])); // no ++ - this reads only half the byte
 		set = CardSet.readFromHexChar(ByteUtils.readLowerHexChar(cardBytes[index++]));
 		
-		id = CardId.readFromByte(cardBytes[index]);
+		id = CardId.readFromByte(cardBytes[index++]);
+		
+		return index;
 	}
 	
-	protected int convertCommonToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts ptrToText) 
+	protected int convertCommonToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts idToText) 
 	{
 		int index = startIndex;
 		
@@ -113,8 +113,7 @@ public abstract class Card
 		ByteUtils.writeAsShort(gfx, cardBytes, index);
 		index += 2;
 		
-		name.convertToIdsAndWriteText(cardBytes, index, ptrToText);
-		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
+		index = name.convertToIdsAndWriteData(cardBytes, index, idToText);
 		
 		cardBytes[index++] = rarity.getValue();
 
@@ -129,7 +128,7 @@ public abstract class Card
 	 {
 		 public int compare(Card c1, Card c2)
 	     {   
-    		 return ByteUtils.unsignedCompareShorts(c1.id.getValue(), c2.id.getValue());
+    		 return ByteUtils.unsignedCompareBytes(c1.id.getValue(), c2.id.getValue());
 	     }
 	 }
 
@@ -142,17 +141,17 @@ public abstract class Card
 	    	 if (c1.type.isEnergyCard() || c2.type.isEnergyCard() ||
 	    			 c1.type.isTrainerCard() || c2.type.isTrainerCard())
 	    	 {
-	    		 return ByteUtils.unsignedCompareShorts(c1.id.getValue(), c2.id.getValue());
+	    		 return ByteUtils.unsignedCompareBytes(c1.id.getValue(), c2.id.getValue());
 	    	 }
 	    	 
 	    	 // Otherwise both are pokemon - sort by pokedex id then cardId if they are the same.
 	    	 // This will allow us to  reorder the pokemon as we want
 	    	 PokemonCard pc1 = (PokemonCard) c1;
 	    	 PokemonCard pc2 = (PokemonCard) c2;
-	    	 int pokedexCompare = ByteUtils.unsignedCompareShorts(pc1.pokedexNumber, pc2.pokedexNumber);
+	    	 int pokedexCompare = ByteUtils.unsignedCompareBytes(pc1.pokedexNumber, pc2.pokedexNumber);
 	    	 if (pokedexCompare == 0)
 	    	 {
-	    		 return ByteUtils.unsignedCompareShorts(c1.id.getValue(), c2.id.getValue());
+	    		 return ByteUtils.unsignedCompareBytes(c1.id.getValue(), c2.id.getValue());
 	    	 }
 	    	 return pokedexCompare;
 	     }

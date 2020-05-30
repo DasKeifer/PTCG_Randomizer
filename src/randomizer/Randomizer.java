@@ -15,13 +15,13 @@ public class Randomizer
 	public static void main(String[] args) throws IOException //Temp
 	{
 		RomData rom = RomHandler.readRom();
-		List<Card> venu = rom.cardsByName.getCardsWithName("Venusaur");
+		List<Card> venu = rom.cardsByName.getCardsWithName("Venusaur").toList();
 		
 		//test(venu);
 
-		List<Card> bulba = rom.cardsByName.getCardsWithName("Bulbasaur");
+		List<Card> bulba = rom.cardsByName.getCardsWithName("Bulbasaur").toList();
 		((PokemonCard)bulba.get(0)).move1 = new Move(((PokemonCard)venu.get(1)).move1);
-		venu.get(1).name.setText("Blahblahblahblahsaur");
+		venu.get(1).name.setText("Test-a-saur");
 		
 		RomHandler.writeRom(rom);
 	}

@@ -2,10 +2,15 @@ package util;
 
 public class ByteUtils 
 {
+	// TODO consider storing everything as a long but only writing so many bits
+	// Or maybe just store as bytes?
+	
 	public static final int MAX_BYTE_VALUE = 0xff;
-	public static final int MIN_BYTE_VALUE = 0;
+	public static final int MIN_BYTE_VALUE = 0x00;
 
 	public static final int MAX_HEX_CHAR_VALUE = 0xf;
+	public static final int MIN_HEX_CHAR_VALUE = 0x0;
+	
 	public static final int BYTE_UPPER_HEX_CHAR_MASK = 0xf0;
 	public static final int BYTE_LOWER_HEX_CHAR_MASK = 0x0f;
 
@@ -19,27 +24,32 @@ public class ByteUtils
 		}
 	}
 
-	public static int unsignedCompareShorts(short s1, short s2)
+	public static int unsignedCompareBytes(byte b1, byte b2)
+	{
+		return unsignedCompare(b1, b2, 1);
+	}
+	
+	public static int unsignedCompare(int i1, int i2, int numBytes)
 	{
 		// Since shorts are signed, we need to do some bit magic
 		// to get them to their unsigned values so we sort correctly
-		int i1 = s1;
-		if (i1 < 0)
+		long l1 = i1;
+		if (l1 < 0)
 		{
-			i1 = 0 | (i1 & 0xff);
+			l1 += 1 << (numBytes * 8);
+		}
+		
+		long l2 = i2;
+		if (l2 < 0)
+		{
+			l2 += 1 << (numBytes * 8);
 		}
 
-		int i2 = s2;
-		if (i2 < 0)
-		{
-			i2 = 0 | (i2 & 0xff);
-		}
-
-		if (i1 < i2)
+		if (l1 < l2)
 		{
 			return -1;
 		}
-		else if (i1 > i2)
+		else if (l1 > l2)
 		{
 			return 1;
 		}
@@ -58,6 +68,17 @@ public class ByteUtils
 
 	public static byte packHexCharsToByte(byte upper, byte lower)
 	{
+		if (upper > MAX_HEX_CHAR_VALUE || upper < MIN_HEX_CHAR_VALUE)
+		{
+			throw new IllegalArgumentException("Upper bit (" + upper + 
+					" must be a hex char value unshifted (i.e. between " +
+					MIN_HEX_CHAR_VALUE + " and " +  MAX_HEX_CHAR_VALUE + ")");
+		}
+		if (lower > MAX_HEX_CHAR_VALUE || lower < MIN_HEX_CHAR_VALUE)
+		{
+			throw new IllegalArgumentException("Lower bit (" + lower + 
+					" must be a hex char value");
+		}
 		return (byte) (upper << 4 & 0xff | lower);
 	}
 

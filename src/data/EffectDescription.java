@@ -21,18 +21,18 @@ public class EffectDescription extends RomText
 		super(toCopy);
 	}
 
-	public void readTextFromIds(byte[] bytes, int[] textIdIndexes, RomText cardName, Texts ptrToText, Set<Short> ptrsUsed)
+	public void readDataAndConvertIds(byte[] bytes, int[] textIdIndexes, RomText cardName, Texts idToText, Set<Short> textIdsUsed)
 	{
 		if (textIdIndexes.length != NUM_POINTERS_IN_FILE)
 		{
 			throw new IllegalArgumentException("Reading effect description was passed the wrong number of id indexes :" + 
 					textIdIndexes.length);
 		}
-		genericReadTextFromIds(bytes, textIdIndexes, ptrToText, ptrsUsed);
+		genericReadTextFromIds(bytes, textIdIndexes, idToText, textIdsUsed);
 		replaceAll(cardName.getText(), NAME_PLACEHOLDER);
 	}
 
-	public void convertToIdsAndWriteText(byte[] bytes, int[] textIdIndexes, RomText cardName, Texts ptrToText)
+	public void convertToIdsAndWriteData(byte[] bytes, int[] textIdIndexes, RomText cardName, Texts idToText)
 	{
 		if (textIdIndexes.length != NUM_POINTERS_IN_FILE)
 		{
@@ -40,11 +40,11 @@ public class EffectDescription extends RomText
 					textIdIndexes.length);
 		}
 		replaceAll(NAME_PLACEHOLDER, cardName.getText());
-		setTextPreservingNewlines(formatDescription(getText()));
-		genericConvertToIdsAndWriteText(bytes, textIdIndexes, ptrToText);
+		setTextPreservingNewlines(format(getText()));
+		genericConvertToIdsAndWriteText(bytes, textIdIndexes, idToText);
 	}
 	
-	private String formatDescription(String descExpanded)
+	private String format(String descExpanded)
 	{
 		String formatted = "";
 		String tempText;

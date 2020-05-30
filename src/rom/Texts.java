@@ -19,22 +19,26 @@ public class Texts
 	public short insertTextOrGetId(String text)
 	{
 		Short id = usedText.get(text);
-		if (id != null)
+		if (id == null)
 		{
-			return id;
+			id = insertTextAtNextId(text);
+			usedText.put(text, id);
 		}
 
-		id = insertTextAtNextId(text);
-		usedText.put(text, id);
 		return id;
+	}
+	
+	public void removeTextAtId(short idToRemove)
+	{
+		usedText.remove(textMap.get(idToRemove));
+		textMap.remove(idToRemove);
 	}
 	
 	public void removeTextAtIds(Set<Short> idsToRemove)
 	{
 		for (short id : idsToRemove)
 		{
-			usedText.remove(textMap.get(id));
-			textMap.remove(id);
+			removeTextAtId(id);
 		}
 	}
 	
@@ -43,7 +47,7 @@ public class Texts
 		return textMap.get(id);
 	}
 	
-	public void setAtId(short id, String text)
+	public void putAtId(short id, String text)
 	{
 		textMap.put(id, text);
 		usedText.put(text, id);
