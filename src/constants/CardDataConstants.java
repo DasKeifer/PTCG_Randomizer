@@ -3,8 +3,10 @@ package constants;
 import java.util.EnumSet;
 import java.util.Set;
 
+import util.ByteUtils;
+
 public class CardDataConstants 
-{
+{	
 	public enum EnergyType
 	{
 		FIRE		(0x00),
@@ -19,7 +21,7 @@ public class CardDataConstants
 		private byte value;
 		private EnergyType(int inValue)
 		{
-			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
 						+ "EnergyTypes enum: " + inValue);
@@ -74,7 +76,7 @@ public class CardDataConstants
 		private byte value;
 		private CardType(int inValue)
 		{
-			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			if (inValue > ByteUtils.MAX_BYTE_VALUE|| inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
 						+ "CardType enum: " + inValue);
@@ -140,7 +142,7 @@ public class CardDataConstants
 		private byte value;
 		private CardRarity(int inValue)
 		{
-			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
 						+ "CardRarity enum: " + inValue);
@@ -168,22 +170,23 @@ public class CardDataConstants
 	
 	public enum BoosterPack
 	{
-		COLOSSEUM   (0x0 << 4),
-		EVOLUTION   (0x1 << 4),
-		MYSTERY     (0x2 << 4),
-		LABORATORY  (0x3 << 4),
-		PROMOTIONAL (0x4 << 4),
-		ENERGY      (0x5 << 4);
+		COLOSSEUM   (0x0),
+		EVOLUTION   (0x1),
+		MYSTERY     (0x2),
+		LABORATORY  (0x3),
+		PROMOTIONAL (0x4),
+		ENERGY      (0x5);
 		
 		private byte value;
 		
 		private BoosterPack(int inValue)
 		{
-			// stored in upper half of byte with set in the lower half
-			if (inValue > Byte.MAX_VALUE || inValue < (Byte.MIN_VALUE << 4))
+			// stored in upper half of byte with set in the lower half but we treat it as the lower 
+			// half to make things make more sense in this code
+			if (inValue > ByteUtils.MAX_HEX_CHAR_VALUE || inValue < ByteUtils.MIN_HEX_CHAR_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
-						+ "BoosterPack enum: " + inValue);
+						+ "BoosterPack enum " + inValue + " (" + (inValue << 4) + " )");
 			}
 			value = (byte) inValue;
 		}
@@ -193,21 +196,22 @@ public class CardDataConstants
 			return value;
 		}
 		
-	    public static BoosterPack readFromByte(byte b)
+	    public static BoosterPack readFromHexChar(byte hexChar)
 	    {
 	    	for(BoosterPack num : BoosterPack.values())
 	    	{
-	    		if(b == num.getValue())
+	    		if(hexChar == num.getValue())
 	    		{
 	    			return num;
 	    		}
 	    	}
-	    	throw new IllegalArgumentException("Invalid BoosterPack value " + b + " was passed");
+	    	throw new IllegalArgumentException("Invalid BoosterPack value " + hexChar + " was passed");
 	    }
 	}
 
 	public enum CardSet
 	{
+		NONE   (0x0),
 		JUNGLE (0x1),
 		FOSSIL (0x2),
 		GB     (0x7),
@@ -218,7 +222,7 @@ public class CardDataConstants
 		private CardSet(int inValue)
 		{
 			// stored in lower half of byte with pack in the upper half
-			if (inValue > (Byte.MAX_VALUE >> 4) || inValue < Byte.MIN_VALUE)
+			if (inValue > ByteUtils.MAX_HEX_CHAR_VALUE  || inValue < ByteUtils.MIN_HEX_CHAR_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
 						+ "CardSet enum: " + inValue);
@@ -231,16 +235,16 @@ public class CardDataConstants
 			return value;
 		}
 		
-	    public static CardSet readFromByte(byte b)
+	    public static CardSet readFromHexChar(byte hexChar)
 	    {
 	    	for(CardSet num : CardSet.values())
 	    	{
-	    		if(b == num.getValue())
+	    		if(hexChar == num.getValue())
 	    		{
 	    			return num;
 	    		}
 	    	}
-	    	throw new IllegalArgumentException("Invalid CardSet value " + b + " was passed");
+	    	throw new IllegalArgumentException("Invalid CardSet value " + hexChar + " was passed");
 	    }
 	}
 
@@ -253,7 +257,7 @@ public class CardDataConstants
 		private byte value;
 		private EvolutionStage(int inValue)
 		{
-			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
 						+ "EvolutionStage enum: " + inValue);
@@ -287,13 +291,14 @@ public class CardDataConstants
 		LIGHTNING (0x20),
 		WATER     (0x10),
 		FIGHTING  (0x08),
-		PSYCHIC   (0x04);
+		PSYCHIC   (0x04),
 		// TODO: Colorless 0x02?
+		NONE      (0x00);
 
 		private byte value;
 		private WeaknessResistanceType(int inValue)
 		{
-			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
 						+ "WeaknessResistanceType enum: " + inValue);
@@ -325,14 +330,13 @@ public class CardDataConstants
 		DAMAGE_PLUS   (0x01),
 		DAMAGE_MINUS  (0x02),
 		DAMAGE_X      (0x03),
-		POKEMON_POWER (0x04);
-		//TODO:RESIDUAL_F    EQU 7
-		//RESIDUAL      EQU 1 << RESIDUAL_F
+		POKEMON_POWER (0x04),
+		RESIDUAL      (1 << 7);
 
 		private byte value;
 		private MoveCategory(int inValue)
 		{
-			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
 						+ "MoveCategory enum: " + inValue);
@@ -372,7 +376,7 @@ public class CardDataConstants
 		private byte value;
 		private MoveEffect1(int inValue)
 		{
-			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
 						+ "MoveEffect1 enum: " + inValue);
@@ -427,7 +431,7 @@ public class CardDataConstants
 		private byte value;
 		private MoveEffect2(int inValue)
 		{
-			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
 						+ "MoveEffect2 enum: " + inValue);
@@ -477,7 +481,7 @@ public class CardDataConstants
 		private byte value;
 		private MoveEffect3(int inValue)
 		{
-			if (inValue > Byte.MAX_VALUE || inValue < Byte.MIN_VALUE)
+			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
 						+ "MoveEffect3 enum: " + inValue);
