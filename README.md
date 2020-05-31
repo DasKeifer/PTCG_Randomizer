@@ -17,6 +17,7 @@ Some notes on terminology:
 	* [ ] Include Trainer Effects
 	* [ ] Include Trainers
 	* [ ] Fully Random/Shuffle Trainers Separately
+	* [ ] Update discard energy types if possible. If not Type lock them?
 * [ ] Remove Evolutions
 * [ ] HP, Retreat Cost 
 	* [ ] Fully Random/Shuffle
@@ -57,10 +58,14 @@ Some notes on terminology:
 	* [ ] Assign moves based on card power levels
 	* [ ] Randomize power levels of cards based on stage, apply appropiate rarities
 * [ ] Trainer Pics
-	
-* [ ]Misc tweaks
-	* [ ] Update discard energy types if possible. If not Type lock them?
-	* [ ] Include Pomo cards in booster packs (inlcuding and excluding elite 4 promos)
+* [ ] Trades
+	* [ ] Random/Shuffle
+	* [ ] Any Card
+		* [ ] Make trade cards promotional?
+* [ ] Misc tweaks
+	* [ ] Include Pomo cards in booster packs
+		* [ ] Exclude 4 Legendary cards from packs
+	* [ ] Unlimited trades
 
 ## Credits: 
 This code was originally based on the following projects and has pulled inspiration from them:
