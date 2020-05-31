@@ -35,6 +35,6 @@
 
 ## Credits: 
 This code was originally based on the following projects:
-https://github.com/xCrystal/poketcg
-https://github.com/xCrystal/TCGRandomizer
-https://github.com/anmart/UniversalCardGameRandomizer
+[pocketcg]: https://github.com/xCrystal/poketcg
+[TCGRandomizer]: https://github.com/xCrystal/TCGRandomizer
+[UniversalCardGameRandomizer]: https://github.com/anmart/UniversalCardGameRandomizer
