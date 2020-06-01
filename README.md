@@ -1,8 +1,16 @@
 # The Pokemon Trading Card Game Randomizer
+A randomizer in the works for the pokemon trading card game. No offical release yet as I'm still settin up infrastructure to support all the planned features to make things go smoother in the future.
+
+## Backstory
+I recently got into randomizers for Pokemon mainline games. I've always loved the PTCG on GBC so I looked for a randomizer for it but didn't find any with a  wide bredth of options so I decided to tackle the challenge myself.
+
+Its a project of love for me so I'm not sure when updates and fixes will come out.
 
 ## Planned and Completed Features (in rough priority order)
 Some notes on terminology:
+
 *Shuffle* - All existing items will be pooled together and redistributed. Each item will go exactly one place which may or may not be the original place
+
 *Randomize* - All existing items will be gathered. Items then will be randomly assigned and can be used any number of times or not at all
  * [ ] Create Friendly GUI
  * [ ] Selecting Rom input and output names/paths
