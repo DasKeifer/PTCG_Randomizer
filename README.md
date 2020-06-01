@@ -26,7 +26,9 @@ Some notes on terminology:
 	* [ ] Include Trainers
 	* [ ] Fully Random/Shuffle Trainers Separately
 	* [ ] Update discard energy types if possible. If not Type lock them?
-* [ ] Remove Evolutions
+* [ ] Seed & Log
+	* [ ] Set & Log Seed
+	* [ ] Optionally Log Changes
 * [ ] HP, Retreat Cost 
 	* [ ] Fully Random/Shuffle
 	* [ ] Random Percentage Based/User Inputtable
@@ -73,8 +75,9 @@ Some notes on terminology:
 * [ ] Misc tweaks
 	* [ ] Include Pomo cards in booster packs
 		* [ ] Exclude 4 Legendary cards from packs
+	* [ ] Remove Evolutions
 	* [ ] Unlimited trades
-
+	
 ## Credits: 
 This code was originally based on the following projects and has pulled inspiration from them:
 * [pocketcg](https://github.com/xCrystal/poketcg)

@@ -1,6 +1,8 @@
 package constants;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import util.ByteUtils;
@@ -72,6 +74,10 @@ public class CardDataConstants
 		//TYPE_PKMN      EQU %111
 		//TYPE_ENERGY_F  EQU 3
 		//TYPE_TRAINER_F EQU 4
+		
+		private static List<CardType> pokes = new ArrayList<>();
+		private static List<CardType> energies = new ArrayList<>();
+		private static List<CardType> trainers = new ArrayList<>();
 
 		private byte value;
 		private CardType(int inValue)
@@ -100,35 +106,62 @@ public class CardDataConstants
 	    	}
 	    	throw new IllegalArgumentException("Invalid CardType value " + b + " was passed");
 	    }
+	    
+	    public static final List<CardType> pokemonValues()
+	    {
+	    	if (pokes.isEmpty())
+	    	{
+	    		pokes.add(POKEMON_FIRE);
+	    		pokes.add(POKEMON_GRASS);
+	    		pokes.add(POKEMON_LIGHTNING);
+		    	pokes.add(POKEMON_WATER);
+		    	pokes.add(POKEMON_FIGHTING);
+		    	pokes.add(POKEMON_PSYCHIC);
+		    	pokes.add(POKEMON_COLORLESS);
+		    	pokes.add(POKEMON_UNUSED);
+	    	}
+			return pokes;
+	    }
+	    
+	    public static final List<CardType> energyValues()
+	    {
+	    	if (energies.isEmpty())
+	    	{
+		    	energies.add(ENERGY_FIRE);
+		    	energies.add(ENERGY_GRASS);
+		    	energies.add(ENERGY_LIGHTNING);
+		    	energies.add(ENERGY_WATER);
+		    	energies.add(ENERGY_FIGHTING);
+		    	energies.add(ENERGY_PSYCHIC);
+		    	energies.add(ENERGY_DOUBLE_COLORLESS);
+		    	energies.add(ENERGY_UNUSED);
+	    	}
+			return energies;
+	    }
 
+	    public static final List<CardType> trainerValues()
+	    {
+	    	if (trainers.isEmpty())
+	    	{
+	    		trainers.add(TRAINER);
+	    		trainers.add(TRAINER_UNUSED);
+	    	}
+			return trainers;
+	    }
+	    
 		public boolean isPokemonCard() 
 		{
-			return value == POKEMON_FIRE.getValue() || 
-					value == POKEMON_GRASS.getValue() ||
-					value == POKEMON_LIGHTNING.getValue() ||
-					value == POKEMON_WATER.getValue() ||
-					value == POKEMON_FIGHTING.getValue() ||
-					value == POKEMON_PSYCHIC.getValue() ||
-					value == POKEMON_COLORLESS.getValue() ||
-					value == POKEMON_UNUSED.getValue();
+			return pokemonValues().contains(this);
 		}
 
 		public boolean isEnergyCard() 
 		{
-			return value == ENERGY_FIRE.getValue() || 
-					value == ENERGY_GRASS.getValue() ||
-					value == ENERGY_LIGHTNING.getValue() ||
-					value == ENERGY_WATER.getValue() ||
-					value == ENERGY_FIGHTING.getValue() ||
-					value == ENERGY_PSYCHIC.getValue() ||
-					value == ENERGY_DOUBLE_COLORLESS.getValue() ||
-					value == ENERGY_UNUSED.getValue();
+			return energyValues().contains(this);
 		}
 
 		public boolean isTrainerCard() 
 		{
-			return value == TRAINER.getValue() || 
-					value == TRAINER_UNUSED.getValue();
+			return trainerValues().contains(this);
 		}
 	}
 

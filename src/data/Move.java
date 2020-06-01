@@ -11,11 +11,12 @@ import util.ByteUtils;
 public class Move
 {
 	public static final int TOTAL_SIZE_IN_BYTES = 19;
+	public static final Move EMPTY_MOVE = new Move();
 	
 	byte[] energyCost;
 	OneLineText name;
 	public EffectDescription description;
-	byte damage; // TODO: non multiple of 10?
+	public byte damage; // TODO: non multiple of 10?
 	MoveCategory category;
 	short effectPtr; // TODO: Make enum?
 	Set<MoveEffect1> effect1;
@@ -48,6 +49,23 @@ public class Move
 		animation = toCopy.animation;
 	}
 
+	public boolean isEmpty()
+	{
+		return name.isEmpty();
+	}
+	
+	public boolean isPokePower()
+	{
+		for(byte cost : energyCost)
+		{
+			if (cost > 0)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public String toString()
 	{
 		String tempString = "Move Name: " + name.toString() + "\nRequires:";
