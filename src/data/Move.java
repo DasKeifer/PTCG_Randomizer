@@ -27,8 +27,10 @@ public class Move
 
 	public Move()
 	{
+		energyCost = new byte[8];
 		name = new OneLineText();
 		description = new EffectDescription();
+		category = MoveCategory.DAMAGE_NORMAL;
 		effect1 = new HashSet<>();
 		effect2 = new HashSet<>();
 		effect3 = new HashSet<>();
@@ -60,10 +62,10 @@ public class Move
 		{
 			if (cost > 0)
 			{
-				return true;
+				return false;
 			}
 		}
-		return false;
+		return true;
 	}
 	
 	public String toString()
@@ -94,6 +96,20 @@ public class Move
 	public byte getCost(EnergyType inType)
 	{
 		return energyCost[inType.getValue()];
+	}
+	
+	public int getNonColorlessEnergyCosts()
+	{
+		int energyCount = 0;
+		for (EnergyType energyType : EnergyType.values())
+		{
+			if (energyType != EnergyType.COLORLESS)
+			{
+				energyCount += getCost(energyType);
+			}
+		}
+		
+		return energyCount;
 	}
 	
 	public void setCost(EnergyType inType, byte inCost)

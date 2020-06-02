@@ -1,6 +1,8 @@
 package data;
 
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import constants.RomConstants;
 import rom.Texts;
@@ -64,7 +66,8 @@ public abstract class RomText
 
 	public void replaceAll(String regex, String replacement)
 	{
-		text = text.replaceAll(regex, replacement);
+		// Use pattern quote because they use $ for nidoran male which screws up replace all
+		text = text.replaceAll(regex, Matcher.quoteReplacement(replacement));
 	}
 	
 	protected void genericReadTextFromIds(byte[] bytes, int[] textIdIndexes, Texts idsToText, Set<Short> textIdsUsed)
@@ -142,8 +145,12 @@ public abstract class RomText
 		return block;
 	}
 	
-	private static String removeEnglishCharTypeChars(String name)
+	private static String removeEnglishCharTypeChars(String text)
 	{
-		return name.replaceAll("" + RomConstants.ENLGISH_TEXT_CHAR, "");
+		if (text.startsWith("" + RomConstants.ENLGISH_TEXT_CHAR))
+		{
+			text = text.substring(1);
+		}
+		return text.replaceAll(StringUtils.BLOCK_BREAK + RomConstants.ENLGISH_TEXT_CHAR, StringUtils.BLOCK_BREAK);
 	}
 }

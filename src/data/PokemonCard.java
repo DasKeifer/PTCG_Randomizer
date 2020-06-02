@@ -21,7 +21,7 @@ public class PokemonCard extends Card
 	byte retreatCost; // TODO: max allowed?
 	WeaknessResistanceType weakness; // TODO: Allows multiple?
 	WeaknessResistanceType resistance; // TODO: Allows multiple?
-	OneLineText pokemonCategory; // TODO: Investigate
+	public OneLineText pokemonCategory; // TODO: Investigate
 	public byte pokedexNumber;
 	byte unknownByte1; // TODO: Always 0?
 	byte level; // TODO: Investigate No gameplay impact?
@@ -103,14 +103,64 @@ public class PokemonCard extends Card
 	public void sortMoves()
 	{
 		Move tempMove;
+		boolean needsSwap;
 		for (int moveIndex = 0; moveIndex < moves.length - 1; moveIndex++)
 		{
-			if (moves[moveIndex].isEmpty() && !moves[moveIndex + 1].isEmpty() ||
-					moves[moveIndex].damage < moves[moveIndex].damage)
+			needsSwap = false;
+			// Move empty moves to the end
+			if (moves[moveIndex].isEmpty() || moves[moveIndex + 1].isEmpty())
+			{
+				if (moves[moveIndex].isEmpty() && !moves[moveIndex + 1].isEmpty() )
+				{
+					needsSwap = true;
+				}
+			}
+			// Move poke powers first
+			else if (!moves[moveIndex].isPokePower() && moves[moveIndex + 1].isPokePower())
+			{
+				needsSwap = true;
+			}
+			else
+			{
+				int numColorless1 = moves[moveIndex].getCost(EnergyType.COLORLESS);
+				int numColorless2 = moves[moveIndex + 1].getCost(EnergyType.COLORLESS);
+				int numNonColorless1 = moves[moveIndex].getNonColorlessEnergyCosts();
+				int numNonColorless2 = moves[moveIndex + 1].getNonColorlessEnergyCosts();
+				
+				// Move higher total energies last
+				if (numColorless1 + numNonColorless1 > numColorless2 + numNonColorless2)
+				{
+					needsSwap = true;
+				}
+				else if (numColorless1 + numNonColorless1 == numColorless2 + numNonColorless2)
+				{
+					// If equal num, move more non-colorless last
+					if (numNonColorless1 > numNonColorless2)
+					{
+						needsSwap = true;
+					}
+					else if (numNonColorless1 == numNonColorless2)
+					{
+						// If equal move higher damage last
+						if (moves[moveIndex].damage > moves[moveIndex + 1].damage)
+						{
+							needsSwap = true;
+						}
+						// If equal, moves with effects last
+						else if (moves[moveIndex].damage == moves[moveIndex + 1].damage &&
+								!moves[moveIndex].description.isEmpty() && moves[moveIndex + 1].description.isEmpty())
+						{
+							needsSwap = true;
+						}
+					}
+				}
+			}
+				
+			if (needsSwap)
 			{
 				tempMove = moves[moveIndex];
-				moves[moveIndex] = moves[moveIndex - 1];
-				moves[moveIndex - 1] = tempMove;
+				moves[moveIndex] = moves[moveIndex + 1];
+				moves[moveIndex + 1] = tempMove;
 				moveIndex = 0; // restart sort loop
 			}
 		}

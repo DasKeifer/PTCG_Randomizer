@@ -22,10 +22,10 @@ public class Cards<T extends Card>
 		cardSet = new TreeSet<>(defaultSorter);
 	}
 	
-	public Cards(List<T> toAdd) 
+	public Cards(List<T> list) 
 	{
 		this();
-		cardSet.addAll(toAdd);
+		cardSet.addAll(list);
 	}
 
 	public Cards<T> getCardsWithName(String name)
@@ -34,25 +34,28 @@ public class Cards<T extends Card>
 				card -> name.equals(card.name.getText())).collect(Collectors.toList()));
 	}
 	
-	@SuppressWarnings("unchecked")
 	public Cards<NonPokemonCard> getEnergyCards()
 	{
-		return new Cards<>((List<NonPokemonCard>) cardSet.stream().filter(
-				card -> card.type.isEnergyCard()).collect(Collectors.toList()));
+		return new Cards<>(cardSet.stream()
+				.filter(card -> card.type.isEnergyCard())
+				.map(card -> (NonPokemonCard)card)
+				.collect(Collectors.toList()));
 	}
 
-	@SuppressWarnings("unchecked")
 	public Cards<PokemonCard> getPokemonCards()
 	{
-		return new Cards<>((List<PokemonCard>) cardSet.stream().filter(
-				card -> card.type.isPokemonCard()).collect(Collectors.toList()));
+		return new Cards<>(cardSet.stream()
+				.filter(card -> card.type.isPokemonCard())
+				.map(card -> (PokemonCard)card)
+				.collect(Collectors.toList()));
 	}
 
-	@SuppressWarnings("unchecked")
 	public Cards<NonPokemonCard> getTrainerCards()
 	{
-		return new Cards<>((List<NonPokemonCard>) cardSet.stream().filter(
-				card -> card.type.isTrainerCard()).collect(Collectors.toList()));
+		return new Cards<>(cardSet.stream()
+				.filter(card -> card.type.isTrainerCard())
+				.map(card -> (NonPokemonCard)card)
+				.collect(Collectors.toList()));
 	}
 	
 	public Cards<T> getCardsOfCardType(CardType cardType)

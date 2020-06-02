@@ -36,6 +36,19 @@ public class Randomizer
 		//((PokemonCard)bulba.get(0)).move1 = new Move(((PokemonCard)venu.get(1)).move1);
 		venu.get(1).name.setText("Test-a-saur");
 		
+		double[] numWithMoves = {0, 0.33, 0.67};
+		Cards<PokemonCard> pokes = rom.cardsByName.getPokemonCards();
+		randomizeCards(pokes, false, 1, numWithMoves, false);
+
+		// TODO: Goldeen category screwed up
+		// TODO: Magnemite flamethrowing ninetails mispelled
+		// TODO: Energy Types display two wide (eevee)/extra space?
+		test(rom.cardsByName.getCardsWithName("Goldeen").toList());
+		test(rom.cardsByName.getCardsWithName("Eevee").toList());
+		test(rom.cardsByName.getCardsWithName("Magnemite").toList());
+		test(rom.cardsByName.getCardsWithName("Ninetails").toList());
+		System.out.println(((PokemonCard)rom.cardsByName.getCardsWithName("Goldeen").toList().get(0)).pokemonCategory);
+		
 		RomHandler.writeRom(rom);
 	}
 	
@@ -59,7 +72,7 @@ public class Randomizer
 			Cards<PokemonCard> pokes,
 			boolean matchTypes,
 			int numNonPokePower,
-			int[] numWithNumMoves,
+			double[] percentWithNumMoves,
 			boolean percentsPerType
 	)
 	{		
@@ -75,13 +88,13 @@ public class Randomizer
 				numMovesPerPoke.putAll(
 						getNumMovesPerCard(
 								pokes.getCardsOfCardType(pokeType), 
-								numWithNumMoves));
+								percentWithNumMoves));
 			}	
 		}
 		else
 		{
 			// Otherwise do them all together
-			numMovesPerPoke = getNumMovesPerCard(pokes, numWithNumMoves);
+			numMovesPerPoke = getNumMovesPerCard(pokes, percentWithNumMoves);
 		}
 		
 		// If we want to match the move to the poke type,
@@ -108,18 +121,17 @@ public class Randomizer
 	
 	private static Map<CardId, Integer> getNumMovesPerCard(
 			Cards<PokemonCard> pokes,
-			int[] numWithNumMoves
+			double[] percentWithNumMoves
 	)
 	{
 		int numCards = pokes.count();
 		int numCardsRemaining = numCards;
-		int maxNumMoves = numWithNumMoves.length - 1;
-		int[] numCardsWithNumMoves = new int[maxNumMoves + 1];
-		for (int numMoves = 0; numMoves < maxNumMoves + 1; numMoves++)
+		int[] numCardsWithNumMoves = new int[PokemonCard.NUM_MOVES + 1];
+		for (int numMoves = 0; numMoves < PokemonCard.NUM_MOVES + 1; numMoves++)
 		{
-			if (numWithNumMoves[numMoves] * numCards <= numCardsRemaining)
+			if (percentWithNumMoves[numMoves] * numCards <= numCardsRemaining)
 			{
-				numCardsWithNumMoves[numMoves] = numWithNumMoves[numMoves] * numCards;
+				numCardsWithNumMoves[numMoves] = (int) (percentWithNumMoves[numMoves] * numCards);
 				numCardsRemaining -= numCardsWithNumMoves[numMoves];
 			}
 			else 
@@ -127,6 +139,8 @@ public class Randomizer
 				numCardsWithNumMoves[numMoves] = numCardsRemaining;
 				numCardsRemaining = 0;
 			}
+			
+			System.out.println(numCardsWithNumMoves[numMoves]);
 		}
 
 		Map<CardId, Integer> cardMovesMap = new HashMap<>();	
@@ -139,7 +153,7 @@ public class Randomizer
 		int triesCount = 0;
 		CardId randCardId;
 		List<PokemonCard> pokeList = pokes.toList();
-		for (int numMoves = 0; numMoves < maxNumMoves; numMoves++)
+		for (int numMoves = 0; numMoves < PokemonCard.NUM_MOVES; numMoves++)
 		{
 			for (int count = 0; count < numCardsWithNumMoves[numMoves]; count++)
 			{
@@ -203,14 +217,14 @@ public class Randomizer
 	)
 	{
 		// Determine which random move to use
-		int randMoveIndex = rand.nextInt(moves.size()) + 1;
+		int randMoveIndex = rand.nextInt(moves.size());
 		if (forceNonPokePower)
 		{
 			int maxTries = 10000;
 			int tries = 0;
 			while (moves.get(randMoveIndex).isPokePower())
 			{
-				randMoveIndex = rand.nextInt(moves.size()) + 1;
+				randMoveIndex = rand.nextInt(moves.size());
 				if (tries > maxTries)
 				{
 					System.err.println("Failed to find a non pokemon power - using a poke power in its place");
