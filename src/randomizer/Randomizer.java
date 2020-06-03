@@ -1,23 +1,17 @@
 package randomizer;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import javax.management.RuntimeErrorException;
-
 import constants.CardConstants.CardId;
 import constants.CardDataConstants.CardType;
-import constants.CardDataConstants.EnergyType;
-import constants.RomConstants;
 import data.Card;
 import data.Cards;
 import data.Move;
 import data.PokemonCard;
-import data.RomText;
 import rom.Texts;
 import rom.RomData;
 import rom.RomHandler;
@@ -30,11 +24,11 @@ public class Randomizer
 	public static void main(String[] args) throws IOException //Temp
 	{
 		RomData rom = RomHandler.readRom();
-		List<Card> venu = rom.cardsByName.getCardsWithName("Venusaur").toList();
+		List<Card> venu = rom.allCards.getCardsWithName("Venusaur").toList();
 		venu.get(1).name.setTextAndDeformat("Test-a-saur");
 		
 		double[] numWithMoves = {0, 0.33, 0.67};
-		Cards<PokemonCard> pokes = rom.cardsByName.getPokemonCards();
+		Cards<PokemonCard> pokes = rom.allCards.getPokemonCards();
 		randomizeCards(pokes, false, 1, numWithMoves, false);
 		
 		RomHandler.writeRom(rom);

@@ -43,7 +43,7 @@ public class RomHandler
 		verifyRom(rom.rawBytes);
 		
 		Texts allText = readAllTextFromPointers(rom.rawBytes);
-		rom.cardsByName = readAllCardsFromPointers(rom.rawBytes, allText);
+		rom.allCards = readAllCardsFromPointers(rom.rawBytes, allText);
 		rom.idsToText = allText;
 		
 		return rom;
@@ -51,7 +51,7 @@ public class RomHandler
 	
 	public static void writeRom(RomData rom) throws IOException
 	{
-		setAllCardsAnPointers(rom.rawBytes, rom.cardsByName, rom.idsToText);
+		setAllCardsAnPointers(rom.rawBytes, rom.allCards, rom.idsToText);
 		setTextAndPointers(rom.rawBytes, rom.idsToText);
 		
 		writeRaw(rom.rawBytes);
@@ -78,9 +78,9 @@ public class RomHandler
 		}
 	}
 	
-	private static Cards readAllCardsFromPointers(byte[] rawBytes, Texts allText)
+	private static Cards<Card> readAllCardsFromPointers(byte[] rawBytes, Texts allText)
 	{
-		Cards allCards = new Cards();
+		Cards<Card> allCards = new Cards<>();
 		Set<Short> convertedTextPtrs = new HashSet<>();
 
 		// Read the text based on the pointer map in the rom
@@ -138,7 +138,7 @@ public class RomHandler
 		return textMap;
 	}
 	
-	private static void setAllCardsAnPointers(byte[] bytes, Cards cards, Texts allText)
+	private static void setAllCardsAnPointers(byte[] bytes, Cards<Card> cards, Texts allText)
 	{
 		// First write the 0 index "null" text pointer
 		int ptrIndex = RomConstants.CARD_POINTERS_LOC - RomConstants.CARD_POINTER_SIZE_IN_BYTES;
@@ -198,7 +198,6 @@ public class RomHandler
 		{			
 			// First get the text and determine if we need to shift the index to 
 			// avoid a storage block boundary
-			int ii = textIndex;
 			byte[] textBytes = ptrToText.getAtId(textId).getBytes();
 			if (textIndex + textBytes.length + 2 > nextTextStorageBlock)
 			{
