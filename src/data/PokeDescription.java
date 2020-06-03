@@ -28,7 +28,7 @@ public class PokeDescription extends RomText
 	public int convertToIdsAndWriteData(byte[] bytes, int textIdIndex, Texts idToText)
 	{
 		int[] textIdIndexes = {textIdIndex};
-		setTextPreservingNewlines(format(getText()));
+		setTextVerbatim(format(getText()));
 		genericConvertToIdsAndWriteText(bytes, textIdIndexes, idToText);
 		return textIdIndex + RomConstants.TEXT_ID_SIZE_IN_BYTES;
 	}

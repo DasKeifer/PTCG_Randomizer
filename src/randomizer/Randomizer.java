@@ -12,10 +12,12 @@ import javax.management.RuntimeErrorException;
 import constants.CardConstants.CardId;
 import constants.CardDataConstants.CardType;
 import constants.CardDataConstants.EnergyType;
+import constants.RomConstants;
 import data.Card;
 import data.Cards;
 import data.Move;
 import data.PokemonCard;
+import data.RomText;
 import rom.Texts;
 import rom.RomData;
 import rom.RomHandler;
@@ -29,25 +31,11 @@ public class Randomizer
 	{
 		RomData rom = RomHandler.readRom();
 		List<Card> venu = rom.cardsByName.getCardsWithName("Venusaur").toList();
-		
-		//test(venu);
-
-		List<Card> bulba = rom.cardsByName.getCardsWithName("Bulbasaur").toList();
-		//((PokemonCard)bulba.get(0)).move1 = new Move(((PokemonCard)venu.get(1)).move1);
-		venu.get(1).name.setText("Test-a-saur");
+		venu.get(1).name.setTextAndDeformat("Test-a-saur");
 		
 		double[] numWithMoves = {0, 0.33, 0.67};
 		Cards<PokemonCard> pokes = rom.cardsByName.getPokemonCards();
 		randomizeCards(pokes, false, 1, numWithMoves, false);
-
-		// TODO: Goldeen category screwed up
-		// TODO: Magnemite flamethrowing ninetails mispelled
-		// TODO: Energy Types display two wide (eevee)/extra space?
-		test(rom.cardsByName.getCardsWithName("Goldeen").toList());
-		test(rom.cardsByName.getCardsWithName("Eevee").toList());
-		test(rom.cardsByName.getCardsWithName("Magnemite").toList());
-		test(rom.cardsByName.getCardsWithName("Ninetails").toList());
-		System.out.println(((PokemonCard)rom.cardsByName.getCardsWithName("Goldeen").toList().get(0)).pokemonCategory);
 		
 		RomHandler.writeRom(rom);
 	}

@@ -1,5 +1,9 @@
 package constants;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 public class RomConstants 
 {
 	//Counts
@@ -16,8 +20,20 @@ public class RomConstants
 	public static final int PREFERRED_LINES_PER_EFFECT_DESC = 6;
 	public static final int MAX_LINES_PER_EFFECT_DESC = 7;
 	
-	// Text type chars
+	// Text type chars and other special text
 	public static final char ENLGISH_TEXT_CHAR = 0x06;
+	public static final char SPECIAL_SYMBOL_START_CHAR = 0x05;
+	public static final String ENERGY_CHARS_FIRE      = SPECIAL_SYMBOL_START_CHAR + "" + (char)0x01;
+	public static final String ENERGY_CHARS_GRASS     = SPECIAL_SYMBOL_START_CHAR + "" + (char)0x02;
+	public static final String ENERGY_CHARS_LIGHTNING = SPECIAL_SYMBOL_START_CHAR + "" + (char)0x03;
+	public static final String ENERGY_CHARS_WATER     = SPECIAL_SYMBOL_START_CHAR + "" + (char)0x04;
+	public static final String ENERGY_CHARS_FIGHTING  = SPECIAL_SYMBOL_START_CHAR + "" + (char)0x05;
+	public static final String ENERGY_CHARS_PSYCHIC   = SPECIAL_SYMBOL_START_CHAR + "" + (char)0x06;
+	public static final String ENERGY_CHARS_COLORLESS = SPECIAL_SYMBOL_START_CHAR + "" + (char)0x07;
+	public static final String[] SPECIAL_SYMBOLS = {ENERGY_CHARS_FIRE, ENERGY_CHARS_GRASS,
+			ENERGY_CHARS_LIGHTNING, ENERGY_CHARS_WATER, ENERGY_CHARS_FIGHTING,
+			ENERGY_CHARS_PSYCHIC, ENERGY_CHARS_COLORLESS
+	};
 	
 	//Locations
 	public static final int HEADER_LOCATION = 0x134;
@@ -54,6 +70,7 @@ public class RomConstants
 	public static final int TEXT_POINTER_SIZE_IN_BYTES = 3;
 	public static final int TEXT_POINTERS_LOC = 0x34000 + TEXT_POINTER_SIZE_IN_BYTES; // TextOffsets
 	public static final int TEXT_POINTER_OFFSET = 0x34000;
+	public static final int TEXT_STORAGE_CHUNK_SIZE = 0x4000;
 	
 	// TODO Remove - read from pointers
 	public static final int FIRST_CARD_BYTE = 0x30e28;
@@ -63,6 +80,16 @@ public class RomConstants
 	// care about the card texts which are all grouped at the end
 	public static final int FIRST_TEXT_BYTE = 0x3630a;
 	public static final int LAST_TEXT_BYTE = 0x67fff; // Used for padding data as needed
+	
+	// Misspelled card names
+	public static final Map<String, String> MISPELLED_CARD_NAMES;
+    static {
+        Map<String, String> tempMap = new HashMap<>();
+        tempMap.put("Ninetails", "Ninetales");
+        MISPELLED_CARD_NAMES = Collections.unmodifiableMap(tempMap);
+    }
+    
+	
 	
 	//Misc
 	public static final byte[] HEADER = 
