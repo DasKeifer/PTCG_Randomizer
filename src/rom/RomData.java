@@ -6,7 +6,7 @@ import data.Cards;
 public class RomData
 {
 	// Make package so we don't change it unintentionally
-	byte[] rawBytes;
+	public byte[] rawBytes;
 	
 	// Make public - we will be modifying these
 	public Cards<Card> allCards = new Cards<>();

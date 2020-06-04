@@ -75,6 +75,19 @@ public class PokemonCard extends Card
 		return moves;
 	}
 	
+	public int getNumMoves()
+	{
+		int numMoves = 0;
+		for (Move move : moves)
+		{
+			if (!move.isEmpty())
+			{
+				numMoves++;
+			}
+		}
+		return numMoves;
+	}
+	
 	public void setMove(Move move, int moveSlot)
 	{
 		try

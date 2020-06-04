@@ -27,13 +27,37 @@ public class Randomizer
 		List<Card> venu = rom.allCards.getCardsWithName("Venusaur").toList();
 		venu.get(1).name.setTextAndDeformat("Test-a-saur");
 		
-		double[] numWithMoves = {0.05, 0.35, 0.60};
 		Cards<PokemonCard> pokes = rom.allCards.getPokemonCards();
-		randomizeCards(pokes, true, 1, numWithMoves, true);
+
+		//double[] numWithMoves = {0.05, 0.35, 0.60};
+		Map<CardId, Integer> numMovesPerPokemon = getNumMovesPerPokemon(pokes);
+		shuffleOrRandomizePokemonMoves(false, pokes, numMovesPerPokemon, true, 1);
 		
-		// TODO investigate call for family text with Nidoran and in general
-		// Assuming it will not randomize as is? can we make it randomize?
 		test(rom.allCards.getCardsWithName("Metapod"));
+		
+		// Temp hack to add more value cards to a pack
+		// 11 is the most we can do
+		for (int i = 0; i < 16; i ++)
+		{
+			System.out.println(rom.rawBytes[0x1e4d4 + i]);
+			if (i % 4 == 1)
+			{
+				rom.rawBytes[0x1e4d4 + i] = 5;
+			}
+			else if (i % 4 == 2)
+			{
+				rom.rawBytes[0x1e4d4 + i] = 4;
+			}
+			else if (i % 4 == 3)
+			{
+				rom.rawBytes[0x1e4d4 + i] = 2;
+			}
+			else
+			{
+				rom.rawBytes[0x1e4d4 + i] = 0;
+			}
+		}
+		
 		
 		RomHandler.writeRom(rom);
 	}
@@ -53,60 +77,19 @@ public class Randomizer
 			System.out.println(allText.getAtId(i));
 		}
 	}
-			
-	public static void randomizeCards(
-			Cards<PokemonCard> pokes,
-			boolean withinTypes,
-			int numNonPokePower,
-			double[] percentWithNumMoves,
-			boolean percentsPerType
-	)
-	{		
-		Map<CardId, Integer> numMovesPerPoke = null;		
-		if (percentsPerType)
+
+	public static Map<CardId, Integer> getNumMovesPerPokemon(Cards<PokemonCard> pokes)
+	{
+		Map<CardId, Integer> cardMovesMap = new HashMap<>();
+		for (PokemonCard card : pokes.iterable())
 		{
-			numMovesPerPoke = new HashMap<>();
-			
-			// Do one energy type at a time
-			for (CardType pokeType : CardType.pokemonValues())
-			{				
-				// Determine the number of moves per pokemon for this type
-				numMovesPerPoke.putAll(
-						getNumMovesPerCard(
-								pokes.getCardsOfCardType(pokeType), 
-								percentWithNumMoves));
-			}	
+			cardMovesMap.put(card.id, card.getNumMoves());
 		}
-		else
-		{
-			// Otherwise do them all together
-			numMovesPerPoke = getNumMovesPerCard(pokes, percentWithNumMoves);
-		}
-		
-		// If we want to match the move to the poke type,
-		if (withinTypes)
-		{
-			// Do one energy type at a time
-			for (CardType pokeType : CardType.pokemonValues())
-			{
-				// Get the pokemon of this type and the moves if we are set
-				// to match the types
-				Cards<PokemonCard> typeCards = pokes.getCardsOfCardType(pokeType);
-				List<Move> typeMove = typeCards.getAllMoves();
-				shuffleOrRandomizeMoves(false, typeCards, numMovesPerPoke, numNonPokePower, typeMove);
-			}	
-		}
-		else
-		{
-			// Otherwise get all the moves and do them at once
-			List<Move> typeMove = pokes.getAllMoves();
-			shuffleOrRandomizeMoves(false, pokes, numMovesPerPoke, numNonPokePower, typeMove);
-		}
-		
+		return cardMovesMap;
 	}
 	
-	private static Map<CardId, Integer> getNumMovesPerCard(
-			Cards<PokemonCard> pokes,
+	public static Map<CardId, Integer> getRandNumMovesPerPokemon(
+			Cards<PokemonCard> pokes, 
 			double[] percentWithNumMoves
 	)
 	{
@@ -128,7 +111,7 @@ public class Randomizer
 			
 			System.out.println(numCardsWithNumMoves[numMoves]);
 		}
-
+	
 		Map<CardId, Integer> cardMovesMap = new HashMap<>();	
 		for (PokemonCard card : pokes.iterable())
 		{
@@ -161,8 +144,58 @@ public class Randomizer
 		
 		return cardMovesMap;
 	}
+
+	public static Map<CardId, Integer> getRandNumMovesPerPokemonByType(
+			Cards<PokemonCard> pokes, 
+			Map<CardType, double[]> percentWithNumMovesByType
+	)
+	{
+		Map<CardId, Integer> numMovesPerPoke = new HashMap<>();
+		
+		// Do one energy type at a time
+		for (CardType pokeType : CardType.pokemonValues())
+		{				
+			// Determine the number of moves per pokemon for this type
+			numMovesPerPoke.putAll(
+					getRandNumMovesPerPokemon(
+							pokes.getCardsOfCardType(pokeType), 
+							percentWithNumMovesByType.get(pokeType)));
+		}	
+		
+		return numMovesPerPoke;
+	}
+
+	public static void shuffleOrRandomizePokemonMoves(
+			boolean shuffle,
+			Cards<PokemonCard> pokes,
+			Map<CardId, Integer> numMovesPerPoke,
+			boolean withinTypes,
+			int numNonPokePower
+	)
+	{		
+		// If we want to match the move to the poke type,
+		if (withinTypes)
+		{
+			// Do one energy type at a time
+			for (CardType pokeType : CardType.pokemonValues())
+			{
+				// Get the pokemon of this type and the moves if we are set
+				// to match the types
+				Cards<PokemonCard> typeCards = pokes.getCardsOfCardType(pokeType);
+				List<Move> typeMove = typeCards.getAllMoves();
+				shuffleOrRandomizePokemonMovesHelper(shuffle, typeCards, numMovesPerPoke, numNonPokePower, typeMove);
+			}	
+		}
+		else
+		{
+			// Otherwise get all the moves and do them at once
+			List<Move> typeMove = pokes.getAllMoves();
+			shuffleOrRandomizePokemonMovesHelper(shuffle, pokes, numMovesPerPoke, numNonPokePower, typeMove);
+		}
+		
+	}
 	
-	private static void shuffleOrRandomizeMoves(
+	private static void shuffleOrRandomizePokemonMovesHelper(
 			boolean shuffle,
 			Cards<PokemonCard> pokes,
 			Map<CardId, Integer> numMovesPerPoke,
