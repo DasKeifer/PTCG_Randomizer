@@ -89,8 +89,8 @@ public class EffectDescription extends RomText
 			// Next try making our own blocks
 			tempText = descExpanded.replace(StringUtils.BLOCK_BREAK, " ");
 			formatted = StringUtils.prettyFormatText(tempText,
-					RomConstants.MAX_CHARS_PER_LINE, RomConstants.PREFERRED_LINES_PER_EFFECT_DESC,
-					RomConstants.MAX_LINES_PER_EFFECT_DESC, NUM_POINTERS_IN_FILE);
+					RomConstants.MAX_CHARS_PER_LINE, RomConstants.MAX_LINES_PER_EFFECT_DESC,
+					RomConstants.PREFERRED_LINES_PER_EFFECT_DESC, NUM_POINTERS_IN_FILE);
 			
 			if (formatted == null)
 			{

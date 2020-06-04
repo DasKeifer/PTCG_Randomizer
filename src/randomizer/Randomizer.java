@@ -18,8 +18,8 @@ import rom.RomHandler;
 
 public class Randomizer 
 {
-	static final long seed = 42;
-	static Random rand = new Random(seed);
+	static final long SEED = 42;
+	static Random rand = new Random(SEED);
 	
 	public static void main(String[] args) throws IOException //Temp
 	{
@@ -27,16 +27,20 @@ public class Randomizer
 		List<Card> venu = rom.allCards.getCardsWithName("Venusaur").toList();
 		venu.get(1).name.setTextAndDeformat("Test-a-saur");
 		
-		double[] numWithMoves = {0, 0.33, 0.67};
+		double[] numWithMoves = {0.05, 0.35, 0.60};
 		Cards<PokemonCard> pokes = rom.allCards.getPokemonCards();
-		randomizeCards(pokes, false, 1, numWithMoves, false);
+		randomizeCards(pokes, true, 1, numWithMoves, true);
+		
+		// TODO investigate call for family text with Nidoran and in general
+		// Assuming it will not randomize as is? can we make it randomize?
+		test(rom.allCards.getCardsWithName("Metapod"));
 		
 		RomHandler.writeRom(rom);
 	}
 	
-	public static void test(List<Card> cards)
+	public static void test(Cards<Card> cards)
 	{
-		for (Card card : cards)
+		for (Card card : cards.iterable())
 		{
 			System.out.println(card.toString() + "\n");
 		}
@@ -52,7 +56,7 @@ public class Randomizer
 			
 	public static void randomizeCards(
 			Cards<PokemonCard> pokes,
-			boolean matchTypes,
+			boolean withinTypes,
 			int numNonPokePower,
 			double[] percentWithNumMoves,
 			boolean percentsPerType
@@ -80,7 +84,7 @@ public class Randomizer
 		}
 		
 		// If we want to match the move to the poke type,
-		if (matchTypes)
+		if (withinTypes)
 		{
 			// Do one energy type at a time
 			for (CardType pokeType : CardType.pokemonValues())

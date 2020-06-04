@@ -6,12 +6,12 @@ import java.util.List;
 public class StringUtils 
 {
 	public static final String BLOCK_BREAK = "" + (char) 0x0C;
-	
+
 	public static String prettyFormatText(String text, int maxCharsPerLine, int maxLines)
 	{
 		return prettyFormatText(text, maxCharsPerLine, maxLines, maxLines, 1);
 	}
-	
+
 	public static String prettyFormatText(String text, int maxCharsPerLine, int maxLinesPerBlock, int preferedLinesPerBlock, int maxNumberOfBlocks)
 	{
 		String[] textWords = text.split(" ");
@@ -33,16 +33,16 @@ public class StringUtils
 				currLine = word;
 			}
 		}
-		
+
 		// Add the last line that was being worked on
 		formattedLines.add(currLine);
-		
+
 		// See if there is enough space
 		if (formattedLines.size() > maxLinesPerBlock * maxNumberOfBlocks)
 		{
 			return null;
 		}
-		
+
 		// Figure our if we need to overpack it
 		int linesPerBlock = preferedLinesPerBlock;
 		if (formattedLines.size() > preferedLinesPerBlock * maxNumberOfBlocks)
@@ -52,12 +52,12 @@ public class StringUtils
 
 		return formatIntoBlocks(formattedLines, linesPerBlock);
 	}
-	
+
 	public static String packFormatText(String text, int charsPerLine, int maxLines)
 	{
 		return packFormatText(text, charsPerLine, maxLines, 1);
 	}
-	
+
 	public static String packFormatText(String text, int charsPerLine, int maxLinesPerBlock, int maxNumberOfBlocks)
 	{
 		List<String> packedLines = new ArrayList<>();
@@ -72,31 +72,47 @@ public class StringUtils
 			packedLines.add(text.substring(0, numCharsToTake).trim());
 			remainingText = remainingText.substring(numCharsToTake).trim();
 		}
-		
+
 		// Make sure it will fit
 		if (packedLines.size() > maxLinesPerBlock * maxNumberOfBlocks)
 		{
 			return null;
 		}
-		
+
 		return formatIntoBlocks(packedLines, maxLinesPerBlock);
 	}
-	
+
 	private static String formatIntoBlocks(List<String> lines, int linesPerBlock)
 	{
 		StringBuilder formatted = new StringBuilder();
 		int linesInBlock = 0;
+		int totalLinesSoFar = 0;
+		boolean hasOrphan = lines.size() % linesPerBlock == 1;
+
+		// Figure out if we need to prevent orphans
 		for (String line : lines)
 		{
 			if (linesInBlock >= linesPerBlock)
 			{
 				formatted.append(BLOCK_BREAK);
+				linesInBlock = 0;
 			}
 			else if (formatted.length() != 0)
 			{
-				formatted.append("\n");
+				if (hasOrphan && totalLinesSoFar == lines.size() - 2)
+				{
+					// Orphan case detected! Prevent it
+					formatted.append(BLOCK_BREAK);
+					linesInBlock = 0;
+				}
+				else 
+				{
+					formatted.append("\n");
+				}
 			}
 			formatted.append(line);
+			linesInBlock++;
+			totalLinesSoFar++;
 		}
 		return formatted.toString();
 	}

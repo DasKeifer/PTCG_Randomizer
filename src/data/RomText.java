@@ -47,7 +47,9 @@ public abstract class RomText
 		}
 		else
 		{
-			text = inText.replaceAll("\n", " ");
+			// Sometimes there is an extra space at the end of the line
+			text = inText.replaceAll(" \n", " ");
+			text = text.replaceAll("\n", " ");
 			text = removeEnglishCharTypeChars(text);
 			text = reserveSpaceForSpecialChars(text);
 		}
