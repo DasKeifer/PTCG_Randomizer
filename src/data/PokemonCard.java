@@ -10,18 +10,18 @@ public class PokemonCard extends Card
 {
 	public static final int TOTAL_SIZE_IN_BYTES = 65;
 	public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
+	public static final int NUM_MOVES = 2;
 	
 	byte hp; // TODO: non multiples of 10?
 	EvolutionStage stage;
 	OneLineText prevEvoName;
 	
-	public Move move1;
-	Move move2;
+	private Move[] moves;
 	
 	byte retreatCost; // TODO: max allowed?
 	WeaknessResistanceType weakness; // TODO: Allows multiple?
 	WeaknessResistanceType resistance; // TODO: Allows multiple?
-	OneLineText pokemonCategory; // TODO: Investigate
+	public OneLineText pokemonCategory; // TODO: Investigate
 	public byte pokedexNumber;
 	byte unknownByte1; // TODO: Always 0?
 	byte level; // TODO: Investigate No gameplay impact?
@@ -36,8 +36,11 @@ public class PokemonCard extends Card
 		super();
 		
 		prevEvoName = new OneLineText();
-		move1 = new Move();
-		move2 = new Move();
+		moves = new Move[NUM_MOVES];
+		for (int moveIndex = 0; moveIndex < NUM_MOVES; moveIndex++)
+		{
+			moves[moveIndex] = new Move();
+		}
 		pokemonCategory = new OneLineText();
 		description = new PokeDescription();
 	}
@@ -49,8 +52,11 @@ public class PokemonCard extends Card
 		hp = toCopy.hp;
 		stage = toCopy.stage;
 		prevEvoName = new OneLineText(toCopy.prevEvoName);
-		move1 = new Move(toCopy.move1);
-		move2 = new Move(toCopy.move2);;
+		moves = new Move[NUM_MOVES];
+		for (int moveIndex = 0; moveIndex < NUM_MOVES; moveIndex++)
+		{
+			moves[moveIndex] = new Move(toCopy.moves[moveIndex]);
+		}
 		retreatCost = toCopy.retreatCost;
 		weakness = toCopy.weakness;
 		resistance = toCopy.resistance;
@@ -64,10 +70,120 @@ public class PokemonCard extends Card
 		unknownByte2 = toCopy.unknownByte2;
 	}
 	
+	public Move[] getAllMoves()
+	{
+		return moves;
+	}
+	
+	public int getNumMoves()
+	{
+		int numMoves = 0;
+		for (Move move : moves)
+		{
+			if (!move.isEmpty())
+			{
+				numMoves++;
+			}
+		}
+		return numMoves;
+	}
+	
+	public void setMove(Move move, int moveSlot)
+	{
+		try
+		{
+			moves[moveSlot] = new Move(move);
+		}
+		catch (IndexOutOfBoundsException ioobe)
+		{
+			throw new IllegalArgumentException("Bad move slot " + moveSlot + "was passed!");
+		}
+	}
+	
+	public void setMoves(Move[] newMoves)
+	{
+		if (newMoves.length != moves.length)
+		{
+			throw new IllegalArgumentException("Bad number of moves " + newMoves.length + "was passed!");
+		}
+		
+		for (int moveIndex = 0; moveIndex < moves.length; moveIndex++)
+		{
+			moves[moveIndex] = new Move(newMoves[moveIndex]);
+		}
+	}
+	
+	public void sortMoves()
+	{
+		Move tempMove;
+		boolean needsSwap;
+		for (int moveIndex = 0; moveIndex < moves.length - 1; moveIndex++)
+		{
+			needsSwap = false;
+			// Move empty moves to the end
+			if (moves[moveIndex].isEmpty() || moves[moveIndex + 1].isEmpty())
+			{
+				if (moves[moveIndex].isEmpty() && !moves[moveIndex + 1].isEmpty() )
+				{
+					needsSwap = true;
+				}
+			}
+			// Move poke powers first
+			else if (!moves[moveIndex].isPokePower() && moves[moveIndex + 1].isPokePower())
+			{
+				needsSwap = true;
+			}
+			else
+			{
+				int numColorless1 = moves[moveIndex].getCost(EnergyType.COLORLESS);
+				int numColorless2 = moves[moveIndex + 1].getCost(EnergyType.COLORLESS);
+				int numNonColorless1 = moves[moveIndex].getNonColorlessEnergyCosts();
+				int numNonColorless2 = moves[moveIndex + 1].getNonColorlessEnergyCosts();
+				
+				// Move higher total energies last
+				if (numColorless1 + numNonColorless1 > numColorless2 + numNonColorless2)
+				{
+					needsSwap = true;
+				}
+				else if (numColorless1 + numNonColorless1 == numColorless2 + numNonColorless2)
+				{
+					// If equal num, move more non-colorless last
+					if (numNonColorless1 > numNonColorless2)
+					{
+						needsSwap = true;
+					}
+					else if (numNonColorless1 == numNonColorless2)
+					{
+						// If equal move higher damage last
+						if (moves[moveIndex].damage > moves[moveIndex + 1].damage)
+						{
+							needsSwap = true;
+						}
+						// If equal, moves with effects last
+						else if (moves[moveIndex].damage == moves[moveIndex + 1].damage &&
+								!moves[moveIndex].description.isEmpty() && moves[moveIndex + 1].description.isEmpty())
+						{
+							needsSwap = true;
+						}
+					}
+				}
+			}
+				
+			if (needsSwap)
+			{
+				tempMove = moves[moveIndex];
+				moves[moveIndex] = moves[moveIndex + 1];
+				moves[moveIndex + 1] = tempMove;
+				moveIndex = 0; // restart sort loop
+			}
+		}
+	}
+	
 	@Override
 	public String toString()
 	{
-		return super.toString() + 
+		StringBuilder builder = new StringBuilder();
+		builder.append(super.toString() + 
 				"\nPokedex Number = " + pokedexNumber + 
 				"\nDesciption = " + description.toString() + 
 				"\nHP = " + hp +
@@ -76,7 +192,13 @@ public class PokemonCard extends Card
 				"\nRetreatCost = " + retreatCost +
 				"\nWeakness = " + weakness +
 				"\nResistance = " + resistance  +
-				"\nMoves\n" + move1.toString() + "\n" + move2.toString();
+				"\nMoves");
+
+		for (int moveIndex = 0; moveIndex < NUM_MOVES; moveIndex++)
+		{
+			builder.append("\n" + moves[moveIndex].toString());
+		}
+		return builder.toString();
 	}
 	
 	@Override
@@ -90,9 +212,11 @@ public class PokemonCard extends Card
 		
 		// Read the prev evolution
 		index = prevEvoName.readDataAndConvertIds(cardBytes, index, idToText, textIdsUsed);
-		
-		index = move1.readDataAndConvertIds(cardBytes, index, name, idToText, textIdsUsed);
-		index = move2.readDataAndConvertIds(cardBytes, index, name, idToText, textIdsUsed);
+
+		for (int moveIndex = 0; moveIndex < NUM_MOVES; moveIndex++)
+		{
+			index = moves[moveIndex].readDataAndConvertIds(cardBytes, index, name, idToText, textIdsUsed);
+		}
 		
 		retreatCost = cardBytes[index++];
 		weakness = WeaknessResistanceType.readFromByte(cardBytes[index++]);
@@ -124,9 +248,12 @@ public class PokemonCard extends Card
 		cardBytes[index++] = stage.getValue();
 		
 		index = prevEvoName.convertToIdsAndWriteData(cardBytes, index, idToText);
-		
-		index = move1.convertToIdsAndWriteData(cardBytes, index, name, idToText);
-		index = move2.convertToIdsAndWriteData(cardBytes, index, name, idToText);
+
+		sortMoves();
+		for (int moveIndex = 0; moveIndex < NUM_MOVES; moveIndex++)
+		{
+			index = moves[moveIndex].convertToIdsAndWriteData(cardBytes, index, name, idToText);
+		}
 		
 		cardBytes[index++] = retreatCost;
 		cardBytes[index++] = weakness.getValue();

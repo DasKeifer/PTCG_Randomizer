@@ -30,6 +30,12 @@ public class EffectDescription extends RomText
 		}
 		genericReadTextFromIds(bytes, textIdIndexes, idToText, textIdsUsed);
 		replaceAll(cardName.getText(), NAME_PLACEHOLDER);
+		
+		// Some desciptions have mispelled names. Check if this is one and if so, replace it
+		if (RomConstants.MISPELLED_CARD_NAMES.containsKey(cardName.getText()))
+		{
+			replaceAll(RomConstants.MISPELLED_CARD_NAMES.get(cardName.getText()), NAME_PLACEHOLDER);
+		}
 	}
 
 	public void convertToIdsAndWriteData(byte[] bytes, int[] textIdIndexes, RomText cardName, Texts idToText)
@@ -40,7 +46,7 @@ public class EffectDescription extends RomText
 					textIdIndexes.length);
 		}
 		replaceAll(NAME_PLACEHOLDER, cardName.getText());
-		setTextPreservingNewlines(format(getText()));
+		setTextVerbatim(format(getText()));
 		genericConvertToIdsAndWriteText(bytes, textIdIndexes, idToText);
 	}
 	
@@ -83,8 +89,8 @@ public class EffectDescription extends RomText
 			// Next try making our own blocks
 			tempText = descExpanded.replace(StringUtils.BLOCK_BREAK, " ");
 			formatted = StringUtils.prettyFormatText(tempText,
-					RomConstants.MAX_CHARS_PER_LINE, RomConstants.PREFERRED_LINES_PER_EFFECT_DESC,
-					RomConstants.MAX_LINES_PER_EFFECT_DESC, NUM_POINTERS_IN_FILE);
+					RomConstants.MAX_CHARS_PER_LINE, RomConstants.MAX_LINES_PER_EFFECT_DESC,
+					RomConstants.PREFERRED_LINES_PER_EFFECT_DESC, NUM_POINTERS_IN_FILE);
 			
 			if (formatted == null)
 			{

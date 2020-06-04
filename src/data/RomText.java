@@ -1,6 +1,7 @@
 package data;
 
 import java.util.Set;
+import java.util.regex.Matcher;
 
 import constants.RomConstants;
 import rom.Texts;
@@ -9,6 +10,7 @@ import util.StringUtils;
 
 public abstract class RomText
 {	
+	public static final char SPECIAL_SYM_RESERVE_SPACE_CHAR = 0x11; // Device control 1 for no particular reason
 	private String text;
 	
 	public RomText()
@@ -37,7 +39,7 @@ public abstract class RomText
 		return text.isEmpty();
 	}
 	
-	public void setText(String inText)
+	public void setTextAndDeformat(String inText)
 	{
 		if (inText == null)
 		{
@@ -45,12 +47,15 @@ public abstract class RomText
 		}
 		else
 		{
-			text = inText.replaceAll("\n", " ");
+			// Sometimes there is an extra space at the end of the line
+			text = inText.replaceAll(" \n", " ");
+			text = text.replaceAll("\n", " ");
 			text = removeEnglishCharTypeChars(text);
+			text = reserveSpaceForSpecialChars(text);
 		}
 	}
 	
-	public void setTextPreservingNewlines(String inText)
+	public void setTextVerbatim(String inText)
 	{
 		if (inText == null)
 		{
@@ -64,7 +69,8 @@ public abstract class RomText
 
 	public void replaceAll(String regex, String replacement)
 	{
-		text = text.replaceAll(regex, replacement);
+		// Use pattern quote because they use $ for nidoran male which screws up replace all
+		text = text.replaceAll(regex, Matcher.quoteReplacement(replacement));
 	}
 	
 	protected void genericReadTextFromIds(byte[] bytes, int[] textIdIndexes, Texts idsToText, Set<Short> textIdsUsed)
@@ -87,13 +93,15 @@ public abstract class RomText
 			textIdsUsed.add(textId);
 		}
 		
-		// Will also unformat it
-		setText(readText);
+		// Will also deformat it
+		setTextAndDeformat(readText);
 	}
 	
 	protected void genericConvertToIdsAndWriteText(byte[] bytes, int[] textIdIndexes, Texts idToText)
 	{
-		String[] blocks = text.split(StringUtils.BLOCK_BREAK);
+		String textToWrite = removeReserveSpaceForSpecialChars(text);
+		
+		String[] blocks = textToWrite.split(StringUtils.BLOCK_BREAK);
 		int expectedBlocks = textIdIndexes.length;
 		int blockIndex = 0;
 		
@@ -142,8 +150,40 @@ public abstract class RomText
 		return block;
 	}
 	
-	private static String removeEnglishCharTypeChars(String name)
+	private static String removeEnglishCharTypeChars(String text)
 	{
-		return name.replaceAll("" + RomConstants.ENLGISH_TEXT_CHAR, "");
+		if (text.startsWith("" + RomConstants.ENLGISH_TEXT_CHAR))
+		{
+			text = text.substring(1);
+		}
+		return text.replaceAll(StringUtils.BLOCK_BREAK + RomConstants.ENLGISH_TEXT_CHAR, StringUtils.BLOCK_BREAK);
+	}
+	
+	private static String reserveSpaceForSpecialChars(String text)
+	{
+		// Energy types behave a bit oddly - if there is a space before them (which there always seems 
+		// to be is) then they need to align with an even char position. If the space is an even char, 
+		// that means it displays as two spaces but if its an odd char, it displays as one space. To 
+		// keep the  formatting generic, we add the extra space in for all energies to assume the 
+		// "worst" case
+		for (String specialChars : RomConstants.SPECIAL_SYMBOLS)
+		{
+			text = text.replaceAll(specialChars, specialChars + SPECIAL_SYM_RESERVE_SPACE_CHAR);
+		}
+		return text;
+	}
+	
+	private static String removeReserveSpaceForSpecialChars(String text)
+	{
+		// Energy types behave a bit oddly - if there is a space before them (which there always seems 
+		// to be is) then they need to align with an even char position. If the space is an even char, 
+		// that means it displays as two spaces but if its an odd char, it displays as one space. To 
+		// keep the  formatting generic, we add the extra space in for all energies to assume the 
+		// "worst" case
+		for (String specialChars : RomConstants.SPECIAL_SYMBOLS)
+		{
+			text = text.replaceAll(specialChars + SPECIAL_SYM_RESERVE_SPACE_CHAR, specialChars);
+		}
+		return text;
 	}
 }

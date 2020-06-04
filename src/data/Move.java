@@ -11,11 +11,12 @@ import util.ByteUtils;
 public class Move
 {
 	public static final int TOTAL_SIZE_IN_BYTES = 19;
+	public static final Move EMPTY_MOVE = new Move();
 	
 	byte[] energyCost;
 	OneLineText name;
 	public EffectDescription description;
-	byte damage; // TODO: non multiple of 10?
+	public byte damage; // TODO: non multiple of 10?
 	MoveCategory category;
 	short effectPtr; // TODO: Make enum?
 	Set<MoveEffect1> effect1;
@@ -26,8 +27,10 @@ public class Move
 
 	public Move()
 	{
+		energyCost = new byte[8];
 		name = new OneLineText();
 		description = new EffectDescription();
+		category = MoveCategory.DAMAGE_NORMAL;
 		effect1 = new HashSet<>();
 		effect2 = new HashSet<>();
 		effect3 = new HashSet<>();
@@ -48,6 +51,23 @@ public class Move
 		animation = toCopy.animation;
 	}
 
+	public boolean isEmpty()
+	{
+		return name.isEmpty();
+	}
+	
+	public boolean isPokePower()
+	{
+		for(byte cost : energyCost)
+		{
+			if (cost > 0)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	public String toString()
 	{
 		String tempString = "Move Name: " + name.toString() + "\nRequires:";
@@ -76,6 +96,20 @@ public class Move
 	public byte getCost(EnergyType inType)
 	{
 		return energyCost[inType.getValue()];
+	}
+	
+	public int getNonColorlessEnergyCosts()
+	{
+		int energyCount = 0;
+		for (EnergyType energyType : EnergyType.values())
+		{
+			if (energyType != EnergyType.COLORLESS)
+			{
+				energyCount += getCost(energyType);
+			}
+		}
+		
+		return energyCount;
 	}
 	
 	public void setCost(EnergyType inType, byte inCost)

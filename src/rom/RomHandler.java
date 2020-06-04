@@ -43,7 +43,7 @@ public class RomHandler
 		verifyRom(rom.rawBytes);
 		
 		Texts allText = readAllTextFromPointers(rom.rawBytes);
-		rom.cardsByName = readAllCardsFromPointers(rom.rawBytes, allText);
+		rom.allCards = readAllCardsFromPointers(rom.rawBytes, allText);
 		rom.idsToText = allText;
 		
 		return rom;
@@ -51,7 +51,7 @@ public class RomHandler
 	
 	public static void writeRom(RomData rom) throws IOException
 	{
-		setAllCardsAnPointers(rom.rawBytes, rom.cardsByName, rom.idsToText);
+		setAllCardsAnPointers(rom.rawBytes, rom.allCards, rom.idsToText);
 		setTextAndPointers(rom.rawBytes, rom.idsToText);
 		
 		writeRaw(rom.rawBytes);
@@ -78,9 +78,9 @@ public class RomHandler
 		}
 	}
 	
-	private static Cards readAllCardsFromPointers(byte[] rawBytes, Texts allText)
+	private static Cards<Card> readAllCardsFromPointers(byte[] rawBytes, Texts allText)
 	{
-		Cards allCards = new Cards();
+		Cards<Card> allCards = new Cards<>();
 		Set<Short> convertedTextPtrs = new HashSet<>();
 
 		// Read the text based on the pointer map in the rom
@@ -138,7 +138,7 @@ public class RomHandler
 		return textMap;
 	}
 	
-	private static void setAllCardsAnPointers(byte[] bytes, Cards cards, Texts allText)
+	private static void setAllCardsAnPointers(byte[] bytes, Cards<Card> cards, Texts allText)
 	{
 		// First write the 0 index "null" text pointer
 		int ptrIndex = RomConstants.CARD_POINTERS_LOC - RomConstants.CARD_POINTER_SIZE_IN_BYTES;
@@ -184,19 +184,32 @@ public class RomHandler
 		// determine where the first text will go based off the number of text we have
 		// The null pointer was already taken care of so we don't need to handle it here
 		int textIndex = RomConstants.TEXT_POINTERS_LOC + ptrToText.count() * RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+
+		// Not sure why but every 0x4000 bytes there's a boundary that
+		// we can't write past without getting garbly-gook text. It aligns
+		// presumably causally with the text location offset
+		int nextTextStorageBlock = RomConstants.TEXT_POINTER_OFFSET + RomConstants.TEXT_STORAGE_CHUNK_SIZE;
 		
 		// Now for each text, write the pointer then write the text at that address
 		// Note we intentionally do a index based lookup instead of iteration in order to
 		// ensure that the IDs are sequential as they need to be (i.e. there are no gaps)
 		// We start at 1 because 0 is a null ptr
 		for (short textId = 1; textId < ptrToText.count() + 1; textId++)
-		{
+		{			
+			// First get the text and determine if we need to shift the index to 
+			// avoid a storage block boundary
+			byte[] textBytes = ptrToText.getAtId(textId).getBytes();
+			if (textIndex + textBytes.length + 2 > nextTextStorageBlock)
+			{
+				textIndex = nextTextStorageBlock;
+				nextTextStorageBlock += RomConstants.TEXT_STORAGE_CHUNK_SIZE;
+			}
+
 			// Write the pointer
 			ByteUtils.writeLittleEndian(textIndex - RomConstants.TEXT_POINTER_OFFSET, rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES);
 			ptrIndex += RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 			
 			// Now write the text
-			byte[] textBytes = ptrToText.getAtId(textId).getBytes();
 			System.arraycopy(textBytes, 0, rawBytes, textIndex, textBytes.length);
 			textIndex += textBytes.length;
 			
