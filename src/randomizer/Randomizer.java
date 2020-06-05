@@ -1,5 +1,6 @@
 package randomizer;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -21,45 +22,57 @@ public class Randomizer
 	static final long SEED = 42;
 	static Random rand = new Random(SEED);
 	
-	public static void main(String[] args) throws IOException //Temp
+	RomData romData;
+	
+	public void openRom(File romFile)
 	{
-		RomData rom = RomHandler.readRom();
-		List<Card> venu = rom.allCards.getCardsWithName("Venusaur").toList();
+		try {
+			romData = RomHandler.readRom(romFile);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	//public static void main(String[] args) throws IOException //Temp
+	public void randomize() throws IOException
+	{
+		List<Card> venu = romData.allCards.getCardsWithName("Venusaur").toList();
 		venu.get(1).name.setTextAndDeformat("Test-a-saur");
 		
-		Cards<PokemonCard> pokes = rom.allCards.getPokemonCards();
+		Cards<PokemonCard> pokes = romData.allCards.getPokemonCards();
 
 		//double[] numWithMoves = {0.05, 0.35, 0.60};
 		Map<CardId, Integer> numMovesPerPokemon = getNumMovesPerPokemon(pokes);
 		shuffleOrRandomizePokemonMoves(false, pokes, numMovesPerPokemon, true, 1);
 		
-		test(rom.allCards.getCardsWithName("Metapod"));
+		test(romData.allCards.getCardsWithName("Metapod"));
 		
 		// Temp hack to add more value cards to a pack
 		// 11 is the most we can do
 		for (int i = 0; i < 16; i ++)
 		{
-			System.out.println(rom.rawBytes[0x1e4d4 + i]);
+			System.out.println(romData.rawBytes[0x1e4d4 + i]);
 			if (i % 4 == 1)
 			{
-				rom.rawBytes[0x1e4d4 + i] = 5;
+				romData.rawBytes[0x1e4d4 + i] = 5;
 			}
 			else if (i % 4 == 2)
 			{
-				rom.rawBytes[0x1e4d4 + i] = 4;
+				romData.rawBytes[0x1e4d4 + i] = 4;
 			}
 			else if (i % 4 == 3)
 			{
-				rom.rawBytes[0x1e4d4 + i] = 2;
+				romData.rawBytes[0x1e4d4 + i] = 2;
 			}
 			else
 			{
-				rom.rawBytes[0x1e4d4 + i] = 0;
+				romData.rawBytes[0x1e4d4 + i] = 0;
 			}
 		}
 		
 		
-		RomHandler.writeRom(rom);
+		RomHandler.writeRom(romData);
 	}
 	
 	public static void test(Cards<Card> cards)

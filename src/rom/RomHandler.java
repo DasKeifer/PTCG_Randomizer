@@ -35,11 +35,11 @@ public class RomHandler
 		return true;
 	}
 	
-	public static RomData readRom() throws IOException
+	public static RomData readRom(File romFile) throws IOException
 	{
 		RomData rom = new RomData();
 		
-		rom.rawBytes = readRaw();
+		rom.rawBytes = readRaw(romFile);
 		verifyRom(rom.rawBytes);
 		
 		Texts allText = readAllTextFromPointers(rom.rawBytes);
@@ -57,10 +57,9 @@ public class RomHandler
 		writeRaw(rom.rawBytes);
 	}
 	
-	private static byte[] readRaw() throws IOException 
+	private static byte[] readRaw(File romFile) throws IOException 
 	{
-		File file = new File(FILE_NAME_IN);
-		return Files.readAllBytes(file.toPath());
+		return Files.readAllBytes(romFile.toPath());
 	}
 	
 	private static void writeRaw(byte[] rawBytes)
