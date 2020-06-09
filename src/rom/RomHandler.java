@@ -18,9 +18,6 @@ public class RomHandler
 {
 	private RomHandler() {}
 	
-	static final String FILE_NAME_IN  = "ptcg.gbc";
-	static final String FILE_NAME_OUT = "ptcg_randomized.gbc";
-	
 	static boolean verifyRom(byte[] rawBytes)
 	{
 		int index = RomConstants.HEADER_LOCATION;
@@ -49,12 +46,12 @@ public class RomHandler
 		return rom;
 	}
 	
-	public static void writeRom(RomData rom) throws IOException
+	public static void writeRom(RomData rom, File romFile) throws IOException
 	{
 		setAllCardsAnPointers(rom.rawBytes, rom.allCards, rom.idsToText);
 		setTextAndPointers(rom.rawBytes, rom.idsToText);
 		
-		writeRaw(rom.rawBytes);
+		writeRaw(rom.rawBytes, romFile);
 	}
 	
 	private static byte[] readRaw(File romFile) throws IOException 
@@ -62,17 +59,14 @@ public class RomHandler
 		return Files.readAllBytes(romFile.toPath());
 	}
 	
-	private static void writeRaw(byte[] rawBytes)
+	private static void writeRaw(byte[] rawBytes, File romFile)
 	{
-		try {
-			FileOutputStream fos = new FileOutputStream(FILE_NAME_OUT);
+		try (FileOutputStream fos = new FileOutputStream(romFile))
+		{
 			fos.write(rawBytes);
-			fos.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

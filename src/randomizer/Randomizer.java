@@ -34,6 +34,16 @@ public class Randomizer
 		}
 	}
 	
+	public void saveRom(File romFile)
+	{
+		try {
+			RomHandler.writeRom(romData, romFile);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	//public static void main(String[] args) throws IOException //Temp
 	public void randomize() throws IOException
 	{
@@ -70,9 +80,6 @@ public class Randomizer
 				romData.rawBytes[0x1e4d4 + i] = 0;
 			}
 		}
-		
-		
-		RomHandler.writeRom(romData);
 	}
 	
 	public static void test(Cards<Card> cards)
@@ -275,6 +282,11 @@ public class Randomizer
 		{
 			poke.setMove(moves.get(randMoveIndex), moveIndex);
 		}
+	}
+
+	public String getFileExtension() 
+	{
+		return ".gbc";
 	}
 }
 

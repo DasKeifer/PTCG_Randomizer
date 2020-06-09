@@ -6,7 +6,6 @@ import javax.swing.JFrame;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 
-import rom.RomHandler;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -15,12 +14,12 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.awt.event.ActionEvent;
-import javax.swing.JLabel;
 
 public class RandomizerApp {
 
 	private JFrame frmPokemonTradingCard;
     private JFileChooser openRomChooser;
+    private JFileChooser saveRomChooser;
 
 	private Randomizer randomizer;
 	
@@ -54,8 +53,12 @@ public class RandomizerApp {
 		randomizer = new Randomizer();
 		
 		openRomChooser = new JFileChooser();
-		openRomChooser.setCurrentDirectory(new File(".")); // Jar location
+		openRomChooser.setCurrentDirectory(new File(".")); // Jar location by default
 	    openRomChooser.setSelectedFile(null);
+		
+		saveRomChooser = new JFileChooser();
+		saveRomChooser.setCurrentDirectory(new File(".")); // Jar location by default
+		saveRomChooser.setSelectedFile(null);
 		
 		frmPokemonTradingCard = new JFrame();
 		frmPokemonTradingCard.setTitle("Pokemon Trading Card Game Randomizer");
@@ -70,7 +73,17 @@ public class RandomizerApp {
 		btnRandomize.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					randomizer.randomize();
+				    int returnVal = saveRomChooser.showSaveDialog(frmPokemonTradingCard);
+				    if (returnVal == JFileChooser.APPROVE_OPTION) {
+						randomizer.randomize();
+						
+						File saveFile = saveRomChooser.getSelectedFile();
+				        if (!saveFile.getName().endsWith(randomizer.getFileExtension()))
+				        {
+				        	saveFile = new File(saveFile.getPath().concat(randomizer.getFileExtension()));
+				        }
+				    	randomizer.saveRom(saveFile);
+				    }
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
