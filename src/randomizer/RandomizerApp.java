@@ -85,7 +85,7 @@ public class RandomizerApp {
 		
 		frmPokemonTradingCard = new JFrame();
 		frmPokemonTradingCard.setTitle("Pokemon Trading Card Game Randomizer");
-		frmPokemonTradingCard.setBounds(100, 100, 600, 700);
+		frmPokemonTradingCard.setBounds(100, 100, 650, 700);
 		frmPokemonTradingCard.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmPokemonTradingCard.getContentPane().setLayout(new BorderLayout(0, 0));
 		
@@ -173,7 +173,8 @@ public class RandomizerApp {
 		buttonGroup_1.add(rdbtnNewRadioButton_4);
 		panel_5_1_2.add(rdbtnNewRadioButton_4);
 		
-		JRadioButton rdbtnNewRadioButton_4_1 = new JRadioButton("Match to Poke Type");
+		JRadioButton rdbtnNewRadioButton_4_1 = new JRadioButton("Change to Poke Type");
+		rdbtnNewRadioButton_4_1.setEnabled(false);
 		buttonGroup_1.add(rdbtnNewRadioButton_4_1);
 		panel_5_1_2.add(rdbtnNewRadioButton_4_1);
 		
@@ -185,12 +186,21 @@ public class RandomizerApp {
 		JPanel panel_7 = new JPanel();
 		panel_4.add(panel_7);
 		
-		JLabel lblComingSoon_1 = new JLabel("Coming Soon!");
+		JLabel lblComingSoon_1 = new JLabel("Miscellaneous");
+		
+		JCheckBox chckbxExcludeTypeSpecific = new JCheckBox("Exclude Type Specific Moves");
+		chckbxExcludeTypeSpecific.setEnabled(false);
+		panel_7.setLayout(new GridLayout(4, 1, 0, 0));
 		panel_7.add(lblComingSoon_1);
 		
 		JCheckBox chckbxNewCheckBox_1 = new JCheckBox("Force one damaging move");
 		chckbxNewCheckBox_1.setEnabled(false);
 		panel_7.add(chckbxNewCheckBox_1);
+		
+		JCheckBox chckbxNewCheckBox = new JCheckBox("Exclude Poke Specific Moves");
+		chckbxNewCheckBox.setEnabled(false);
+		panel_7.add(chckbxNewCheckBox);
+		panel_7.add(chckbxExcludeTypeSpecific);
 		
 		JPanel panel_4_1 = new JPanel();
 		panel_4_1.setBorder(new TitledBorder(null, "Poke Powers", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -201,6 +211,8 @@ public class RandomizerApp {
 		panel_4_1.add(panel_5);
 		
 		JCheckBox chckbxIncludeWithMoves = new JCheckBox("Include with Moves");
+		chckbxIncludeWithMoves.setEnabled(false);
+		chckbxIncludeWithMoves.setSelected(true);
 		panel_5.add(chckbxIncludeWithMoves);
 		
 		JPanel panel_6 = new JPanel();
@@ -208,15 +220,18 @@ public class RandomizerApp {
 		panel_6.setLayout(new GridLayout(3, 1, 0, 0));
 		
 		JRadioButton rdbtnNewRadioButton_1 = new JRadioButton("Unchanged");
+		rdbtnNewRadioButton_1.setEnabled(false);
 		rdbtnNewRadioButton_1.setSelected(true);
 		buttonGroup_2.add(rdbtnNewRadioButton_1);
 		panel_6.add(rdbtnNewRadioButton_1);
 		
 		JRadioButton rdbtnNewRadioButton_2_1 = new JRadioButton("Shuffle");
+		rdbtnNewRadioButton_2_1.setEnabled(false);
 		buttonGroup_2.add(rdbtnNewRadioButton_2_1);
 		panel_6.add(rdbtnNewRadioButton_2_1);
 		
 		JRadioButton rdbtnNewRadioButton_3_1 = new JRadioButton("Random");
+		rdbtnNewRadioButton_3_1.setEnabled(false);
 		buttonGroup_2.add(rdbtnNewRadioButton_3_1);
 		panel_6.add(rdbtnNewRadioButton_3_1);
 		
