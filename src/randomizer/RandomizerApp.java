@@ -18,20 +18,9 @@ import javax.swing.JTabbedPane;
 import java.awt.GridLayout;
 import javax.swing.JRadioButton;
 import javax.swing.JLabel;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import javax.swing.JTree;
-import java.awt.Insets;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import java.awt.FlowLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JCheckBox;
-import javax.swing.SwingConstants;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
 public class RandomizerApp {
@@ -41,10 +30,8 @@ public class RandomizerApp {
     private JFileChooser saveRomChooser;
 
 	private Randomizer randomizer;
-	private final ButtonGroup buttonGroup = new ButtonGroup();
-	private final Action action = new SwingAction();
-	private final ButtonGroup buttonGroup_1 = new ButtonGroup();
-	private final ButtonGroup buttonGroup_2 = new ButtonGroup();
+	private final ButtonGroup moveRandStrategyGoup = new ButtonGroup();
+	private final ButtonGroup pokePowersGroup = new ButtonGroup();
 	
 	/**
 	 * Launch the application.
@@ -85,15 +72,15 @@ public class RandomizerApp {
 		
 		frmPokemonTradingCard = new JFrame();
 		frmPokemonTradingCard.setTitle("Pokemon Trading Card Game Randomizer");
-		frmPokemonTradingCard.setBounds(100, 100, 650, 700);
+		frmPokemonTradingCard.setBounds(100, 100, 500, 600);
 		frmPokemonTradingCard.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmPokemonTradingCard.getContentPane().setLayout(new BorderLayout(0, 0));
 		
-		JPanel panel = new JPanel();
-		frmPokemonTradingCard.getContentPane().add(panel, BorderLayout.SOUTH);
+		JPanel saveRomPanel = new JPanel();
+		frmPokemonTradingCard.getContentPane().add(saveRomPanel, BorderLayout.SOUTH);
 		
-		JButton btnRandomize = new JButton("Randomize!");
-		btnRandomize.addActionListener(new ActionListener() {
+		JButton randomizeButton = new JButton("Randomize!");
+		randomizeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
 				    int returnVal = saveRomChooser.showSaveDialog(frmPokemonTradingCard);
@@ -113,13 +100,13 @@ public class RandomizerApp {
 				}
 			}
 		});
-		panel.add(btnRandomize);
+		saveRomPanel.add(randomizeButton);
 		
-		JPanel panel_1 = new JPanel();
-		frmPokemonTradingCard.getContentPane().add(panel_1, BorderLayout.NORTH);
+		JPanel openRomPanel = new JPanel();
+		frmPokemonTradingCard.getContentPane().add(openRomPanel, BorderLayout.NORTH);
 		
-		JButton btnOpenRom = new JButton("Open ROM");
-		btnOpenRom.addActionListener(new ActionListener() {
+		JButton openRomButton = new JButton("Open ROM");
+		openRomButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 			    int returnVal = openRomChooser.showOpenDialog(frmPokemonTradingCard);
 			    if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -127,124 +114,104 @@ public class RandomizerApp {
 			    }
 			}
 		});
-		panel_1.add(btnOpenRom);
+		openRomPanel.add(openRomButton);
 		
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		frmPokemonTradingCard.getContentPane().add(tabbedPane, BorderLayout.CENTER);
+		JTabbedPane movesEffectsTab = new JTabbedPane(JTabbedPane.TOP);
+		frmPokemonTradingCard.getContentPane().add(movesEffectsTab, BorderLayout.CENTER);
 		
-		JPanel panel_2 = new JPanel();
-		tabbedPane.addTab("Moves/Effects", null, panel_2, null);
-		panel_2.setLayout(new GridLayout(0, 1, 0, 0));
+		JPanel movesEffectsPanel = new JPanel();
+		movesEffectsTab.addTab("Moves/Effects", null, movesEffectsPanel, null);
+		movesEffectsPanel.setLayout(new GridLayout(0, 1, 0, 0));
 		
-		JPanel panel_4 = new JPanel();
-		panel_4.setBorder(new TitledBorder(null, "Pokemon Moves", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_2.add(panel_4);
-		panel_4.setLayout(new GridLayout(0, 3, 0, 0));
+		JPanel moveRandPanel = new JPanel();
+		movesEffectsPanel.add(moveRandPanel);
+		moveRandPanel.setBorder(new TitledBorder(null, "Pokemon Moves", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		moveRandPanel.setLayout(new GridLayout(0, 2, 0, 0));
 		
-		JPanel panel_3 = new JPanel();
-		panel_4.add(panel_3);
+		JPanel moveRandStrategyPanel = new JPanel();
+		moveRandPanel.add(moveRandStrategyPanel);
 		
-		JRadioButton rdbtnNewRadioButton = new JRadioButton("Unchanged");
-		rdbtnNewRadioButton.setSelected(true);
-		buttonGroup.add(rdbtnNewRadioButton);
+		JRadioButton moveRandUnchangedButton = new JRadioButton("Unchanged");
+		moveRandUnchangedButton.setSelected(true);
+		moveRandStrategyGoup.add(moveRandUnchangedButton);
 		
-		JRadioButton rdbtnNewRadioButton_3 = new JRadioButton("Random");
-		buttonGroup.add(rdbtnNewRadioButton_3);
+		JRadioButton moveRandRandomButtom = new JRadioButton("Random");
+		moveRandStrategyGoup.add(moveRandRandomButtom);
 		
-		JRadioButton rdbtnNewRadioButton_2 = new JRadioButton("Shuffle");
-		buttonGroup.add(rdbtnNewRadioButton_2);
-		panel_3.setLayout(new GridLayout(0, 1, 0, 0));
+		JRadioButton moveRandShuffleButton = new JRadioButton("Shuffle");
+		moveRandStrategyGoup.add(moveRandShuffleButton);
+		moveRandStrategyPanel.setLayout(new GridLayout(0, 1, 0, 0));
+		moveRandStrategyPanel.add(moveRandUnchangedButton);
+		moveRandStrategyPanel.add(moveRandShuffleButton);
+		moveRandStrategyPanel.add(moveRandRandomButtom);
 		
-		JLabel lblNewLabel = new JLabel("Card Attacks");
-		panel_3.add(lblNewLabel);
-		panel_3.add(rdbtnNewRadioButton);
-		panel_3.add(rdbtnNewRadioButton_2);
-		panel_3.add(rdbtnNewRadioButton_3);
+		JPanel moveRandOptionsPanel = new JPanel();
+		moveRandPanel.add(moveRandOptionsPanel);
 		
-		JPanel panel_5_1_2 = new JPanel();
-		panel_4.add(panel_5_1_2);
-		panel_5_1_2.setLayout(new GridLayout(4, 1, 0, 0));
+		JCheckBox moveRandExclTypeSpecBox = new JCheckBox("Exclude Type Specific Moves");
+		moveRandExclTypeSpecBox.setEnabled(false);
+		moveRandOptionsPanel.setLayout(new GridLayout(3, 1, 0, 0));
 		
-		JLabel lblMoveEnergyTypes = new JLabel("Energy Types");
-		panel_5_1_2.add(lblMoveEnergyTypes);
+		JCheckBox moveRandForceDamageBox = new JCheckBox("Force one damaging move");
+		moveRandForceDamageBox.setEnabled(false);
+		moveRandOptionsPanel.add(moveRandForceDamageBox);
+		
+		JCheckBox moveRandExclPokeSpecMovesBox = new JCheckBox("Exclude Poke Specific Moves");
+		moveRandExclPokeSpecMovesBox.setEnabled(false);
+		moveRandOptionsPanel.add(moveRandExclPokeSpecMovesBox);
+		moveRandOptionsPanel.add(moveRandExclTypeSpecBox);
+		
+		JPanel panel_10 = new JPanel();
+		movesEffectsPanel.add(panel_10);
+		panel_10.setBorder(new TitledBorder(null, "Move Types", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_10.setLayout(new GridLayout(0, 1, 0, 0));
 		
 		JRadioButton rdbtnNewRadioButton_4 = new JRadioButton("Unchanged");
+		panel_10.add(rdbtnNewRadioButton_4);
 		rdbtnNewRadioButton_4.setSelected(true);
-		buttonGroup_1.add(rdbtnNewRadioButton_4);
-		panel_5_1_2.add(rdbtnNewRadioButton_4);
 		
 		JRadioButton rdbtnNewRadioButton_4_1 = new JRadioButton("Change to Poke Type");
+		panel_10.add(rdbtnNewRadioButton_4_1);
 		rdbtnNewRadioButton_4_1.setEnabled(false);
-		buttonGroup_1.add(rdbtnNewRadioButton_4_1);
-		panel_5_1_2.add(rdbtnNewRadioButton_4_1);
 		
 		JRadioButton rdbtnNewRadioButton_4_2 = new JRadioButton("All Colorless");
+		panel_10.add(rdbtnNewRadioButton_4_2);
 		rdbtnNewRadioButton_4_2.setEnabled(false);
-		buttonGroup_1.add(rdbtnNewRadioButton_4_2);
-		panel_5_1_2.add(rdbtnNewRadioButton_4_2);
-		
-		JPanel panel_7 = new JPanel();
-		panel_4.add(panel_7);
-		
-		JLabel lblComingSoon_1 = new JLabel("Miscellaneous");
-		
-		JCheckBox chckbxExcludeTypeSpecific = new JCheckBox("Exclude Type Specific Moves");
-		chckbxExcludeTypeSpecific.setEnabled(false);
-		panel_7.setLayout(new GridLayout(4, 1, 0, 0));
-		panel_7.add(lblComingSoon_1);
-		
-		JCheckBox chckbxNewCheckBox_1 = new JCheckBox("Force one damaging move");
-		chckbxNewCheckBox_1.setEnabled(false);
-		panel_7.add(chckbxNewCheckBox_1);
-		
-		JCheckBox chckbxNewCheckBox = new JCheckBox("Exclude Poke Specific Moves");
-		chckbxNewCheckBox.setEnabled(false);
-		panel_7.add(chckbxNewCheckBox);
-		panel_7.add(chckbxExcludeTypeSpecific);
 		
 		JPanel panel_4_1 = new JPanel();
+		movesEffectsPanel.add(panel_4_1);
 		panel_4_1.setBorder(new TitledBorder(null, "Poke Powers", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_2.add(panel_4_1);
-		panel_4_1.setLayout(new GridLayout(1, 2, 0, 0));
+		panel_4_1.setLayout(new GridLayout(0, 1, 0, 0));
 		
-		JPanel panel_5 = new JPanel();
-		panel_4_1.add(panel_5);
-		
-		JCheckBox chckbxIncludeWithMoves = new JCheckBox("Include with Moves");
-		chckbxIncludeWithMoves.setEnabled(false);
-		chckbxIncludeWithMoves.setSelected(true);
-		panel_5.add(chckbxIncludeWithMoves);
-		
-		JPanel panel_6 = new JPanel();
-		panel_4_1.add(panel_6);
-		panel_6.setLayout(new GridLayout(3, 1, 0, 0));
+		JRadioButton rdbtnNewRadioButton_5 = new JRadioButton("Include with Moves");
+		rdbtnNewRadioButton_5.setSelected(true);
+		pokePowersGroup.add(rdbtnNewRadioButton_5);
+		panel_4_1.add(rdbtnNewRadioButton_5);
 		
 		JRadioButton rdbtnNewRadioButton_1 = new JRadioButton("Unchanged");
-		rdbtnNewRadioButton_1.setEnabled(false);
-		rdbtnNewRadioButton_1.setSelected(true);
-		buttonGroup_2.add(rdbtnNewRadioButton_1);
-		panel_6.add(rdbtnNewRadioButton_1);
+		panel_4_1.add(rdbtnNewRadioButton_1);
+		pokePowersGroup.add(rdbtnNewRadioButton_1);
 		
 		JRadioButton rdbtnNewRadioButton_2_1 = new JRadioButton("Shuffle");
+		panel_4_1.add(rdbtnNewRadioButton_2_1);
 		rdbtnNewRadioButton_2_1.setEnabled(false);
-		buttonGroup_2.add(rdbtnNewRadioButton_2_1);
-		panel_6.add(rdbtnNewRadioButton_2_1);
+		pokePowersGroup.add(rdbtnNewRadioButton_2_1);
 		
 		JRadioButton rdbtnNewRadioButton_3_1 = new JRadioButton("Random");
+		panel_4_1.add(rdbtnNewRadioButton_3_1);
 		rdbtnNewRadioButton_3_1.setEnabled(false);
-		buttonGroup_2.add(rdbtnNewRadioButton_3_1);
-		panel_6.add(rdbtnNewRadioButton_3_1);
+		pokePowersGroup.add(rdbtnNewRadioButton_3_1);
 		
 		JPanel panel_4_1_1 = new JPanel();
+		movesEffectsPanel.add(panel_4_1_1);
 		panel_4_1_1.setBorder(new TitledBorder(null, "Trainer Effects", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_2.add(panel_4_1_1);
 		panel_4_1_1.setLayout(new BorderLayout(0, 0));
 		
 		JLabel lblComingSoon = new JLabel("Coming Soon!");
 		panel_4_1_1.add(lblComingSoon, BorderLayout.CENTER);
 		
 		JTabbedPane tabbedPane_2 = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.addTab("Comming Soon!", null, tabbedPane_2, null);
+		movesEffectsTab.addTab("Comming Soon!", null, tabbedPane_2, null);
 	}
 
 	private class SwingAction extends AbstractAction {
