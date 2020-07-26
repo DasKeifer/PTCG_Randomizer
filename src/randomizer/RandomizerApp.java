@@ -22,6 +22,9 @@ import javax.swing.ButtonGroup;
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBox;
 import javax.swing.border.TitledBorder;
+import javax.swing.border.LineBorder;
+import java.awt.Color;
+import java.awt.FlowLayout;
 
 public class RandomizerApp {
 
@@ -72,7 +75,7 @@ public class RandomizerApp {
 		
 		frmPokemonTradingCard = new JFrame();
 		frmPokemonTradingCard.setTitle("Pokemon Trading Card Game Randomizer");
-		frmPokemonTradingCard.setBounds(100, 100, 500, 600);
+		frmPokemonTradingCard.setBounds(100, 100, 500, 500);
 		frmPokemonTradingCard.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmPokemonTradingCard.getContentPane().setLayout(new BorderLayout(0, 0));
 		
@@ -148,70 +151,139 @@ public class RandomizerApp {
 		JPanel moveRandOptionsPanel = new JPanel();
 		moveRandPanel.add(moveRandOptionsPanel);
 		
-		JCheckBox moveRandExclTypeSpecBox = new JCheckBox("Exclude Type Specific Moves");
+		JCheckBox moveRandExclTypeSpecBox = new JCheckBox("Exclude Type Specific");
 		moveRandExclTypeSpecBox.setEnabled(false);
-		moveRandOptionsPanel.setLayout(new GridLayout(3, 1, 0, 0));
+		moveRandOptionsPanel.setLayout(new GridLayout(0, 1, 0, 0));
 		
-		JCheckBox moveRandForceDamageBox = new JCheckBox("Force one damaging move");
+		JCheckBox moveRandWithinTypeBox = new JCheckBox("Within Type");
+		moveRandWithinTypeBox.setEnabled(false);
+		moveRandOptionsPanel.add(moveRandWithinTypeBox);
+		
+		JCheckBox moveRandForceDamageBox = new JCheckBox("Force One Damaging");
 		moveRandForceDamageBox.setEnabled(false);
 		moveRandOptionsPanel.add(moveRandForceDamageBox);
 		
-		JCheckBox moveRandExclPokeSpecMovesBox = new JCheckBox("Exclude Poke Specific Moves");
+		JCheckBox moveRandExclPokeSpecMovesBox = new JCheckBox("Exclude Poke Specific");
 		moveRandExclPokeSpecMovesBox.setEnabled(false);
 		moveRandOptionsPanel.add(moveRandExclPokeSpecMovesBox);
 		moveRandOptionsPanel.add(moveRandExclTypeSpecBox);
 		
-		JPanel panel_10 = new JPanel();
-		movesEffectsPanel.add(panel_10);
-		panel_10.setBorder(new TitledBorder(null, "Move Types", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_10.setLayout(new GridLayout(0, 1, 0, 0));
+		JPanel pokePowerPanel = new JPanel();
+		movesEffectsPanel.add(pokePowerPanel);
+		pokePowerPanel.setBorder(new TitledBorder(null, "Poke Powers", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		pokePowerPanel.setLayout(new GridLayout(0, 2, 0, 0));
 		
-		JRadioButton rdbtnNewRadioButton_4 = new JRadioButton("Unchanged");
-		panel_10.add(rdbtnNewRadioButton_4);
-		rdbtnNewRadioButton_4.setSelected(true);
+		JPanel pokePowerStrategyPanel = new JPanel();
+		pokePowerPanel.add(pokePowerStrategyPanel);
+		pokePowerStrategyPanel.setLayout(new GridLayout(0, 1, 0, 0));
 		
-		JRadioButton rdbtnNewRadioButton_4_1 = new JRadioButton("Change to Poke Type");
-		panel_10.add(rdbtnNewRadioButton_4_1);
-		rdbtnNewRadioButton_4_1.setEnabled(false);
+		JRadioButton pokePowerInclWMovesButton = new JRadioButton("Include with Moves");
+		pokePowerStrategyPanel.add(pokePowerInclWMovesButton);
+		pokePowerInclWMovesButton.setSelected(true);
+		pokePowersGroup.add(pokePowerInclWMovesButton);
 		
-		JRadioButton rdbtnNewRadioButton_4_2 = new JRadioButton("All Colorless");
-		panel_10.add(rdbtnNewRadioButton_4_2);
-		rdbtnNewRadioButton_4_2.setEnabled(false);
+		JRadioButton pokePowerUnchangedButton = new JRadioButton("Unchanged");
+		pokePowerStrategyPanel.add(pokePowerUnchangedButton);
+		pokePowersGroup.add(pokePowerUnchangedButton);
 		
-		JPanel panel_4_1 = new JPanel();
-		movesEffectsPanel.add(panel_4_1);
-		panel_4_1.setBorder(new TitledBorder(null, "Poke Powers", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_4_1.setLayout(new GridLayout(0, 1, 0, 0));
+		JRadioButton pokePowerShuffleButton = new JRadioButton("Shuffle");
+		pokePowerStrategyPanel.add(pokePowerShuffleButton);
+		pokePowerShuffleButton.setEnabled(false);
+		pokePowersGroup.add(pokePowerShuffleButton);
 		
-		JRadioButton rdbtnNewRadioButton_5 = new JRadioButton("Include with Moves");
-		rdbtnNewRadioButton_5.setSelected(true);
-		pokePowersGroup.add(rdbtnNewRadioButton_5);
-		panel_4_1.add(rdbtnNewRadioButton_5);
+		JRadioButton pokePowerRandomButton = new JRadioButton("Random");
+		pokePowerStrategyPanel.add(pokePowerRandomButton);
+		pokePowerRandomButton.setEnabled(false);
+		pokePowersGroup.add(pokePowerRandomButton);
 		
-		JRadioButton rdbtnNewRadioButton_1 = new JRadioButton("Unchanged");
-		panel_4_1.add(rdbtnNewRadioButton_1);
-		pokePowersGroup.add(rdbtnNewRadioButton_1);
+		JPanel pokePowerOptionsPanel = new JPanel();
+		pokePowerPanel.add(pokePowerOptionsPanel);
+		pokePowerOptionsPanel.setLayout(new GridLayout(0, 1, 0, 0));
 		
-		JRadioButton rdbtnNewRadioButton_2_1 = new JRadioButton("Shuffle");
-		panel_4_1.add(rdbtnNewRadioButton_2_1);
-		rdbtnNewRadioButton_2_1.setEnabled(false);
-		pokePowersGroup.add(rdbtnNewRadioButton_2_1);
+		JCheckBox pokePowerWithinTypeBox = new JCheckBox("Within Type");
+		pokePowerWithinTypeBox.setEnabled(false);
+		pokePowerOptionsPanel.add(pokePowerWithinTypeBox);
 		
-		JRadioButton rdbtnNewRadioButton_3_1 = new JRadioButton("Random");
-		panel_4_1.add(rdbtnNewRadioButton_3_1);
-		rdbtnNewRadioButton_3_1.setEnabled(false);
-		pokePowersGroup.add(rdbtnNewRadioButton_3_1);
+		JCheckBox pokePowerExclPokeSpecBox = new JCheckBox("Exclude Poke Specific");
+		pokePowerExclPokeSpecBox.setEnabled(false);
+		pokePowerOptionsPanel.add(pokePowerExclPokeSpecBox);
 		
-		JPanel panel_4_1_1 = new JPanel();
-		movesEffectsPanel.add(panel_4_1_1);
-		panel_4_1_1.setBorder(new TitledBorder(null, "Trainer Effects", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_4_1_1.setLayout(new BorderLayout(0, 0));
+		JCheckBox pokePowerExclTypeSpecBox = new JCheckBox("Exclude Type Specific");
+		pokePowerExclTypeSpecBox.setEnabled(false);
+		pokePowerOptionsPanel.add(pokePowerExclTypeSpecBox);
+		
+		JPanel trainerPanel = new JPanel();
+		movesEffectsPanel.add(trainerPanel);
+		trainerPanel.setBorder(new TitledBorder(null, "Trainer Effects", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		trainerPanel.setLayout(new BorderLayout(0, 0));
 		
 		JLabel lblComingSoon = new JLabel("Coming Soon!");
-		panel_4_1_1.add(lblComingSoon, BorderLayout.CENTER);
+		trainerPanel.add(lblComingSoon, BorderLayout.CENTER);
 		
-		JTabbedPane tabbedPane_2 = new JTabbedPane(JTabbedPane.TOP);
-		movesEffectsTab.addTab("Comming Soon!", null, tabbedPane_2, null);
+		JPanel typesPanel = new JPanel();
+		movesEffectsTab.addTab("Types", null, typesPanel, null);
+		typesPanel.setLayout(new GridLayout(0, 1, 0, 0));
+		
+		JPanel moveTypesPanel = new JPanel();
+		typesPanel.add(moveTypesPanel);
+		moveTypesPanel.setBorder(new TitledBorder(null, "Move Types", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		moveTypesPanel.setLayout(new GridLayout(0, 1, 0, 0));
+		
+		JPanel moveTypesStrategyPanel = new JPanel();
+		moveTypesPanel.add(moveTypesStrategyPanel);
+		moveTypesStrategyPanel.setLayout(new GridLayout(0, 1, 0, 0));
+		
+		JRadioButton moveTypesUnchangedButton = new JRadioButton("Unchanged");
+		moveTypesStrategyPanel.add(moveTypesUnchangedButton);
+		moveTypesUnchangedButton.setSelected(true);
+		
+		JRadioButton moveTypesMatchPokeButton = new JRadioButton("Change to Poke Type");
+		moveTypesStrategyPanel.add(moveTypesMatchPokeButton);
+		moveTypesMatchPokeButton.setEnabled(false);
+		
+		JRadioButton moveTypesAllColorless = new JRadioButton("All Colorless");
+		moveTypesStrategyPanel.add(moveTypesAllColorless);
+		moveTypesAllColorless.setEnabled(false);
+		
+		JPanel moveTypesRandomPanel = new JPanel();
+		moveTypesRandomPanel.setBorder(new TitledBorder(null, "", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		moveTypesPanel.add(moveTypesRandomPanel);
+		moveTypesRandomPanel.setLayout(new GridLayout(0, 2, 0, 0));
+		
+		JPanel moveTypesRandomButtonPanel = new JPanel();
+		FlowLayout fl_moveTypesRandomButtonPanel = (FlowLayout) moveTypesRandomButtonPanel.getLayout();
+		fl_moveTypesRandomButtonPanel.setAlignment(FlowLayout.LEFT);
+		moveTypesRandomPanel.add(moveTypesRandomButtonPanel);
+		
+		JRadioButton moveTypesRandomButton = new JRadioButton("Random");
+		moveTypesRandomButtonPanel.add(moveTypesRandomButton);
+		moveTypesRandomButton.setEnabled(false);
+		
+		JPanel moveTypesRandomOptionsPanel = new JPanel();
+		moveTypesRandomPanel.add(moveTypesRandomOptionsPanel);
+		moveTypesRandomOptionsPanel.setLayout(new GridLayout(0, 1, 0, 0));
+		
+		JRadioButton moveTypeRandMoveButton = new JRadioButton("Per Move");
+		moveTypeRandMoveButton.setSelected(true);
+		moveTypeRandMoveButton.setEnabled(false);
+		moveTypesRandomOptionsPanel.add(moveTypeRandMoveButton);
+		
+		JRadioButton moveTypeRandCardButton = new JRadioButton("Per Card");
+		moveTypeRandCardButton.setEnabled(false);
+		moveTypesRandomOptionsPanel.add(moveTypeRandCardButton);
+		
+		JRadioButton moveTypeRandPokeButton = new JRadioButton("Per Pokemon");
+		moveTypeRandPokeButton.setEnabled(false);
+		moveTypesRandomOptionsPanel.add(moveTypeRandPokeButton);
+		
+		JRadioButton moveTypeRandLineButton = new JRadioButton("Per Evo Line");
+		moveTypeRandLineButton.setEnabled(false);
+		moveTypesRandomOptionsPanel.add(moveTypeRandLineButton);
+		
+		JCheckBox moveTypeRandPreventWrongTypeBox = new JCheckBox("Prevent Wrong Type Specfic");
+		moveTypeRandPreventWrongTypeBox.setSelected(true);
+		moveTypeRandPreventWrongTypeBox.setEnabled(false);
+		moveTypesRandomOptionsPanel.add(moveTypeRandPreventWrongTypeBox);
 	}
 
 	private class SwingAction extends AbstractAction {
