@@ -2,6 +2,7 @@ package randomizer;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,13 +15,14 @@ import data.Cards;
 import data.Move;
 import data.PokemonCard;
 import rom.Texts;
+import util.MathUtils;
 import rom.RomData;
 import rom.RomHandler;
 
 public class Randomizer 
 {
 	static final long SEED = 42;
-	static Random rand = new Random(SEED);
+	static Random rand = new Random(SEED);	
 	
 	RomData romData;
 	
@@ -45,14 +47,13 @@ public class Randomizer
 	}
 	
 	//public static void main(String[] args) throws IOException //Temp
-	public void randomize() throws IOException
+	public void randomize(Settings settings) throws IOException
 	{
 		List<Card> venu = romData.allCards.getCardsWithName("Venusaur").toList();
 		venu.get(1).name.setTextAndDeformat("Test-a-saur");
 		
 		Cards<PokemonCard> pokes = romData.allCards.getPokemonCards();
 
-		//double[] numWithMoves = {0.05, 0.35, 0.60};
 		Map<CardId, Integer> numMovesPerPokemon = getNumMovesPerPokemon(pokes);
 		shuffleOrRandomizePokemonMoves(false, pokes, numMovesPerPokemon, true, 1);
 		
@@ -98,6 +99,19 @@ public class Randomizer
 		}
 	}
 
+	public static double[] getNumMovesPercentages(Cards<PokemonCard> pokes)
+	{
+		int[] numPerCount = new int[PokemonCard.MAX_NUM_MOVES];
+		Arrays.fill(numPerCount, 0);
+		
+		for (PokemonCard card : pokes.iterable())
+		{
+			numPerCount[card.getNumMoves()] += 1;
+		}
+		
+		return MathUtils.convertNumbersToPercentages(numPerCount);
+	}
+	
 	public static Map<CardId, Integer> getNumMovesPerPokemon(Cards<PokemonCard> pokes)
 	{
 		Map<CardId, Integer> cardMovesMap = new HashMap<>();
@@ -113,51 +127,41 @@ public class Randomizer
 			double[] percentWithNumMoves
 	)
 	{
-		int numCards = pokes.count();
-		int numCardsRemaining = numCards;
-		int[] numCardsWithNumMoves = new int[PokemonCard.NUM_MOVES + 1];
-		for (int numMoves = 0; numMoves < PokemonCard.NUM_MOVES + 1; numMoves++)
+		// Plus one since 0 moves is an option
+		int numMovesPossibilities = PokemonCard.MAX_NUM_MOVES + 1;
+		
+		// Sanity check
+		if (percentWithNumMoves.length != numMovesPossibilities)
 		{
-			if (percentWithNumMoves[numMoves] * numCards <= numCardsRemaining)
-			{
-				numCardsWithNumMoves[numMoves] = (int) (percentWithNumMoves[numMoves] * numCards);
-				numCardsRemaining -= numCardsWithNumMoves[numMoves];
-			}
-			else 
-			{
-				numCardsWithNumMoves[numMoves] = numCardsRemaining;
-				numCardsRemaining = 0;
-			}
-			
-			System.out.println(numCardsWithNumMoves[numMoves]);
-		}
-	
-		Map<CardId, Integer> cardMovesMap = new HashMap<>();	
-		for (PokemonCard card : pokes.iterable())
-		{
-			cardMovesMap.put(card.id, PokemonCard.NUM_MOVES);
+			throw new IllegalArgumentException("Passed percentages for numbers of moves length (" + 
+						percentWithNumMoves.length + " is not the expected number of " + numMovesPossibilities);
 		}
 		
-		int maxTries = 10000;
-		int triesCount = 0;
+		// FOr convenience/optimization
+		int numCards = pokes.count();
+		
+		// Determine how many cards will have what number of moves
+		int[] numCardsWithNumMoves = MathUtils.convertPercentageToIntValues(percentWithNumMoves, numCards);
+	
+		// Start by defaulting all to max number
+		Map<CardId, Integer> cardMovesMap = new HashMap<>();
+		for (PokemonCard card : pokes.iterable())
+		{
+			cardMovesMap.put(card.id, PokemonCard.MAX_NUM_MOVES);
+		}
+		
 		CardId randCardId;
 		List<PokemonCard> pokeList = pokes.toList();
-		for (int numMoves = 0; numMoves < PokemonCard.NUM_MOVES; numMoves++)
+		// We use max num moves since we default everyone to MAX NUM already, we don't need to
+		// check that case
+		for (int numMoves = 0; numMoves < PokemonCard.MAX_NUM_MOVES; numMoves++)
 		{
+			// For each card that should have this number of moves
 			for (int count = 0; count < numCardsWithNumMoves[numMoves]; count++)
 			{
-				randCardId = pokeList.get(rand.nextInt(numCards)).id;
-				triesCount = 0;
-				while (cardMovesMap.get(randCardId) != PokemonCard.NUM_MOVES)
-				{
-					randCardId = pokeList.get(rand.nextInt(numCards)).id;
-					
-					// Prevent hanging just in case something very bad happens in our calculations
-					if (triesCount++ > maxTries)
-					{
-						throw new RuntimeException("Ran out of attempts while randomizing/shuffling moves");
-					}
-				}
+				// Get a random card and remove it from the available pool then assign
+				// the number of moves to it
+				randCardId = pokeList.remove(rand.nextInt(pokeList.size())).id;
 				cardMovesMap.put(randCardId, numMoves);
 			}
 		}
@@ -224,7 +228,7 @@ public class Randomizer
 	{
 		// Assign moves one at a time so if we are shuffling and run out of 
 		// non-poke powers, they will be more spread still
-		for (int moveIndex = 0; moveIndex < PokemonCard.NUM_MOVES; moveIndex++)
+		for (int moveIndex = 0; moveIndex < PokemonCard.MAX_NUM_MOVES; moveIndex++)
 		{
 			// For each poke
 			for (PokemonCard poke : pokes.iterable())

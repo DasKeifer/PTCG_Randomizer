@@ -87,8 +87,10 @@ public class RandomizerApp {
 			public void actionPerformed(ActionEvent e) {
 				try {
 				    int returnVal = saveRomChooser.showSaveDialog(frmPokemonTradingCard);
-				    if (returnVal == JFileChooser.APPROVE_OPTION) {
-						randomizer.randomize();
+				    if (returnVal == JFileChooser.APPROVE_OPTION) 
+				    {
+				    	Settings settings = createSettingsFromState();
+						randomizer.randomize(settings);
 						
 						File saveFile = saveRomChooser.getSelectedFile();
 				        if (!saveFile.getName().endsWith(randomizer.getFileExtension()))
@@ -156,7 +158,6 @@ public class RandomizerApp {
 		moveRandOptionsPanel.setLayout(new GridLayout(0, 1, 0, 0));
 		
 		JCheckBox moveRandWithinTypeBox = new JCheckBox("Within Type");
-		moveRandWithinTypeBox.setEnabled(false);
 		moveRandOptionsPanel.add(moveRandWithinTypeBox);
 		
 		JCheckBox moveRandForceDamageBox = new JCheckBox("Force One Damaging");
@@ -294,4 +295,10 @@ public class RandomizerApp {
 		public void actionPerformed(ActionEvent e) {
 		}
 	}
+	
+	 private Settings createSettingsFromState() 
+	 {
+	        Settings settings = new Settings();
+	        return settings;
+	 }
 }
