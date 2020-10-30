@@ -22,9 +22,14 @@ import javax.swing.ButtonGroup;
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBox;
 import javax.swing.border.TitledBorder;
+
+import randomizer.Settings.*;
+
 import javax.swing.border.LineBorder;
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
 
 public class RandomizerApp {
 
@@ -35,6 +40,11 @@ public class RandomizerApp {
 	private Randomizer randomizer;
 	private final ButtonGroup moveRandStrategyGoup = new ButtonGroup();
 	private final ButtonGroup pokePowersGroup = new ButtonGroup();
+	private JCheckBox moveRandWithinTypeBox;
+	private JCheckBox moveRandForceDamageBox;
+	private JCheckBox moveRandNumMovesBox;
+	private JCheckBox generalRandExclPokeSpecMovesBox;
+	private JCheckBox generalRandExclTypeSpecMovesBox;
 	
 	/**
 	 * Launch the application.
@@ -126,10 +136,27 @@ public class RandomizerApp {
 		
 		JPanel movesEffectsPanel = new JPanel();
 		movesEffectsTab.addTab("Moves/Effects", null, movesEffectsPanel, null);
-		movesEffectsPanel.setLayout(new GridLayout(0, 1, 0, 0));
+		movesEffectsPanel.setLayout(new BorderLayout(0, 0));
+		
+		JPanel generalRandPanel = new JPanel();
+		movesEffectsPanel.add(generalRandPanel, BorderLayout.NORTH);
+		generalRandPanel.setBorder(new TitledBorder(null, "Pokemon Moves", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		generalRandPanel.setLayout(new GridLayout(0, 1, 0, 0));
+		
+		generalRandExclPokeSpecMovesBox = new JCheckBox("Exclude Poke Specific");
+		generalRandPanel.add(generalRandExclPokeSpecMovesBox);
+		generalRandExclPokeSpecMovesBox.setEnabled(false);
+		
+		generalRandExclTypeSpecMovesBox = new JCheckBox("Exclude Type Specific");
+		generalRandExclTypeSpecMovesBox.setEnabled(false);
+		generalRandPanel.add(generalRandExclTypeSpecMovesBox);
+		
+		JPanel specificRandPanel = new JPanel();
+		movesEffectsPanel.add(specificRandPanel);
+		specificRandPanel.setLayout(new GridLayout(0, 1, 0, 0));
 		
 		JPanel moveRandPanel = new JPanel();
-		movesEffectsPanel.add(moveRandPanel);
+		specificRandPanel.add(moveRandPanel);
 		moveRandPanel.setBorder(new TitledBorder(null, "Pokemon Moves", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		moveRandPanel.setLayout(new GridLayout(0, 2, 0, 0));
 		
@@ -140,37 +167,44 @@ public class RandomizerApp {
 		moveRandUnchangedButton.setSelected(true);
 		moveRandStrategyGoup.add(moveRandUnchangedButton);
 		
-		JRadioButton moveRandRandomButtom = new JRadioButton("Random");
-		moveRandStrategyGoup.add(moveRandRandomButtom);
+		JRadioButton moveRandRandomButton = new JRadioButton("Random");
+		moveRandStrategyGoup.add(moveRandRandomButton);
 		
 		JRadioButton moveRandShuffleButton = new JRadioButton("Shuffle");
 		moveRandStrategyGoup.add(moveRandShuffleButton);
 		moveRandStrategyPanel.setLayout(new GridLayout(0, 1, 0, 0));
 		moveRandStrategyPanel.add(moveRandUnchangedButton);
 		moveRandStrategyPanel.add(moveRandShuffleButton);
-		moveRandStrategyPanel.add(moveRandRandomButtom);
+		moveRandStrategyPanel.add(moveRandRandomButton);
+		
+		JRadioButton moveRandGenerateButton = new JRadioButton("Generate");
+		moveRandGenerateButton.setEnabled(false);
+		moveRandStrategyPanel.add(moveRandGenerateButton);
 		
 		JPanel moveRandOptionsPanel = new JPanel();
 		moveRandPanel.add(moveRandOptionsPanel);
-		
-		JCheckBox moveRandExclTypeSpecBox = new JCheckBox("Exclude Type Specific");
-		moveRandExclTypeSpecBox.setEnabled(false);
 		moveRandOptionsPanel.setLayout(new GridLayout(0, 1, 0, 0));
 		
-		JCheckBox moveRandWithinTypeBox = new JCheckBox("Within Type");
+		moveRandWithinTypeBox = new JCheckBox("Within Type");
 		moveRandOptionsPanel.add(moveRandWithinTypeBox);
 		
-		JCheckBox moveRandForceDamageBox = new JCheckBox("Force One Damaging");
-		moveRandForceDamageBox.setEnabled(false);
+		moveRandForceDamageBox = new JCheckBox("Force One Damaging");
 		moveRandOptionsPanel.add(moveRandForceDamageBox);
+		moveRandForceDamageBox.setEnabled(false);
 		
-		JCheckBox moveRandExclPokeSpecMovesBox = new JCheckBox("Exclude Poke Specific");
-		moveRandExclPokeSpecMovesBox.setEnabled(false);
-		moveRandOptionsPanel.add(moveRandExclPokeSpecMovesBox);
-		moveRandOptionsPanel.add(moveRandExclTypeSpecBox);
+		moveRandNumMovesBox = new JCheckBox("Random Num of Moves");
+		moveRandOptionsPanel.add(moveRandNumMovesBox);
+		moveRandNumMovesBox.setEnabled(false);
+		
+		JPanel panel = new JPanel();
+		moveRandOptionsPanel.add(panel);
+		
+		JButton btnNewButton = new JButton("Details");
+		btnNewButton.setEnabled(false);
+		panel.add(btnNewButton);
 		
 		JPanel pokePowerPanel = new JPanel();
-		movesEffectsPanel.add(pokePowerPanel);
+		specificRandPanel.add(pokePowerPanel);
 		pokePowerPanel.setBorder(new TitledBorder(null, "Poke Powers", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		pokePowerPanel.setLayout(new GridLayout(0, 2, 0, 0));
 		
@@ -178,48 +212,35 @@ public class RandomizerApp {
 		pokePowerPanel.add(pokePowerStrategyPanel);
 		pokePowerStrategyPanel.setLayout(new GridLayout(0, 1, 0, 0));
 		
-		JRadioButton pokePowerInclWMovesButton = new JRadioButton("Include with Moves");
-		pokePowerStrategyPanel.add(pokePowerInclWMovesButton);
-		pokePowerInclWMovesButton.setSelected(true);
-		pokePowersGroup.add(pokePowerInclWMovesButton);
-		
 		JRadioButton pokePowerUnchangedButton = new JRadioButton("Unchanged");
 		pokePowerStrategyPanel.add(pokePowerUnchangedButton);
 		pokePowersGroup.add(pokePowerUnchangedButton);
 		
 		JRadioButton pokePowerShuffleButton = new JRadioButton("Shuffle");
 		pokePowerStrategyPanel.add(pokePowerShuffleButton);
-		pokePowerShuffleButton.setEnabled(false);
 		pokePowersGroup.add(pokePowerShuffleButton);
 		
 		JRadioButton pokePowerRandomButton = new JRadioButton("Random");
 		pokePowerStrategyPanel.add(pokePowerRandomButton);
-		pokePowerRandomButton.setEnabled(false);
 		pokePowersGroup.add(pokePowerRandomButton);
 		
 		JPanel pokePowerOptionsPanel = new JPanel();
 		pokePowerPanel.add(pokePowerOptionsPanel);
 		pokePowerOptionsPanel.setLayout(new GridLayout(0, 1, 0, 0));
 		
-		JCheckBox pokePowerWithinTypeBox = new JCheckBox("Within Type");
-		pokePowerWithinTypeBox.setEnabled(false);
-		pokePowerOptionsPanel.add(pokePowerWithinTypeBox);
+		JCheckBox powerWithinTypeBox = new JCheckBox("Within Type");
+		pokePowerOptionsPanel.add(powerWithinTypeBox);
 		
-		JCheckBox pokePowerExclPokeSpecBox = new JCheckBox("Exclude Poke Specific");
-		pokePowerExclPokeSpecBox.setEnabled(false);
-		pokePowerOptionsPanel.add(pokePowerExclPokeSpecBox);
+		JCheckBox powerRandNumPowersBox = new JCheckBox("Random Num of Poke Powers");
+		powerRandNumPowersBox.setEnabled(false);
+		pokePowerOptionsPanel.add(powerRandNumPowersBox);
 		
-		JCheckBox pokePowerExclTypeSpecBox = new JCheckBox("Exclude Type Specific");
-		pokePowerExclTypeSpecBox.setEnabled(false);
-		pokePowerOptionsPanel.add(pokePowerExclTypeSpecBox);
+		JPanel panel_1 = new JPanel();
+		pokePowerOptionsPanel.add(panel_1);
 		
-		JPanel trainerPanel = new JPanel();
-		movesEffectsPanel.add(trainerPanel);
-		trainerPanel.setBorder(new TitledBorder(null, "Trainer Effects", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		trainerPanel.setLayout(new BorderLayout(0, 0));
-		
-		JLabel lblComingSoon = new JLabel("Coming Soon!");
-		trainerPanel.add(lblComingSoon, BorderLayout.CENTER);
+		JButton powerNumMovesDetailsButton = new JButton("Details");
+		powerNumMovesDetailsButton.setEnabled(false);
+		panel_1.add(powerNumMovesDetailsButton);
 		
 		JPanel typesPanel = new JPanel();
 		movesEffectsTab.addTab("Types", null, typesPanel, null);
@@ -299,6 +320,26 @@ public class RandomizerApp {
 	 private Settings createSettingsFromState() 
 	 {
 	        Settings settings = new Settings();
+	        SpecificDataPerType typeData = new SpecificDataPerType();
+	        MovesData movesData = new MovesData();
+	        PokePowersData powersData = new PokePowersData();
+	        
+	        settings.setMovesMatchPokeSpecific(moveRandExclPokeSpecMovesBox.isSelected());
+	        
+	        movesData.setMovesAttacksWithinType(moveRandWithinTypeBox.isSelected());
+	        movesData.setMovesForceOneDamaging(moveRandForceDamageBox.isSelected());
+	        movesData.setMovesRandomNumberOfAttacks(moveRandNumMovesBox.isSelected());
+	        
+	        
+	        settings.setTypeSpecificData(typeData);
+	        settings.setMoves(movesData);
+	        settings.setPokePowers(powersData);
 	        return settings;
 	 }
+	public JCheckBox getGeneralRandExclPokeSpecMovesBox_1() {
+		return generalRandExclPokeSpecMovesBox;
+	}
+	public JCheckBox getGeneralRandExclTypeSpecMovesBox() {
+		return generalRandExclTypeSpecMovesBox;
+	}
 }
