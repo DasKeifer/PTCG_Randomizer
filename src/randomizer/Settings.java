@@ -10,7 +10,20 @@ public class Settings
 	// TODO: Generation is very stretch - don't worry too much about for now
     public enum RandomizationStrategy 
     {
-        UNCHANGED, SHUFFLE, RANDOM, GENERATED
+        INVALID, UNCHANGED, SHUFFLE, RANDOM, GENERATED;
+        
+        public static RandomizationStrategy getByName(String name)
+        {
+        	for (RandomizationStrategy strat : RandomizationStrategy.values())
+        	{
+        		if (strat.name().equals(name))
+        		{
+        			return strat;
+        		}
+        	}
+        	
+        	return INVALID;
+        }
     }
 
     // TODO: Once these settle down some more, move them into separate files
@@ -44,6 +57,9 @@ public class Settings
 		public void setMovesStrat(RandomizationStrategy movesStrat) {
 			this.movesStrat = movesStrat;
 		}
+		public void setMovesStrat(String movesStratName) {
+			this.movesStrat = RandomizationStrategy.getByName(movesStratName);
+		}
 		public boolean isMovesRandomNumberOfAttacks() {
 			return movesRandomNumberOfAttacks;
 		}
@@ -70,7 +86,7 @@ public class Settings
     	private RandomizationStrategy movesPokePowerStrat;
     	
     	// applicable if not UNCHANGED
-    	private boolean movesKeepSameNumberOfPowers;
+    	private boolean movesRandomNumberOfPowers;
     	private boolean movesPowersWithinType; // Effects if GENERATED
     	
     	public RandomizationStrategy getMovesPokePowerStrat() {
@@ -79,11 +95,14 @@ public class Settings
 		public void setMovesPokePowerStrat(RandomizationStrategy movesPokePowerStrat) {
 			this.movesPokePowerStrat = movesPokePowerStrat;
 		}
-		public boolean isMovesKeepSameNumberOfPowers() {
-			return movesKeepSameNumberOfPowers;
+		public void setMovesPokePowerStrat(String movesPokePowerStratName) {
+			this.movesPokePowerStrat = RandomizationStrategy.getByName(movesPokePowerStratName);
 		}
-		public void setMovesKeepSameNumberOfPowers(boolean movesKeepSameNumberOfPowers) {
-			this.movesKeepSameNumberOfPowers = movesKeepSameNumberOfPowers;
+		public boolean isMovesRandomNumberOfPowers() {
+			return movesRandomNumberOfPowers;
+		}
+		public void setMovesRandomNumberOfPowers(boolean movesRandomNumberOfPowers) {
+			this.movesRandomNumberOfPowers = movesRandomNumberOfPowers;
 		}
 		public boolean isMovesPowersWithinType() {
 			return movesPowersWithinType;
