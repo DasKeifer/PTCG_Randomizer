@@ -14,6 +14,7 @@ import data.Card;
 import data.Cards;
 import data.Move;
 import data.PokemonCard;
+import randomizer.Settings.RandomizationStrategy;
 import rom.Texts;
 import util.MathUtils;
 import rom.RomData;
@@ -49,13 +50,12 @@ public class Randomizer
 	//public static void main(String[] args) throws IOException //Temp
 	public void randomize(Settings settings) throws IOException
 	{
+		
 		List<Card> venu = romData.allCards.getCardsWithName("Venusaur").toList();
 		venu.get(1).name.setTextAndDeformat("Test-a-saur");
 		
-		Cards<PokemonCard> pokes = romData.allCards.getPokemonCards();
+		randomizeMovesAndPowers(settings);
 
-		Map<CardId, Integer> numMovesPerPokemon = getNumMovesPerPokemon(pokes);
-		shuffleOrRandomizePokemonMoves(false, pokes, numMovesPerPokemon, true, 1);
 		
 		test(romData.allCards.getCardsWithName("Metapod"));
 		
@@ -79,6 +79,54 @@ public class Randomizer
 			else
 			{
 				romData.rawBytes[0x1e4d4 + i] = 0;
+			}
+		}
+	}
+	
+	public void randomizeMovesAndPowers(Settings settings)
+	{		
+		Cards<PokemonCard> pokes = romData.allCards.getPokemonCards();
+		
+		// TODO get from settings
+		Map<CardId, Integer> numMovesPerPokemon = getNumMovesPerPokemon(pokes);
+
+		RandomizationStrategy moveRandStrat = settings.getMoves().getMovesStrat();
+		boolean powersWithMoves = settings.getPokePowers().isIncludeWithMoves();
+		
+		if (RandomizationStrategy.UNCHANGED != moveRandStrat)
+		{
+			if (RandomizationStrategy.INVALID == moveRandStrat)
+			{
+				throw new IllegalArgumentException("INVALID Randomization Strategy recieved for Poke Moves!");
+			}
+			else if (RandomizationStrategy.GENERATED == moveRandStrat)
+			{
+				throw new IllegalArgumentException("GENERATED Randomization Strategy for Poke Moves is not yet implemented!");
+			}
+			// Shuffle or Randomize
+			// TODO: Optionally include PokePowers
+	        shuffleOrRandomizePokemonMoves(
+	        		RandomizationStrategy.SHUFFLE == moveRandStrat, // Shuffle not Random
+	        		pokes, numMovesPerPokemon, settings.getMoves().isMovesAttacksWithinType(), 
+	        		1); // Num non poke power moves
+		}
+		// else No randomization being done for moves - nothign to do here
+		
+		// If Poke Powers weren't included with the moves, we need to do them separately now
+		if (!powersWithMoves)
+		{
+			RandomizationStrategy powersRandStrat = settings.getPokePowers().getMovesPokePowerStrat();			
+			if (RandomizationStrategy.UNCHANGED != powersRandStrat)
+			{
+				if (RandomizationStrategy.INVALID == powersRandStrat)
+				{
+					throw new IllegalArgumentException("INVALID Randomization Strategy recieved for Poke Powers!");
+				}
+				else if (RandomizationStrategy.GENERATED == powersRandStrat)
+				{
+					throw new IllegalArgumentException("GENERATED Randomization Strategy for Poke Powers is not a planned feature!");
+				}
+				// TODO: Shuffle or Randomize
 			}
 		}
 	}
