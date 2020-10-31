@@ -10,7 +10,7 @@ public class PokemonCard extends Card
 {
 	public static final int TOTAL_SIZE_IN_BYTES = 65;
 	public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
-	public static final int NUM_MOVES = 2;
+	public static final int MAX_NUM_MOVES = 2;
 	
 	byte hp; // TODO: non multiples of 10?
 	EvolutionStage stage;
@@ -36,8 +36,8 @@ public class PokemonCard extends Card
 		super();
 		
 		prevEvoName = new OneLineText();
-		moves = new Move[NUM_MOVES];
-		for (int moveIndex = 0; moveIndex < NUM_MOVES; moveIndex++)
+		moves = new Move[MAX_NUM_MOVES];
+		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
 			moves[moveIndex] = new Move();
 		}
@@ -52,8 +52,8 @@ public class PokemonCard extends Card
 		hp = toCopy.hp;
 		stage = toCopy.stage;
 		prevEvoName = new OneLineText(toCopy.prevEvoName);
-		moves = new Move[NUM_MOVES];
-		for (int moveIndex = 0; moveIndex < NUM_MOVES; moveIndex++)
+		moves = new Move[MAX_NUM_MOVES];
+		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
 			moves[moveIndex] = new Move(toCopy.moves[moveIndex]);
 		}
@@ -194,7 +194,7 @@ public class PokemonCard extends Card
 				"\nResistance = " + resistance  +
 				"\nMoves");
 
-		for (int moveIndex = 0; moveIndex < NUM_MOVES; moveIndex++)
+		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
 			builder.append("\n" + moves[moveIndex].toString());
 		}
@@ -213,7 +213,7 @@ public class PokemonCard extends Card
 		// Read the prev evolution
 		index = prevEvoName.readDataAndConvertIds(cardBytes, index, idToText, textIdsUsed);
 
-		for (int moveIndex = 0; moveIndex < NUM_MOVES; moveIndex++)
+		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
 			index = moves[moveIndex].readDataAndConvertIds(cardBytes, index, name, idToText, textIdsUsed);
 		}
@@ -250,7 +250,7 @@ public class PokemonCard extends Card
 		index = prevEvoName.convertToIdsAndWriteData(cardBytes, index, idToText);
 
 		sortMoves();
-		for (int moveIndex = 0; moveIndex < NUM_MOVES; moveIndex++)
+		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
 			index = moves[moveIndex].convertToIdsAndWriteData(cardBytes, index, name, idToText);
 		}

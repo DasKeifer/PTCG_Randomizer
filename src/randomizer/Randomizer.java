@@ -1,6 +1,8 @@
 package randomizer;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,54 +14,121 @@ import data.Card;
 import data.Cards;
 import data.Move;
 import data.PokemonCard;
+import randomizer.Settings.RandomizationStrategy;
 import rom.Texts;
+import util.MathUtils;
 import rom.RomData;
 import rom.RomHandler;
 
 public class Randomizer 
 {
 	static final long SEED = 42;
-	static Random rand = new Random(SEED);
+	static Random rand = new Random(SEED);	
 	
-	public static void main(String[] args) throws IOException //Temp
+	RomData romData;
+	
+	public void openRom(File romFile)
 	{
-		RomData rom = RomHandler.readRom();
-		List<Card> venu = rom.allCards.getCardsWithName("Venusaur").toList();
+		try {
+			romData = RomHandler.readRom(romFile);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void saveRom(File romFile)
+	{
+		try {
+			RomHandler.writeRom(romData, romFile);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	//public static void main(String[] args) throws IOException //Temp
+	public void randomize(Settings settings) throws IOException
+	{
+		
+		List<Card> venu = romData.allCards.getCardsWithName("Venusaur").toList();
 		venu.get(1).name.setTextAndDeformat("Test-a-saur");
 		
-		Cards<PokemonCard> pokes = rom.allCards.getPokemonCards();
+		randomizeMovesAndPowers(settings);
 
-		//double[] numWithMoves = {0.05, 0.35, 0.60};
-		Map<CardId, Integer> numMovesPerPokemon = getNumMovesPerPokemon(pokes);
-		shuffleOrRandomizePokemonMoves(false, pokes, numMovesPerPokemon, true, 1);
 		
-		test(rom.allCards.getCardsWithName("Metapod"));
+		test(romData.allCards.getCardsWithName("Metapod"));
 		
 		// Temp hack to add more value cards to a pack
 		// 11 is the most we can do
 		for (int i = 0; i < 16; i ++)
 		{
-			System.out.println(rom.rawBytes[0x1e4d4 + i]);
+			System.out.println(romData.rawBytes[0x1e4d4 + i]);
 			if (i % 4 == 1)
 			{
-				rom.rawBytes[0x1e4d4 + i] = 5;
+				romData.rawBytes[0x1e4d4 + i] = 5;
 			}
 			else if (i % 4 == 2)
 			{
-				rom.rawBytes[0x1e4d4 + i] = 4;
+				romData.rawBytes[0x1e4d4 + i] = 4;
 			}
 			else if (i % 4 == 3)
 			{
-				rom.rawBytes[0x1e4d4 + i] = 2;
+				romData.rawBytes[0x1e4d4 + i] = 2;
 			}
 			else
 			{
-				rom.rawBytes[0x1e4d4 + i] = 0;
+				romData.rawBytes[0x1e4d4 + i] = 0;
 			}
 		}
+	}
+	
+	public void randomizeMovesAndPowers(Settings settings)
+	{		
+		Cards<PokemonCard> pokes = romData.allCards.getPokemonCards();
 		
+		// TODO get from settings
+		Map<CardId, Integer> numMovesPerPokemon = getNumMovesPerPokemon(pokes);
+
+		RandomizationStrategy moveRandStrat = settings.getMoves().getMovesStrat();
+		boolean powersWithMoves = settings.getPokePowers().isIncludeWithMoves();
 		
-		RomHandler.writeRom(rom);
+		if (RandomizationStrategy.UNCHANGED != moveRandStrat)
+		{
+			if (RandomizationStrategy.INVALID == moveRandStrat)
+			{
+				throw new IllegalArgumentException("INVALID Randomization Strategy recieved for Poke Moves!");
+			}
+			else if (RandomizationStrategy.GENERATED == moveRandStrat)
+			{
+				throw new IllegalArgumentException("GENERATED Randomization Strategy for Poke Moves is not yet implemented!");
+			}
+			// Shuffle or Randomize
+			// TODO: Optionally include PokePowers
+	        shuffleOrRandomizePokemonMoves(
+	        		RandomizationStrategy.SHUFFLE == moveRandStrat, // Shuffle not Random
+	        		pokes, numMovesPerPokemon, settings.getMoves().isMovesAttacksWithinType(), 
+	        		1); // Num non poke power moves
+		}
+		// else No randomization being done for moves - nothign to do here
+		
+		// If Poke Powers weren't included with the moves, we need to do them separately now
+		if (!powersWithMoves)
+		{
+			RandomizationStrategy powersRandStrat = settings.getPokePowers().getMovesPokePowerStrat();			
+			if (RandomizationStrategy.UNCHANGED != powersRandStrat)
+			{
+				if (RandomizationStrategy.INVALID == powersRandStrat)
+				{
+					throw new IllegalArgumentException("INVALID Randomization Strategy recieved for Poke Powers!");
+				}
+				else if (RandomizationStrategy.GENERATED == powersRandStrat)
+				{
+					throw new IllegalArgumentException("GENERATED Randomization Strategy for Poke Powers is not a planned feature!");
+				}
+				// TODO: Shuffle or Randomize
+			}
+		}
 	}
 	
 	public static void test(Cards<Card> cards)
@@ -78,6 +147,19 @@ public class Randomizer
 		}
 	}
 
+	public static double[] getNumMovesPercentages(Cards<PokemonCard> pokes)
+	{
+		int[] numPerCount = new int[PokemonCard.MAX_NUM_MOVES];
+		Arrays.fill(numPerCount, 0);
+		
+		for (PokemonCard card : pokes.iterable())
+		{
+			numPerCount[card.getNumMoves()] += 1;
+		}
+		
+		return MathUtils.convertNumbersToPercentages(numPerCount);
+	}
+	
 	public static Map<CardId, Integer> getNumMovesPerPokemon(Cards<PokemonCard> pokes)
 	{
 		Map<CardId, Integer> cardMovesMap = new HashMap<>();
@@ -93,51 +175,41 @@ public class Randomizer
 			double[] percentWithNumMoves
 	)
 	{
-		int numCards = pokes.count();
-		int numCardsRemaining = numCards;
-		int[] numCardsWithNumMoves = new int[PokemonCard.NUM_MOVES + 1];
-		for (int numMoves = 0; numMoves < PokemonCard.NUM_MOVES + 1; numMoves++)
+		// Plus one since 0 moves is an option
+		int numMovesPossibilities = PokemonCard.MAX_NUM_MOVES + 1;
+		
+		// Sanity check
+		if (percentWithNumMoves.length != numMovesPossibilities)
 		{
-			if (percentWithNumMoves[numMoves] * numCards <= numCardsRemaining)
-			{
-				numCardsWithNumMoves[numMoves] = (int) (percentWithNumMoves[numMoves] * numCards);
-				numCardsRemaining -= numCardsWithNumMoves[numMoves];
-			}
-			else 
-			{
-				numCardsWithNumMoves[numMoves] = numCardsRemaining;
-				numCardsRemaining = 0;
-			}
-			
-			System.out.println(numCardsWithNumMoves[numMoves]);
-		}
-	
-		Map<CardId, Integer> cardMovesMap = new HashMap<>();	
-		for (PokemonCard card : pokes.iterable())
-		{
-			cardMovesMap.put(card.id, PokemonCard.NUM_MOVES);
+			throw new IllegalArgumentException("Passed percentages for numbers of moves length (" + 
+						percentWithNumMoves.length + " is not the expected number of " + numMovesPossibilities);
 		}
 		
-		int maxTries = 10000;
-		int triesCount = 0;
+		// FOr convenience/optimization
+		int numCards = pokes.count();
+		
+		// Determine how many cards will have what number of moves
+		int[] numCardsWithNumMoves = MathUtils.convertPercentageToIntValues(percentWithNumMoves, numCards);
+	
+		// Start by defaulting all to max number
+		Map<CardId, Integer> cardMovesMap = new HashMap<>();
+		for (PokemonCard card : pokes.iterable())
+		{
+			cardMovesMap.put(card.id, PokemonCard.MAX_NUM_MOVES);
+		}
+		
 		CardId randCardId;
 		List<PokemonCard> pokeList = pokes.toList();
-		for (int numMoves = 0; numMoves < PokemonCard.NUM_MOVES; numMoves++)
+		// We use max num moves since we default everyone to MAX NUM already, we don't need to
+		// check that case
+		for (int numMoves = 0; numMoves < PokemonCard.MAX_NUM_MOVES; numMoves++)
 		{
+			// For each card that should have this number of moves
 			for (int count = 0; count < numCardsWithNumMoves[numMoves]; count++)
 			{
-				randCardId = pokeList.get(rand.nextInt(numCards)).id;
-				triesCount = 0;
-				while (cardMovesMap.get(randCardId) != PokemonCard.NUM_MOVES)
-				{
-					randCardId = pokeList.get(rand.nextInt(numCards)).id;
-					
-					// Prevent hanging just in case something very bad happens in our calculations
-					if (triesCount++ > maxTries)
-					{
-						throw new RuntimeException("Ran out of attempts while randomizing/shuffling moves");
-					}
-				}
+				// Get a random card and remove it from the available pool then assign
+				// the number of moves to it
+				randCardId = pokeList.remove(rand.nextInt(pokeList.size())).id;
 				cardMovesMap.put(randCardId, numMoves);
 			}
 		}
@@ -204,7 +276,7 @@ public class Randomizer
 	{
 		// Assign moves one at a time so if we are shuffling and run out of 
 		// non-poke powers, they will be more spread still
-		for (int moveIndex = 0; moveIndex < PokemonCard.NUM_MOVES; moveIndex++)
+		for (int moveIndex = 0; moveIndex < PokemonCard.MAX_NUM_MOVES; moveIndex++)
 		{
 			// For each poke
 			for (PokemonCard poke : pokes.iterable())
@@ -262,6 +334,11 @@ public class Randomizer
 		{
 			poke.setMove(moves.get(randMoveIndex), moveIndex);
 		}
+	}
+
+	public String getFileExtension() 
+	{
+		return ".gbc";
 	}
 }
 

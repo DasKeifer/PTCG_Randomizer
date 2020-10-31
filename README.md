@@ -13,34 +13,33 @@ Some notes on terminology:
 
 *Randomize* - All existing items will be gathered. Items then will be randomly assigned and can be used any number of times or not at all
  * [ ] Create Friendly GUI
- * [ ] Selecting Rom input and output names/paths
+ * [X] Selecting Rom input and output names/paths
  * [ ] Card Attacks/Poke Powers/Effects
 	* [X] Update/Replace Pokemon Names in Attacks/Powers
  	* [X] Randomize Number of Attacks for Cards
  	* [X] Fully Random/Shuffle Attacks
+		* [X] Within types
 		* [ ] Change to Card Type
-		* [X] Assign to Match Card Types
-	* [ ] Include Pokepowers
-	* [ ] Fully Random/Shuffle Pokepowers Separately
-	* [ ] Include Trainer Effects
-	* [ ] Include Trainers
-	* [ ] Fully Random/Shuffle Trainers Separately
-	* [ ] Update discard energy types if possible. If not Type lock them?
+	* [ ] Fully Random/Shuffle Poke Powers
+		* [ ] Within types
+		* [ ] Randomize trainer effects with pokepowers 
+	* [ ] Update/Replace energy type specific effects (e.g. ember (Charmander), energy trans (Venusaur))
+	* [ ] Update/Replace pokemon specific effects (e.g. call for family (nidoran))
+	* [ ] Update/Replace boyfriends (nidoqueen) with random, same type, 3rd stage evo
 * [ ] Seed & Log
 	* [ ] Set & Log Seed
 	* [ ] Optionally Log Changes
 * [ ] HP, Retreat Cost 
 	* [ ] Fully Random/Shuffle
-	* [ ] Random Percentage Based/User Inputtable
+	* [ ] Random Percentage Based/User Inputtable per evo stage and per type
 	* [ ] Evo Stage Weighted
-	* [ ] Evo Chain Consistent
 	* [ ] Swap stats to make higher evos more powerful
+	* [ ] Evo Chain Consistent (e.g. some chains have generally higher HP, others have generally lower HP)
 * [ ] Weakness and Resistance
 	* [ ] Fully Random/Shuffle
+		* [ ] Make Consistent across "types" (e.g. "Rock" or "Fighting" weakness and resistance)
 		* [ ] Make Consistent across Evo
-	* [ ] Random (e.g "Rock" or "Fighting" type weakness and resistances)
-		* [ ] Match Card Type
-		* [ ] Make Consistent across Evo
+		* [ ] Allow colorless weakness
 	* [ ] Percentage Based/User Inputtable
 * [ ] Randomize Pokemon Types
 	* [ ] Fully Random
@@ -48,7 +47,7 @@ Some notes on terminology:
 	* [ ] Consistent in evo lines
 * [ ] Randomize Pokemon Evolutions
 	* [ ] Full Random/Shuffle
-		* [ ] Only existing Evos
+		* [ ] Only change poke with existing Evos
 		* [ ] Shuffle within stages
 		* [ ] Force Changes
 	* [ ] Percentage Based/User Inputtable of each stage
