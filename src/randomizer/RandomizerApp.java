@@ -105,14 +105,13 @@ public class RandomizerApp {
 				    if (returnVal == JFileChooser.APPROVE_OPTION) 
 				    {
 				    	Settings settings = createSettingsFromState();
-						randomizer.randomize(settings);
 						
 						File saveFile = saveRomChooser.getSelectedFile();
 				        if (!saveFile.getName().endsWith(randomizer.getFileExtension()))
 				        {
 				        	saveFile = new File(saveFile.getPath().concat(randomizer.getFileExtension()));
 				        }
-				    	randomizer.saveRom(saveFile);
+				    	randomizer.randomizeAndSaveRom(saveFile, settings);
 				    }
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block

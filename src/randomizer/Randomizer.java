@@ -1,6 +1,7 @@
 package randomizer;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import data.Move;
 import data.PokemonCard;
 import randomizer.Settings.RandomizationStrategy;
 import rom.Texts;
+import util.Logger;
 import util.MathUtils;
 import rom.RomData;
 import rom.RomHandler;
@@ -23,34 +25,69 @@ import rom.RomHandler;
 public class Randomizer 
 {
 	static final long SEED = 42;
+	private Logger logger;
 	static Random rand = new Random(SEED);	
 	
 	RomData romData;
 	
+	public Randomizer()
+	{
+		logger = new Logger();
+		rand = new Random(SEED);
+	}
+	
 	public void openRom(File romFile)
 	{
-		try {
+		try 
+		{
 			romData = RomHandler.readRom(romFile);
-		} catch (IOException e) {
+		} 
+		catch (IOException e)
+		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	public void saveRom(File romFile)
+	public void randomizeAndSaveRom(File romFile, Settings settings) throws IOException
 	{
+		String romBasePath = romFile.getPath();
+		romBasePath = romBasePath.substring(0, romBasePath.lastIndexOf('.'));
+		
+		if (settings.isLogSeed())
+		{
+			FileWriter seedFile = new FileWriter(romBasePath + ".seed.txt");
+			try
+			{
+				seedFile.write(Long.toString(SEED));
+			}
+			finally
+			{
+				seedFile.close();
+			}
+		}
+		
+		if (settings.isLogDetails())
+		{
+			logger.open(romBasePath + ".log.txt");
+		}
+		
+		randomize(settings);
+
+		logger.close();
+		
 		try {
 			RomHandler.writeRom(romData, romFile);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 	}
 	
 	//public static void main(String[] args) throws IOException //Temp
-	public void randomize(Settings settings) throws IOException
+	public void randomize(Settings settings)
 	{
-		
 		List<Card> venu = romData.allCards.getCardsWithName("Venusaur").toList();
 		venu.get(1).name.setTextAndDeformat("Test-a-saur");
 		

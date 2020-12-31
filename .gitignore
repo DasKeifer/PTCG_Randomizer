@@ -2,3 +2,5 @@
 *.gbc
 *.sav
 *.sgm
+*.log.txt
+*.seed.txt
