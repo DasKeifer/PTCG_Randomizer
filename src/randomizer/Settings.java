@@ -106,6 +106,9 @@ public class Settings
 		}
     }
     
+    private boolean logSeed;
+    private boolean logDetails;
+    
 	private SpecificDataPerType specificDataPerType;
 	private MovesData moves;
 	private PokePowersData pokePowers;
@@ -154,5 +157,17 @@ public class Settings
 	}
 	public void setMovesMatchTypeSpecific(boolean movesMatchTypeSpecific) {
 		this.movesMatchTypeSpecific = movesMatchTypeSpecific;
+	}
+	public boolean isLogSeed() {
+		return logSeed;
+	}
+	public void setLogSeed(boolean logSeed) {
+		this.logSeed = logSeed;
+	}
+	public boolean isLogDetails() {
+		return logDetails;
+	}
+	public void setLogDetails(boolean logDetails) {
+		this.logDetails = logDetails;
 	}
 }
