@@ -33,6 +33,7 @@ import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 
 public class RandomizerApp {
 
@@ -43,6 +44,8 @@ public class RandomizerApp {
 	private Randomizer randomizer;
 	private final ButtonGroup moveRandStrategyGoup = new ButtonGroup();
 	private final ButtonGroup pokePowersStrategyGroup = new ButtonGroup();
+	private JCheckBox saveLogSeedBox;
+	private JCheckBox saveLogDetailsBox;
 	private JCheckBox moveRandWithinTypeBox;
 	private JCheckBox moveRandForceDamageBox;
 	private JCheckBox generalRandNumMovesBox;
@@ -95,9 +98,24 @@ public class RandomizerApp {
 		frmPokemonTradingCard.getContentPane().setLayout(new BorderLayout(0, 0));
 		
 		JPanel saveRomPanel = new JPanel();
+		saveRomPanel.setBorder(new EmptyBorder(4, 7, 4, 7));
 		frmPokemonTradingCard.getContentPane().add(saveRomPanel, BorderLayout.SOUTH);
+		saveRomPanel.setLayout(new GridLayout(0, 3, 0, 0));
+		
+		saveLogSeedBox = new JCheckBox("Log Seed");
+		saveRomPanel.add(saveLogSeedBox);
+		saveLogSeedBox.setSelected(true);
+		
+		saveLogDetailsBox = new JCheckBox("Log Randomizations");
+		saveRomPanel.add(saveLogDetailsBox);
+		saveLogDetailsBox.setSelected(true);
+		
+		JPanel randomizeBtnPanel = new JPanel();
+		saveRomPanel.add(randomizeBtnPanel);
+		randomizeBtnPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
 		JButton randomizeButton = new JButton("Randomize!");
+		randomizeBtnPanel.add(randomizeButton);
 		randomizeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
@@ -119,7 +137,6 @@ public class RandomizerApp {
 				}
 			}
 		});
-		saveRomPanel.add(randomizeButton);
 		
 		JPanel openRomPanel = new JPanel();
 		frmPokemonTradingCard.getContentPane().add(openRomPanel, BorderLayout.NORTH);
@@ -338,6 +355,9 @@ public class RandomizerApp {
 	        SpecificDataPerType typeData = new SpecificDataPerType();
 	        MovesData movesData = new MovesData();
 	        PokePowersData powersData = new PokePowersData();
+	        
+	        settings.setLogSeed(saveLogSeedBox.isSelected());
+	        settings.setLogDetails(saveLogDetailsBox.isSelected());
 	        
 	        settings.setTypeSpecificData(typeData);
 	        settings.setMoves(movesData);

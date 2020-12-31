@@ -24,7 +24,10 @@ import rom.RomHandler;
 
 public class Randomizer 
 {
+	static final String SEED_LOG_EXTENSION = ".seed.txt";
+	static final String LOG_FILE_EXTENSION = ".log.txt";
 	static final long SEED = 42;
+	
 	private Logger logger;
 	static Random rand = new Random(SEED);	
 	
@@ -56,7 +59,7 @@ public class Randomizer
 		
 		if (settings.isLogSeed())
 		{
-			FileWriter seedFile = new FileWriter(romBasePath + ".seed.txt");
+			FileWriter seedFile = new FileWriter(romBasePath + SEED_LOG_EXTENSION);
 			try
 			{
 				seedFile.write(Long.toString(SEED));
@@ -69,7 +72,7 @@ public class Randomizer
 		
 		if (settings.isLogDetails())
 		{
-			logger.open(romBasePath + ".log.txt");
+			logger.open(romBasePath + LOG_FILE_EXTENSION);
 		}
 		
 		randomize(settings);
