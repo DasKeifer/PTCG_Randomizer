@@ -24,8 +24,9 @@ Some notes on terminology:
 		* [ ] Within types
  	* [ ] Randomize Number of Attacks for Cards (Need to add switch in GUI still)
 * [ ] Seed & Log
-	* [ ] Set & Log Seed
-	* [ ] Optionally Log Changes
+	* [ ] Set Seed
+	* [X] Log Seed
+	* [X] Optionally Log Changes
 * [ ] HP, Retreat Cost 
 	* [ ] Fully Random/Shuffle
 	* [ ] Random Percentage Based/User Input-able per evo stage and per type
@@ -79,7 +80,7 @@ Some notes on terminology:
 	* [ ] Make all Colorless
 	* [X] Fix card name misspellings (Ninetails vs Ninetales)
 	* [ ] Remove Evolutions (all basic)
-	* [ ] Include Promo cards in booster packs
+	* [ ] Include Promo cards in booster packs?
 		* [ ] Exclude 4 Legendary cards from packs
 	* [ ] Unlimited trades?
 	

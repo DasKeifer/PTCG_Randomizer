@@ -26,18 +26,15 @@ public class Randomizer
 {
 	static final String SEED_LOG_EXTENSION = ".seed.txt";
 	static final String LOG_FILE_EXTENSION = ".log.txt";
-	private static final long SEED = 42;
+	private static final long BASE_SEED = 42;
+	private long nextSeed = BASE_SEED;
 	
 	private Logger logger;
-	private Random rand;
 	private RomData romData;
-	
-	private MoveSetRandomizer moveSetRand;
 	
 	public Randomizer()
 	{
 		logger = new Logger();
-		rand = new Random(SEED);
 	}
 	
 	public void openRom(File romFile)
@@ -45,8 +42,6 @@ public class Randomizer
 		try 
 		{
 			romData = RomHandler.readRom(romFile);
-			
-			moveSetRand = new MoveSetRandomizer(romData, rand);
 		} 
 		catch (IOException e)
 		{
@@ -56,7 +51,7 @@ public class Randomizer
 	}
 	
 	public void randomizeAndSaveRom(File romFile, Settings settings) throws IOException
-	{
+	{		
 		String romBasePath = romFile.getPath();
 		romBasePath = romBasePath.substring(0, romBasePath.lastIndexOf('.'));
 		
@@ -65,7 +60,7 @@ public class Randomizer
 			FileWriter seedFile = new FileWriter(romBasePath + SEED_LOG_EXTENSION);
 			try
 			{
-				seedFile.write(Long.toString(SEED));
+				seedFile.write(Long.toString(BASE_SEED));
 			}
 			finally
 			{
@@ -94,12 +89,48 @@ public class Randomizer
 	//public static void main(String[] args) throws IOException //Temp
 	public void randomize(Settings settings)
 	{
-		List<Card> venu = romData.allCards.getCardsWithName("Venusaur").toList();
-		venu.get(1).name.setTextAndDeformat("Test-a-saur");
+		// Create sub randomizers
+		MoveSetRandomizer moveSetRand = new MoveSetRandomizer(romData, logger);
 		
-		moveSetRand.randomize(settings);
+		List<Card> venu = romData.allCards.getCardsWithName("Venusaur").toList();
+		//venu.get(1).name.setTextAndDeformat("Test-a-saur");
+		
+		// Randomize Evolutions (either within current types or completely random)
+		// If randomizing evos and types but keeping lines consistent, completely 
+		// randomize here then sort it out in the types
+		nextSeed += 100;
+		
+		// Randomize Types (full random, set all mons in a evo line to the same random time)
+		nextSeed += 100;
 
-		test(romData.allCards.getCardsWithName("Metapod"));
+		// Anything below here contributes to the "power score" of a card and may be rejiggered
+		// or skipped depending on how the balancing is done in the end
+		
+		// Randomize HP
+		nextSeed += 100;
+		
+		// Randomize weaknesses and resistances
+		nextSeed += 100;
+		
+		// Randomize Retreat cost
+		nextSeed += 100;
+
+		// Randomize moves
+		nextSeed += 100;
+		
+		// Randomize movesets (full random or match to type)
+		moveSetRand.randomize(nextSeed, settings);
+		nextSeed += 100;
+		
+		// Non card randomizations
+		
+		// Randomize trades
+		
+		// Randomize Promos
+		
+		// Randomize Decks
+		
+		test(romData.allCards.getCardsWithName("Staryu"));
 		
 		// Temp hack to add more value cards to a pack
 		// 11 is the most we can do
@@ -124,7 +155,6 @@ public class Randomizer
 			}
 		}
 	}
-
 	
 	public static void test(Cards<Card> cards)
 	{

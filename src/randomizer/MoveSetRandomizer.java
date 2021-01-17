@@ -13,20 +13,22 @@ import data.Move;
 import data.PokemonCard;
 import randomizer.Settings.RandomizationStrategy;
 import rom.RomData;
+import util.Logger;
 import util.MathUtils;
+import util.StringUtils;
 
 public class MoveSetRandomizer {
-	private Random rand;
 	private RomData romData;
+	private Logger logger;
 	
-	public MoveSetRandomizer(RomData inRomData, Random inRand)
+	public MoveSetRandomizer(RomData inRomData, Logger inLogger)
 	{
 		romData = inRomData;
-		rand = inRand;
+		logger = inLogger;
 	}
 	
-	public void randomize(Settings settings)
-	{		
+	public void randomize(long nextSeed, Settings settings)
+	{				
 		Cards<PokemonCard> pokes = romData.allCards.getPokemonCards();
 		
 		// TODO get from settings so we can randomize it. For now we just keep
@@ -48,12 +50,12 @@ public class MoveSetRandomizer {
 			}
 			// Shuffle or Randomize
 			// TODO: Optionally include PokePowers
-	        shuffleOrRandomizePokemonMoves(
+	        shuffleOrRandomizePokemonMoves(nextSeed++,
 	        		RandomizationStrategy.SHUFFLE == moveRandStrat, // Shuffle not Random
 	        		pokes, numMovesPerPokemon, settings.getMoves().isMovesAttacksWithinType(), 
 	        		1); // Num non poke power moves
 		}
-		// else No randomization being done for moves - nothign to do here
+		// else no randomization being done for moves - nothing to do here
 		
 		// If Poke Powers weren't included with the moves, we need to do them separately now
 		if (!powersWithMoves)
@@ -72,9 +74,135 @@ public class MoveSetRandomizer {
 				// TODO: Shuffle or Randomize
 			}
 		}
+		
+		printPokemonMovesTable();
+	}
+
+
+	public void printPokemonMovesTable()
+	{
+		Cards<PokemonCard> pokes = romData.allCards.getPokemonCards();
+		
+		// Determine length of the columns
+		final int idIndex = 0;
+		final int nameIndex = 1;
+		final int movesStartIndex = 2;
+		final int numIndexes = 8;
+		int[] fieldsMaxLengths = new int[numIndexes];
+		final String[] titles = {" ID ", " Name ", " Move 1 ", " Cost ", " Damage ", " Move 2 ", " Cost ", " Damage "};
+
+		for (int lengthIdx = 0; lengthIdx < numIndexes; lengthIdx++)
+		{
+			fieldsMaxLengths[lengthIdx] = titles[lengthIdx].length();
+		}
+		
+		int tmpLength;
+		for (PokemonCard card : pokes.iterable())
+		{
+			tmpLength = card.id.toString().length();
+			if (tmpLength> fieldsMaxLengths[idIndex])
+			{
+				fieldsMaxLengths[idIndex] = tmpLength;
+			}
+			tmpLength = card.name.toString().length();
+			if (tmpLength > fieldsMaxLengths[nameIndex])
+			{
+				fieldsMaxLengths[nameIndex] = tmpLength;
+			}
+			
+			int index = movesStartIndex;
+			for (Move move : card.getAllMoves())
+			{
+				tmpLength = move.name.toString().length();
+				if (tmpLength > fieldsMaxLengths[index])
+				{
+					fieldsMaxLengths[index] = tmpLength;
+				}
+				index++;
+				
+				tmpLength = move.getEnergyCostString(true, ", ").length(); // true = Abbreviated types
+				if (tmpLength > fieldsMaxLengths[index])
+				{
+					fieldsMaxLengths[index] = tmpLength;
+				}
+				index++;
+				
+				tmpLength = move.getDamageString().length();
+				if (tmpLength > fieldsMaxLengths[index])
+				{
+					fieldsMaxLengths[index] = tmpLength;
+				}
+				index++;
+			}
+		}
+
+		// Create the format string
+		StringBuilder formatBuilder = new StringBuilder();
+		formatBuilder.append("|%-");
+		formatBuilder.append(fieldsMaxLengths[0]);
+		formatBuilder.append("s|%-");
+		formatBuilder.append(fieldsMaxLengths[1]);
+		formatBuilder.append("s|%-");
+		formatBuilder.append(fieldsMaxLengths[2]);
+		formatBuilder.append("s|%");
+		formatBuilder.append(fieldsMaxLengths[3]);
+		formatBuilder.append("s|%");
+		formatBuilder.append(fieldsMaxLengths[4]);
+		formatBuilder.append("s|%-");
+		formatBuilder.append(fieldsMaxLengths[5]);
+		formatBuilder.append("s|%");
+		formatBuilder.append(fieldsMaxLengths[6]);
+		formatBuilder.append("s|%");
+		formatBuilder.append(fieldsMaxLengths[7]);
+		formatBuilder.append("s|\n");
+		String format = formatBuilder.toString();
+
+		// Create a separator line
+		int totalLength = numIndexes + 1; // for the "|"
+		for (int lengthIdx = 0; lengthIdx < numIndexes; lengthIdx++)
+		{
+			totalLength += fieldsMaxLengths[lengthIdx];
+		}
+		// Java doesn't have a good way to make a string n length with one character
+		char[] tempArray = new char[totalLength];
+		Arrays.fill(tempArray, '-');
+		String separator = new String(tempArray);
+		
+		// Print header
+		logger.println(separator);
+		logger.printf(format, (Object[])titles);
+		logger.println(separator);
+		
+		// Log each row
+		String[] rowData = new String[numIndexes];
+		for (PokemonCard card : pokes.iterable())
+		{
+			rowData[idIndex] = card.id.toString();
+			rowData[nameIndex] = card.name.toString();
+
+			int index = movesStartIndex;
+			for (Move move : card.getAllMoves())
+			{
+				if (move.isEmpty())
+				{
+					rowData[index++] = "-";
+					rowData[index++] = "-";
+					rowData[index++] = "-";
+				}
+				else
+				{
+					rowData[index++] = move.name.toString();
+					rowData[index++] = move.getEnergyCostString(true, ", "); // true = abbreviated types
+					rowData[index++] = move.getDamageString();
+				}
+			}
+			
+			logger.printf(format, (Object[])rowData);
+		}
+		
+		logger.println(separator);
 	}
 	
-
 	public static double[] getNumMovesPercentages(Cards<PokemonCard> pokes)
 	{
 		int[] numPerCount = new int[PokemonCard.MAX_NUM_MOVES];
@@ -99,6 +227,7 @@ public class MoveSetRandomizer {
 	}
 	
 	public Map<CardId, Integer> getRandNumMovesPerPokemon(
+			Random rand,
 			Cards<PokemonCard> pokes, 
 			double[] percentWithNumMoves
 	)
@@ -146,11 +275,15 @@ public class MoveSetRandomizer {
 	}
 
 	public Map<CardId, Integer> getRandNumMovesPerPokemonByType(
+			long seed,
 			Cards<PokemonCard> pokes, 
 			Map<CardType, double[]> percentWithNumMovesByType
 	)
 	{
 		Map<CardId, Integer> numMovesPerPoke = new HashMap<>();
+
+		// Create and seed random generator
+		Random rand = new Random(seed);
 		
 		// Do one energy type at a time
 		for (CardType pokeType : CardType.pokemonValues())
@@ -158,6 +291,7 @@ public class MoveSetRandomizer {
 			// Determine the number of moves per pokemon for this type
 			numMovesPerPoke.putAll(
 					getRandNumMovesPerPokemon(
+							rand,
 							pokes.getCardsOfCardType(pokeType), 
 							percentWithNumMovesByType.get(pokeType)));
 		}	
@@ -166,6 +300,7 @@ public class MoveSetRandomizer {
 	}
 
 	public void shuffleOrRandomizePokemonMoves(
+			long nextSeed,
 			boolean shuffle,
 			Cards<PokemonCard> pokes,
 			Map<CardId, Integer> numMovesPerPoke,
@@ -183,25 +318,29 @@ public class MoveSetRandomizer {
 				// to match the types
 				Cards<PokemonCard> typeCards = pokes.getCardsOfCardType(pokeType);
 				List<Move> typeMove = typeCards.getAllMoves();
-				shuffleOrRandomizePokemonMovesHelper(shuffle, typeCards, numMovesPerPoke, numNonPokePower, typeMove);
+				shuffleOrRandomizePokemonMovesHelper(nextSeed, shuffle, typeCards, numMovesPerPoke, numNonPokePower, typeMove);
 			}	
 		}
 		else
 		{
 			// Otherwise get all the moves and do them at once
 			List<Move> typeMove = pokes.getAllMoves();
-			shuffleOrRandomizePokemonMovesHelper(shuffle, pokes, numMovesPerPoke, numNonPokePower, typeMove);
+			shuffleOrRandomizePokemonMovesHelper(nextSeed, shuffle, pokes, numMovesPerPoke, numNonPokePower, typeMove);
 		}
 		
 	}
 	
 	private void shuffleOrRandomizePokemonMovesHelper(
+			long seed,
 			boolean shuffle,
 			Cards<PokemonCard> pokes,
 			Map<CardId, Integer> numMovesPerPoke,
 			int numNonPokePower, 
 			List<Move> moves)
 	{
+		// Create and seed the randomizer
+		Random rand = new Random(seed);
+		
 		// Assign moves one at a time so if we are shuffling and run out of 
 		// non-poke powers, they will be more spread still
 		for (int moveIndex = 0; moveIndex < PokemonCard.MAX_NUM_MOVES; moveIndex++)
@@ -212,7 +351,7 @@ public class MoveSetRandomizer {
 				// See if we need to assign a move or set it to empty
 				if (numMovesPerPoke.get(poke.id) > moveIndex)
 				{
-					shuffleOrRandomizeMoveAtIndex(poke, moveIndex, moves, shuffle, numNonPokePower > moveIndex);
+					shuffleOrRandomizeMoveAtIndex(rand, poke, moveIndex, moves, shuffle, numNonPokePower > moveIndex);
 				}
 				else
 				{
@@ -228,13 +367,14 @@ public class MoveSetRandomizer {
 	}
 	
 	private void shuffleOrRandomizeMoveAtIndex(
+			Random rand,
 			PokemonCard poke, 
 			int moveIndex,
 			List<Move> moves,
 			boolean shuffle,
 			boolean forceNonPokePower
 	)
-	{
+	{		
 		// Determine which random move to use
 		int randMoveIndex = rand.nextInt(moves.size());
 		if (forceNonPokePower)

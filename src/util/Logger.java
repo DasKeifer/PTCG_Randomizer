@@ -23,6 +23,14 @@ public class Logger
 		}
 	}
 	
+	public void printf(String format, Object... args)
+	{
+		if (logFile != null)
+		{
+			logFile.printf(format, args);
+		}
+	}
+	
 	public void open(String logFileName) throws FileNotFoundException
 	{
 		logFile = new PrintStream(logFileName); 

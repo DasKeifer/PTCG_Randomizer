@@ -11,17 +11,18 @@ public class CardDataConstants
 {	
 	public enum EnergyType
 	{
-		FIRE		(0x00),
-		GRASS		(0x01),
-		LIGHTNING	(0x02),
-		WATER		(0x03),
-		FIGHTING	(0x04),
-		PSYCHIC	    (0x05),
-		COLORLESS   (0x06),
-		UNUSED_TYPE (0x07);
+		FIRE		(0x00, "Fr"),
+		GRASS		(0x01, "G"),
+		LIGHTNING	(0x02, "L"),
+		WATER		(0x03, "W"),
+		FIGHTING	(0x04, "Fg"),
+		PSYCHIC	    (0x05, "P"),
+		COLORLESS   (0x06, "C"),
+		UNUSED_TYPE (0x07, "Err");
 
 		private byte value;
-		private EnergyType(int inValue)
+		private String abbrev;
+		private EnergyType(int inValue, String inAbbrev)
 		{
 			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
@@ -29,11 +30,17 @@ public class CardDataConstants
 						+ "EnergyTypes enum: " + inValue);
 			}
 			value = (byte) inValue;
+			abbrev = inAbbrev;
 		}
 
 		public byte getValue()
 		{
 			return value;
+		}
+
+		public String getAbbreviation()
+		{
+			return abbrev;
 		}
 		
 	    public static EnergyType readFromByte(byte b)

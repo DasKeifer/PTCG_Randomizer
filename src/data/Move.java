@@ -14,7 +14,7 @@ public class Move
 	public static final Move EMPTY_MOVE = new Move();
 	
 	byte[] energyCost;
-	OneLineText name;
+	public OneLineText name;
 	public EffectDescription description;
 	public byte damage; // TODO: non multiple of 10?
 	MoveCategory category;
@@ -68,29 +68,85 @@ public class Move
 		return true;
 	}
 	
-	public String toString()
+	public boolean hasEffect()
 	{
-		String tempString = "Move Name: " + name.toString() + "\nRequires:";
-		
+		return !description.isEmpty();
+	}
+
+	public String getEnergyCostString(boolean abbreviated, String separator)
+	{
+		StringBuilder sb = new StringBuilder();
+		energyCostsAsString(sb, abbreviated, separator);
+		return sb.toString();
+	}
+	
+	public void energyCostsAsString(StringBuilder string, boolean abbreviated, String separator)
+	{
 		boolean foundEnergy = false;
 		for (EnergyType energyType : EnergyType.values())
 		{
 			if (energyCost[energyType.getValue()] > 0)
 			{
-				tempString += "\n\t" + energyCost[energyType.getValue()] + " " + energyType;
+				if (foundEnergy)
+				{
+					string.append(separator);
+				}
+				string.append(energyCost[energyType.getValue()]);
+				string.append(" ");
+				if (abbreviated)
+				{
+					string.append(energyType.getAbbreviation());
+				}
+				else
+				{
+					string.append(energyType);
+				}
 				foundEnergy = true;
 			}
 		}
 		if (!foundEnergy)
 		{
-			tempString += " No energies";
+			string.append("None");
 		}
+	}
+	
+	public String toString()
+	{
+		StringBuilder builder = new StringBuilder();
+		builder.append("Move Name: "); 
+		builder.append(name.toString());
+		builder.append("\nEnergies Required:\n\t");
+		
+		// Full energy names, separate with newline and tab
+		energyCostsAsString(builder, false, "\n\t");
 				
-		return tempString + "\nDamage: " + damage +
-				"\nDescription: " + description.toString() + 
-				"\nEffectPtr: " + effectPtr +
-				"\nEffectFlags: " + effect1 + ", " + effect2 + ", " + effect3;
-				
+		builder.append("\nDamage:");
+		builder.append(damage);
+		builder.append("\nDescription: ");
+		builder.append(description.toString());
+		builder.append("\nEffectPtr: ");
+		builder.append(effectPtr);
+		builder.append("\nEffectFlags: ");
+		builder.append(effect1);
+		builder.append(", ");
+		builder.append(effect2);
+		builder.append(", ");
+		builder.append(effect3);
+		
+		return builder.toString();
+	}
+
+	public String getDamageString()
+	{
+		if (hasEffect())
+		{
+			if (damage == 0)
+			{
+				return "-*";
+			}
+			return damage + "*";
+		}
+		return damage + " ";
 	}
 
 	public byte getCost(EnergyType inType)
