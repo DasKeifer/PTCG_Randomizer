@@ -1,5 +1,7 @@
 package data;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import constants.CardDataConstants.*;
@@ -70,9 +72,14 @@ public class PokemonCard extends Card
 		unknownByte2 = toCopy.unknownByte2;
 	}
 	
-	public Move[] getAllMoves()
+	public List<Move> getAllMoves()
 	{
-		return moves;
+		ArrayList<Move> movesList = new ArrayList<>();
+		for(Move move : moves)
+		{
+			movesList.add(new Move(move));
+		}
+		return movesList;
 	}
 	
 	public int getNumMoves()
@@ -100,16 +107,16 @@ public class PokemonCard extends Card
 		}
 	}
 	
-	public void setMoves(Move[] newMoves)
+	public void setMoves(List<Move> newMoves)
 	{
-		if (newMoves.length != moves.length)
+		if (newMoves.size() != moves.length)
 		{
-			throw new IllegalArgumentException("Bad number of moves " + newMoves.length + "was passed!");
+			throw new IllegalArgumentException("Bad number of moves (" + newMoves.size() + ") was passed!");
 		}
 		
 		for (int moveIndex = 0; moveIndex < moves.length; moveIndex++)
 		{
-			moves[moveIndex] = new Move(newMoves[moveIndex]);
+			moves[moveIndex] = new Move(newMoves.get(moveIndex));
 		}
 	}
 	

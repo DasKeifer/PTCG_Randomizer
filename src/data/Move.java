@@ -1,5 +1,6 @@
 package data;
 
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,7 +14,7 @@ public class Move
 	public static final int TOTAL_SIZE_IN_BYTES = 19;
 	public static final Move EMPTY_MOVE = new Move();
 	
-	byte[] energyCost;
+	EnumMap<EnergyType, Byte> energyCost;
 	public OneLineText name;
 	public EffectDescription description;
 	public byte damage; // TODO: non multiple of 10?
@@ -27,7 +28,7 @@ public class Move
 
 	public Move()
 	{
-		energyCost = new byte[8];
+		energyCost = new EnumMap<>(EnergyType.class);
 		name = new OneLineText();
 		description = new EffectDescription();
 		category = MoveCategory.DAMAGE_NORMAL;
@@ -58,7 +59,7 @@ public class Move
 	
 	public boolean isPokePower()
 	{
-		for(byte cost : energyCost)
+		for(byte cost : energyCost.values())
 		{
 			if (cost > 0)
 			{
@@ -85,13 +86,13 @@ public class Move
 		boolean foundEnergy = false;
 		for (EnergyType energyType : EnergyType.values())
 		{
-			if (energyCost[energyType.getValue()] > 0)
+			if (energyCost.get(energyType) != null && energyCost.get(energyType) > 0)
 			{
 				if (foundEnergy)
 				{
 					string.append(separator);
 				}
-				string.append(energyCost[energyType.getValue()]);
+				string.append(energyCost.get(energyType));
 				string.append(" ");
 				if (abbreviated)
 				{
@@ -148,15 +149,22 @@ public class Move
 		}
 		return damage + " ";
 	}
-
+	
 	public byte getCost(EnergyType inType)
 	{
-		return energyCost[inType.getValue()];
+		if (energyCost.get(inType) != null)
+		{
+			return energyCost.get(inType);
+		}
+		else
+		{
+			return 0;
+		}
 	}
 	
-	public int getNonColorlessEnergyCosts()
+	public byte getNonColorlessEnergyCosts()
 	{
-		int energyCount = 0;
+		byte energyCount = 0;
 		for (EnergyType energyType : EnergyType.values())
 		{
 			if (energyType != EnergyType.COLORLESS)
@@ -168,13 +176,18 @@ public class Move
 		return energyCount;
 	}
 	
+	public void clearCosts()
+	{
+		energyCost.clear();
+	}
+	
 	public void setCost(EnergyType inType, byte inCost)
 	{
 		if (inCost > ByteUtils.MAX_HEX_CHAR_VALUE || inCost < ByteUtils.MIN_BYTE_VALUE)
 		{
 			throw new IllegalArgumentException("Invalid value was passed for energy type " + inType + " cost: " + inCost);
 		}
-		energyCost[inType.getValue()] = inCost;
+		energyCost.put(inType, inCost);
 	}
 	
 	public int readDataAndConvertIds(byte[] moveBytes, int startIndex, RomText cardName, Texts idToText, Set<Short> textIdsUsed) 
@@ -183,7 +196,7 @@ public class Move
 		
 		// They are stored in octects corresponding to their energy type. Since we
 		// read them as bytes, we mask each byte and increment the index every other time
-		energyCost = new byte[8];
+		energyCost = new EnumMap<>(EnergyType.class);
 		setCost(EnergyType.FIRE, ByteUtils.readUpperHexChar(moveBytes[index]));
 		setCost(EnergyType.GRASS, ByteUtils.readLowerHexChar(moveBytes[index]));
 		index++;

@@ -18,7 +18,7 @@ Some notes on terminology:
 	* [X] Update/Replace Pokemon Names in Attacks/Powers
  	* [X] Fully Random/Shuffle Attacks
 		* [X] Within types
-		* [ ] Change Type Energies to Card Type
+		* [X] Change Type Energies to Card Type
 	* [ ] Fully Random/Shuffle Poke Powers
 		* [ ] Include with Moves
 		* [ ] Within types
@@ -77,7 +77,7 @@ Some notes on terminology:
 		* [ ] Within Promos
 		* [ ] Any card
 * [ ] Miscellaneous tweaks
-	* [ ] Make all Colorless
+	* [X] Make all Colorless
 	* [X] Fix card name misspellings (Ninetails vs Ninetales)
 	* [ ] Remove Evolutions (all basic)
 	* [ ] Include Promo cards in booster packs?
