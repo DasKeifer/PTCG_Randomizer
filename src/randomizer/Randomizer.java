@@ -32,6 +32,7 @@ public class Randomizer
 		try 
 		{
 			romData = RomHandler.readRom(romFile);
+			nextSeed = BASE_SEED;
 		} 
 		catch (IOException e)
 		{
@@ -124,7 +125,7 @@ public class Randomizer
 		
 		// Temp hack to add more value cards to a pack
 		// 11 is the most we can do
-		/*for (int i = 0; i < 16; i ++)
+		for (int i = 0; i < 16; i ++)
 		{
 			System.out.println(romData.rawBytes[0x1e4d4 + i]);
 			if (i % 4 == 1)
@@ -143,7 +144,7 @@ public class Randomizer
 			{
 				romData.rawBytes[0x1e4d4 + i] = 0;
 			}
-		}*/
+		}
 	}
 	
 	public static void test(Cards<Card> cards)
