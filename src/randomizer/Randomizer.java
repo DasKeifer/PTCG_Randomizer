@@ -3,22 +3,12 @@ package randomizer;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
-import constants.CardConstants.CardId;
-import constants.CardDataConstants.CardType;
 import data.Card;
 import data.Cards;
-import data.Move;
-import data.PokemonCard;
-import randomizer.Settings.RandomizationStrategy;
 import rom.Texts;
 import util.Logger;
-import util.MathUtils;
 import rom.RomData;
 import rom.RomHandler;
 
@@ -93,7 +83,7 @@ public class Randomizer
 		MoveSetRandomizer moveSetRand = new MoveSetRandomizer(romData, logger);
 		
 		List<Card> venu = romData.allCards.getCardsWithName("Venusaur").toList();
-		//venu.get(1).name.setTextAndDeformat("Test-a-saur");
+		venu.get(1).name.setTextAndDeformat("Test-a-saur");
 		
 		// Randomize Evolutions (either within current types or completely random)
 		// If randomizing evos and types but keeping lines consistent, completely 
@@ -130,11 +120,11 @@ public class Randomizer
 		
 		// Randomize Decks
 		
-		test(romData.allCards.getCardsWithName("Staryu"));
+		test(romData.allCards.getCardsWithName("Kakuna"));
 		
 		// Temp hack to add more value cards to a pack
 		// 11 is the most we can do
-		for (int i = 0; i < 16; i ++)
+		/*for (int i = 0; i < 16; i ++)
 		{
 			System.out.println(romData.rawBytes[0x1e4d4 + i]);
 			if (i % 4 == 1)
@@ -153,7 +143,7 @@ public class Randomizer
 			{
 				romData.rawBytes[0x1e4d4 + i] = 0;
 			}
-		}
+		}*/
 	}
 	
 	public static void test(Cards<Card> cards)

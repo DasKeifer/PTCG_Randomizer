@@ -1,7 +1,7 @@
 package randomizer;
 
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -15,7 +15,6 @@ import randomizer.Settings.RandomizationStrategy;
 import rom.RomData;
 import util.Logger;
 import util.MathUtils;
-import util.StringUtils;
 
 public class MoveSetRandomizer {
 	private RomData romData;
@@ -28,7 +27,8 @@ public class MoveSetRandomizer {
 	}
 	
 	public void randomize(long nextSeed, Settings settings)
-	{				
+	{
+		boolean changedMoves = false;
 		Cards<PokemonCard> pokes = romData.allCards.getPokemonCards();
 		
 		// TODO get from settings so we can randomize it. For now we just keep
@@ -40,6 +40,7 @@ public class MoveSetRandomizer {
 		
 		if (RandomizationStrategy.UNCHANGED != moveRandStrat)
 		{
+			changedMoves = true;
 			if (RandomizationStrategy.INVALID == moveRandStrat)
 			{
 				throw new IllegalArgumentException("INVALID Randomization Strategy recieved for Poke Moves!");
@@ -63,6 +64,7 @@ public class MoveSetRandomizer {
 			RandomizationStrategy powersRandStrat = settings.getPokePowers().getMovesPokePowerStrat();			
 			if (RandomizationStrategy.UNCHANGED != powersRandStrat)
 			{
+				changedMoves = true;
 				if (RandomizationStrategy.INVALID == powersRandStrat)
 				{
 					throw new IllegalArgumentException("INVALID Randomization Strategy recieved for Poke Powers!");
@@ -75,102 +77,70 @@ public class MoveSetRandomizer {
 			}
 		}
 		
-		printPokemonMovesTable();
+		// If we changed anything, print out the new data
+		if (changedMoves)
+		{
+			// Sort the moves now so they will log nicely
+			for (PokemonCard card : pokes.iterable())
+			{
+				card.sortMoves();
+			}
+			printPokemonMovesTable();
+		}
 	}
-
 
 	public void printPokemonMovesTable()
 	{
 		Cards<PokemonCard> pokes = romData.allCards.getPokemonCards();
 		
-		// Determine length of the columns
 		final int idIndex = 0;
 		final int nameIndex = 1;
 		final int movesStartIndex = 2;
 		final int numIndexes = 8;
-		int[] fieldsMaxLengths = new int[numIndexes];
-		final String[] titles = {" ID ", " Name ", " Move 1 ", " Cost ", " Damage ", " Move 2 ", " Cost ", " Damage "};
-
-		for (int lengthIdx = 0; lengthIdx < numIndexes; lengthIdx++)
-		{
-			fieldsMaxLengths[lengthIdx] = titles[lengthIdx].length();
-		}
+		String[] titles = {" ID ", " Name ", " Move 1 ", " Cost ", " Damage ", " Move 2 ", " Cost ", " Damage "};
 		
-		int tmpLength;
+		// Determine length of each of the columns columns
+		int[] fieldsMaxLengths = new int[numIndexes];
+		
+		// Length of the titles
+		Logger.findMaxStringLengths(fieldsMaxLengths, titles);
+		
+		// Lengths for each pokemon card
+		String[] fields = new String[numIndexes];
 		for (PokemonCard card : pokes.iterable())
 		{
-			tmpLength = card.id.toString().length();
-			if (tmpLength> fieldsMaxLengths[idIndex])
-			{
-				fieldsMaxLengths[idIndex] = tmpLength;
-			}
-			tmpLength = card.name.toString().length();
-			if (tmpLength > fieldsMaxLengths[nameIndex])
-			{
-				fieldsMaxLengths[nameIndex] = tmpLength;
-			}
+			fields[idIndex] = card.id.toString();
+			fields[nameIndex] = card.name.toString();
 			
 			int index = movesStartIndex;
 			for (Move move : card.getAllMoves())
 			{
-				tmpLength = move.name.toString().length();
-				if (tmpLength > fieldsMaxLengths[index])
-				{
-					fieldsMaxLengths[index] = tmpLength;
-				}
-				index++;
-				
-				tmpLength = move.getEnergyCostString(true, ", ").length(); // true = Abbreviated types
-				if (tmpLength > fieldsMaxLengths[index])
-				{
-					fieldsMaxLengths[index] = tmpLength;
-				}
-				index++;
-				
-				tmpLength = move.getDamageString().length();
-				if (tmpLength > fieldsMaxLengths[index])
-				{
-					fieldsMaxLengths[index] = tmpLength;
-				}
-				index++;
+				fields[index++] = move.name.toString();
+				fields[index++] = move.getEnergyCostString(true, ", "); // true = Abbreviated types
+				fields[index++] = move.getDamageString();
 			}
+
+			Logger.findMaxStringLengths(fieldsMaxLengths, fields);
 		}
 
-		// Create the format string
-		StringBuilder formatBuilder = new StringBuilder();
-		formatBuilder.append("|%-");
-		formatBuilder.append(fieldsMaxLengths[0]);
-		formatBuilder.append("s|%-");
-		formatBuilder.append(fieldsMaxLengths[1]);
-		formatBuilder.append("s|%-");
-		formatBuilder.append(fieldsMaxLengths[2]);
-		formatBuilder.append("s|%");
-		formatBuilder.append(fieldsMaxLengths[3]);
-		formatBuilder.append("s|%");
-		formatBuilder.append(fieldsMaxLengths[4]);
-		formatBuilder.append("s|%-");
-		formatBuilder.append(fieldsMaxLengths[5]);
-		formatBuilder.append("s|%");
-		formatBuilder.append(fieldsMaxLengths[6]);
-		formatBuilder.append("s|%");
-		formatBuilder.append(fieldsMaxLengths[7]);
-		formatBuilder.append("s|\n");
-		String format = formatBuilder.toString();
+		// Create the format string for each row
+		String rowFormat = Logger.createTableFormatString(fieldsMaxLengths, "-", "-", "-", "", "", "-");
 
-		// Create a separator line
+		// Determine total line length and create a separator line
 		int totalLength = numIndexes + 1; // for the "|"
 		for (int lengthIdx = 0; lengthIdx < numIndexes; lengthIdx++)
 		{
 			totalLength += fieldsMaxLengths[lengthIdx];
 		}
-		// Java doesn't have a good way to make a string n length with one character
-		char[] tempArray = new char[totalLength];
-		Arrays.fill(tempArray, '-');
-		String separator = new String(tempArray);
+		String separator = Logger.createSeparatorLine(totalLength);
+		
+		// Create a title row
+		String tableName = Logger.createTableTitle("Pokemon Modified Movesets", totalLength);
 		
 		// Print header
 		logger.println(separator);
-		logger.printf(format, (Object[])titles);
+		logger.println(tableName);
+		logger.printf(rowFormat, (Object[])titles);
 		logger.println(separator);
 		
 		// Log each row
@@ -196,10 +166,10 @@ public class MoveSetRandomizer {
 					rowData[index++] = move.getDamageString();
 				}
 			}
-			
-			logger.printf(format, (Object[])rowData);
+			logger.printf(rowFormat, (Object[])rowData);
 		}
 		
+		// Print a final separator
 		logger.println(separator);
 	}
 	
@@ -218,7 +188,7 @@ public class MoveSetRandomizer {
 	
 	public static Map<CardId, Integer> getNumMovesPerPokemon(Cards<PokemonCard> pokes)
 	{
-		Map<CardId, Integer> cardMovesMap = new HashMap<>();
+		Map<CardId, Integer> cardMovesMap = new EnumMap<>(CardId.class);
 		for (PokemonCard card : pokes.iterable())
 		{
 			cardMovesMap.put(card.id, card.getNumMoves());
@@ -249,7 +219,7 @@ public class MoveSetRandomizer {
 		int[] numCardsWithNumMoves = MathUtils.convertPercentageToIntValues(percentWithNumMoves, numCards);
 	
 		// Start by defaulting all to max number
-		Map<CardId, Integer> cardMovesMap = new HashMap<>();
+		Map<CardId, Integer> cardMovesMap = new EnumMap<>(CardId.class);
 		for (PokemonCard card : pokes.iterable())
 		{
 			cardMovesMap.put(card.id, PokemonCard.MAX_NUM_MOVES);
@@ -280,7 +250,7 @@ public class MoveSetRandomizer {
 			Map<CardType, double[]> percentWithNumMovesByType
 	)
 	{
-		Map<CardId, Integer> numMovesPerPoke = new HashMap<>();
+		Map<CardId, Integer> numMovesPerPoke = new EnumMap<>(CardId.class);
 
 		// Create and seed random generator
 		Random rand = new Random(seed);
