@@ -24,6 +24,24 @@ public class Settings
         	return INVALID;
         }
     }
+    
+    public enum MoveTypeChanges
+    {
+    	INVALID, UNCHANGED, MATCH_CARD_TYPE, ALL_COLORLESS;
+        
+        public static MoveTypeChanges getByName(String name)
+        {
+        	for (MoveTypeChanges change : MoveTypeChanges.values())
+        	{
+        		if (change.name().equals(name))
+        		{
+        			return change;
+        		}
+        	}
+        	
+        	return INVALID;
+        }
+    }
 
     // TODO: Once these settle down some more, move them into separate files
     public static class TypeSpecificData 
@@ -49,6 +67,9 @@ public class Settings
     	private boolean movesForceOneDamaging; // If keep same number of attacks is off
     	private boolean movesAttacksWithinType; // Effects if GENERATED
     	
+    	// Applicable always
+    	private MoveTypeChanges moveTypeChanges;
+    	
         public RandomizationStrategy getMovesStrat() {
 			return movesStrat;
 		}
@@ -69,6 +90,12 @@ public class Settings
 		}
 		public void setMovesAttacksWithinType(boolean movesAttacksWithinType) {
 			this.movesAttacksWithinType = movesAttacksWithinType;
+		}
+		public MoveTypeChanges getMoveTypeChanges() {
+			return moveTypeChanges;
+		}
+		public void setMoveTypeChanges(String moveTypeChangeName) {
+			this.moveTypeChanges = MoveTypeChanges.getByName(moveTypeChangeName);
 		}
     }
     

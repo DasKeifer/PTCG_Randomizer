@@ -54,6 +54,35 @@ public class CardDataConstants
 	    	}
 	    	throw new IllegalArgumentException("Invalid EnergyType value " + b + " was passed");
 	    }
+
+		public CardType convertToCardType()
+		{
+			return CardType.readFromByte(getValue());
+		}
+		
+		public WeaknessResistanceType convertToWeaknessResistanceType()
+		{
+			switch(this)
+			{
+			case FIRE:
+				return WeaknessResistanceType.FIRE;
+			case GRASS:
+				return WeaknessResistanceType.GRASS;
+			case LIGHTNING:
+				return WeaknessResistanceType.LIGHTNING;
+			case FIGHTING:
+				return WeaknessResistanceType.FIGHTING;
+			case PSYCHIC:
+				return WeaknessResistanceType.PSYCHIC;
+			case COLORLESS:
+				// TODO: May have a valid value
+				return WeaknessResistanceType.NONE; 
+			case UNUSED_TYPE:
+				return WeaknessResistanceType.NONE;
+			default:
+				return WeaknessResistanceType.NONE;
+			}
+		}
 	}
 
 	public enum CardType
@@ -169,6 +198,15 @@ public class CardDataConstants
 		public boolean isTrainerCard() 
 		{
 			return trainerValues().contains(this);
+		}
+		
+		public EnergyType convertToEnergyType()
+		{
+			if (!isPokemonCard())
+			{
+				return EnergyType.UNUSED_TYPE;
+			}
+			return EnergyType.readFromByte(getValue());
 		}
 	}
 
@@ -362,6 +400,27 @@ public class CardDataConstants
 	    	}
 	    	throw new IllegalArgumentException("Invalid WeaknessResistanceType value " + b + " was passed");
 	    }
+	    
+		public EnergyType convertToEnergyType()
+		{
+			switch(this)
+			{
+			case FIRE:
+				return EnergyType.FIRE;
+			case GRASS:
+				return EnergyType.GRASS;
+			case LIGHTNING:
+				return EnergyType.LIGHTNING;
+			case FIGHTING:
+				return EnergyType.FIGHTING;
+			case PSYCHIC:
+				return EnergyType.PSYCHIC;
+			case NONE:
+				return EnergyType.UNUSED_TYPE;
+			default:
+				return EnergyType.UNUSED_TYPE;
+			}
+		}
 	}
 
 	public enum MoveCategory

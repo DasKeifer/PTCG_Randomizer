@@ -53,6 +53,7 @@ public class RandomizerApp {
 	private JCheckBox generalRandKeepTypeSpecMovesBox;
 	private JCheckBox powerWithinTypeBox;
 	private JCheckBox pokePowerIncludeWithMovesBox;
+	private final ButtonGroup moveRandTypeGroup = new ButtonGroup();
 	
 	/**
 	 * Launch the application.
@@ -196,7 +197,7 @@ public class RandomizerApp {
 		JPanel moveRandPanel = new JPanel();
 		specificRandPanel.add(moveRandPanel);
 		moveRandPanel.setBorder(new TitledBorder(null, "Pokemon Moves", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		moveRandPanel.setLayout(new GridLayout(0, 2, 0, 0));
+		moveRandPanel.setLayout(new GridLayout(0, 3, 0, 0));
 		
 		JPanel moveRandStrategyPanel = new JPanel();
 		moveRandPanel.add(moveRandStrategyPanel);
@@ -233,6 +234,27 @@ public class RandomizerApp {
 		moveRandForceDamageBox = new JCheckBox("Force One Damaging");
 		moveRandOptionsPanel.add(moveRandForceDamageBox);
 		moveRandForceDamageBox.setEnabled(false);
+		
+		JPanel moveRandTypePanel = new JPanel();
+		moveRandTypePanel.setBorder(new TitledBorder(null, "Move Type Changes", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		moveRandPanel.add(moveRandTypePanel);
+		moveRandTypePanel.setLayout(new GridLayout(0, 1, 0, 0));
+		
+		JRadioButton moveRandTypeUnchangedButton = new JRadioButton("Unchanged");
+		moveRandTypeUnchangedButton.setActionCommand("UNCHANGED");
+		moveRandTypeUnchangedButton.setSelected(true);
+		moveRandTypeGroup.add(moveRandTypeUnchangedButton);
+		moveRandTypePanel.add(moveRandTypeUnchangedButton);
+		
+		JRadioButton moveRandTypeMatchCardTypeButton = new JRadioButton("Match Card Type");
+		moveRandTypeMatchCardTypeButton.setActionCommand("MATCH_CARD_TYPE");
+		moveRandTypeGroup.add(moveRandTypeMatchCardTypeButton);
+		moveRandTypePanel.add(moveRandTypeMatchCardTypeButton);
+		
+		JRadioButton moveRandTypeAllColorlessButton = new JRadioButton("All Colorless");
+		moveRandTypeAllColorlessButton.setActionCommand("ALL_COLORLESS");
+		moveRandTypeGroup.add(moveRandTypeAllColorlessButton);
+		moveRandTypePanel.add(moveRandTypeAllColorlessButton);
 		
 		JPanel pokePowerPanel = new JPanel();
 		specificRandPanel.add(pokePowerPanel);
@@ -369,6 +391,7 @@ public class RandomizerApp {
 	        movesData.setMovesAttacksWithinType(moveRandWithinTypeBox.isSelected());
 	        movesData.setMovesForceOneDamaging(moveRandForceDamageBox.isSelected());
 	        movesData.setMovesStrat(moveRandStrategyGoup.getSelection().getActionCommand());
+	        movesData.setMoveTypeChanges(moveRandTypeGroup.getSelection().getActionCommand());
 
 	        powersData.setIncludeWithMoves(pokePowerIncludeWithMovesBox.isSelected());
 	        if (!pokePowerIncludeWithMovesBox.isSelected())

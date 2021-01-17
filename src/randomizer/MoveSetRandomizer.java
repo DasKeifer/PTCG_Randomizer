@@ -8,9 +8,11 @@ import java.util.Random;
 
 import constants.CardConstants.CardId;
 import constants.CardDataConstants.CardType;
+import constants.CardDataConstants.EnergyType;
 import data.Cards;
 import data.Move;
 import data.PokemonCard;
+import randomizer.Settings.MoveTypeChanges;
 import randomizer.Settings.RandomizationStrategy;
 import rom.RomData;
 import util.Logger;
@@ -40,7 +42,6 @@ public class MoveSetRandomizer {
 		
 		if (RandomizationStrategy.UNCHANGED != moveRandStrat)
 		{
-			changedMoves = true;
 			if (RandomizationStrategy.INVALID == moveRandStrat)
 			{
 				throw new IllegalArgumentException("INVALID Randomization Strategy recieved for Poke Moves!");
@@ -50,6 +51,8 @@ public class MoveSetRandomizer {
 				throw new IllegalArgumentException("GENERATED Randomization Strategy for Poke Moves is not yet implemented!");
 			}
 			// Shuffle or Randomize
+			changedMoves = true;
+			
 			// TODO: Optionally include PokePowers
 	        shuffleOrRandomizePokemonMoves(nextSeed++,
 	        		RandomizationStrategy.SHUFFLE == moveRandStrat, // Shuffle not Random
@@ -64,7 +67,6 @@ public class MoveSetRandomizer {
 			RandomizationStrategy powersRandStrat = settings.getPokePowers().getMovesPokePowerStrat();			
 			if (RandomizationStrategy.UNCHANGED != powersRandStrat)
 			{
-				changedMoves = true;
 				if (RandomizationStrategy.INVALID == powersRandStrat)
 				{
 					throw new IllegalArgumentException("INVALID Randomization Strategy recieved for Poke Powers!");
@@ -74,6 +76,28 @@ public class MoveSetRandomizer {
 					throw new IllegalArgumentException("GENERATED Randomization Strategy for Poke Powers is not a planned feature!");
 				}
 				// TODO: Shuffle or Randomize
+				changedMoves = true;
+			}
+		}
+		
+		// See if we need to tweak the move types at all
+		MoveTypeChanges moveTypeChanges = settings.getMoves().getMoveTypeChanges();
+		if (MoveTypeChanges.UNCHANGED != moveTypeChanges)
+		{
+			if (MoveTypeChanges.INVALID == moveTypeChanges)
+			{
+				throw new IllegalArgumentException("INVALID Move Type Changes recieved!");
+			}
+
+			changedMoves = true;
+			if (MoveTypeChanges.MATCH_CARD_TYPE == moveTypeChanges)
+			{
+				makeAllMovesMatchCardType();
+			}
+			// Make all Colorless
+			else
+			{
+				makeAllMovesColorless();
 			}
 		}
 		
@@ -89,6 +113,25 @@ public class MoveSetRandomizer {
 		}
 	}
 
+	public void makeAllMovesMatchCardType()
+	{
+		Cards<PokemonCard> pokes = romData.allCards.getPokemonCards();
+		
+		// Do one energy type at a time
+		for (CardType pokeType : CardType.pokemonValues())
+		{				
+			// Determine the number of moves per pokemon for this type
+			changeAllMovesTypes(pokes.getCardsOfCardType(pokeType), 
+					pokeType.convertToEnergyType());
+		}	
+	}
+	
+	public void makeAllMovesColorless()
+	{
+		Cards<PokemonCard> pokes = romData.allCards.getPokemonCards();
+		changeAllMovesTypes(pokes, EnergyType.COLORLESS);
+	}
+	
 	public void printPokemonMovesTable()
 	{
 		Cards<PokemonCard> pokes = romData.allCards.getPokemonCards();
@@ -371,6 +414,41 @@ public class MoveSetRandomizer {
 		else
 		{
 			poke.setMove(moves.get(randMoveIndex), moveIndex);
+		}
+	}
+
+	private void changeAllMovesTypes(Cards<PokemonCard> pokes, EnergyType type)
+	{
+		List<Move> moves;
+		byte nonColorlessCost;
+		byte colorlessCost;
+		for (PokemonCard poke : pokes.iterable())
+		{
+			moves = poke.getAllMoves();
+			for (Move move : moves)
+			{
+				// Get the current data and then clear it
+				colorlessCost = move.getCost(EnergyType.COLORLESS);
+				nonColorlessCost = move.getNonColorlessEnergyCosts();
+				move.clearCosts();
+				
+				// If we are setting to colorless, we need to add the
+				// two together
+				if (type == EnergyType.COLORLESS)
+				{
+					move.setCost(EnergyType.COLORLESS, (byte) (colorlessCost + nonColorlessCost));
+				}
+				// Otherwise set the colorless back and set the non colorless
+				// to the new type
+				else
+				{
+					move.setCost(EnergyType.COLORLESS, colorlessCost);
+					move.setCost(type, nonColorlessCost);
+				}
+			}
+			
+			// Copy the moves back over
+			poke.setMoves(moves);
 		}
 	}
 }
