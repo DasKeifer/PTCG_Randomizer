@@ -1,7 +1,6 @@
 package randomizer;
 
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
 import constants.CardDataConstants.CardType;
 
