@@ -34,6 +34,8 @@ import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
 public class RandomizerApp {
 
@@ -54,6 +56,7 @@ public class RandomizerApp {
 	private JCheckBox powerWithinTypeBox;
 	private JCheckBox pokePowerIncludeWithMovesBox;
 	private final ButtonGroup moveRandTypeGroup = new ButtonGroup();
+	private JTextField saveSetSeedVal;
 	
 	/**
 	 * Launch the application.
@@ -94,22 +97,36 @@ public class RandomizerApp {
 		
 		frmPokemonTradingCard = new JFrame();
 		frmPokemonTradingCard.setTitle("Pokemon Trading Card Game Randomizer");
-		frmPokemonTradingCard.setBounds(100, 100, 500, 500);
+		frmPokemonTradingCard.setBounds(100, 100, 550, 500);
 		frmPokemonTradingCard.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmPokemonTradingCard.getContentPane().setLayout(new BorderLayout(0, 0));
 		
 		JPanel saveRomPanel = new JPanel();
 		saveRomPanel.setBorder(new EmptyBorder(4, 7, 4, 7));
 		frmPokemonTradingCard.getContentPane().add(saveRomPanel, BorderLayout.SOUTH);
-		saveRomPanel.setLayout(new GridLayout(0, 3, 0, 0));
+		saveRomPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 7, 0));
+		
+		saveLogDetailsBox = new JCheckBox("Log Randomizations");
+		saveRomPanel.add(saveLogDetailsBox);
+		saveLogDetailsBox.setSelected(true);
 		
 		saveLogSeedBox = new JCheckBox("Log Seed");
 		saveRomPanel.add(saveLogSeedBox);
 		saveLogSeedBox.setSelected(true);
 		
-		saveLogDetailsBox = new JCheckBox("Log Randomizations");
-		saveRomPanel.add(saveLogDetailsBox);
-		saveLogDetailsBox.setSelected(true);
+		JPanel saveSetSeedPanel = new JPanel();
+		saveRomPanel.add(saveSetSeedPanel);
+		saveSetSeedPanel.setLayout(new BorderLayout(0, 0));
+		
+		JLabel saveSetSeedLbl = new JLabel("Seed: ");
+		saveSetSeedPanel.add(saveSetSeedLbl, BorderLayout.WEST);
+		saveSetSeedLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+		
+		saveSetSeedVal = new JTextField();
+		saveSetSeedVal.setToolTipText("Leave blank or put \"random\" for a random seed to be chosen. The seed will be changed each time the rom is saved");
+		saveSetSeedPanel.add(saveSetSeedVal);
+		saveSetSeedVal.setText("Random");
+		saveSetSeedVal.setColumns(10);
 		
 		JPanel randomizeBtnPanel = new JPanel();
 		saveRomPanel.add(randomizeBtnPanel);
@@ -378,6 +395,7 @@ public class RandomizerApp {
 	        MovesData movesData = new MovesData();
 	        PokePowersData powersData = new PokePowersData();
 	        
+	        settings.setSeed(saveSetSeedVal.getText());
 	        settings.setLogSeed(saveLogSeedBox.isSelected());
 	        settings.setLogDetails(saveLogDetailsBox.isSelected());
 	        

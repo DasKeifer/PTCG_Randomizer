@@ -23,8 +23,8 @@ Some notes on terminology:
 		* [ ] Include with moves
 		* [ ] Within types
  	* [ ] Randomize number of attacks for cards (need to add switch in GUI still)
-* [ ] Seed & Log
-	* [ ] Set seed
+* [X] Seed & Log
+	* [X] Set seed
 	* [X] Log seed
 	* [X] Optionally log changes
 * [ ] HP, Retreat Cost 
