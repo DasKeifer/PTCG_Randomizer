@@ -87,6 +87,8 @@ Some notes on terminology:
 	* [ ] Include promo cards in booster packs?
 		* [ ] Exclude 4 legendary cards from packs
 	* [ ] Unlimited trades?
+	* [ ] Adjust cards in boosters
+		* [ ] Make boosters contain eleven cards (always done now)
 	
 ## Credits: 
 This code was originally based on the following projects and has pulled inspiration from them:
