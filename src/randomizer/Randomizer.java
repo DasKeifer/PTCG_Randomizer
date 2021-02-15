@@ -48,7 +48,16 @@ public class Randomizer
 			FileWriter seedFile = new FileWriter(romBasePath + SEED_LOG_EXTENSION);
 			try
 			{
-				seedFile.write(settings.getSeedString());
+				String seedText = settings.getSeedString();
+				String seedVal = String.valueOf(settings.getSeedValue());
+				if (!seedText.equals(seedVal))
+				{
+					seedFile.write("Text: \"" + seedText + "\", Numeric Equivalent:" + seedVal);
+				}
+				else
+				{
+					seedFile.write("Seed value: " + seedText);
+				}
 			}
 			finally
 			{

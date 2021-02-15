@@ -123,7 +123,7 @@ public class RandomizerApp {
 		saveSetSeedLbl.setHorizontalAlignment(SwingConstants.TRAILING);
 		
 		saveSetSeedVal = new JTextField();
-		saveSetSeedVal.setToolTipText("Leave blank or put \"random\" for a random seed to be chosen. The seed will be changed each time the rom is saved");
+		saveSetSeedVal.setToolTipText("Leave blank or put \"random\" for a random seed to be chosen. If the seed is a valid int, it will be used; Otherwise it is treated as a string and hashed into an int. The seed will be changed each time the rom is saved");
 		saveSetSeedPanel.add(saveSetSeedVal);
 		saveSetSeedVal.setText("Random");
 		saveSetSeedVal.setColumns(10);
