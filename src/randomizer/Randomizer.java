@@ -16,8 +16,6 @@ public class Randomizer
 {
 	static final String SEED_LOG_EXTENSION = ".seed.txt";
 	static final String LOG_FILE_EXTENSION = ".log.txt";
-	private static final long BASE_SEED = 42;
-	private long nextSeed = BASE_SEED;
 	
 	private Logger logger;
 	private RomData romData;
@@ -32,7 +30,6 @@ public class Randomizer
 		try 
 		{
 			romData = RomHandler.readRom(romFile);
-			nextSeed = BASE_SEED;
 		} 
 		catch (IOException e)
 		{
@@ -42,7 +39,7 @@ public class Randomizer
 	}
 	
 	public void randomizeAndSaveRom(File romFile, Settings settings) throws IOException
-	{		
+	{				
 		String romBasePath = romFile.getPath();
 		romBasePath = romBasePath.substring(0, romBasePath.lastIndexOf('.'));
 		
@@ -51,7 +48,16 @@ public class Randomizer
 			FileWriter seedFile = new FileWriter(romBasePath + SEED_LOG_EXTENSION);
 			try
 			{
-				seedFile.write(Long.toString(BASE_SEED));
+				String seedText = settings.getSeedString();
+				String seedVal = String.valueOf(settings.getSeedValue());
+				if (!seedText.equals(seedVal))
+				{
+					seedFile.write("Text: \"" + seedText + "\", Numeric Equivalent:" + seedVal);
+				}
+				else
+				{
+					seedFile.write("Seed value: " + seedText);
+				}
 			}
 			finally
 			{
@@ -80,6 +86,9 @@ public class Randomizer
 	//public static void main(String[] args) throws IOException //Temp
 	public void randomize(Settings settings)
 	{
+		// get and store the base seed as the next one to use
+		int nextSeed = settings.getSeedValue();
+		
 		// Create sub randomizers
 		MoveSetRandomizer moveSetRand = new MoveSetRandomizer(romData, logger);
 		

@@ -2,6 +2,8 @@ package randomizer;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Random;
+
 import constants.CardDataConstants.CardType;
 
 public class Settings 
@@ -132,6 +134,8 @@ public class Settings
 		}
     }
     
+    private Random rand = new Random();
+    private String seed = String.valueOf(rand.nextInt());
     private boolean logSeed;
     private boolean logDetails;
     
@@ -146,6 +150,33 @@ public class Settings
     // Move/Power Applicable (both use the same) (applicable if not UNCHANGED)
 	private boolean movesMatchPokeSpecific;
 	private boolean movesMatchTypeSpecific;
+	
+	
+	public int getSeedValue()
+	{
+		// Try to treat it as a number first
+		try
+		{
+			return Integer.parseInt(seed);
+		}
+		// If its not a valid int, just hash it
+		catch (NumberFormatException nfe)
+		{
+			return seed.hashCode();
+		}
+	}
+	public void setSeed(String seed) {
+		// If its empty or "random" then generate a random seed for them
+		if (seed.trim().isEmpty() || seed.equalsIgnoreCase("random"))
+		{
+			this.seed = String.valueOf(rand.nextInt());
+		}
+		// Otherwise save their seed
+		else
+		{
+			this.seed = seed;
+		}
+	}
 
 	public SpecificDataPerType getTypeSpecificData() {
 		return specificDataPerType;
@@ -195,5 +226,8 @@ public class Settings
 	}
 	public void setLogDetails(boolean logDetails) {
 		this.logDetails = logDetails;
+	}
+	public String getSeedString() {
+		return seed;
 	}
 }

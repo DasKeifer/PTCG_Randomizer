@@ -15,44 +15,54 @@ Some notes on terminology:
  * [X] Create a basic friendly GUI to expand upon as features are added
  * [X] Selecting Rom input and output names/paths
  * [ ] Card Attacks/Poke Powers/Effects
-	* [X] Update/Replace Pokemon Names in Attacks/Powers
- 	* [X] Fully Random/Shuffle Attacks
+	* [X] Update/Replace Pokemon names in attacks/powers
+ 	* [X] Fully random/shuffle attacks
 		* [X] Within types
-		* [X] Change Type Energies to Card Type
-	* [ ] Fully Random/Shuffle Poke Powers
-		* [ ] Include with Moves
+		* [X] Change type energies to card type
+	* [ ] Fully random/shuffle Poke Powers
+		* [ ] Include with moves
 		* [ ] Within types
- 	* [ ] Randomize Number of Attacks for Cards (Need to add switch in GUI still)
-* [ ] Seed & Log
-	* [ ] Set Seed
-	* [X] Log Seed
-	* [X] Optionally Log Changes
+ 	* [ ] Randomize number of attacks for cards (need to add switch in GUI still)
+* [X] Seed & Log
+	* [X] Set seed
+	* [X] Log seed
+	* [X] Optionally log changes
 * [ ] HP, Retreat Cost 
-	* [ ] Fully Random/Shuffle
-	* [ ] Random Percentage Based/User Input-able per evo stage and per type
-	* [ ] Evo Stage Weighted
-	* [ ] Swap stats to make higher evos more powerful
-	* [ ] Evo Chain Consistent (e.g. some chains have generally higher HP, others have generally lower HP)
+	* [ ] Fully random/shuffle
+	* [ ] Swap stats to make higher evos more powerful/higher retreat cost
+	* [ ] Evo chain consistent (e.g. some chains have generally higher HP, others have generally lower HP)
 * [ ] Weakness and Resistance
-	* [ ] Fully Random/Shuffle
-		* [ ] Make Consistent across "types" (e.g. "Rock" or "Fighting" weakness and resistance)
-		* [ ] Make Consistent across Evo
-		* [ ] Allow colorless weakness
-	* [ ] Percentage Based/User Inputtable
+	* [ ] Fullyrandom/shuffle
+		* [ ] Make consistent across "types" (e.g. "Rock" or "Fighting" weakness and resistance)
+		* [ ] Make consistent across Evo
+		* [ ] Allow colorless weakness?
 * [ ] Randomize Pokemon Types
-	* [ ] Fully Random
-	* [ ] Percentage Based/User Inputtable
+	* [ ] Fully random
 	* [ ] Consistent in evo lines
 * [ ] Randomize Pokemon Evolutions
-	* [ ] Full Random/Shuffle
+	* [ ] Full random/shuffle
 		* [ ] Only change poke with existing Evos
 		* [ ] Shuffle within stages
-		* [ ] Force Changes
-	* [ ] Percentage Based/User Inputtable of each stage
-	* [ ] reordering in "pokedex" to group them correctly in deck editor
+		* [ ] Force changes
+	* [ ] Reordering in "pokedex" to group them correctly in deck editor
+* [ ] Decks
+	* [ ] Full random
+	* [ ] Random "type"/energy themed
+	* [ ] Random multitype/energy themed
+	* [ ] Keep same number of card categories (energies, trainers, pokes)
+	* [ ] Evolution sanity
+* [ ] Advance & Customizable General Randomizations
+	* [ ] User specifyable "types" - weakness/resistance pairs
+	* [ ] User specified HP & retreat cost ranges
+	* [ ] Per energy percentage based, user inputtable Pokemon types distributions
+	* [ ] Per stage percentage based, ser input-able evolutions distributions 
+	* [ ] Per stage/evos left & per HP value percentage based, user input-able HP distributions 
+	* [ ] Per stage/evos left & per retreat cost percentage based, user input-able retreat cost distributions 
+	* [ ] Per stage/evos left percentage based, user input-able number of attacks/Poke Powers distributions
+	* [ ] Per "type" percentage based, user inputtable weakness/resistance distributions
+	* [ ] Percentage based/user inputtable decks (knobs TBD)
 * [ ] Advance Card Attacks/Poke Powers/Effects
-	* [ ] Percentage Based/User Inputtable num moves and powers per type
-	* [ ] Randomize trainer effects with pokepowers 
+	* [ ] Randomize trainer effects with poke Powers 
 	* [ ] Update/Replace energy type specific effects (e.g. ember (Charmander), energy trans (Venusaur))
 	* [ ] Update/Replace pokemon specific effects (e.g. call for family (nidoran))
 	* [ ] Update/Replace boyfriends (nidoqueen) with random, same type, 3rd stage evo
@@ -61,28 +71,24 @@ Some notes on terminology:
 	* [ ] Assign moves based on card power levels
 	* [ ] Randomize power levels of cards based on stage, apply appropriate rarities
 	* [ ] Semi order (weight) through evo chains so later evos have higher powered moved
-* [ ] Decks
-	* [ ] Full Random
-		* [ ] Keep Same Number of Card Categories (Energies, Trainers, Pokes)
-	* [ ] Random Type Themed
-	* [ ] Random Multitype Themed
-	* [ ] Percentage Based/User Inputtable
 * [ ] Move Generation
 	* [ ] Fully random moves effects and powers, and energy costs
 	* [ ] Generate moves based on power levels
 	* [ ] Include trainer effects
 * [ ] Trainer Pics
-* [ ] Trades/Promo cards
+* [ ] Trades/Promo Cards
 	* [ ] Random/Shuffle
-		* [ ] Within Promos
+		* [ ] Within promos
 		* [ ] Any card
-* [ ] Miscellaneous tweaks
-	* [X] Make all Colorless
+* [ ] Miscellaneous Tweaks
+	* [X] Make all colorless
 	* [X] Fix card name misspellings (Ninetails vs Ninetales)
-	* [ ] Remove Evolutions (all basic)
-	* [ ] Include Promo cards in booster packs?
-		* [ ] Exclude 4 Legendary cards from packs
+	* [ ] Remove evolutions (all basic)
+	* [ ] Include promo cards in booster packs?
+		* [ ] Exclude 4 legendary cards from packs
 	* [ ] Unlimited trades?
+	* [ ] Adjust cards in boosters
+		* [ ] Make boosters contain eleven cards (always done now)
 	
 ## Credits: 
 This code was originally based on the following projects and has pulled inspiration from them:
