@@ -32,21 +32,22 @@ Some notes on terminology:
 	* [ ] Swap stats to make higher evos more powerful/higher retreat cost
 	* [ ] Evo chain consistent (e.g. some chains have generally higher HP, others have generally lower HP)
 * [ ] Weakness and Resistance
-	* [ ] Fullyrandom/shuffle
+	* [ ] Fully random/shuffle
 		* [ ] Make consistent across "types" (e.g. "Rock" or "Fighting" weakness and resistance)
-		* [ ] Make consistent across Evo
+		* [ ] Make consistent across Evo (done after randomizing evo lines)
 		* [ ] Allow colorless weakness?
 * [ ] Randomize Pokemon Types
 	* [ ] Fully random
-	* [ ] Consistent in evo lines
+	* [ ] Consistent in evo lines (done after randomizing evo lines)
 * [ ] Randomize Pokemon Evolutions
-	* [ ] Full random/shuffle
+	* [ ] Fully random/shuffle
 		* [ ] Only change poke with existing Evos
 		* [ ] Shuffle within stages
 		* [ ] Force changes
 	* [ ] Reordering in "pokedex" to group them correctly in deck editor
+	* [ ] Remove evolutions (all basic)
 * [ ] Decks
-	* [ ] Full random
+	* [ ] Fully random
 	* [ ] Random "type"/energy themed
 	* [ ] Random multitype/energy themed
 	* [ ] Keep same number of card categories (energies, trainers, pokes)
@@ -77,18 +78,17 @@ Some notes on terminology:
 	* [ ] Include trainer effects
 * [ ] Trainer Pics
 * [ ] Trades/Promo Cards
-	* [ ] Random/Shuffle
+	* [ ] Fully Random
 		* [ ] Within promos
 		* [ ] Any card
 * [ ] Miscellaneous Tweaks
 	* [X] Make all colorless
 	* [X] Fix card name misspellings (Ninetails vs Ninetales)
-	* [ ] Remove evolutions (all basic)
+	* [ ] Adjust cards in boosters
+		* [ ] Make boosters contain eleven cards (always done now)
 	* [ ] Include promo cards in booster packs?
 		* [ ] Exclude 4 legendary cards from packs
 	* [ ] Unlimited trades?
-	* [ ] Adjust cards in boosters
-		* [ ] Make boosters contain eleven cards (always done now)
 	
 ## Credits: 
 This code was originally based on the following projects and has pulled inspiration from them:
