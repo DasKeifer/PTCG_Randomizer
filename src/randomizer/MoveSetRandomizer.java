@@ -109,10 +109,11 @@ public class MoveSetRandomizer {
 			{
 				card.sortMoves();
 			}
-			printPokemonMovesTable();
+			printPokemonMoveSetsTable();
 		}
 	}
 
+	/******************** Changing Move Type ************************************/
 	public void makeAllMovesMatchCardType()
 	{
 		Cards<PokemonCard> pokes = romData.allCards.getPokemonCards();
@@ -131,91 +132,43 @@ public class MoveSetRandomizer {
 		Cards<PokemonCard> pokes = romData.allCards.getPokemonCards();
 		changeAllMovesTypes(pokes, EnergyType.COLORLESS);
 	}
-	
-	public void printPokemonMovesTable()
+
+	private void changeAllMovesTypes(Cards<PokemonCard> pokes, EnergyType type)
 	{
-		Cards<PokemonCard> pokes = romData.allCards.getPokemonCards();
-		
-		final int idIndex = 0;
-		final int nameIndex = 1;
-		final int movesStartIndex = 2;
-		final int numIndexes = 8;
-		String[] titles = {" ID ", " Name ", " Move 1 ", " Cost ", " Damage ", " Move 2 ", " Cost ", " Damage "};
-		
-		// Determine length of each of the columns columns
-		int[] fieldsMaxLengths = new int[numIndexes];
-		
-		// Length of the titles
-		Logger.findMaxStringLengths(fieldsMaxLengths, titles);
-		
-		// Lengths for each pokemon card
-		String[] fields = new String[numIndexes];
-		for (PokemonCard card : pokes.iterable())
+		List<Move> moves;
+		byte nonColorlessCost;
+		byte colorlessCost;
+		for (PokemonCard poke : pokes.iterable())
 		{
-			fields[idIndex] = card.id.toString();
-			fields[nameIndex] = card.name.toString();
-			
-			int index = movesStartIndex;
-			for (Move move : card.getAllMoves())
+			moves = poke.getAllMoves();
+			for (Move move : moves)
 			{
-				fields[index++] = move.name.toString();
-				fields[index++] = move.getEnergyCostString(true, ", "); // true = Abbreviated types
-				fields[index++] = move.getDamageString();
-			}
-
-			Logger.findMaxStringLengths(fieldsMaxLengths, fields);
-		}
-
-		// Create the format string for each row
-		String rowFormat = Logger.createTableFormatString(fieldsMaxLengths, "-", "-", "-", "", "", "-");
-
-		// Determine total line length and create a separator line
-		int totalLength = numIndexes + 1; // for the "|"
-		for (int lengthIdx = 0; lengthIdx < numIndexes; lengthIdx++)
-		{
-			totalLength += fieldsMaxLengths[lengthIdx];
-		}
-		String separator = Logger.createSeparatorLine(totalLength);
-		
-		// Create a title row
-		String tableName = Logger.createTableTitle("Pokemon Modified Movesets", totalLength);
-		
-		// Print header
-		logger.println(separator);
-		logger.println(tableName);
-		logger.printf(rowFormat, (Object[])titles);
-		logger.println(separator);
-		
-		// Log each row
-		String[] rowData = new String[numIndexes];
-		for (PokemonCard card : pokes.iterable())
-		{
-			rowData[idIndex] = card.id.toString();
-			rowData[nameIndex] = card.name.toString();
-
-			int index = movesStartIndex;
-			for (Move move : card.getAllMoves())
-			{
-				if (move.isEmpty())
+				// Get the current data and then clear it
+				colorlessCost = move.getCost(EnergyType.COLORLESS);
+				nonColorlessCost = move.getNonColorlessEnergyCosts();
+				move.clearCosts();
+				
+				// If we are setting to colorless, we need to add the
+				// two together
+				if (type == EnergyType.COLORLESS)
 				{
-					rowData[index++] = "-";
-					rowData[index++] = "-";
-					rowData[index++] = "-";
+					move.setCost(EnergyType.COLORLESS, (byte) (colorlessCost + nonColorlessCost));
 				}
+				// Otherwise set the colorless back and set the non colorless
+				// to the new type
 				else
 				{
-					rowData[index++] = move.name.toString();
-					rowData[index++] = move.getEnergyCostString(true, ", "); // true = abbreviated types
-					rowData[index++] = move.getDamageString();
+					move.setCost(EnergyType.COLORLESS, colorlessCost);
+					move.setCost(type, nonColorlessCost);
 				}
 			}
-			logger.printf(rowFormat, (Object[])rowData);
+			
+			// Copy the moves back over
+			poke.setMoves(moves);
 		}
-		
-		// Print a final separator
-		logger.println(separator);
 	}
-	
+
+	/******************** Determine Number of Moves ************************************/
 	public static double[] getNumMovesPercentages(Cards<PokemonCard> pokes)
 	{
 		int[] numPerCount = new int[PokemonCard.MAX_NUM_MOVES];
@@ -312,6 +265,7 @@ public class MoveSetRandomizer {
 		return numMovesPerPoke;
 	}
 
+	/******************** Generate Movesets ************************************/
 	public void shuffleOrRandomizePokemonMoves(
 			long nextSeed,
 			boolean shuffle,
@@ -417,38 +371,88 @@ public class MoveSetRandomizer {
 		}
 	}
 
-	private void changeAllMovesTypes(Cards<PokemonCard> pokes, EnergyType type)
+	/******************** Logging/Debug ************************************/
+	public void printPokemonMoveSetsTable()
 	{
-		List<Move> moves;
-		byte nonColorlessCost;
-		byte colorlessCost;
-		for (PokemonCard poke : pokes.iterable())
+		Cards<PokemonCard> pokes = romData.allCards.getPokemonCards();
+		
+		final int idIndex = 0;
+		final int nameIndex = 1;
+		final int movesStartIndex = 2;
+		final int numIndexes = 8;
+		String[] titles = {" ID ", " Name ", " Move 1 ", " Cost ", " Damage ", " Move 2 ", " Cost ", " Damage "};
+		
+		// Determine length of each of the columns columns
+		int[] fieldsMaxLengths = new int[numIndexes];
+		
+		// Length of the titles
+		Logger.findMaxStringLengths(fieldsMaxLengths, titles);
+		
+		// Lengths for each pokemon card
+		String[] fields = new String[numIndexes];
+		for (PokemonCard card : pokes.iterable())
 		{
-			moves = poke.getAllMoves();
-			for (Move move : moves)
+			fields[idIndex] = card.id.toString();
+			fields[nameIndex] = card.name.toString();
+			
+			int index = movesStartIndex;
+			for (Move move : card.getAllMoves())
 			{
-				// Get the current data and then clear it
-				colorlessCost = move.getCost(EnergyType.COLORLESS);
-				nonColorlessCost = move.getNonColorlessEnergyCosts();
-				move.clearCosts();
-				
-				// If we are setting to colorless, we need to add the
-				// two together
-				if (type == EnergyType.COLORLESS)
+				fields[index++] = move.name.toString();
+				fields[index++] = move.getEnergyCostString(true, ", "); // true = Abbreviated types
+				fields[index++] = move.getDamageString();
+			}
+
+			Logger.findMaxStringLengths(fieldsMaxLengths, fields);
+		}
+
+		// Create the format string for each row
+		String rowFormat = Logger.createTableFormatString(fieldsMaxLengths, "-", "-", "-", "", "", "-");
+
+		// Determine total line length and create a separator line
+		int totalLength = numIndexes + 1; // for the "|"
+		for (int lengthIdx = 0; lengthIdx < numIndexes; lengthIdx++)
+		{
+			totalLength += fieldsMaxLengths[lengthIdx];
+		}
+		String separator = Logger.createSeparatorLine(totalLength);
+		
+		// Create a title row
+		String tableName = Logger.createTableTitle("Pokemon Modified Movesets", totalLength);
+		
+		// Print header
+		logger.println(separator);
+		logger.println(tableName);
+		logger.printf(rowFormat, (Object[])titles);
+		logger.println(separator);
+		
+		// Log each row
+		String[] rowData = new String[numIndexes];
+		for (PokemonCard card : pokes.iterable())
+		{
+			rowData[idIndex] = card.id.toString();
+			rowData[nameIndex] = card.name.toString();
+
+			int index = movesStartIndex;
+			for (Move move : card.getAllMoves())
+			{
+				if (move.isEmpty())
 				{
-					move.setCost(EnergyType.COLORLESS, (byte) (colorlessCost + nonColorlessCost));
+					rowData[index++] = "-";
+					rowData[index++] = "-";
+					rowData[index++] = "-";
 				}
-				// Otherwise set the colorless back and set the non colorless
-				// to the new type
 				else
 				{
-					move.setCost(EnergyType.COLORLESS, colorlessCost);
-					move.setCost(type, nonColorlessCost);
+					rowData[index++] = move.name.toString();
+					rowData[index++] = move.getEnergyCostString(true, ", "); // true = abbreviated types
+					rowData[index++] = move.getDamageString();
 				}
 			}
-			
-			// Copy the moves back over
-			poke.setMoves(moves);
+			logger.printf(rowFormat, (Object[])rowData);
 		}
+		
+		// Print a final separator
+		logger.println(separator);
 	}
 }
