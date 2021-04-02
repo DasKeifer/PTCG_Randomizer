@@ -12,6 +12,7 @@ import constants.CardDataConstants.EnergyType;
 import data.Cards;
 import data.Move;
 import data.PokemonCard;
+import data.PokemonCard.MoveCategories;
 import randomizer.Settings.MoveTypeChanges;
 import randomizer.Settings.RandomizationStrategy;
 import rom.RomData;
@@ -33,55 +34,64 @@ public class MoveSetRandomizer {
 		boolean changedMoves = false;
 		Cards<PokemonCard> pokes = romData.allCards.getPokemonCards();
 		
-		// TODO get from settings so we can randomize it. For now we just keep
-		// the same card values
-		Map<CardId, Integer> numMovesPerPokemon = getNumMovesPerPokemon(pokes);
+		// TODO: Moves seems to be generic term. Attacks and PokePowers are specific terms. Do some renaming to align with this
 
-		RandomizationStrategy moveRandStrat = settings.getMoves().getMovesStrat();
-		boolean powersWithMoves = settings.getPokePowers().isIncludeWithMoves();
+		// TODO: get from settings so we can randomize it. For now we just keep
+		// the same card values
 		
+		// TODO: For shuffled, we can't change these values to the same degree - we need to make sure we have at least less than the
+		// number of moves
+		Map<CardId, Integer> numMovesPerPokemon = getNumMovesPerPokemon(pokes);
+		
+		// Always do the first one. Switch once the rest of the logic triggers
+		RandomizationStrategy moveRandStrat = settings.getAttacks().getRandomizationStrat();
 		if (RandomizationStrategy.UNCHANGED != moveRandStrat)
 		{
 			if (RandomizationStrategy.INVALID == moveRandStrat)
 			{
-				throw new IllegalArgumentException("INVALID Randomization Strategy recieved for Poke Moves!");
+				throw new IllegalArgumentException("INVALID Randomization Strategy recieved for Attacks!");
 			}
 			else if (RandomizationStrategy.GENERATED == moveRandStrat)
 			{
-				throw new IllegalArgumentException("GENERATED Randomization Strategy for Poke Moves is not yet implemented!");
+				throw new IllegalArgumentException("GENERATED Randomization Strategy for Attacks is not yet implemented!");
 			}
-			// Shuffle or Randomize
-			changedMoves = true;
+
+			// TODO: Adjust num moves prior to passing in here to only be for the move category. Then other stuff gets easier hopefully
 			
-			// TODO: Optionally include PokePowers
-	        shuffleOrRandomizePokemonMoves(nextSeed++,
-	        		RandomizationStrategy.SHUFFLE == moveRandStrat, // Shuffle not Random
-	        		pokes, numMovesPerPokemon, settings.getMoves().isMovesAttacksWithinType(), 
-	        		1); // Num non poke power moves
+			changedMoves = true;
+	        shuffleOrRandomizePokemonMoves(nextSeed, pokes, numMovesPerPokemon,
+	        		settings.getPokePowers().isIncludeWithMoves() ? MoveCategories.ALL : MoveCategories.ATTACK, // Switch as needed
+	        		settings);
 		}
-		// else no randomization being done for moves - nothing to do here
+		// Otherwise, no randomization being done for Attacks/Movesets
+		// Still increment the seed to stay consistent 
+		nextSeed++;
 		
-		// If Poke Powers weren't included with the moves, we need to do them separately now
-		if (!powersWithMoves)
+		// Now randomize poke powers separately if that is selected
+		if (!settings.getPokePowers().isIncludeWithMoves())
 		{
-			RandomizationStrategy powersRandStrat = settings.getPokePowers().getMovesPokePowerStrat();			
-			if (RandomizationStrategy.UNCHANGED != powersRandStrat)
+			moveRandStrat = settings.getPokePowers().getRandomizationStrat();
+			if (RandomizationStrategy.UNCHANGED != moveRandStrat)
 			{
-				if (RandomizationStrategy.INVALID == powersRandStrat)
+				if (RandomizationStrategy.INVALID == moveRandStrat)
 				{
 					throw new IllegalArgumentException("INVALID Randomization Strategy recieved for Poke Powers!");
 				}
-				else if (RandomizationStrategy.GENERATED == powersRandStrat)
+				else if (RandomizationStrategy.GENERATED == moveRandStrat)
 				{
-					throw new IllegalArgumentException("GENERATED Randomization Strategy for Poke Powers is not a planned feature!");
+					throw new IllegalArgumentException("GENERATED Randomization Strategy for Poke Powers is not yet implemented!");
 				}
-				// TODO: Shuffle or Randomize
+
 				changedMoves = true;
+		        shuffleOrRandomizePokemonMoves(nextSeed, pokes, numMovesPerPokemon, MoveCategories.POKE_POWER, settings);
 			}
+			// Otherwise, no randomization being done for Poke Powers
 		}
+		// Still increment the seed to stay consistent 
+		nextSeed++;
 		
 		// See if we need to tweak the move types at all
-		MoveTypeChanges moveTypeChanges = settings.getMoves().getMoveTypeChanges();
+		MoveTypeChanges moveTypeChanges = settings.getAttacks().getMoveTypeChanges();
 		if (MoveTypeChanges.UNCHANGED != moveTypeChanges)
 		{
 			if (MoveTypeChanges.INVALID == moveTypeChanges)
@@ -169,25 +179,25 @@ public class MoveSetRandomizer {
 	}
 
 	/******************** Determine Number of Moves ************************************/
-	public static double[] getNumMovesPercentages(Cards<PokemonCard> pokes)
+	public static double[] getNumMovesPercentages(Cards<PokemonCard> pokes, MoveCategories moveCategory)
 	{
 		int[] numPerCount = new int[PokemonCard.MAX_NUM_MOVES];
 		Arrays.fill(numPerCount, 0);
 		
 		for (PokemonCard card : pokes.iterable())
 		{
-			numPerCount[card.getNumMoves()] += 1;
+			numPerCount[card.getNumMoves(moveCategory)] += 1;
 		}
 		
 		return MathUtils.convertNumbersToPercentages(numPerCount);
 	}
 	
-	public static Map<CardId, Integer> getNumMovesPerPokemon(Cards<PokemonCard> pokes)
+	public static Map<CardId, Integer> getNumMovesPerPokemon(Cards<PokemonCard> pokes, MoveCategories moveCategory)
 	{
 		Map<CardId, Integer> cardMovesMap = new EnumMap<>(CardId.class);
 		for (PokemonCard card : pokes.iterable())
 		{
-			cardMovesMap.put(card.id, card.getNumMoves());
+			cardMovesMap.put(card.id, card.getNumMoves(moveCategory));
 		}
 		return cardMovesMap;
 	}
@@ -268,15 +278,14 @@ public class MoveSetRandomizer {
 	/******************** Generate Movesets ************************************/
 	public void shuffleOrRandomizePokemonMoves(
 			long nextSeed,
-			boolean shuffle,
 			Cards<PokemonCard> pokes,
-			Map<CardId, Integer> numMovesPerPoke,
-			boolean withinTypes,
-			int numNonPokePower
+			Map<CardId, Integer> numMovesPerPokemon,
+			MoveCategories moveCategoryRandomizing,
+			Settings settings
 	)
 	{		
 		// If we want to match the move to the poke type,
-		if (withinTypes)
+		if (settings.getMoves(moveCategoryRandomizing).isRandomizationWithinType())
 		{
 			// Do one energy type at a time
 			for (CardType pokeType : CardType.pokemonValues())
@@ -284,26 +293,26 @@ public class MoveSetRandomizer {
 				// Get the pokemon of this type and the moves if we are set
 				// to match the types
 				Cards<PokemonCard> typeCards = pokes.getCardsOfCardType(pokeType);
-				List<Move> typeMove = typeCards.getAllMoves();
-				shuffleOrRandomizePokemonMovesHelper(nextSeed, shuffle, typeCards, numMovesPerPoke, numNonPokePower, typeMove);
+				List<Move> typeMove = typeCards.getAllMoves(moveCategoryRandomizing);
+				shuffleOrRandomizePokemonMovesHelper(nextSeed, typeCards, numMovesPerPokemon, typeMove, settings);
 			}	
 		}
 		else
 		{
 			// Otherwise get all the moves and do them at once
-			List<Move> typeMove = pokes.getAllMoves();
-			shuffleOrRandomizePokemonMovesHelper(nextSeed, shuffle, pokes, numMovesPerPoke, numNonPokePower, typeMove);
+			List<Move> typeMove = pokes.getAllMoves(moveCategoryRandomizing);
+			shuffleOrRandomizePokemonMovesHelper(nextSeed, pokes, numMovesPerPokemon, typeMove, settings);
 		}
 		
 	}
 	
 	private void shuffleOrRandomizePokemonMovesHelper(
 			long seed,
-			boolean shuffle,
 			Cards<PokemonCard> pokes,
-			Map<CardId, Integer> numMovesPerPoke,
-			int numNonPokePower, 
-			List<Move> moves)
+			Map<CardId, Integer> numMovesPerPokemon,
+			List<Move> moves,
+			Settings settings
+	)
 	{
 		// Create and seed the randomizer
 		Random rand = new Random(seed);
@@ -316,7 +325,7 @@ public class MoveSetRandomizer {
 			for (PokemonCard poke : pokes.iterable())
 			{
 				// See if we need to assign a move or set it to empty
-				if (numMovesPerPoke.get(poke.id) > moveIndex)
+				if (numMovesPerPokemon.get(poke.id) > moveIndex)
 				{
 					shuffleOrRandomizeMoveAtIndex(rand, poke, moveIndex, moves, shuffle, numNonPokePower > moveIndex);
 				}

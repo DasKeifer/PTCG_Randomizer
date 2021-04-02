@@ -10,6 +10,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import constants.CardDataConstants.CardType;
+import data.PokemonCard.MoveCategories;
 
 public class Cards<T extends Card>
 {
@@ -63,14 +64,19 @@ public class Cards<T extends Card>
 		return new Cards<>(cardSet.stream().filter(
 				card -> cardType.equals(card.type)).collect(Collectors.toList()));
 	}
-	
+
 	public List<Move> getAllMoves()
+	{
+		return getAllMoves(MoveCategories.ALL);
+	}
+	
+	public List<Move> getAllMoves(MoveCategories moveCategory)
 	{
 		Cards<PokemonCard> pokeCards = getPokemonCards();
 		List<Move> moves = new ArrayList<>();
 		for (PokemonCard card : pokeCards.iterable())
 		{
-			for (Move move : card.getAllMoves())
+			for (Move move : card.getAllMoves(moveCategory))
 			{
 				if (!move.isEmpty())
 				{

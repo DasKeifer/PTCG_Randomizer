@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Random;
 
 import constants.CardDataConstants.CardType;
+import data.PokemonCard.MoveCategories;
 
 public class Settings 
 {
@@ -63,35 +64,41 @@ public class Settings
     public static class MovesData
     {
 		// Poke Move specific settings 
-    	private RandomizationStrategy movesStrat;
+    	private RandomizationStrategy randomizationStrat;
     	
+    	// applicable if not UNCHANGED
+    	private boolean randomizationWithinType; // Effects if GENERATED
+
+        public RandomizationStrategy getRandomizationStrat() {
+			return randomizationStrat;
+		}
+		public void setRandomizationStrat(RandomizationStrategy randomizationStrat) {
+			this.randomizationStrat = randomizationStrat;
+		}
+		public void setMovesStrat(String randomizationStratName) {
+			this.randomizationStrat = RandomizationStrategy.getByName(randomizationStratName);
+		}
+		public boolean isRandomizationWithinType() {
+			return randomizationWithinType;
+		}
+		public void setRandomizationWithinType(boolean withinType) {
+			this.randomizationWithinType = withinType;
+		}
+    }
+    
+    public static class AttacksData extends MovesData
+    {
         // applicable if not UNCHANGED
     	private boolean movesForceOneDamaging; // If keep same number of attacks is off
-    	private boolean movesAttacksWithinType; // Effects if GENERATED
     	
     	// Applicable always
     	private MoveTypeChanges moveTypeChanges;
     	
-        public RandomizationStrategy getMovesStrat() {
-			return movesStrat;
-		}
-		public void setMovesStrat(RandomizationStrategy movesStrat) {
-			this.movesStrat = movesStrat;
-		}
-		public void setMovesStrat(String movesStratName) {
-			this.movesStrat = RandomizationStrategy.getByName(movesStratName);
-		}
 		public boolean isMovesForceOneDamaging() {
 			return movesForceOneDamaging;
 		}
 		public void setMovesForceOneDamaging(boolean movesForceOneDamaging) {
 			this.movesForceOneDamaging = movesForceOneDamaging;
-		}
-		public boolean isMovesAttacksWithinType() {
-			return movesAttacksWithinType;
-		}
-		public void setMovesAttacksWithinType(boolean movesAttacksWithinType) {
-			this.movesAttacksWithinType = movesAttacksWithinType;
 		}
 		public MoveTypeChanges getMoveTypeChanges() {
 			return moveTypeChanges;
@@ -101,36 +108,15 @@ public class Settings
 		}
     }
     
-    public static class PokePowersData
+    public static class PokePowersData extends MovesData
     {
     	private boolean includeWithMoves;
-    	
-		// Poke power specific (applicable if not UNCHANGED)
-    	private RandomizationStrategy movesPokePowerStrat;
-    	
-    	// applicable if not UNCHANGED
-    	private boolean movesPowersWithinType; // Effects if GENERATED
 
 		public boolean isIncludeWithMoves() {
 			return includeWithMoves;
 		}
 		public void setIncludeWithMoves(boolean includeWithMoves) {
 			this.includeWithMoves = includeWithMoves;
-		}
-    	public RandomizationStrategy getMovesPokePowerStrat() {
-			return movesPokePowerStrat;
-		}
-		public void setMovesPokePowerStrat(RandomizationStrategy movesPokePowerStrat) {
-			this.movesPokePowerStrat = movesPokePowerStrat;
-		}
-		public void setMovesPokePowerStrat(String movesPokePowerStratName) {
-			this.movesPokePowerStrat = RandomizationStrategy.getByName(movesPokePowerStratName);
-		}
-		public boolean isMovesPowersWithinType() {
-			return movesPowersWithinType;
-		}
-		public void setMovesPowersWithinType(boolean movesPowersWithinType) {
-			this.movesPowersWithinType = movesPowersWithinType;
 		}
     }
     
@@ -140,7 +126,7 @@ public class Settings
     private boolean logDetails;
     
 	private SpecificDataPerType specificDataPerType;
-	private MovesData moves;
+	private AttacksData attacks;
 	private PokePowersData pokePowers;
 	 
 	private boolean movesRandomNumberOfAttacks;
@@ -184,11 +170,22 @@ public class Settings
 	public void setTypeSpecificData(SpecificDataPerType specificDataPerType) {
 		this.specificDataPerType = specificDataPerType;
 	}
-	public MovesData getMoves() {
-		return moves;
+	public MovesData getMoves(MoveCategories moveCategory) 
+	{
+		if (MoveCategories.ALL == moveCategory || MoveCategories.ATTACK == moveCategory)
+		{
+			return getAttacks();
+		}
+		else
+		{
+			return getPokePowers();
+		}
 	}
-	public void setMoves(MovesData moves) {
-		this.moves = moves;
+	public AttacksData getAttacks() {
+		return attacks;
+	}
+	public void setAttacks(AttacksData attacks) {
+		this.attacks = attacks;
 	}
 	public PokePowersData getPokePowers() {
 		return pokePowers;

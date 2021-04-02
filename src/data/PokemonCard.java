@@ -13,6 +13,11 @@ public class PokemonCard extends Card
 	public static final int TOTAL_SIZE_IN_BYTES = 65;
 	public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
 	public static final int MAX_NUM_MOVES = 2;
+    
+    public enum MoveCategories 
+    {
+       ATTACK, POKE_POWER, ALL;
+    }
 	
 	byte hp; // TODO: non multiples of 10?
 	EvolutionStage stage;
@@ -71,23 +76,41 @@ public class PokemonCard extends Card
 		description = new PokeDescription(toCopy.description);
 		unknownByte2 = toCopy.unknownByte2;
 	}
-	
+
 	public List<Move> getAllMoves()
 	{
+		return getAllMoves(MoveCategories.ALL);
+	}
+	
+	public List<Move> getAllMoves(MoveCategories moveCategory)
+	{
 		ArrayList<Move> movesList = new ArrayList<>();
-		for(Move move : moves)
+		for (Move move : moves)
 		{
-			movesList.add(new Move(move));
+			if (moveCategory == MoveCategories.ALL ||
+					moveCategory == MoveCategories.ATTACK && !move.isPokePower() ||
+					moveCategory == MoveCategories.POKE_POWER && move.isPokePower())
+			{
+				movesList.add(new Move(move));
+			}
 		}
 		return movesList;
 	}
 	
 	public int getNumMoves()
 	{
+		return getNumMoves(MoveCategories.ALL);
+	}
+	
+	public int getNumMoves(MoveCategories moveCategory)
+	{
 		int numMoves = 0;
 		for (Move move : moves)
 		{
-			if (!move.isEmpty())
+			if (!move.isEmpty() &&
+					(moveCategory == MoveCategories.ALL ||
+					moveCategory == MoveCategories.ATTACK && !move.isPokePower() ||
+					moveCategory == MoveCategories.POKE_POWER && move.isPokePower()))
 			{
 				numMoves++;
 			}

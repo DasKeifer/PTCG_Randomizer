@@ -6,6 +6,7 @@ import java.util.Set;
 
 import constants.RomConstants;
 import constants.CardDataConstants.*;
+import randomizer.Settings.RandomizationStrategy;
 import rom.Texts;
 import util.ByteUtils;
 
