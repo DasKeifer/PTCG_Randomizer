@@ -57,6 +57,11 @@ public class Move
 	{
 		return name.isEmpty();
 	}
+
+	public boolean isAttack()
+	{
+		return !isEmpty() && !isPokePower();
+	}
 	
 	public boolean isPokePower()
 	{

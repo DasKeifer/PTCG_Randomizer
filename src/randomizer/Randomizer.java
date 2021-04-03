@@ -90,6 +90,10 @@ public class Randomizer
 		int nextSeed = settings.getSeedValue();
 		
 		// Create sub randomizers
+		// TODO: Make static and pass in romData and logger? 
+		// Make a copy prior to staring the
+		// randomization process so we can save it multiple times without reloading the rom
+		// And so we can access the original data if we need it
 		MoveSetRandomizer moveSetRand = new MoveSetRandomizer(romData, logger);
 		
 		List<Card> venu = romData.allCards.getCardsWithName("Venusaur").toList();
@@ -119,6 +123,7 @@ public class Randomizer
 		nextSeed += 100;
 		
 		// Randomize movesets (full random or match to type)
+		// TODO: make an interface for the subrandomizers to use?
 		moveSetRand.randomize(nextSeed, settings);
 		nextSeed += 100;
 		

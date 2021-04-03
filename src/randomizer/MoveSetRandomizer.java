@@ -1,10 +1,15 @@
 package randomizer;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 
 import constants.CardConstants.CardId;
 import constants.CardDataConstants.CardType;
@@ -28,6 +33,12 @@ public class MoveSetRandomizer {
 		romData = inRomData;
 		logger = inLogger;
 	}
+
+	// Enum used for convenience when randomizing the moves in this class
+	private enum RandomizerMoveCategory
+	{
+		EMPTY, MOVE, ATTACK, POKE_POWER, DAMAGING_ATTACK
+	}
 	
 	public void randomize(long nextSeed, Settings settings)
 	{
@@ -35,13 +46,8 @@ public class MoveSetRandomizer {
 		Cards<PokemonCard> pokes = romData.allCards.getPokemonCards();
 		
 		// TODO: Moves seems to be generic term. Attacks and PokePowers are specific terms. Do some renaming to align with this
-
-		// TODO: get from settings so we can randomize it. For now we just keep
-		// the same card values
 		
-		// TODO: For shuffled, we can't change these values to the same degree - we need to make sure we have at least less than the
-		// number of moves
-		Map<CardId, Integer> numMovesPerPokemon = getNumMovesPerPokemon(pokes);
+		// TODO: Change Shuffle to an option for randomization to use each one once before moving on
 		
 		// Always do the first one. Switch once the rest of the logic triggers
 		RandomizationStrategy moveRandStrat = settings.getAttacks().getRandomizationStrat();
@@ -55,13 +61,9 @@ public class MoveSetRandomizer {
 			{
 				throw new IllegalArgumentException("GENERATED Randomization Strategy for Attacks is not yet implemented!");
 			}
-
-			// TODO: Adjust num moves prior to passing in here to only be for the move category. Then other stuff gets easier hopefully
 			
 			changedMoves = true;
-	        shuffleOrRandomizePokemonMoves(nextSeed, pokes, numMovesPerPokemon,
-	        		settings.getPokePowers().isIncludeWithMoves() ? MoveCategories.ALL : MoveCategories.ATTACK, // Switch as needed
-	        		settings);
+	        shuffleOrRandomizePokemonMoves(nextSeed, pokes, pokes, settings); // TODO pass in original pokes once type randomization is done
 		}
 		// Otherwise, no randomization being done for Attacks/Movesets
 		// Still increment the seed to stay consistent 
@@ -83,7 +85,7 @@ public class MoveSetRandomizer {
 				}
 
 				changedMoves = true;
-		        shuffleOrRandomizePokemonMoves(nextSeed, pokes, numMovesPerPokemon, MoveCategories.POKE_POWER, settings);
+		        shuffleOrRandomizePokemonMoves(nextSeed, pokes, pokes, settings); // TODO pass in original pokes once type randomization is done
 			}
 			// Otherwise, no randomization being done for Poke Powers
 		}
@@ -123,6 +125,7 @@ public class MoveSetRandomizer {
 		}
 	}
 
+	// TODO Move these outside of this class into a "tweaks" class?
 	/******************** Changing Move Type ************************************/
 	public void makeAllMovesMatchCardType()
 	{
@@ -192,16 +195,79 @@ public class MoveSetRandomizer {
 		return MathUtils.convertNumbersToPercentages(numPerCount);
 	}
 	
-	public static Map<CardId, Integer> getNumMovesPerPokemon(Cards<PokemonCard> pokes, MoveCategories moveCategory)
+	public static Map<PokemonCard, List<RandomizerMoveCategory>> getMoveTypesPerPokemon(Cards<PokemonCard> pokes, boolean groupPowersAndAttacks)
 	{
-		Map<CardId, Integer> cardMovesMap = new EnumMap<>(CardId.class);
+		Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap = new HashMap<PokemonCard, List<RandomizerMoveCategory>>();
 		for (PokemonCard card : pokes.iterable())
 		{
-			cardMovesMap.put(card.id, card.getNumMoves(moveCategory));
+			List<RandomizerMoveCategory> moveTypesList = new ArrayList<>();
+			for (Move move : card.getAllMoves())
+			{
+				if (move.isEmpty())
+				{
+					moveTypesList.add(RandomizerMoveCategory.EMPTY);
+				}
+				else if (groupPowersAndAttacks)
+				{
+					moveTypesList.add(RandomizerMoveCategory.MOVE);
+				}
+				else if (move.isPokePower())
+				{
+					moveTypesList.add(RandomizerMoveCategory.POKE_POWER);
+				}
+				else
+				{
+					moveTypesList.add(RandomizerMoveCategory.ATTACK);
+				}
+			}
+			
+			cardMovesMap.put(card, moveTypesList);
 		}
+		
 		return cardMovesMap;
 	}
-	
+
+	public void adjustForDamagingMoves(Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap)
+	{
+		for (List<RandomizerMoveCategory> pokeMoveTypes : cardMovesMap.values())
+		{
+			boolean setDamagingAttack = false;
+			for (int moveIndex = 0; moveIndex < pokeMoveTypes.size(); moveIndex++)
+			{
+				if (RandomizerMoveCategory.ATTACK == pokeMoveTypes.get(moveIndex) || RandomizerMoveCategory.MOVE == pokeMoveTypes.get(moveIndex))
+				{
+					pokeMoveTypes.set(moveIndex, RandomizerMoveCategory.DAMAGING_ATTACK);
+					setDamagingAttack = true;
+					break;
+				}
+			}
+
+			// If it failed, just set the first empty move to a damaging move
+			if (!setDamagingAttack)
+			{
+				int moveIndex = 0;
+				for ( /*already set*/; moveIndex < pokeMoveTypes.size(); moveIndex++)
+				{
+					if (RandomizerMoveCategory.EMPTY == pokeMoveTypes.get(moveIndex))
+					{
+						pokeMoveTypes.set(moveIndex, RandomizerMoveCategory.DAMAGING_ATTACK);
+						setDamagingAttack = true;
+						break;
+					}
+				}
+				
+				// If no empty move was found, just set the last index to a damaging attack
+				// TODO: If we can only have one poke power per card, this should never happen
+				// if we can, then maybe have a way to disable this
+				if (!setDamagingAttack)
+				{
+					pokeMoveTypes.set(moveIndex, RandomizerMoveCategory.DAMAGING_ATTACK);
+				}
+			}
+		}
+	}
+
+	// TODO: refactor to align with new approach when support for altering num moves per poke is added
 	public Map<CardId, Integer> getRandNumMovesPerPokemon(
 			Random rand,
 			Cards<PokemonCard> pokes, 
@@ -279,8 +345,7 @@ public class MoveSetRandomizer {
 	public void shuffleOrRandomizePokemonMoves(
 			long nextSeed,
 			Cards<PokemonCard> pokes,
-			Map<CardId, Integer> numMovesPerPokemon,
-			MoveCategories moveCategoryRandomizing,
+			Cards<PokemonCard> originalPokesToTakeMovesFrom,
 			Settings settings
 	)
 	{		
@@ -293,80 +358,140 @@ public class MoveSetRandomizer {
 				// Get the pokemon of this type and the moves if we are set
 				// to match the types
 				Cards<PokemonCard> typeCards = pokes.getCardsOfCardType(pokeType);
-				List<Move> typeMove = typeCards.getAllMoves(moveCategoryRandomizing);
-				shuffleOrRandomizePokemonMovesHelper(nextSeed, typeCards, numMovesPerPokemon, typeMove, settings);
+				List<Move> movePool = originalPokesToTakeMovesFrom.getCardsOfCardType(pokeType).getAllMoves();
+				randomizeMoveSets(nextSeed, typeCards, movePool, settings);
 			}	
 		}
 		else
 		{
 			// Otherwise get all the moves and do them at once
-			List<Move> typeMove = pokes.getAllMoves(moveCategoryRandomizing);
-			shuffleOrRandomizePokemonMovesHelper(nextSeed, pokes, numMovesPerPokemon, typeMove, settings);
+			List<Move> movePool = originalPokesToTakeMovesFrom.getAllMoves();
+			randomizeMoveSets(nextSeed, pokes, movePool, settings);
 		}
 		
 	}
 	
-	private void shuffleOrRandomizePokemonMovesHelper(
-			long seed,
-			Cards<PokemonCard> pokes,
-			Map<CardId, Integer> numMovesPerPokemon,
-			List<Move> moves,
-			Settings settings
+	// Move pool is separate from pokes to support randomizing card type prior to this
+	// Shoot this doesn't work for intermixing powers and moves for types... Need to rethink some
+	// Possibly make this slightly lower level - pass in cardMovesMaps and pokepowers, moves, or attacks and perform one pass?
+	// 
+	public void randomizeMoveSets(long nextSeed, Cards<PokemonCard> pokes, List<Move> movePool, Settings settings)
+	{
+		// Step 1: Get the current pokemon to move categories for each move map (read from ROM for now - in future add more options). 
+		Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap = getMoveTypesPerPokemon(pokes, settings.getPokePowers().isIncludeWithMoves());
+		
+		// Step 2: adjust for and assign damaging moves
+		// First create move list so we can assign damaging moves appropriately
+		List<Move> currentMovePool = new ArrayList<>();
+		if (settings.getAttacks().isMovesForceOneDamaging())
+		{
+			// Step 2a: Go through the poke-move map and change a move to a damaging move
+			adjustForDamagingMoves(cardMovesMap);
+
+			// Step 2b: Get set of damaging moves from the pokemon
+			addMovesToPool(movePool, RandomizerMoveCategory.DAMAGING_ATTACK, currentMovePool);
+			
+			// Step 2c: Assign the moves
+			assignMovesToPokemon(nextSeed, cardMovesMap, currentMovePool, RandomizerMoveCategory.DAMAGING_ATTACK, 
+					RandomizationStrategy.SHUFFLE == settings.getAttacks().getRandomizationStrat()); // If its shuffle mode or not
+		}
+		
+		// Always increment for consistency
+		nextSeed++;
+
+		
+		// TODO: add some logic for shuffle mode so we don't run out of moves. Perhaps in the addMovesToPool function?
+		
+		// Step 3: Handle assigning the rest of the moves
+		if (settings.getPokePowers().isIncludeWithMoves())
+		{
+			addMovesToPool(movePool, RandomizerMoveCategory.MOVE, currentMovePool); // Non Damaging attacks and poke powers separate for shuffled?
+			assignMovesToPokemon(nextSeed, cardMovesMap, currentMovePool, RandomizerMoveCategory.MOVE, 
+					RandomizationStrategy.SHUFFLE == settings.getAttacks().getRandomizationStrat()); // If its shuffle mode or not
+		}
+		else
+		{
+			addMovesToPool(movePool, RandomizerMoveCategory.ATTACK, currentMovePool); // Non Damaging attacks for shuffled?
+			assignMovesToPokemon(nextSeed, cardMovesMap, currentMovePool, RandomizerMoveCategory.ATTACK, 
+					RandomizationStrategy.SHUFFLE == settings.getAttacks().getRandomizationStrat()); // If its shuffle mode or not
+
+			// Clear to to get ready to assign poke powers
+			currentMovePool.clear();
+			addMovesToPool(movePool, RandomizerMoveCategory.POKE_POWER, currentMovePool);
+			assignMovesToPokemon(nextSeed + 1, cardMovesMap, currentMovePool, RandomizerMoveCategory.POKE_POWER, 
+					RandomizationStrategy.SHUFFLE == settings.getPokePowers().getRandomizationStrat()); // If its shuffle mode or not
+		}
+		
+		// Always increment the same amount
+		nextSeed += 2;
+		
+		// Finally set all the empty moves to be empty
+		assignEmptyMovesToPokemon(cardMovesMap);
+	}
+
+	public void addMovesToPool(List<Move> possibleMoves, RandomizerMoveCategory moveTypeToAdd, List<Move> moveSubset)
+	{
+		for (Move move : possibleMoves)
+		{
+			if (RandomizerMoveCategory.MOVE == moveTypeToAdd && !move.isEmpty() ||
+				RandomizerMoveCategory.POKE_POWER == moveTypeToAdd && move.isPokePower() || 
+				(move.isAttack() &&
+						(RandomizerMoveCategory.ATTACK == moveTypeToAdd ||
+								(RandomizerMoveCategory.DAMAGING_ATTACK == moveTypeToAdd && move.damage > 0))))
+			{
+				moveSubset.add(move);
+			}
+		}
+	}
+	
+	public void assignMovesToPokemon(
+			long seed, 
+			Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap, 
+			List<Move> movePool, 
+			RandomizerMoveCategory moveTypeAssign,
+			boolean shuffle
 	)
 	{
 		// Create and seed the randomizer
 		Random rand = new Random(seed);
 		
-		// Assign moves one at a time so if we are shuffling and run out of 
-		// non-poke powers, they will be more spread still
-		for (int moveIndex = 0; moveIndex < PokemonCard.MAX_NUM_MOVES; moveIndex++)
+		for (Entry<PokemonCard, List<RandomizerMoveCategory>> cardEntry : cardMovesMap.entrySet())
 		{
-			// For each poke
-			for (PokemonCard poke : pokes.iterable())
+			for (int moveIndex = 0; moveIndex < cardEntry.getValue().size(); moveIndex++)
 			{
-				// See if we need to assign a move or set it to empty
-				if (numMovesPerPokemon.get(poke.id) > moveIndex)
+				if (cardEntry.getValue().get(moveIndex) == moveTypeAssign)
 				{
-					shuffleOrRandomizeMoveAtIndex(rand, poke, moveIndex, moves, shuffle, numNonPokePower > moveIndex);
-				}
-				else
-				{
-					setMoveEmpty(poke, moveIndex);
+					//Call helper
+					randomizeMoveAtIndex(rand, cardEntry.getKey(), moveIndex, movePool, shuffle);
 				}
 			}
 		}
 	}
 	
-	private static void setMoveEmpty(PokemonCard poke, int moveIndex)
+	public void assignEmptyMovesToPokemon(Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap)
 	{
-		poke.setMove(Move.EMPTY_MOVE, moveIndex);
+		for (Entry<PokemonCard, List<RandomizerMoveCategory>> cardEntry : cardMovesMap.entrySet())
+		{
+			for (int moveIndex = 0; moveIndex < cardEntry.getValue().size(); moveIndex++)
+			{
+				if (cardEntry.getValue().get(moveIndex) == RandomizerMoveCategory.EMPTY)
+				{
+					setMoveEmpty(cardEntry.getKey(), moveIndex);
+				}
+			}
+		}
 	}
-	
-	private void shuffleOrRandomizeMoveAtIndex(
+
+	private void randomizeMoveAtIndex(
 			Random rand,
 			PokemonCard poke, 
 			int moveIndex,
 			List<Move> moves,
-			boolean shuffle,
-			boolean forceNonPokePower
+			boolean shuffle
 	)
 	{		
 		// Determine which random move to use
 		int randMoveIndex = rand.nextInt(moves.size());
-		if (forceNonPokePower)
-		{
-			int maxTries = 10000;
-			int tries = 0;
-			while (moves.get(randMoveIndex).isPokePower())
-			{
-				randMoveIndex = rand.nextInt(moves.size());
-				if (tries > maxTries)
-				{
-					System.err.println("Failed to find a non pokemon power - using a poke power in its place");
-					break;
-				}
-			}
-		}
 	
 		// If its shuffle, delete it so its not reused
 		if (shuffle)
@@ -380,6 +505,11 @@ public class MoveSetRandomizer {
 		}
 	}
 
+	private static void setMoveEmpty(PokemonCard poke, int moveIndex)
+	{
+		poke.setMove(Move.EMPTY_MOVE, moveIndex);
+	}
+	
 	/******************** Logging/Debug ************************************/
 	public void printPokemonMoveSetsTable()
 	{
