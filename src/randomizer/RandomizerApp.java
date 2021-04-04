@@ -13,25 +13,19 @@ import javax.swing.JFileChooser;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.Enumeration;
 import java.awt.event.ActionEvent;
 import javax.swing.JTabbedPane;
 import java.awt.GridLayout;
 import javax.swing.JRadioButton;
 import javax.swing.JLabel;
 import javax.swing.ButtonGroup;
-import javax.swing.AbstractAction;
-import javax.swing.AbstractButton;
 import javax.swing.JCheckBox;
 import javax.swing.border.TitledBorder;
 
 import randomizer.Settings.*;
 
-import javax.swing.border.LineBorder;
 import java.awt.Color;
 import java.awt.FlowLayout;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
@@ -379,20 +373,11 @@ public class RandomizerApp {
 		moveTypesRandomOptionsPanel.add(moveTypeRandPreventWrongTypeBox);
 	}
 
-	private class SwingAction extends AbstractAction {
-		public SwingAction() {
-			putValue(NAME, "SwingAction");
-			putValue(SHORT_DESCRIPTION, "Some short description");
-		}
-		public void actionPerformed(ActionEvent e) {
-		}
-	}
-	
-	 private Settings createSettingsFromState() 
+	private Settings createSettingsFromState() 
 	 {
 	        Settings settings = new Settings();
 	        SpecificDataPerType typeData = new SpecificDataPerType();
-	        MovesData movesData = new MovesData();
+	        AttacksData attacksData = new AttacksData();
 	        PokePowersData powersData = new PokePowersData();
 	        
 	        settings.setSeed(saveSetSeedVal.getText());
@@ -400,23 +385,20 @@ public class RandomizerApp {
 	        settings.setLogDetails(saveLogDetailsBox.isSelected());
 	        
 	        settings.setTypeSpecificData(typeData);
-	        settings.setMoves(movesData);
+	        settings.setAttacks(attacksData);
 	        settings.setPokePowers(powersData);
 	        settings.setMovesMatchPokeSpecific(generalRandKeepPokeSpecMovesBox.isSelected());
 	        settings.setMovesMatchTypeSpecific(generalRandKeepTypeSpecMovesBox.isSelected());
 	        settings.setMovesRandomNumberOfAttacks(generalRandNumMovesBox.isSelected());
 	        
-	        movesData.setMovesAttacksWithinType(moveRandWithinTypeBox.isSelected());
-	        movesData.setMovesForceOneDamaging(moveRandForceDamageBox.isSelected());
-	        movesData.setMovesStrat(moveRandStrategyGoup.getSelection().getActionCommand());
-	        movesData.setMoveTypeChanges(moveRandTypeGroup.getSelection().getActionCommand());
+	        attacksData.setRandomizationWithinType(moveRandWithinTypeBox.isSelected());
+	        attacksData.setRandomizationStrat(pokePowersStrategyGroup.getSelection().getActionCommand());
+	        attacksData.setMovesForceOneDamaging(moveRandForceDamageBox.isSelected());
+	        attacksData.setMoveTypeChanges(moveRandTypeGroup.getSelection().getActionCommand());
 
+	        powersData.setRandomizationWithinType(powerWithinTypeBox.isSelected());
+	        powersData.setRandomizationStrat(pokePowersStrategyGroup.getSelection().getActionCommand());
 	        powersData.setIncludeWithMoves(pokePowerIncludeWithMovesBox.isSelected());
-	        if (!pokePowerIncludeWithMovesBox.isSelected())
-	        {
-		        powersData.setMovesPowersWithinType(powerWithinTypeBox.isSelected());
-		        powersData.setMovesPokePowerStrat(pokePowersStrategyGroup.getSelection().getActionCommand());
-	        }
 	        
 	        return settings;
 	 }

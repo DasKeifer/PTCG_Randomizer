@@ -75,7 +75,7 @@ public class Settings
 		public void setRandomizationStrat(RandomizationStrategy randomizationStrat) {
 			this.randomizationStrat = randomizationStrat;
 		}
-		public void setMovesStrat(String randomizationStratName) {
+		public void setRandomizationStrat(String randomizationStratName) {
 			this.randomizationStrat = RandomizationStrategy.getByName(randomizationStratName);
 		}
 		public boolean isRandomizationWithinType() {
