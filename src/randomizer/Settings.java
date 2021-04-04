@@ -89,16 +89,16 @@ public class Settings
     public static class AttacksData extends MovesData
     {
         // applicable if not UNCHANGED
-    	private boolean movesForceOneDamaging; // If keep same number of attacks is off
+    	private boolean forceOneDamagingAttack; // If keep same number of attacks is off?
     	
-    	// Applicable always
+    	// Applicable always - maybe also applicable to poke powers?
     	private MoveTypeChanges moveTypeChanges;
     	
-		public boolean isMovesForceOneDamaging() {
-			return movesForceOneDamaging;
+		public boolean isForceOneDamagingAttack() {
+			return forceOneDamagingAttack;
 		}
-		public void setMovesForceOneDamaging(boolean movesForceOneDamaging) {
-			this.movesForceOneDamaging = movesForceOneDamaging;
+		public void setForceOneDamagingAttack(boolean forceOneDamagingAttack) {
+			this.forceOneDamagingAttack = forceOneDamagingAttack;
 		}
 		public MoveTypeChanges getMoveTypeChanges() {
 			return moveTypeChanges;
@@ -131,7 +131,8 @@ public class Settings
 	 
 	private boolean movesRandomNumberOfAttacks;
 	
-	// TODO: Long term I want these to be randomizable
+	// Long term I want these to be randomizable/modifiable. I know for some like discarding a card 
+	// type that shouldn't be difficult but others may cause problems
 	// Think these can be removed - but may be simpler to keep for now
     // Move/Power Applicable (both use the same) (applicable if not UNCHANGED)
 	private boolean movesMatchPokeSpecific;

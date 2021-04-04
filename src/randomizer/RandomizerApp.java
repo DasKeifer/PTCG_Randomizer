@@ -168,7 +168,7 @@ public class RandomizerApp {
 		frmPokemonTradingCard.getContentPane().add(movesEffectsTab, BorderLayout.CENTER);
 		
 		JPanel movesEffectsPanel = new JPanel();
-		movesEffectsTab.addTab("Moves/Effects", null, movesEffectsPanel, null);
+		movesEffectsTab.addTab("Move Set", null, movesEffectsPanel, null);
 		movesEffectsPanel.setLayout(new BorderLayout(0, 0));
 		
 		JPanel generalRandPanel = new JPanel();
@@ -176,12 +176,12 @@ public class RandomizerApp {
 		generalRandPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "General", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		generalRandPanel.setLayout(new GridLayout(0, 1, 0, 0));
 		
-		generalRandKeepPokeSpecMovesBox = new JCheckBox("Keep Poke Specific Moves/Powers with Poke");
+		generalRandKeepPokeSpecMovesBox = new JCheckBox("Keep Poke Specific Moves with Poke");
 		generalRandKeepPokeSpecMovesBox.setToolTipText("Some moves are specific to a specific pokemon like Call for Family. Checking this will keep those types of moves on the same pokemon. Note that if there are multiple versions of the card it, it can go with any of them");
 		generalRandPanel.add(generalRandKeepPokeSpecMovesBox);
 		generalRandKeepPokeSpecMovesBox.setEnabled(false);
 		
-		generalRandKeepTypeSpecMovesBox = new JCheckBox("Keep Type Specific Moves/Powers in Type");
+		generalRandKeepTypeSpecMovesBox = new JCheckBox("Keep Type Specific Moves in Type");
 		generalRandKeepTypeSpecMovesBox.setToolTipText("Some moves are Energy type specific (such as ember requiring a Fire Energy discard). This will keep it so they will only be allowed for the Energy type that matches their effect");
 		generalRandKeepTypeSpecMovesBox.setEnabled(false);
 		generalRandPanel.add(generalRandKeepTypeSpecMovesBox);
@@ -190,7 +190,7 @@ public class RandomizerApp {
 		generalRandPanel.add(generalRandNumMovesPanel);
 		generalRandNumMovesPanel.setLayout(new GridLayout(0, 2, 0, 0));
 		
-		generalRandNumMovesBox = new JCheckBox("Modify Num of Moves/Powers");
+		generalRandNumMovesBox = new JCheckBox("Modify Num of Moves");
 		generalRandNumMovesPanel.add(generalRandNumMovesBox);
 		generalRandNumMovesBox.setEnabled(false);
 		
@@ -207,7 +207,7 @@ public class RandomizerApp {
 		
 		JPanel moveRandPanel = new JPanel();
 		specificRandPanel.add(moveRandPanel);
-		moveRandPanel.setBorder(new TitledBorder(null, "Pokemon Moves", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		moveRandPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Attacks", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		moveRandPanel.setLayout(new GridLayout(0, 3, 0, 0));
 		
 		JPanel moveRandStrategyPanel = new JPanel();
@@ -244,10 +244,9 @@ public class RandomizerApp {
 		
 		moveRandForceDamageBox = new JCheckBox("Force One Damaging");
 		moveRandOptionsPanel.add(moveRandForceDamageBox);
-		moveRandForceDamageBox.setEnabled(false);
 		
 		JPanel moveRandTypePanel = new JPanel();
-		moveRandTypePanel.setBorder(new TitledBorder(null, "Move Type Changes", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		moveRandTypePanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Attack Type Changes", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		moveRandPanel.add(moveRandTypePanel);
 		moveRandTypePanel.setLayout(new GridLayout(0, 1, 0, 0));
 		
@@ -276,7 +275,7 @@ public class RandomizerApp {
 		pokePowerPanel.add(pokePowerStrategyPanel);
 		pokePowerStrategyPanel.setLayout(new GridLayout(0, 1, 0, 0));
 		
-		pokePowerIncludeWithMovesBox = new JCheckBox("Include with Moves");
+		pokePowerIncludeWithMovesBox = new JCheckBox("Include with Attacks");
 		pokePowerIncludeWithMovesBox.setSelected(true);
 		pokePowerStrategyPanel.add(pokePowerIncludeWithMovesBox);
 		
@@ -393,7 +392,7 @@ public class RandomizerApp {
 	        
 	        attacksData.setRandomizationWithinType(moveRandWithinTypeBox.isSelected());
 	        attacksData.setRandomizationStrat(pokePowersStrategyGroup.getSelection().getActionCommand());
-	        attacksData.setMovesForceOneDamaging(moveRandForceDamageBox.isSelected());
+	        attacksData.setForceOneDamagingAttack(moveRandForceDamageBox.isSelected());
 	        attacksData.setMoveTypeChanges(moveRandTypeGroup.getSelection().getActionCommand());
 
 	        powersData.setRandomizationWithinType(powerWithinTypeBox.isSelected());

@@ -346,7 +346,7 @@ public class MoveSetRandomizer {
 		if (RandomizationStrategy.RANDOM == attackRandStrat || RandomizationStrategy.SHUFFLE == attackRandStrat)
 		{
 			// Adjust for damaging moves if required
-			if (settings.getAttacks().isMovesForceOneDamaging())
+			if (settings.getAttacks().isForceOneDamagingAttack())
 			{
 				adjustForDamagingMoves(cardMovesMap);
 			}
@@ -388,7 +388,7 @@ public class MoveSetRandomizer {
 		List<Move> unusedMoves = new ArrayList<>();
 		
 		// If we force a damaging move, do that first
-		if (settings.getAttacks().isMovesForceOneDamaging())
+		if (settings.getAttacks().isForceOneDamagingAttack())
 		{
 			// Get set of damaging moves from the pool
 			currentMovePool = getSubsetOfMovePool(allMovePool, RandomizerMoveCategory.DAMAGING_ATTACK);
