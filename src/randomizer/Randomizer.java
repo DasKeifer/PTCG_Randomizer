@@ -52,7 +52,7 @@ public class Randomizer
 				String seedVal = String.valueOf(settings.getSeedValue());
 				if (!seedText.equals(seedVal))
 				{
-					seedFile.write("Text: \"" + seedText + "\", Numeric Equivalent:" + seedVal);
+					seedFile.write("Text: \"" + seedText + "\", Numeric Equivalent: " + seedVal);
 				}
 				else
 				{
@@ -97,7 +97,10 @@ public class Randomizer
 		MoveSetRandomizer moveSetRand = new MoveSetRandomizer(romData, logger);
 		
 		List<Card> venu = romData.allCards.getCardsWithName("Venusaur").toList();
-		venu.get(1).name.setTextAndDeformat("Test-a-saur");
+		if (venu.size() > 1)
+		{
+			venu.get(1).name.setTextAndDeformat("Test-a-saur");
+		}
 		
 		// Randomize Evolutions (either within current types or completely random)
 		// If randomizing evos and types but keeping lines consistent, completely 

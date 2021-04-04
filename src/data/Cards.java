@@ -14,13 +14,11 @@ import data.PokemonCard.MoveCategories;
 
 public class Cards<T extends Card>
 {
-	private Comparator<Card> defaultSorter = new Card.IdSorter();
-	private TreeSet<T> cardSet = new TreeSet<>(defaultSorter);
+	private TreeSet<T> cardSet = new TreeSet<>(Card.ID_SORTER);
 
 	public Cards() 
 	{
-		defaultSorter = new Card.IdSorter();
-		cardSet = new TreeSet<>(defaultSorter);
+		cardSet = new TreeSet<>(Card.ID_SORTER);
 	}
 	
 	public Cards(List<T> list) 
@@ -99,7 +97,7 @@ public class Cards<T extends Card>
 
 	public List<T> toSortedList()
 	{
-		return toSortedList(defaultSorter);
+		return toSortedList(Card.ID_SORTER);
 	}
 	
 	public List<T> toSortedList(Comparator<Card> comparator)

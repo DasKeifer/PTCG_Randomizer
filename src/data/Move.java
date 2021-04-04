@@ -1,12 +1,12 @@
 package data;
 
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Set;
 
 import constants.RomConstants;
 import constants.CardDataConstants.*;
-import randomizer.Settings.RandomizationStrategy;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -14,6 +14,7 @@ public class Move
 {
 	public static final int TOTAL_SIZE_IN_BYTES = 19;
 	public static final Move EMPTY_MOVE = new Move();
+	public static final Comparator<Move> BASIC_SORTER = new BasicSorter();
 	
 	EnumMap<EnergyType, Byte> energyCost;
 	public OneLineText name;
@@ -51,6 +52,26 @@ public class Move
 		effect3 = new HashSet<>(toCopy.effect3);
 		unknownByte = toCopy.unknownByte;
 		animation = toCopy.animation;
+	}
+	
+	public static class BasicSorter implements Comparator<Move>
+	{
+		public int compare(Move m1, Move m2)
+	    {   
+			int compareVal = m1.name.getText().compareTo(m2.name.getText());
+			
+			if (compareVal != 0)
+			{
+				compareVal = m2.damage - m1.damage;
+			}
+			
+			if (compareVal != 0)
+			{
+				compareVal = m2.effectPtr - m1.effectPtr;
+			}
+			
+			return compareVal;
+	    }
 	}
 
 	public boolean isEmpty()

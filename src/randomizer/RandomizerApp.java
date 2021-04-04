@@ -10,10 +10,9 @@ import javax.swing.JPanel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 
-import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.IOException;
-import java.awt.event.ActionEvent;
 import javax.swing.JTabbedPane;
 import java.awt.GridLayout;
 import javax.swing.JRadioButton;
@@ -128,40 +127,40 @@ public class RandomizerApp {
 		
 		JButton randomizeButton = new JButton("Randomize!");
 		randomizeBtnPanel.add(randomizeButton);
-		randomizeButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-				    int returnVal = saveRomChooser.showSaveDialog(frmPokemonTradingCard);
-				    if (returnVal == JFileChooser.APPROVE_OPTION) 
-				    {
-				    	Settings settings = createSettingsFromState();
-						
-						File saveFile = saveRomChooser.getSelectedFile();
-				        if (!saveFile.getName().endsWith(randomizer.getFileExtension()))
-				        {
-				        	saveFile = new File(saveFile.getPath().concat(randomizer.getFileExtension()));
-				        }
-				    	randomizer.randomizeAndSaveRom(saveFile, settings);
-				    }
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-		});
+		randomizeButton.addActionListener(
+				event ->
+				{
+					try {
+					    int returnVal = saveRomChooser.showSaveDialog(frmPokemonTradingCard);
+					    if (returnVal == JFileChooser.APPROVE_OPTION) 
+					    {
+					    	Settings settings = createSettingsFromState();
+							
+							File saveFile = saveRomChooser.getSelectedFile();
+					        if (!saveFile.getName().endsWith(randomizer.getFileExtension()))
+					        {
+					        	saveFile = new File(saveFile.getPath().concat(randomizer.getFileExtension()));
+					        }
+					    	randomizer.randomizeAndSaveRom(saveFile, settings);
+					    }
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				});
 		
 		JPanel openRomPanel = new JPanel();
 		frmPokemonTradingCard.getContentPane().add(openRomPanel, BorderLayout.NORTH);
 		
 		JButton openRomButton = new JButton("Open ROM");
-		openRomButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-			    int returnVal = openRomChooser.showOpenDialog(frmPokemonTradingCard);
-			    if (returnVal == JFileChooser.APPROVE_OPTION) {
-			    	randomizer.openRom(openRomChooser.getSelectedFile());
-			    }
-			}
-		});
+		openRomButton.addActionListener(
+				event ->
+				{
+				    int returnVal = openRomChooser.showOpenDialog(frmPokemonTradingCard);
+				    if (returnVal == JFileChooser.APPROVE_OPTION) {
+				    	randomizer.openRom(openRomChooser.getSelectedFile());
+				    }
+				});
 		openRomPanel.add(openRomButton);
 		
 		JTabbedPane movesEffectsTab = new JTabbedPane(JTabbedPane.TOP);
@@ -275,27 +274,20 @@ public class RandomizerApp {
 		pokePowerPanel.add(pokePowerStrategyPanel);
 		pokePowerStrategyPanel.setLayout(new GridLayout(0, 1, 0, 0));
 		
-		pokePowerIncludeWithMovesBox = new JCheckBox("Include with Attacks");
-		pokePowerIncludeWithMovesBox.setSelected(true);
-		pokePowerStrategyPanel.add(pokePowerIncludeWithMovesBox);
-		
 		JRadioButton pokePowerUnchangedButton = new JRadioButton("Unchanged");
-		pokePowerUnchangedButton.setEnabled(false);
 		pokePowerUnchangedButton.setSelected(true);
+		pokePowerUnchangedButton.setEnabled(false);
 		pokePowerUnchangedButton.setActionCommand("UNCHANGED");
 		pokePowersStrategyGroup.add(pokePowerUnchangedButton);
-		pokePowerStrategyPanel.add(pokePowerUnchangedButton);
 		
 		JRadioButton pokePowerShuffleButton = new JRadioButton("Shuffle");
 		pokePowerShuffleButton.setEnabled(false);
 		pokePowerShuffleButton.setActionCommand("SHUFFLE");
-		pokePowerStrategyPanel.add(pokePowerShuffleButton);
 		pokePowersStrategyGroup.add(pokePowerShuffleButton);
 		
 		JRadioButton pokePowerRandomButton = new JRadioButton("Random");
 		pokePowerRandomButton.setEnabled(false);
 		pokePowerRandomButton.setActionCommand("RANDOM");
-		pokePowerStrategyPanel.add(pokePowerRandomButton);
 		pokePowersStrategyGroup.add(pokePowerRandomButton);
 		
 		JPanel pokePowerOptionsPanel = new JPanel();
@@ -305,6 +297,31 @@ public class RandomizerApp {
 		powerWithinTypeBox = new JCheckBox("Within Type");
 		powerWithinTypeBox.setEnabled(false);
 		pokePowerOptionsPanel.add(powerWithinTypeBox);
+		
+		pokePowerIncludeWithMovesBox = new JCheckBox("Include with Attacks");
+		pokePowerIncludeWithMovesBox.addItemListener(
+				event ->
+				{
+				    if (event.getStateChange() == ItemEvent.SELECTED)
+				    {
+				    		pokePowerUnchangedButton.setEnabled(false);
+				    		pokePowerShuffleButton.setEnabled(false);
+				    		pokePowerRandomButton.setEnabled(false);
+				    		powerWithinTypeBox.setEnabled(false);
+				    }
+				    else if (event.getStateChange() == ItemEvent.DESELECTED)
+			    	{
+			    		pokePowerUnchangedButton.setEnabled(true);
+			    		pokePowerShuffleButton.setEnabled(true);
+			    		pokePowerRandomButton.setEnabled(true);
+			    		powerWithinTypeBox.setEnabled(true);
+			    	}
+				});
+		pokePowerIncludeWithMovesBox.setSelected(true);
+		pokePowerStrategyPanel.add(pokePowerIncludeWithMovesBox);
+		pokePowerStrategyPanel.add(pokePowerUnchangedButton);
+		pokePowerStrategyPanel.add(pokePowerRandomButton);
+		pokePowerStrategyPanel.add(pokePowerShuffleButton);
 		
 		JPanel typesPanel = new JPanel();
 		movesEffectsTab.addTab("Types", null, typesPanel, null);
@@ -373,7 +390,7 @@ public class RandomizerApp {
 	}
 
 	private Settings createSettingsFromState() 
-	 {
+	{
 	        Settings settings = new Settings();
 	        SpecificDataPerType typeData = new SpecificDataPerType();
 	        AttacksData attacksData = new AttacksData();
@@ -391,7 +408,7 @@ public class RandomizerApp {
 	        settings.setMovesRandomNumberOfAttacks(generalRandNumMovesBox.isSelected());
 	        
 	        attacksData.setRandomizationWithinType(moveRandWithinTypeBox.isSelected());
-	        attacksData.setRandomizationStrat(pokePowersStrategyGroup.getSelection().getActionCommand());
+	        attacksData.setRandomizationStrat(moveRandStrategyGoup.getSelection().getActionCommand());
 	        attacksData.setForceOneDamagingAttack(moveRandForceDamageBox.isSelected());
 	        attacksData.setMoveTypeChanges(moveRandTypeGroup.getSelection().getActionCommand());
 

@@ -3,17 +3,18 @@ package randomizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import constants.CardDataConstants.CardType;
 import constants.CardDataConstants.EnergyType;
+import data.Card;
 import data.Cards;
 import data.Move;
 import data.PokemonCard;
@@ -34,6 +35,7 @@ public class MoveSetRandomizer {
 		logger = inLogger;
 	}
 
+	// TODO: CardDataConstants already has this? Refactor to use that from the Move data
 	// Enum used for convenience when randomizing the moves in this class
 	private enum RandomizerMoveCategory
 	{
@@ -47,7 +49,7 @@ public class MoveSetRandomizer {
 		
 		// Get our strats in a convenient location
 		RandomizationStrategy attackRandStrat = settings.getAttacks().getRandomizationStrat();
-		RandomizationStrategy powerRandStrat = settings.getAttacks().getRandomizationStrat();
+		RandomizationStrategy powerRandStrat = settings.getPokePowers().getRandomizationStrat();
 		
 		// If we are randomizing or shuffling either category of moves, go ahead and do it
 		if (RandomizationStrategy.RANDOM == attackRandStrat || RandomizationStrategy.SHUFFLE == attackRandStrat ||
@@ -58,6 +60,7 @@ public class MoveSetRandomizer {
 			// don't have to do logic on the move types
 			shuffleOrRandomizePokemonMoves(nextSeed, pokes, pokes, settings);
 		}
+		// nextSeed +=50; not needed currently as this is the last step in randomization here
 		
 		// See if we need to tweak the move types at all
 		MoveTypeChanges moveTypeChanges = settings.getAttacks().getMoveTypeChanges();
@@ -163,7 +166,7 @@ public class MoveSetRandomizer {
 	
 	public static Map<PokemonCard, List<RandomizerMoveCategory>> getMoveTypesPerPokemon(Cards<PokemonCard> pokes, boolean groupPowersAndAttacks)
 	{
-		Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap = new HashMap<>();
+		Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap = new TreeMap<>(Card.ID_SORTER);
 		for (PokemonCard card : pokes.iterable())
 		{
 			List<RandomizerMoveCategory> moveTypesList = new ArrayList<>();
@@ -384,7 +387,7 @@ public class MoveSetRandomizer {
 			Settings settings
 	)
 	{
-		Set<Move> currentMovePool = new HashSet<>();
+		Set<Move> currentMovePool = new TreeSet<>(Move.BASIC_SORTER);
 		List<Move> unusedMoves = new ArrayList<>();
 		
 		// If we force a damaging move, do that first
@@ -454,7 +457,7 @@ public class MoveSetRandomizer {
 	
 	public Set<Move> getSubsetOfMovePool(Collection<Move> possibleMoves, RandomizerMoveCategory moveTypeToAdd)
 	{
-		Set<Move> moveSubpool = new HashSet<>();
+		Set<Move> moveSubpool = new TreeSet<>(Move.BASIC_SORTER);
 		addMovesToPool(possibleMoves, moveTypeToAdd, moveSubpool, null);
 		return moveSubpool;
 	}
@@ -488,6 +491,7 @@ public class MoveSetRandomizer {
 	{
 		// Create and seed the randomizer
 		Random rand = new Random(seed);
+		System.out.print("seed " + seed);
 		
 		for (Entry<PokemonCard, List<RandomizerMoveCategory>> cardEntry : cardMovesMap.entrySet())
 		{
@@ -530,18 +534,17 @@ public class MoveSetRandomizer {
 		{
 			unusedMoves.addAll(moves);
 		}
-		
-		// Determine which random move to use
-		int randMoveIndex = rand.nextInt(moves.size());
 	
 		// If its shuffle, use the unused moves list and remove it
 		if (shuffle)
 		{
+			int randMoveIndex = rand.nextInt(unusedMoves.size());
 			poke.setMove(unusedMoves.remove(randMoveIndex), moveIndex);
 		}
 		// Otherwise use the main list and leave it
 		else
 		{
+			int randMoveIndex = rand.nextInt(moves.size());
 			poke.setMove(moves.get(randMoveIndex), moveIndex);
 		}
 	}
