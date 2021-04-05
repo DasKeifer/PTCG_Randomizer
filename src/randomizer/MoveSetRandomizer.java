@@ -1,7 +1,6 @@
 package randomizer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -18,21 +17,23 @@ import data.Card;
 import data.Cards;
 import data.Move;
 import data.PokemonCard;
-import data.PokemonCard.MoveCategories;
 import randomizer.Settings.MoveTypeChanges;
 import randomizer.Settings.RandomizationStrategy;
 import rom.RomData;
 import util.Logger;
-import util.MathUtils;
 
 public class MoveSetRandomizer {
 	private RomData romData;
 	private Logger logger;
+	private final Cards<PokemonCard> pokeToGetAttacksFrom;
 	
 	public MoveSetRandomizer(RomData inRomData, Logger inLogger)
 	{
 		romData = inRomData;
 		logger = inLogger;
+		
+		// Create a copy of the original pokes for easier move randomization if we change card types
+		pokeToGetAttacksFrom = romData.allCards.getPokemonCards().copy(PokemonCard.class);
 	}
 
 	// TODO: CardDataConstants already has this? Refactor to use that from the Move data
@@ -56,9 +57,7 @@ public class MoveSetRandomizer {
 				RandomizationStrategy.RANDOM == powerRandStrat || RandomizationStrategy.SHUFFLE == powerRandStrat)
 		{
 			changedMoves = true;
-			// TODO: when type randomization is done, change second pokes to the original set so we
-			// don't have to do logic on the move types
-			shuffleOrRandomizePokemonMoves(nextSeed, pokes, pokes, settings);
+			shuffleOrRandomizePokemonMoves(nextSeed, pokes, settings);
 		}
 		// nextSeed +=50; not needed currently as this is the last step in randomization here
 		
@@ -122,7 +121,7 @@ public class MoveSetRandomizer {
 		byte colorlessCost;
 		for (PokemonCard poke : pokes.iterable())
 		{
-			moves = poke.getAllMoves();
+			moves = poke.getAllMovesIncludingEmptyOnes();
 			for (Move move : moves)
 			{
 				// Get the current data and then clear it
@@ -151,26 +150,13 @@ public class MoveSetRandomizer {
 	}
 
 	/******************** Determine Number of Moves ************************************/
-	public static double[] getNumMovesPercentages(Cards<PokemonCard> pokes, MoveCategories moveCategory)
-	{
-		int[] numPerCount = new int[PokemonCard.MAX_NUM_MOVES];
-		Arrays.fill(numPerCount, 0);
-		
-		for (PokemonCard card : pokes.iterable())
-		{
-			numPerCount[card.getNumMoves(moveCategory)] += 1;
-		}
-		
-		return MathUtils.convertNumbersToPercentages(numPerCount);
-	}
-	
 	public static Map<PokemonCard, List<RandomizerMoveCategory>> getMoveTypesPerPokemon(Cards<PokemonCard> pokes, boolean groupPowersAndAttacks)
 	{
 		Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap = new TreeMap<>(Card.ID_SORTER);
 		for (PokemonCard card : pokes.iterable())
 		{
 			List<RandomizerMoveCategory> moveTypesList = new ArrayList<>();
-			for (Move move : card.getAllMoves())
+			for (Move move : card.getAllMovesIncludingEmptyOnes())
 			{
 				if (move.isEmpty())
 				{
@@ -237,6 +223,19 @@ public class MoveSetRandomizer {
 	}
 
 	/* Refactor to align with new approach when support for altering num moves per poke is added
+	public static double[] getNumMovesPercentages(Cards<PokemonCard> pokes, MoveCategories moveCategory)
+	{
+		int[] numPerCount = new int[PokemonCard.MAX_NUM_MOVES];
+		Arrays.fill(numPerCount, 0);
+		
+		for (PokemonCard card : pokes.iterable())
+		{
+			numPerCount[card.getNumMoves(moveCategory)] += 1;
+		}
+		
+		return MathUtils.convertNumbersToPercentages(numPerCount);
+	}
+	
 	public Map<CardId, Integer> getRandNumMovesPerPokemon(
 			Random rand,
 			Cards<PokemonCard> pokes, 
@@ -315,7 +314,6 @@ public class MoveSetRandomizer {
 	public void shuffleOrRandomizePokemonMoves(
 			long nextSeed,
 			Cards<PokemonCard> pokes,
-			Cards<PokemonCard> originalPokesToTakeMovesFrom,
 			Settings settings
 	)
 	{		
@@ -325,11 +323,11 @@ public class MoveSetRandomizer {
 		
 		// Perform a first pass through the moves assigning at least the attacks (both forced damaging and others) and possible
 		// the pokepowers if set that way
-		firstPassMoveAssignment(nextSeed, cardMovesMap, originalPokesToTakeMovesFrom, settings);
+		firstPassMoveAssignment(nextSeed, cardMovesMap, pokeToGetAttacksFrom, settings);
 		nextSeed += 20;
 		
 		// Do the second pass for poke powers if they were not handled in the first pass
-		secondPassMoveAssignment(nextSeed, cardMovesMap, originalPokesToTakeMovesFrom, settings);
+		secondPassMoveAssignment(nextSeed, cardMovesMap, pokeToGetAttacksFrom, settings);
 		// Not needed now since this is the last one currently
 		// nextSeed += 20
 
@@ -580,7 +578,7 @@ public class MoveSetRandomizer {
 			fields[nameIndex] = card.name.toString();
 			
 			int index = movesStartIndex;
-			for (Move move : card.getAllMoves())
+			for (Move move : card.getAllMovesIncludingEmptyOnes())
 			{
 				fields[index++] = move.name.toString();
 				fields[index++] = move.getEnergyCostString(true, ", "); // true = Abbreviated types
@@ -618,7 +616,7 @@ public class MoveSetRandomizer {
 			rowData[nameIndex] = card.name.toString();
 
 			int index = movesStartIndex;
-			for (Move move : card.getAllMoves())
+			for (Move move : card.getAllMovesIncludingEmptyOnes())
 			{
 				if (move.isEmpty())
 				{

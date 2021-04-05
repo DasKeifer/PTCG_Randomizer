@@ -1,0 +1,8 @@
+Outstanding:
+When saving the same rom data multiple times, the text for some cards like mysterious fossil compoundly gets worse
+
+
+Completed this release:
+
+
+Completed:

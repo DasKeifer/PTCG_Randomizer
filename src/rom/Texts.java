@@ -6,9 +6,21 @@ import java.util.Set;
 
 public class Texts 
 {
-	private Map<Short, String> textMap = new HashMap<>();
-	private Map<String, Short> usedText = new HashMap<>();
+	private Map<Short, String> textMap;
+	private Map<String, Short> usedText;
 
+	public Texts()
+	{
+		textMap = new HashMap<>();
+		usedText = new HashMap<>();
+	}
+	
+	public Texts(Texts toCopy)
+	{
+		textMap = new HashMap<>(toCopy.textMap);
+		usedText = new HashMap<>(toCopy.usedText);
+	}
+	
 	public short insertTextAtNextId(String text)
 	{
 		short nextId = (short) (count() + 1); // 0 is a null pointer

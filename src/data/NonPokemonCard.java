@@ -29,6 +29,11 @@ public class NonPokemonCard extends Card
 		description = new EffectDescription(toCopy.description);
 	}
 	
+	public NonPokemonCard copy()
+	{
+		return new NonPokemonCard(this);
+	}
+	
 	@Override
 	public int readDataAndConvertIds(byte[] cardBytes, int startIndex, Texts idToText, Set<Short> textIdsUsed) 
 	{

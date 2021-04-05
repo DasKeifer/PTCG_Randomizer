@@ -70,12 +70,15 @@ public class Randomizer
 			logger.open(romBasePath + LOG_FILE_EXTENSION);
 		}
 		
-		randomize(settings);
+		RomData randomized = randomize(settings);
 
 		logger.close();
 		
+		// TODO: Due to an error, the same data was being written more than once
+		// and when this happened, the text for some cards compoundly got worse.
+		// Need to look into why this is happening
 		try {
-			RomHandler.writeRom(romData, romFile);
+			RomHandler.writeRom(randomized, romFile);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -84,23 +87,20 @@ public class Randomizer
 	}
 	
 	//public static void main(String[] args) throws IOException //Temp
-	public void randomize(Settings settings)
+	public RomData randomize(Settings settings)
 	{
 		// get and store the base seed as the next one to use
 		int nextSeed = settings.getSeedValue();
+
+		// Make a copy of the data to modify and return
+		RomData randomizedData = new RomData(romData);
 		
-		// Create sub randomizers
-		// TODO: Make static and pass in romData and logger? 
-		// Make a copy prior to staring the
-		// randomization process so we can save it multiple times without reloading the rom
-		// And so we can access the original data if we need it
-		MoveSetRandomizer moveSetRand = new MoveSetRandomizer(romData, logger);
+		// Create sub randomizers. If they need to original data, they can save off a copy
+		// when they are creaeted
+		MoveSetRandomizer moveSetRand = new MoveSetRandomizer(randomizedData, logger);
 		
-		List<Card> venu = romData.allCards.getCardsWithName("Venusaur").toList();
-		if (venu.size() > 1)
-		{
-			venu.get(1).name.setTextAndDeformat("Test-a-saur");
-		}
+		List<Card> venu = randomizedData.allCards.getCardsWithName("Venusaur").toList();
+		venu.get(1).name.setTextAndDeformat("Test-a-saur");
 		
 		// Randomize Evolutions (either within current types or completely random)
 		// If randomizing evos and types but keeping lines consistent, completely 
@@ -126,7 +126,6 @@ public class Randomizer
 		nextSeed += 100;
 		
 		// Randomize movesets (full random or match to type)
-		// TODO: make an interface for the subrandomizers to use?
 		moveSetRand.randomize(nextSeed, settings);
 		nextSeed += 100;
 		
@@ -138,30 +137,31 @@ public class Randomizer
 		
 		// Randomize Decks
 		
-		test(romData.allCards.getCardsWithName("Kakuna"));
+		// test(randomizedData.allCards.getCardsWithName("Kakuna"));
 		
-		// Temp hack to add more value cards to a pack
+		// Temp hack to add more value cards to a pack. In the future this will be more formalized
 		// 11 is the most we can do
 		for (int i = 0; i < 16; i ++)
 		{
-			System.out.println(romData.rawBytes[0x1e4d4 + i]);
 			if (i % 4 == 1)
 			{
-				romData.rawBytes[0x1e4d4 + i] = 5;
+				randomizedData.rawBytes[0x1e4d4 + i] = 5;
 			}
 			else if (i % 4 == 2)
 			{
-				romData.rawBytes[0x1e4d4 + i] = 4;
+				randomizedData.rawBytes[0x1e4d4 + i] = 4;
 			}
 			else if (i % 4 == 3)
 			{
-				romData.rawBytes[0x1e4d4 + i] = 2;
+				randomizedData.rawBytes[0x1e4d4 + i] = 2;
 			}
 			else
 			{
-				romData.rawBytes[0x1e4d4 + i] = 0;
+				randomizedData.rawBytes[0x1e4d4 + i] = 0;
 			}
 		}
+		
+		return randomizedData;
 	}
 	
 	public static void test(Cards<Card> cards)

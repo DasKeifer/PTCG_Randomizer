@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Random;
 
 import constants.CardDataConstants.CardType;
-import data.PokemonCard.MoveCategories;
 
 public class Settings 
 {
@@ -91,7 +90,7 @@ public class Settings
         // applicable if not UNCHANGED
     	private boolean forceOneDamagingAttack; // If keep same number of attacks is off?
     	
-    	// Applicable always - maybe also applicable to poke powers?
+    	// Applicable always - maybe also applicable to poke powers if updating their energy types for things like energy trans
     	private MoveTypeChanges moveTypeChanges;
     	
 		public boolean isForceOneDamagingAttack() {
@@ -170,17 +169,6 @@ public class Settings
 	}
 	public void setTypeSpecificData(SpecificDataPerType specificDataPerType) {
 		this.specificDataPerType = specificDataPerType;
-	}
-	public MovesData getMoves(MoveCategories moveCategory) 
-	{
-		if (MoveCategories.ALL == moveCategory || MoveCategories.ATTACK == moveCategory)
-		{
-			return getAttacks();
-		}
-		else
-		{
-			return getPokePowers();
-		}
 	}
 	public AttacksData getAttacks() {
 		return attacks;

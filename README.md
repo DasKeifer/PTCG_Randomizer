@@ -22,7 +22,9 @@ Some notes on terminology:
 	* [X] Fully random/shuffle Poke Powers
 		* [X] Include with moves
 		* [X] Within types
-	* [ ] Shuffle within card evo tiers (more balanced randomization)
+	* [ ] Advanced move randomization options (more balanced randomization)
+		* [ ] Randomize moves within card evo tiers 
+		* [ ] Randomize attacks based on energy cost (replace a 2 energy move with another one)
  	* [ ] Randomize number of attacks for cards (need to add switch in GUI still)
 * [X] Seed & Log
 	* [X] Set seed
@@ -37,6 +39,7 @@ Some notes on terminology:
 		* [ ] Make consistent across "types" (e.g. "Rock" or "Fighting" weakness and resistance)
 		* [ ] Make consistent across Evo (done after randomizing evo lines)
 		* [ ] Allow colorless weakness?
+	* [ ] Multiple weaknesses/resistances?
 * [ ] Randomize Pokemon Types
 	* [ ] Fully random
 	* [ ] Consistent in evo lines (done after randomizing evo lines)
@@ -57,7 +60,7 @@ Some notes on terminology:
 	* [ ] User specifyable "types" - weakness/resistance pairs
 	* [ ] User specified HP & retreat cost ranges
 	* [ ] Per energy percentage based, user inputtable Pokemon types distributions
-	* [ ] Per stage percentage based, ser input-able evolutions distributions 
+	* [ ] Per stage percentage based, user input-able evolutions distributions 
 	* [ ] Per stage/evos left & per HP value percentage based, user input-able HP distributions 
 	* [ ] Per stage/evos left & per retreat cost percentage based, user input-able retreat cost distributions 
 	* [ ] Per stage/evos left percentage based, user input-able number of attacks/Poke Powers distributions
@@ -84,15 +87,16 @@ Some notes on terminology:
 		* [ ] Any card
 * [ ] Miscellaneous Tweaks
 	* [X] Make all colorless
-	* [X] Fix card name misspellings (Ninetails vs Ninetales)
-	* [ ] Adjust cards in boosters
-		* [ ] Make boosters contain eleven cards (always done now)
+	* [X] Fix card name spelling errors (Ninetails vs Ninetales)
+	* [ ] Adjust cards in booster packs
+		* [ ] Make booster packs contain eleven cards (always done now)
+		* [ ] Additional booster packs
 	* [ ] Include promo cards in booster packs?
 		* [ ] Exclude 4 legendary cards from packs
 	* [ ] Unlimited trades?
 	
 ## Credits: 
-This code was originally based on the following projects and has pulled inspiration from them:
-* [pocketcg](https://github.com/xCrystal/poketcg)
+This code heavily draws from past work by the following projects particularly pret's poketcg decompilation and annotations of the game files:
+* [pocketcg](https://github.com/pret/poketcg)
 * [TCGRandomizer](https://github.com/xCrystal/TCGRandomizer)
 * [UniversalCardGameRandomizer](https://github.com/anmart/UniversalCardGameRandomizer)
