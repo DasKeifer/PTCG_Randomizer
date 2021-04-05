@@ -217,17 +217,17 @@ public class RandomizerApp {
 		moveRandUnchangedButton.setSelected(true);
 		moveRandStrategyGoup.add(moveRandUnchangedButton);
 		
-		JRadioButton moveRandRandomButton = new JRadioButton("Random");
-		moveRandRandomButton.setActionCommand("RANDOM");
-		moveRandStrategyGoup.add(moveRandRandomButton);
-		
 		JRadioButton moveRandShuffleButton = new JRadioButton("Shuffle");
 		moveRandShuffleButton.setActionCommand("SHUFFLE");
 		moveRandStrategyGoup.add(moveRandShuffleButton);
 		moveRandStrategyPanel.setLayout(new GridLayout(0, 1, 0, 0));
 		moveRandStrategyPanel.add(moveRandUnchangedButton);
-		moveRandStrategyPanel.add(moveRandShuffleButton);
+		
+		JRadioButton moveRandRandomButton = new JRadioButton("Random");
+		moveRandRandomButton.setActionCommand("RANDOM");
+		moveRandStrategyGoup.add(moveRandRandomButton);
 		moveRandStrategyPanel.add(moveRandRandomButton);
+		moveRandStrategyPanel.add(moveRandShuffleButton);
 		
 		JRadioButton moveRandGenerateButton = new JRadioButton("Generate");
 		moveRandGenerateButton.setActionCommand("GENERATE");

@@ -368,7 +368,7 @@ public class MoveSetRandomizer {
 							getEntrysForType(cardMovesMap, pokeType), 
 							getSubsetOfMovePool(
 									originalPokesToTakeMovesFrom.getCardsOfCardType(pokeType).getAllMoves(), 
-									RandomizerMoveCategory.POKE_POWER), 
+									firstPassMoveCat), 
 							firstPassMoveCat, settings);
 				}
 			}
@@ -419,7 +419,7 @@ public class MoveSetRandomizer {
 		if (!settings.getPokePowers().isIncludeWithMoves() &&
 				(RandomizationStrategy.RANDOM == powerRandStrat || RandomizationStrategy.SHUFFLE == powerRandStrat))
 		{			
-			if (settings.getAttacks().isRandomizationWithinType())
+			if (settings.getPokePowers().isRandomizationWithinType())
 			{
 				// Do one energy type at a time
 				for (CardType pokeType : CardType.pokemonValues())
@@ -432,7 +432,7 @@ public class MoveSetRandomizer {
 									RandomizerMoveCategory.POKE_POWER)), 
 							new ArrayList<>(), // Empty list since this is separate from other move randomization
 							RandomizerMoveCategory.POKE_POWER,
-							RandomizationStrategy.SHUFFLE == settings.getAttacks().getRandomizationStrat()); // If its shuffle mode or not
+							RandomizationStrategy.SHUFFLE == powerRandStrat); // If its shuffle mode or not
 				}
 			}
 			else
@@ -443,7 +443,7 @@ public class MoveSetRandomizer {
 						new ArrayList<>(getSubsetOfMovePool(originalPokesToTakeMovesFrom.getAllMoves(), RandomizerMoveCategory.POKE_POWER)), 
 						new ArrayList<>(), // Empty list since this is separate from other move randomization
 						RandomizerMoveCategory.POKE_POWER, 
-						RandomizationStrategy.SHUFFLE == settings.getAttacks().getRandomizationStrat()); // If its shuffle mode or not
+						RandomizationStrategy.SHUFFLE == powerRandStrat); // If its shuffle mode or not
 			}
 		}
 	}
@@ -466,13 +466,14 @@ public class MoveSetRandomizer {
 	{
 		for (Move move : possibleMoves)
 		{
-			if (RandomizerMoveCategory.MOVE == moveTypeToAdd && !move.isEmpty() ||
-				RandomizerMoveCategory.POKE_POWER == moveTypeToAdd && move.isPokePower() || 
+			if ((RandomizerMoveCategory.MOVE == moveTypeToAdd && !move.isEmpty()) ||
+				(RandomizerMoveCategory.POKE_POWER == moveTypeToAdd && move.isPokePower()) || 
 				(move.isAttack() &&
 						(RandomizerMoveCategory.ATTACK == moveTypeToAdd ||
-								(RandomizerMoveCategory.DAMAGING_ATTACK == moveTypeToAdd && move.damage > 0))))
+								(RandomizerMoveCategory.DAMAGING_ATTACK == moveTypeToAdd && move.doesDamage()))))
 			{
-				if (moveSubpool.add(move) && unusedMoves != null)
+				boolean success = moveSubpool.add(move);
+				if (success && unusedMoves != null)
 				{
 					unusedMoves.add(move);
 				}

@@ -19,9 +19,10 @@ Some notes on terminology:
  	* [X] Fully random/shuffle attacks
 		* [X] Within types
 		* [X] Change type energies to card type
-	* [ ] Fully random/shuffle Poke Powers
-		* [ ] Include with moves
-		* [ ] Within types
+	* [X] Fully random/shuffle Poke Powers
+		* [X] Include with moves
+		* [X] Within types
+	* [ ] Shuffle within card evo tiers (more balanced randomization)
  	* [ ] Randomize number of attacks for cards (need to add switch in GUI still)
 * [X] Seed & Log
 	* [X] Set seed

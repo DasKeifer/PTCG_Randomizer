@@ -20,7 +20,7 @@ public class Move
 	public OneLineText name;
 	public EffectDescription description;
 	public byte damage; // TODO: non multiple of 10?
-	MoveCategory category;
+	public MoveCategory category;
 	short effectPtr; // TODO: Make enum?
 	Set<MoveEffect1> effect1;
 	Set<MoveEffect2> effect2;
@@ -60,12 +60,17 @@ public class Move
 	    {   
 			int compareVal = m1.name.getText().compareTo(m2.name.getText());
 			
-			if (compareVal != 0)
+			if (compareVal == 0)
 			{
-				compareVal = m2.damage - m1.damage;
+				compareVal = m1.getDamageString().compareTo(m2.getDamageString());
 			}
 			
-			if (compareVal != 0)
+			if (compareVal == 0)
+			{
+				compareVal = m1.getEnergyCostString(true, "").compareTo(m2.getEnergyCostString(true, ""));
+			}
+			
+			if (compareVal == 0)
 			{
 				compareVal = m2.effectPtr - m1.effectPtr;
 			}
@@ -83,17 +88,15 @@ public class Move
 	{
 		return !isEmpty() && !isPokePower();
 	}
+
+	public boolean doesDamage()
+	{
+		return !isEmpty() && !isPokePower() && MoveCategory.RESIDUAL != category;
+	}
 	
 	public boolean isPokePower()
 	{
-		for(byte cost : energyCost.values())
-		{
-			if (cost > 0)
-			{
-				return false;
-			}
-		}
-		return true;
+		return !isEmpty() && MoveCategory.POKEMON_POWER == category;
 	}
 	
 	public boolean hasEffect()
