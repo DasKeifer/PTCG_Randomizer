@@ -1,7 +1,5 @@
 Outstanding:
 Add tool tips for implemented interface items
-Rework TODO list to indicate what was done this release, what has been done and what is planned for the next major release
-update shufflize text in readme
 Reformat text
 
 

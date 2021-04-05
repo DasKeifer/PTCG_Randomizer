@@ -18,6 +18,7 @@ Major Feature List and Roadmap Key: </br>
 🔘 Present in latest major release </br>
 🟢 Added in develop to be included in next major release </br>
 🔵 Planned to be included in next major release </br>
+🟡 Candidates to be included in next major release </br>
 ```
 🟢 Create a basic friendly GUI to expand upon as features are added
 🟢 Selecting Rom input and output names/paths </br>
@@ -32,11 +33,16 @@ Major Feature List and Roadmap Key: </br>
 	🔵 Advanced move randomization options (more balanced randomization)
 	    🔵 Randomize moves within card evo tiers 
 	    🔵 Randomize attacks based on energy cost (replace a 2 energy move with another one)
- 	🔵Rand omize number of attacks for cards (need to add switch in GUI still)
+ 	🔵Randomize number of attacks for cards (need to add switch in GUI still)
 🟢 Seed & Log
     🟢 Set seed
     🟢 Log seed
     🟢 Optionally log changes
+🟡 Advance Move Tweaks
+    🟡 Update/Replace energy type specific effects (e.g. ember (Charmander), energy trans (Venusaur))
+    🟡 Update/Replace pokemon specific effects (e.g. call for family (nidoran))
+    🟡 Update/Replace boyfriends (nidoqueen) with random, same type, 3rd stage evo
+    ⚪ Randomize trainer effects with poke Powers?
 ⚪ HP, Retreat Cost 
     ⚪ Fully random/shuffle
     ⚪ Swap stats to make higher evos more powerful/higher retreat cost
@@ -73,11 +79,6 @@ Major Feature List and Roadmap Key: </br>
     ⚪ Per stage/evos left percentage based, user input-able number of attacks/Poke Powers distributions
     ⚪ Per "type" percentage based, user inputtable weakness/resistance distributions
     ⚪ Percentage based/user inputtable decks (knobs TBD)
-⚪ Advance Card Attacks/Poke Powers/Effects
-    ⚪ Randomize trainer effects with poke Powers 
-    ⚪ Update/Replace energy type specific effects (e.g. ember (Charmander), energy trans (Venusaur))
-    ⚪ Update/Replace pokemon specific effects (e.g. call for family (nidoran))
-    ⚪ Update/Replace boyfriends (nidoqueen) with random, same type, 3rd stage evo
 ⚪ "Power" Based Moves
     ⚪ Create power levels for cards, effects and damage
     ⚪ Assign moves based on card power levels
