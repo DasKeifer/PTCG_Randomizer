@@ -15,6 +15,8 @@ import java.util.Set;
 public abstract class Card
 {
 	public static final int CARD_COMMON_SIZE = 8;
+	public static final Comparator<Card> ID_SORTER = new IdSorter();
+	public static final Comparator<Card> ROM_SORTER = new RomSorter();
 	
 	// TODO encapsulate these or make public
 	public CardType type;
@@ -43,6 +45,8 @@ public abstract class Card
 		pack = toCopy.pack;
 		id = toCopy.id;
 	}
+	
+	public abstract Card copy();
 	
 	public static int addCardFromBytes(byte[] cardBytes, int startIndex, Texts idToText, Set<Short> textIdsUsed, Cards<Card> toAddTo)
 	{

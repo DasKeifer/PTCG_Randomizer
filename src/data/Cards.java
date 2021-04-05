@@ -13,16 +13,24 @@ import constants.CardDataConstants.CardType;
 
 public class Cards<T extends Card>
 {
-	private Comparator<Card> defaultSorter = new Card.IdSorter();
-	private TreeSet<T> cardSet = new TreeSet<>(defaultSorter);
+	private TreeSet<T> cardSet = new TreeSet<>(Card.ID_SORTER);
 
 	public Cards() 
 	{
-		defaultSorter = new Card.IdSorter();
-		cardSet = new TreeSet<>(defaultSorter);
+		cardSet = new TreeSet<>(Card.ID_SORTER);
 	}
 	
-	public Cards(List<T> list) 
+	public Cards<T> copy(Class<? extends T> cardClass) 
+	{
+		Cards<T> copy = new Cards<>();
+	    for(T card: cardSet)
+	    {
+	      copy.add(cardClass.cast(card.copy()));
+	    }
+	    return copy;
+	}
+	
+	private Cards(List<T> list) 
 	{
 		this();
 		cardSet.addAll(list);
@@ -63,14 +71,14 @@ public class Cards<T extends Card>
 		return new Cards<>(cardSet.stream().filter(
 				card -> cardType.equals(card.type)).collect(Collectors.toList()));
 	}
-	
+
 	public List<Move> getAllMoves()
 	{
 		Cards<PokemonCard> pokeCards = getPokemonCards();
 		List<Move> moves = new ArrayList<>();
 		for (PokemonCard card : pokeCards.iterable())
 		{
-			for (Move move : card.getAllMoves())
+			for (Move move : card.getAllMovesIncludingEmptyOnes())
 			{
 				if (!move.isEmpty())
 				{
@@ -93,7 +101,7 @@ public class Cards<T extends Card>
 
 	public List<T> toSortedList()
 	{
-		return toSortedList(defaultSorter);
+		return toSortedList(Card.ID_SORTER);
 	}
 	
 	public List<T> toSortedList(Comparator<Card> comparator)

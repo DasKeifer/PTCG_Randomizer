@@ -63,35 +63,41 @@ public class Settings
     public static class MovesData
     {
 		// Poke Move specific settings 
-    	private RandomizationStrategy movesStrat;
+    	private RandomizationStrategy randomizationStrat;
     	
+    	// applicable if not UNCHANGED
+    	private boolean randomizationWithinType; // Effects if GENERATED
+
+        public RandomizationStrategy getRandomizationStrat() {
+			return randomizationStrat;
+		}
+		public void setRandomizationStrat(RandomizationStrategy randomizationStrat) {
+			this.randomizationStrat = randomizationStrat;
+		}
+		public void setRandomizationStrat(String randomizationStratName) {
+			this.randomizationStrat = RandomizationStrategy.getByName(randomizationStratName);
+		}
+		public boolean isRandomizationWithinType() {
+			return randomizationWithinType;
+		}
+		public void setRandomizationWithinType(boolean withinType) {
+			this.randomizationWithinType = withinType;
+		}
+    }
+    
+    public static class AttacksData extends MovesData
+    {
         // applicable if not UNCHANGED
-    	private boolean movesForceOneDamaging; // If keep same number of attacks is off
-    	private boolean movesAttacksWithinType; // Effects if GENERATED
+    	private boolean forceOneDamagingAttack; // If keep same number of attacks is off?
     	
-    	// Applicable always
+    	// Applicable always - maybe also applicable to poke powers if updating their energy types for things like energy trans
     	private MoveTypeChanges moveTypeChanges;
     	
-        public RandomizationStrategy getMovesStrat() {
-			return movesStrat;
+		public boolean isForceOneDamagingAttack() {
+			return forceOneDamagingAttack;
 		}
-		public void setMovesStrat(RandomizationStrategy movesStrat) {
-			this.movesStrat = movesStrat;
-		}
-		public void setMovesStrat(String movesStratName) {
-			this.movesStrat = RandomizationStrategy.getByName(movesStratName);
-		}
-		public boolean isMovesForceOneDamaging() {
-			return movesForceOneDamaging;
-		}
-		public void setMovesForceOneDamaging(boolean movesForceOneDamaging) {
-			this.movesForceOneDamaging = movesForceOneDamaging;
-		}
-		public boolean isMovesAttacksWithinType() {
-			return movesAttacksWithinType;
-		}
-		public void setMovesAttacksWithinType(boolean movesAttacksWithinType) {
-			this.movesAttacksWithinType = movesAttacksWithinType;
+		public void setForceOneDamagingAttack(boolean forceOneDamagingAttack) {
+			this.forceOneDamagingAttack = forceOneDamagingAttack;
 		}
 		public MoveTypeChanges getMoveTypeChanges() {
 			return moveTypeChanges;
@@ -101,36 +107,15 @@ public class Settings
 		}
     }
     
-    public static class PokePowersData
+    public static class PokePowersData extends MovesData
     {
     	private boolean includeWithMoves;
-    	
-		// Poke power specific (applicable if not UNCHANGED)
-    	private RandomizationStrategy movesPokePowerStrat;
-    	
-    	// applicable if not UNCHANGED
-    	private boolean movesPowersWithinType; // Effects if GENERATED
 
 		public boolean isIncludeWithMoves() {
 			return includeWithMoves;
 		}
 		public void setIncludeWithMoves(boolean includeWithMoves) {
 			this.includeWithMoves = includeWithMoves;
-		}
-    	public RandomizationStrategy getMovesPokePowerStrat() {
-			return movesPokePowerStrat;
-		}
-		public void setMovesPokePowerStrat(RandomizationStrategy movesPokePowerStrat) {
-			this.movesPokePowerStrat = movesPokePowerStrat;
-		}
-		public void setMovesPokePowerStrat(String movesPokePowerStratName) {
-			this.movesPokePowerStrat = RandomizationStrategy.getByName(movesPokePowerStratName);
-		}
-		public boolean isMovesPowersWithinType() {
-			return movesPowersWithinType;
-		}
-		public void setMovesPowersWithinType(boolean movesPowersWithinType) {
-			this.movesPowersWithinType = movesPowersWithinType;
 		}
     }
     
@@ -140,12 +125,13 @@ public class Settings
     private boolean logDetails;
     
 	private SpecificDataPerType specificDataPerType;
-	private MovesData moves;
+	private AttacksData attacks;
 	private PokePowersData pokePowers;
 	 
 	private boolean movesRandomNumberOfAttacks;
 	
-	// TODO: Long term I want these to be randomizable
+	// Long term I want these to be randomizable/modifiable. I know for some like discarding a card 
+	// type that shouldn't be difficult but others may cause problems
 	// Think these can be removed - but may be simpler to keep for now
     // Move/Power Applicable (both use the same) (applicable if not UNCHANGED)
 	private boolean movesMatchPokeSpecific;
@@ -184,11 +170,11 @@ public class Settings
 	public void setTypeSpecificData(SpecificDataPerType specificDataPerType) {
 		this.specificDataPerType = specificDataPerType;
 	}
-	public MovesData getMoves() {
-		return moves;
+	public AttacksData getAttacks() {
+		return attacks;
 	}
-	public void setMoves(MovesData moves) {
-		this.moves = moves;
+	public void setAttacks(AttacksData attacks) {
+		this.attacks = attacks;
 	}
 	public PokePowersData getPokePowers() {
 		return pokePowers;

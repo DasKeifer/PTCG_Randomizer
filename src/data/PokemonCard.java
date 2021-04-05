@@ -72,10 +72,15 @@ public class PokemonCard extends Card
 		unknownByte2 = toCopy.unknownByte2;
 	}
 	
-	public List<Move> getAllMoves()
+	public PokemonCard copy()
+	{
+		return new PokemonCard(this);
+	}
+
+	public List<Move> getAllMovesIncludingEmptyOnes()
 	{
 		ArrayList<Move> movesList = new ArrayList<>();
-		for(Move move : moves)
+		for (Move move : moves)
 		{
 			movesList.add(new Move(move));
 		}

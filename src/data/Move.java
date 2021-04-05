@@ -1,5 +1,6 @@
 package data;
 
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,6 +14,7 @@ public class Move
 {
 	public static final int TOTAL_SIZE_IN_BYTES = 19;
 	public static final Move EMPTY_MOVE = new Move();
+	public static final Comparator<Move> BASIC_SORTER = new BasicSorter();
 	
 	EnumMap<EnergyType, Byte> energyCost;
 	public OneLineText name;
@@ -51,22 +53,50 @@ public class Move
 		unknownByte = toCopy.unknownByte;
 		animation = toCopy.animation;
 	}
+	
+	public static class BasicSorter implements Comparator<Move>
+	{
+		public int compare(Move m1, Move m2)
+	    {   
+			int compareVal = m1.name.getText().compareTo(m2.name.getText());
+			
+			if (compareVal == 0)
+			{
+				compareVal = m1.getDamageString().compareTo(m2.getDamageString());
+			}
+			
+			if (compareVal == 0)
+			{
+				compareVal = m1.getEnergyCostString(true, "").compareTo(m2.getEnergyCostString(true, ""));
+			}
+			
+			if (compareVal == 0)
+			{
+				compareVal = m2.effectPtr - m1.effectPtr;
+			}
+			
+			return compareVal;
+	    }
+	}
 
 	public boolean isEmpty()
 	{
 		return name.isEmpty();
 	}
+
+	public boolean isAttack()
+	{
+		return !isEmpty() && !isPokePower();
+	}
+
+	public boolean doesDamage()
+	{
+		return isAttack() && MoveCategory.RESIDUAL != category;
+	}
 	
 	public boolean isPokePower()
 	{
-		for(byte cost : energyCost.values())
-		{
-			if (cost > 0)
-			{
-				return false;
-			}
-		}
-		return true;
+		return !isEmpty() && MoveCategory.POKEMON_POWER == category;
 	}
 	
 	public boolean hasEffect()
@@ -116,6 +146,8 @@ public class Move
 		StringBuilder builder = new StringBuilder();
 		builder.append("Move Name: "); 
 		builder.append(name.toString());
+		builder.append("\nMove Category: "); 
+		builder.append(category);
 		builder.append("\nEnergies Required:\n\t");
 		
 		// Full energy names, separate with newline and tab
