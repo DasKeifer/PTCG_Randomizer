@@ -91,7 +91,7 @@ public class Move
 
 	public boolean doesDamage()
 	{
-		return !isEmpty() && !isPokePower() && MoveCategory.RESIDUAL != category;
+		return isAttack() && MoveCategory.RESIDUAL != category;
 	}
 	
 	public boolean isPokePower()
@@ -146,6 +146,8 @@ public class Move
 		StringBuilder builder = new StringBuilder();
 		builder.append("Move Name: "); 
 		builder.append(name.toString());
+		builder.append("\nMove Category: "); 
+		builder.append(category);
 		builder.append("\nEnergies Required:\n\t");
 		
 		// Full energy names, separate with newline and tab

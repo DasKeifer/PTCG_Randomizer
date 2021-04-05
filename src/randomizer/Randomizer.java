@@ -5,8 +5,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
+import constants.CardDataConstants.MoveCategory;
 import data.Card;
 import data.Cards;
+import data.Move;
+import data.PokemonCard;
 import rom.Texts;
 import util.Logger;
 import rom.RomData;
@@ -100,7 +103,7 @@ public class Randomizer
 		MoveSetRandomizer moveSetRand = new MoveSetRandomizer(randomizedData, logger);
 		
 		List<Card> venu = randomizedData.allCards.getCardsWithName("Venusaur").toList();
-		venu.get(1).name.setTextAndDeformat("Test-a-saur");
+		venu.get(1).name.setTextAndDeformat("Test-a-saur"); // Quick check to see if we ran and saved successfully
 		
 		// Randomize Evolutions (either within current types or completely random)
 		// If randomizing evos and types but keeping lines consistent, completely 
@@ -136,8 +139,8 @@ public class Randomizer
 		// Randomize Promos
 		
 		// Randomize Decks
-		
-		// test(randomizedData.allCards.getCardsWithName("Kakuna"));
+
+		//test(randomizedData.allCards.getCardsWithName("Mew"));
 		
 		// Temp hack to add more value cards to a pack. In the future this will be more formalized
 		// 11 is the most we can do
