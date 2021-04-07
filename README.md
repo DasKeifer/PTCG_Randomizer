@@ -71,6 +71,7 @@ Features that end with a "?" are ones that may or may not be feasible to do that
     ⚪ Random Keep same number of card categories (energies, trainers, pokes)
     ⚪ Evolution sanity
 ⚪ Advance & Customizable General Randomizations
+    ⚪ Additional knobs for forcing damaging moves
     ⚪ User specifyable "types" - weakness/resistance pairs
     ⚪ User specified HP & retreat cost ranges
     ⚪ Per energy percentage based, user inputtable Pokemon types distributions

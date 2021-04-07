@@ -5,7 +5,7 @@ re-evaluate seed distribution - only needed if one change won't affect another (
 Check for generic length of moves in functions
 Try to make generic for force number of attacks (i.e. don't assume one)
 Make error messages more informative
-Re-evalate private vs public
+Re-evalate private vs public and static
 
 
 Completed this release:
