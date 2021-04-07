@@ -1,6 +1,7 @@
 package randomizer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import randomizer.Settings.MoveTypeChanges;
 import randomizer.Settings.RandomizationStrategy;
 import rom.RomData;
 import util.Logger;
+import util.MathUtils;
 
 public class MoveSetRandomizer {
 	private RomData romData;
@@ -179,114 +181,262 @@ public class MoveSetRandomizer {
 		
 		return cardMovesMap;
 	}
-
-	public void adjustForDamagingMoves(Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap)
-	{
-		for (List<RandomizerMoveCategory> pokeMoveTypes : cardMovesMap.values())
-		{
-			boolean setDamagingAttack = false;
-			for (int moveIndex = 0; moveIndex < pokeMoveTypes.size(); moveIndex++)
-			{
-				if (RandomizerMoveCategory.ATTACK == pokeMoveTypes.get(moveIndex) || RandomizerMoveCategory.MOVE == pokeMoveTypes.get(moveIndex))
-				{
-					pokeMoveTypes.set(moveIndex, RandomizerMoveCategory.DAMAGING_ATTACK);
-					setDamagingAttack = true;
-					break;
-				}
-			}
-
-			// If it failed, call the function to handle what to reassign to a damaging move
-			if (!setDamagingAttack)
-			{
-				adjustForDamagingMovesFallback(pokeMoveTypes);
-			}
-		}
-	}
 	
-	public void adjustForDamagingMovesFallback(List<RandomizerMoveCategory> pokeMoveTypes)
-	{
-		boolean setDamagingAttack = false;
-		int moveIndex = 0;
-		for ( /*set above*/; moveIndex < pokeMoveTypes.size(); moveIndex++)
-		{
-			if (RandomizerMoveCategory.EMPTY == pokeMoveTypes.get(moveIndex))
-			{
-				pokeMoveTypes.set(moveIndex, RandomizerMoveCategory.DAMAGING_ATTACK);
-				setDamagingAttack = true;
-				break;
-			}
-		}
-		
-		// If no empty move was found, just set the last index to a damaging attack
-		// To look into: If we can only have one poke power per card, this should never happen
-		// if we can, then maybe have a way to disable this?
-		if (!setDamagingAttack)
-		{
-			pokeMoveTypes.set(moveIndex, RandomizerMoveCategory.DAMAGING_ATTACK);
-		}
-	}
-
-	/* Refactor to align with new approach when support for altering num moves per poke is added
-	public static double[] getNumMovesPercentages(Cards<PokemonCard> pokes, MoveCategories moveCategory)
-	{
-		int[] numPerCount = new int[PokemonCard.MAX_NUM_MOVES];
-		Arrays.fill(numPerCount, 0);
-		
-		for (PokemonCard card : pokes.iterable())
-		{
-			numPerCount[card.getNumMoves(moveCategory)] += 1;
-		}
-		
-		return MathUtils.convertNumbersToPercentages(numPerCount);
-	}
-	
-	public Map<CardId, Integer> getRandNumMovesPerPokemon(
-			Random rand,
+	public Map<PokemonCard, List<RandomizerMoveCategory>> getRandNumMovesPerPokemon(
+			long nextSeed,
 			Cards<PokemonCard> pokes, 
-			double[] percentWithNumMoves
+			double[] percentWithNumOverallMoves, 
+			double[] percentWithNumPokepowers,
+			boolean groupPowersAndAttacks 
 	)
 	{
-		// Plus one since 0 moves is an option
-		int numMovesPossibilities = PokemonCard.MAX_NUM_MOVES + 1;
+		getRandNumMovesPerPokemonArgCheck(percentWithNumOverallMoves, percentWithNumPokepowers);
 		
-		// Sanity check
-		if (percentWithNumMoves.length != numMovesPossibilities)
-		{
-			throw new IllegalArgumentException("Passed percentages for numbers of moves length (" + 
-						percentWithNumMoves.length + " is not the expected number of " + numMovesPossibilities);
-		}
-		
-		// For convenience/optimization
-		int numCards = pokes.count();
-		
-		// Determine how many cards will have what number of moves
-		int[] numCardsWithNumMoves = MathUtils.convertPercentageToIntValues(percentWithNumMoves, numCards);
-	
-		// Start by defaulting all to max number
-		Map<CardId, Integer> cardMovesMap = new EnumMap<>(CardId.class);
-		for (PokemonCard card : pokes.iterable())
-		{
-			cardMovesMap.put(card.id, PokemonCard.MAX_NUM_MOVES);
-		}
-		
-		CardId randCardId;
-		List<PokemonCard> pokeList = pokes.toList();
-		// We use max num moves since we default everyone to MAX NUM already, we don't need to
-		// check that case
+		// Determine how many cards will have what overall number of moves and pokepowers
+		int[] numCardsWithNumOverallMoves = MathUtils.convertPercentageToIntValues(percentWithNumOverallMoves, pokes.count());
+		int[] numCardsWithNumPokePowers = MathUtils.convertPercentageToIntValues(percentWithNumPokepowers, pokes.count());
+
+		// For each number of moves, go through and assign cards to values
+		Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap = new TreeMap<>(Card.ID_SORTER);
+		List<PokemonCard> unassignedPokes = pokes.toList();
+		Random attacksRand = new Random(nextSeed++);
+		Random powersRand = new Random(nextSeed); // ++ not needed since this is the last increment for now
 		for (int numMoves = 0; numMoves < PokemonCard.MAX_NUM_MOVES; numMoves++)
-		{
+		{			
+			// Create the default list that will be assigned for cards with this number of moves
+			List<RandomizerMoveCategory> defaultMovesSet = new ArrayList<>();
+			for (int count = 0; count < PokemonCard.MAX_NUM_MOVES; count++)
+			{
+				if (count < numMoves)
+				{
+					defaultMovesSet.add(groupPowersAndAttacks ? RandomizerMoveCategory.MOVE : RandomizerMoveCategory.ATTACK);
+				}
+				else
+				{
+					defaultMovesSet.add(RandomizerMoveCategory.EMPTY);
+				}
+			}
+			
 			// For each card that should have this number of moves
-			for (int count = 0; count < numCardsWithNumMoves[numMoves]; count++)
+			for (int cardCount = 0; cardCount < numCardsWithNumOverallMoves[numMoves]; cardCount++)
 			{
 				// Get a random card and remove it from the available pool then assign
 				// the number of moves to it
-				randCardId = pokeList.remove(rand.nextInt(pokeList.size())).id;
-				cardMovesMap.put(randCardId, numMoves);
+				List<RandomizerMoveCategory> storedMoves = cardMovesMap.put
+						(unassignedPokes.get(attacksRand.nextInt(unassignedPokes.size())), new ArrayList<>(defaultMovesSet));
+				
+				// Now see about adjusting the list for poke powers
+				getRandNumMovesPerPokemonAdjustForPokePowers(powersRand, storedMoves, numMoves, numCardsWithNumPokePowers);
 			}
 		}
 		
 		return cardMovesMap;
 	}
+
+	private void getRandNumMovesPerPokemonArgCheck(
+			double[] percentWithNumOverallMoves, 
+			double[] percentWithNumPokepowers
+	)
+	{		
+		// Plus one since 0 moves is an option
+		int numMovesPossibilities = PokemonCard.MAX_NUM_MOVES + 1;
+
+		// Check the lengths
+		if (percentWithNumOverallMoves.length != numMovesPossibilities)
+		{
+			throw new IllegalArgumentException("Passed percentages for numbers of overall moves length (" + 
+					percentWithNumOverallMoves.length + " is not the expected number of " + numMovesPossibilities);
+		}
+		if (percentWithNumPokepowers.length != numMovesPossibilities)
+		{
+			throw new IllegalArgumentException("Passed percentages for numbers of poke powers length (" + 
+					percentWithNumPokepowers.length + " is not the expected number of " + numMovesPossibilities);
+		}
+		
+		// Ensure the pokepower numbers align with the total moves
+		int movesSum = 0;
+		int pokePowerSum = 0;
+		for (int numMoves = 0; numMoves < PokemonCard.MAX_NUM_MOVES; numMoves++)
+		{			
+			movesSum += percentWithNumOverallMoves[numMoves];
+			pokePowerSum += percentWithNumPokepowers[numMoves];
+			
+			if (pokePowerSum > movesSum)
+			{
+				throw new IllegalArgumentException("Passed percentages for numbers of poke powers and number of "
+						+ "moves do not allign! The sum of all percentages up to a given number of moves must be "
+						+ "higher for the moves than for the poke powers. For " + numMoves + ", the poke powers "
+						+ " are higher at " + pokePowerSum + " than the moves at " + movesSum);
+			}
+		}
+	}
+	
+	private void getRandNumMovesPerPokemonAdjustForPokePowers(
+			Random powersRand,
+			List<RandomizerMoveCategory> moveCats,
+			int numberOfMoves,
+			int[] numCardsWithNumPokePowers)
+	{
+		// First found out how may cards are left with allowable numbers of poke powers
+		int numPossibilities = sumThroughIndex(numCardsWithNumPokePowers, numberOfMoves);
+
+		// Now select how many poke powers this card will have
+		int numPowers = 0;
+		int selected = powersRand.nextInt(numPossibilities);
+		for (/*already set*/; numPowers < numberOfMoves; numPowers++)
+		{
+			selected -= numCardsWithNumPokePowers[numPowers];
+			if (selected < 0)
+			{
+				// Decrement the count since we just assigned one
+				numCardsWithNumPokePowers[numPowers]--;
+				break;
+			}
+		}
+		
+		// Finally change them to poke powers
+		for (int pokePowerCount = 0; pokePowerCount < numPowers; pokePowerCount++)
+		{
+			moveCats.set(pokePowerCount, RandomizerMoveCategory.POKE_POWER);
+		}
+	}
+	
+	public static double[] getNumOfCategoryPercentages(Cards<PokemonCard> pokes, RandomizerMoveCategory moveCategory)
+	{
+		// Create and initialize to zero
+		int[] numPerCount = new int[PokemonCard.MAX_NUM_MOVES];
+		Arrays.fill(numPerCount, 0);
+		
+		for (PokemonCard card : pokes.iterable())
+		{
+			int numFound = 0;
+			for (Move move : card.getAllMovesIncludingEmptyOnes())
+			{
+				if ((RandomizerMoveCategory.ATTACK == moveCategory && move.isAttack()) ||
+						(RandomizerMoveCategory.POKE_POWER == moveCategory && move.isPokePower()) ||
+						(RandomizerMoveCategory.MOVE == moveCategory && !move.isEmpty()) ||
+						(RandomizerMoveCategory.DAMAGING_ATTACK == moveCategory && move.doesDamage()) ||
+						(RandomizerMoveCategory.EMPTY == moveCategory && move.isEmpty()))
+				{
+					numFound++;
+				}
+			}
+			numPerCount[numFound] += 1;
+		}
+		
+		// Convert raw numbers to percentages
+		return MathUtils.convertNumbersToPercentages(numPerCount);
+	}
+	
+	public int sumThroughIndex(int[] numbers, int lastIndex)
+	{
+		int sum = 0;
+		for (int index = 0; index < lastIndex; index++)
+		{
+			sum += numbers[index];
+		}
+		return sum;
+	}
+	
+	public int numAttacks(List<RandomizerMoveCategory> moves)
+	{
+		int occurs = 0;
+		for (RandomizerMoveCategory moveCat : moves)
+		{
+			if (RandomizerMoveCategory.ATTACK == moveCat ||
+					RandomizerMoveCategory.MOVE == moveCat ||
+					RandomizerMoveCategory.DAMAGING_ATTACK == moveCat)
+			{
+				occurs++;
+			}
+		}
+		return occurs;
+	}
+	
+	public int getIndexOfAttackNotReservedForDamaging(List<RandomizerMoveCategory> moves)
+	{
+		for (int moveIndex = 0; moveIndex < moves.size(); moveIndex++)
+		{
+			if (RandomizerMoveCategory.ATTACK == moves.get(moveIndex) ||
+					RandomizerMoveCategory.MOVE == moves.get(moveIndex))
+			{
+				return moveIndex;
+			}
+		}
+		
+		return -1;
+	}
+	
+	public void adjustForDamagingMoves(long seed, Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap)
+	{
+		// In the future, only if the setting is set
+		Random rand = new Random(seed);
+		List<PokemonCard> donorPokes = cardMovesMap.entrySet().stream().filter(map -> numAttacks(map.getValue()) > 1)
+				.map(Entry::getKey).collect(Collectors.toList());
+		
+		// Go through each poke and make sure we set the damaging attack
+		for (List<RandomizerMoveCategory> pokeMoveTypes : cardMovesMap.values())
+		{
+			// If they already have a damaging attack we are good
+			if (pokeMoveTypes.contains(RandomizerMoveCategory.DAMAGING_ATTACK))
+			{
+				continue;
+			}
+			
+			// if they have an attack or move then we can just replace it
+			int indexFound = getIndexOfAttackNotReservedForDamaging(pokeMoveTypes);
+			
+			if (indexFound >= 0)
+			{
+				pokeMoveTypes.set(indexFound, RandomizerMoveCategory.DAMAGING_ATTACK);
+			}
+			else
+			{
+				// If it failed, call the function to handle what to reassign to a damaging move
+				adjustForDamagingMovesNoAttacks(pokeMoveTypes, rand, donorPokes, cardMovesMap);
+			}
+		}
+	}
+	
+	public void adjustForDamagingMovesNoAttacks(
+			List<RandomizerMoveCategory> pokeMoveTypes, 
+			Random rand, 
+			List<PokemonCard> donorPokes, 
+			Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap)
+	{
+		// In the future add more options on how to handle these cases
+		// If it has no moves, force one
+		if (!pokeMoveTypes.contains(RandomizerMoveCategory.POKE_POWER)) 
+		{
+			pokeMoveTypes.set(0, RandomizerMoveCategory.DAMAGING_ATTACK);
+		}
+		// at least one one poke power
+		else
+		{
+			// Check if we have a donor poke to swap a move with
+			if (!donorPokes.isEmpty())
+			{
+				int randIndex = rand.nextInt(donorPokes.size());
+				List<RandomizerMoveCategory> donorPokeMoves = cardMovesMap.get(donorPokes.get(randIndex));
+				int moveIndex = getIndexOfAttackNotReservedForDamaging(pokeMoveTypes);
+				if (moveIndex >= 0)
+				{
+					donorPokeMoves.set(moveIndex, RandomizerMoveCategory.POKE_POWER);
+					donorPokes.remove(randIndex);
+				}
+				// else error!
+			}
+			
+			// regardless, set the pokepower to a damaging attack
+			pokeMoveTypes.set(pokeMoveTypes.indexOf(RandomizerMoveCategory.POKE_POWER), RandomizerMoveCategory.DAMAGING_ATTACK);
+			
+		}
+	}
+
+	/* Refactor to align with new approach when support for altering num moves per poke is added
+
+	
+
 
 	public Map<CardId, Integer> getRandNumMovesPerPokemonByType(
 			long seed,
@@ -323,7 +473,7 @@ public class MoveSetRandomizer {
 	{		
 		// Get the current pokemon to move categories for each move map (read from ROM for now - in future add more options). 
 		Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap = getMoveTypesPerPokemon(pokes, settings.getPokePowers().isIncludeWithMoves());
-		nextSeed += 20; // Reserve seed space for when we add randomization to this
+		nextSeed += 10; // Reserve seed space for when we add randomization to this
 		
 		// Perform a first pass through the moves assigning at least the attacks (both forced damaging and others) and possible
 		// the pokepowers if set that way
@@ -353,8 +503,9 @@ public class MoveSetRandomizer {
 			// Adjust for damaging moves if required
 			if (settings.getAttacks().isForceOneDamagingAttack())
 			{
-				adjustForDamagingMoves(cardMovesMap);
+				adjustForDamagingMoves(nextSeed, cardMovesMap);
 			}
+			nextSeed += 10; // Leave some room for additions
 			
 			// Determine what we will assign for the first pass
 			RandomizerMoveCategory firstPassMoveCat = 
@@ -372,13 +523,13 @@ public class MoveSetRandomizer {
 									originalPokesToTakeMovesFrom.getCardsOfCardType(pokeType).getAllMoves(), 
 									firstPassMoveCat), 
 							firstPassMoveCat, settings);
-					nextSeed += 3; // helper uses two seeds - leave one for expansion
+					nextSeed += 3; // helper uses two seeds - leave one for expansion, 24 total
 				}
 			}
 			else
 			{
 				firstPassMoveAssignmentHelper(nextSeed, cardMovesMap, originalPokesToTakeMovesFrom.getAllMoves(), firstPassMoveCat, settings);
-				// nextSeed += 3 * CardType.pokemonValues().size(); not needed at the moment
+				// nextSeed += 3 * CardType.pokemonValues().size(); not needed at the moment - 24 total
 			}
 		}
 	}

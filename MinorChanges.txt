@@ -1,6 +1,11 @@
 Outstanding:
 Add tool tips for implemented interface items
 Reformat text
+re-evaluate seed distribution - only needed if one change won't affect another (i.e. a different move pool)
+Check for generic length of moves in functions
+Try to make generic for force number of attacks (i.e. don't assume one)
+Make error messages more informative
+Re-evalate private vs public
 
 
 Completed this release:
