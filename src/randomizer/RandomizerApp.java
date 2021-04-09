@@ -29,6 +29,8 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 public class RandomizerApp {
 
@@ -175,12 +177,32 @@ public class RandomizerApp {
 		generalRandPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "General", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		generalRandPanel.setLayout(new GridLayout(0, 1, 0, 0));
 		
+		
 		generalRandKeepPokeSpecMovesBox = new JCheckBox("Keep Poke Specific Moves with Poke");
+		generalRandKeepTypeSpecMovesBox = new JCheckBox("Keep Type Specific Moves in Type");
+		generalRandNumMovesBox = new JCheckBox("Random Num of Moves");
+		JButton generalRandNumMovesButton = new JButton("Details");
+		
+		JRadioButton moveRandUnchangedButton = new JRadioButton("Unchanged");
+		JRadioButton moveRandShuffleButton = new JRadioButton("Shuffle");
+		JRadioButton moveRandRandomButton = new JRadioButton("Random");
+		JRadioButton moveRandGenerateButton = new JRadioButton("Generate");
+		moveRandWithinTypeBox = new JCheckBox("Within Type");
+		moveRandForceDamageBox = new JCheckBox("Force One Damaging");
+		JRadioButton moveRandTypeUnchangedButton = new JRadioButton("Unchanged");
+		JRadioButton moveRandTypeMatchCardTypeButton = new JRadioButton("Match Card Type");
+		JRadioButton moveRandTypeAllColorlessButton = new JRadioButton("All Colorless");
+		
+		pokePowerIncludeWithMovesBox = new JCheckBox("Include with Attacks");
+		JRadioButton pokePowerUnchangedButton = new JRadioButton("Unchanged");
+		JRadioButton pokePowerShuffleButton = new JRadioButton("Shuffle");
+		JRadioButton pokePowerRandomButton = new JRadioButton("Random");
+		
+		
 		generalRandKeepPokeSpecMovesBox.setToolTipText("Some moves are specific to a specific pokemon like Call for Family. Checking this will keep those types of moves on the same pokemon. Note that if there are multiple versions of the card it, it can go with any of them");
 		generalRandPanel.add(generalRandKeepPokeSpecMovesBox);
 		generalRandKeepPokeSpecMovesBox.setEnabled(false);
 		
-		generalRandKeepTypeSpecMovesBox = new JCheckBox("Keep Type Specific Moves in Type");
 		generalRandKeepTypeSpecMovesBox.setToolTipText("Some moves are Energy type specific (such as ember requiring a Fire Energy discard). This will keep it so they will only be allowed for the Energy type that matches their effect");
 		generalRandKeepTypeSpecMovesBox.setEnabled(false);
 		generalRandPanel.add(generalRandKeepTypeSpecMovesBox);
@@ -189,14 +211,12 @@ public class RandomizerApp {
 		generalRandPanel.add(generalRandNumMovesPanel);
 		generalRandNumMovesPanel.setLayout(new GridLayout(0, 2, 0, 0));
 		
-		generalRandNumMovesBox = new JCheckBox("Modify Num of Moves");
 		generalRandNumMovesPanel.add(generalRandNumMovesBox);
 		generalRandNumMovesBox.setEnabled(false);
 		
 		JPanel generalRandNumMovesButtonPanel = new JPanel();
 		generalRandNumMovesPanel.add(generalRandNumMovesButtonPanel);
 		
-		JButton generalRandNumMovesButton = new JButton("Details");
 		generalRandNumMovesButtonPanel.add(generalRandNumMovesButton);
 		generalRandNumMovesButton.setEnabled(false);
 		
@@ -212,24 +232,33 @@ public class RandomizerApp {
 		JPanel moveRandStrategyPanel = new JPanel();
 		moveRandPanel.add(moveRandStrategyPanel);
 		
-		JRadioButton moveRandUnchangedButton = new JRadioButton("Unchanged");
+		moveRandUnchangedButton.addItemListener(
+				event ->
+				{
+				    if (event.getStateChange() == ItemEvent.SELECTED)
+				    {
+				    	generalRandNumMovesBox.setEnabled(false);
+				    }
+				    else if (event.getStateChange() == ItemEvent.DESELECTED && 
+				    		(pokePowerIncludeWithMovesBox.isSelected() || !pokePowerUnchangedButton.isSelected()))
+			    	{
+				    	generalRandNumMovesBox.setEnabled(true);
+			    	}
+				});
 		moveRandUnchangedButton.setActionCommand("UNCHANGED");
 		moveRandUnchangedButton.setSelected(true);
 		moveRandStrategyGoup.add(moveRandUnchangedButton);
 		
-		JRadioButton moveRandShuffleButton = new JRadioButton("Shuffle");
 		moveRandShuffleButton.setActionCommand("SHUFFLE");
 		moveRandStrategyGoup.add(moveRandShuffleButton);
 		moveRandStrategyPanel.setLayout(new GridLayout(0, 1, 0, 0));
 		moveRandStrategyPanel.add(moveRandUnchangedButton);
-		
-		JRadioButton moveRandRandomButton = new JRadioButton("Random");
+
 		moveRandRandomButton.setActionCommand("RANDOM");
 		moveRandStrategyGoup.add(moveRandRandomButton);
 		moveRandStrategyPanel.add(moveRandRandomButton);
 		moveRandStrategyPanel.add(moveRandShuffleButton);
-		
-		JRadioButton moveRandGenerateButton = new JRadioButton("Generate");
+
 		moveRandGenerateButton.setActionCommand("GENERATE");
 		moveRandGenerateButton.setEnabled(false);
 		moveRandStrategyPanel.add(moveRandGenerateButton);
@@ -238,10 +267,8 @@ public class RandomizerApp {
 		moveRandPanel.add(moveRandOptionsPanel);
 		moveRandOptionsPanel.setLayout(new GridLayout(0, 1, 0, 0));
 		
-		moveRandWithinTypeBox = new JCheckBox("Within Type");
 		moveRandOptionsPanel.add(moveRandWithinTypeBox);
-		
-		moveRandForceDamageBox = new JCheckBox("Force One Damaging");
+
 		moveRandOptionsPanel.add(moveRandForceDamageBox);
 		
 		JPanel moveRandTypePanel = new JPanel();
@@ -249,18 +276,15 @@ public class RandomizerApp {
 		moveRandPanel.add(moveRandTypePanel);
 		moveRandTypePanel.setLayout(new GridLayout(0, 1, 0, 0));
 		
-		JRadioButton moveRandTypeUnchangedButton = new JRadioButton("Unchanged");
 		moveRandTypeUnchangedButton.setActionCommand("UNCHANGED");
 		moveRandTypeUnchangedButton.setSelected(true);
 		moveRandTypeGroup.add(moveRandTypeUnchangedButton);
 		moveRandTypePanel.add(moveRandTypeUnchangedButton);
-		
-		JRadioButton moveRandTypeMatchCardTypeButton = new JRadioButton("Match Card Type");
+
 		moveRandTypeMatchCardTypeButton.setActionCommand("MATCH_CARD_TYPE");
 		moveRandTypeGroup.add(moveRandTypeMatchCardTypeButton);
 		moveRandTypePanel.add(moveRandTypeMatchCardTypeButton);
 		
-		JRadioButton moveRandTypeAllColorlessButton = new JRadioButton("All Colorless");
 		moveRandTypeAllColorlessButton.setActionCommand("ALL_COLORLESS");
 		moveRandTypeGroup.add(moveRandTypeAllColorlessButton);
 		moveRandTypePanel.add(moveRandTypeAllColorlessButton);
@@ -273,19 +297,34 @@ public class RandomizerApp {
 		JPanel pokePowerStrategyPanel = new JPanel();
 		pokePowerPanel.add(pokePowerStrategyPanel);
 		pokePowerStrategyPanel.setLayout(new GridLayout(0, 1, 0, 0));
-		
-		JRadioButton pokePowerUnchangedButton = new JRadioButton("Unchanged");
+
+		pokePowerUnchangedButton.addItemListener(
+				event ->
+				{
+					// Only need to change if this is separate from attack randomization
+					if (!pokePowerIncludeWithMovesBox.isSelected())
+					{
+						// In the future we may want to allow partial moveset randomization
+					    if (event.getStateChange() == ItemEvent.SELECTED)
+					    {
+					    	generalRandNumMovesBox.setEnabled(false);
+					    }
+					    // If both this and the attacks are not unchanged, enable move number randomization
+					    else if (event.getStateChange() == ItemEvent.DESELECTED && !moveRandUnchangedButton.isSelected())
+				    	{
+					    	generalRandNumMovesBox.setEnabled(true);
+				    	}
+					}
+				});
 		pokePowerUnchangedButton.setSelected(true);
 		pokePowerUnchangedButton.setEnabled(false);
 		pokePowerUnchangedButton.setActionCommand("UNCHANGED");
 		pokePowersStrategyGroup.add(pokePowerUnchangedButton);
-		
-		JRadioButton pokePowerShuffleButton = new JRadioButton("Shuffle");
+
 		pokePowerShuffleButton.setEnabled(false);
 		pokePowerShuffleButton.setActionCommand("SHUFFLE");
 		pokePowersStrategyGroup.add(pokePowerShuffleButton);
-		
-		JRadioButton pokePowerRandomButton = new JRadioButton("Random");
+
 		pokePowerRandomButton.setEnabled(false);
 		pokePowerRandomButton.setActionCommand("RANDOM");
 		pokePowersStrategyGroup.add(pokePowerRandomButton);
@@ -298,7 +337,6 @@ public class RandomizerApp {
 		powerWithinTypeBox.setEnabled(false);
 		pokePowerOptionsPanel.add(powerWithinTypeBox);
 		
-		pokePowerIncludeWithMovesBox = new JCheckBox("Include with Attacks");
 		pokePowerIncludeWithMovesBox.addItemListener(
 				event ->
 				{
@@ -308,6 +346,10 @@ public class RandomizerApp {
 				    		pokePowerShuffleButton.setEnabled(false);
 				    		pokePowerRandomButton.setEnabled(false);
 				    		powerWithinTypeBox.setEnabled(false);
+
+				    		// Set it based only on the attacks
+				    		generalRandNumMovesBox.setEnabled(!moveRandUnchangedButton.isSelected());
+				    		
 				    }
 				    else if (event.getStateChange() == ItemEvent.DESELECTED)
 			    	{
@@ -315,6 +357,10 @@ public class RandomizerApp {
 			    		pokePowerShuffleButton.setEnabled(true);
 			    		pokePowerRandomButton.setEnabled(true);
 			    		powerWithinTypeBox.setEnabled(true);
+
+			    		// Set it based off of if both the attacks and the poke powers are not unchanged
+			    		generalRandNumMovesBox.setEnabled(
+			    				!moveRandUnchangedButton.isSelected() && !pokePowerUnchangedButton.isSelected());
 			    	}
 				});
 		pokePowerIncludeWithMovesBox.setSelected(true);

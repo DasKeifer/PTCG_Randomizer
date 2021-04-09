@@ -17,12 +17,14 @@ public class MathUtils
 		// First go through and separate the decimal portions from the numbers and determine
 		// the sum of all the integer portions
 		int sum = 0;
+		double adjustedForSize;
 		for (int percentageIndex = 0; percentageIndex < percentages.length; percentageIndex++)
 		{
-			intPercentages[percentageIndex] = (int) Math.floor(percentages[percentageIndex]);
-			intRemainders[percentageIndex] = percentages[percentageIndex] - intPercentages[percentageIndex];
+			adjustedForSize = percentages[percentageIndex] * size;
+			intPercentages[percentageIndex] = (int) Math.floor(adjustedForSize);
+			intRemainders[percentageIndex] = adjustedForSize - intPercentages[percentageIndex];
 			sum += intPercentages[percentageIndex];
-		}
+		}		
 		
 		// ensure we haven't already overshot
 		if (sum > size)

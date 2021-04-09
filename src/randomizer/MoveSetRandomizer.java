@@ -57,7 +57,10 @@ public class MoveSetRandomizer {
 				RandomizationStrategy.RANDOM == powerRandStrat || RandomizationStrategy.SHUFFLE == powerRandStrat)
 		{
 			changedMoves = true;
-			shuffleOrRandomizePokemonMoves(nextSeed, pokes, settings);
+			Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap = getMoveTypesPerPokemon(nextSeed, pokes, settings);
+			nextSeed += 10; // Reserve seed space for when we add randomization to this
+
+			shuffleOrRandomizePokemonMoves(nextSeed, cardMovesMap, settings);
 		}
 		// nextSeed += 80; not needed currently as this is the last step in randomization here
 		
@@ -149,8 +152,31 @@ public class MoveSetRandomizer {
 		}
 	}
 
-	/******************** Determine Number of Moves ************************************/
-	public static Map<PokemonCard, List<RandomizerMoveCategory>> getMoveTypesPerPokemon(Cards<PokemonCard> pokes, boolean groupPowersAndAttacks)
+	/***************** Determine Number an categories of Moves ****************************/
+	public Map<PokemonCard, List<RandomizerMoveCategory>> getMoveTypesPerPokemon(
+			long nextSeed, 
+			Cards<PokemonCard> pokes,
+			Settings settings)
+	{
+		Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap;
+		if (settings.isMovesRandomNumberOfAttacks())
+		{
+			// In the future we will have more options for how to distribute these
+			double[] percentWithNumOverallMoves = getNumOfCategoryPercentages(pokes, RandomizerMoveCategory.MOVE);
+			double[] percentWithNumPokepowers = getNumOfCategoryPercentages(pokes, RandomizerMoveCategory.POKE_POWER);
+			cardMovesMap = getRandMoveTypesPerPoke(
+					nextSeed, pokes, percentWithNumOverallMoves, 
+					percentWithNumPokepowers, settings.getPokePowers().isIncludeWithMoves());
+		}
+		else
+		{
+			// Get the current pokemon to move categories for each move map (read from ROM for now - in future add more options). 
+			cardMovesMap = getRomsMoveTypesPerPokemon(pokes, settings.getPokePowers().isIncludeWithMoves());
+		}
+		return cardMovesMap;
+	}
+	
+	public static Map<PokemonCard, List<RandomizerMoveCategory>> getRomsMoveTypesPerPokemon(Cards<PokemonCard> pokes, boolean groupPowersAndAttacks)
 	{
 		Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap = new TreeMap<>(Card.ID_SORTER);
 		for (PokemonCard card : pokes.iterable())
@@ -181,8 +207,38 @@ public class MoveSetRandomizer {
 		
 		return cardMovesMap;
 	}
+
+	public static double[] getNumOfCategoryPercentages(Cards<PokemonCard> pokes, RandomizerMoveCategory moveCategory)
+	{
+		// Create and initialize to zero
+		// +1 since 0 is a valid option
+		int[] numPerCount = new int[PokemonCard.MAX_NUM_MOVES + 1];
+		Arrays.fill(numPerCount, 0);
+		
+		for (PokemonCard card : pokes.iterable())
+		{
+			int numFound = 0;
+			for (Move move : card.getAllMovesIncludingEmptyOnes())
+			{
+				if ((RandomizerMoveCategory.ATTACK == moveCategory && move.isAttack()) ||
+						(RandomizerMoveCategory.POKE_POWER == moveCategory && move.isPokePower()) ||
+						(RandomizerMoveCategory.MOVE == moveCategory && !move.isEmpty()) ||
+						(RandomizerMoveCategory.DAMAGING_ATTACK == moveCategory && move.doesDamage()) ||
+						(RandomizerMoveCategory.EMPTY == moveCategory && move.isEmpty()))
+				{
+					numFound++;
+				}
+			}
+			numPerCount[numFound] += 1;
+		}
+		
+		// Convert raw numbers to percentages
+		return MathUtils.convertNumbersToPercentages(numPerCount);
+	}
 	
-	public Map<PokemonCard, List<RandomizerMoveCategory>> getRandNumMovesPerPokemon(
+	// TODO isn't quite working right - too many 1 attack pokes. Check the logic out
+	// Seems like the ones that were 1 attack pokes still are 1 attack pokes
+	public static Map<PokemonCard, List<RandomizerMoveCategory>> getRandMoveTypesPerPoke(
 			long nextSeed,
 			Cards<PokemonCard> pokes, 
 			double[] percentWithNumOverallMoves, 
@@ -190,7 +246,7 @@ public class MoveSetRandomizer {
 			boolean groupPowersAndAttacks 
 	)
 	{
-		getRandNumMovesPerPokemonArgCheck(percentWithNumOverallMoves, percentWithNumPokepowers);
+		getRandMoveTypesPerPokeArgCheck(percentWithNumOverallMoves, percentWithNumPokepowers);
 		
 		// Determine how many cards will have what overall number of moves and pokepowers
 		int[] numCardsWithNumOverallMoves = MathUtils.convertPercentageToIntValues(percentWithNumOverallMoves, pokes.count());
@@ -201,39 +257,31 @@ public class MoveSetRandomizer {
 		List<PokemonCard> unassignedPokes = pokes.toList();
 		Random attacksRand = new Random(nextSeed++);
 		Random powersRand = new Random(nextSeed); // ++ not needed since this is the last increment for now
-		for (int numMoves = 0; numMoves < PokemonCard.MAX_NUM_MOVES; numMoves++)
+		for (int numMoves = 0; numMoves <= PokemonCard.MAX_NUM_MOVES; numMoves++)
 		{			
 			// Create the default list that will be assigned for cards with this number of moves
-			List<RandomizerMoveCategory> defaultMovesSet = new ArrayList<>();
-			for (int count = 0; count < PokemonCard.MAX_NUM_MOVES; count++)
-			{
-				if (count < numMoves)
-				{
-					defaultMovesSet.add(groupPowersAndAttacks ? RandomizerMoveCategory.MOVE : RandomizerMoveCategory.ATTACK);
-				}
-				else
-				{
-					defaultMovesSet.add(RandomizerMoveCategory.EMPTY);
-				}
-			}
+			List<RandomizerMoveCategory> defaultMovesSet = getRandMoveTypesPerPokeCreateMovelist(numMoves, groupPowersAndAttacks);
 			
 			// For each card that should have this number of moves
 			for (int cardCount = 0; cardCount < numCardsWithNumOverallMoves[numMoves]; cardCount++)
 			{
 				// Get a random card and remove it from the available pool then assign
 				// the number of moves to it
-				List<RandomizerMoveCategory> storedMoves = cardMovesMap.put
-						(unassignedPokes.get(attacksRand.nextInt(unassignedPokes.size())), new ArrayList<>(defaultMovesSet));
+				List<RandomizerMoveCategory> storedMoves = new ArrayList<>(defaultMovesSet);
+				cardMovesMap.put(unassignedPokes.remove(attacksRand.nextInt(unassignedPokes.size())), storedMoves);
 				
 				// Now see about adjusting the list for poke powers
-				getRandNumMovesPerPokemonAdjustForPokePowers(powersRand, storedMoves, numMoves, numCardsWithNumPokePowers);
+				if (!groupPowersAndAttacks)
+				{
+					getRandMoveTypesPerPokeAdjustForPokePowers(powersRand, storedMoves, numMoves, numCardsWithNumPokePowers);
+				}
 			}
 		}
 		
 		return cardMovesMap;
 	}
-
-	private void getRandNumMovesPerPokemonArgCheck(
+	
+	private static void getRandMoveTypesPerPokeArgCheck(
 			double[] percentWithNumOverallMoves, 
 			double[] percentWithNumPokepowers
 	)
@@ -256,22 +304,22 @@ public class MoveSetRandomizer {
 		// Ensure the pokepower numbers align with the total moves
 		int movesSum = 0;
 		int pokePowerSum = 0;
-		for (int numMoves = 0; numMoves < PokemonCard.MAX_NUM_MOVES; numMoves++)
+		for (int numMoves = 0; numMoves <= PokemonCard.MAX_NUM_MOVES; numMoves++)
 		{			
 			movesSum += percentWithNumOverallMoves[numMoves];
 			pokePowerSum += percentWithNumPokepowers[numMoves];
 			
-			if (pokePowerSum > movesSum)
+			if (movesSum > pokePowerSum)
 			{
 				throw new IllegalArgumentException("Passed percentages for numbers of poke powers and number of "
-						+ "moves do not allign! The sum of all percentages up to a given number of moves must be "
-						+ "higher for the moves than for the poke powers. For " + numMoves + ", the poke powers "
-						+ " are higher at " + pokePowerSum + " than the moves at " + movesSum);
+						+ "moves do not allign! The sum of all percentages up to a given number of pokepowers must be "
+						+ "higher for the moves than for the moves. For " + numMoves + ", the poke powers "
+						+ "are lower at " + pokePowerSum + " than the moves at " + movesSum);
 			}
 		}
 	}
-	
-	private void getRandNumMovesPerPokemonAdjustForPokePowers(
+
+	private static void getRandMoveTypesPerPokeAdjustForPokePowers(
 			Random powersRand,
 			List<RandomizerMoveCategory> moveCats,
 			int numberOfMoves,
@@ -301,73 +349,27 @@ public class MoveSetRandomizer {
 		}
 	}
 	
-	public static double[] getNumOfCategoryPercentages(Cards<PokemonCard> pokes, RandomizerMoveCategory moveCategory)
+	private static List<RandomizerMoveCategory> getRandMoveTypesPerPokeCreateMovelist(
+			int numMovesToAdd,
+			boolean groupPowersAndAttacks
+	)
 	{
-		// Create and initialize to zero
-		int[] numPerCount = new int[PokemonCard.MAX_NUM_MOVES];
-		Arrays.fill(numPerCount, 0);
-		
-		for (PokemonCard card : pokes.iterable())
+		List<RandomizerMoveCategory> defaultMovesSet = new ArrayList<>();
+		for (int count = 0; count < PokemonCard.MAX_NUM_MOVES; count++)
 		{
-			int numFound = 0;
-			for (Move move : card.getAllMovesIncludingEmptyOnes())
+			if (count < numMovesToAdd)
 			{
-				if ((RandomizerMoveCategory.ATTACK == moveCategory && move.isAttack()) ||
-						(RandomizerMoveCategory.POKE_POWER == moveCategory && move.isPokePower()) ||
-						(RandomizerMoveCategory.MOVE == moveCategory && !move.isEmpty()) ||
-						(RandomizerMoveCategory.DAMAGING_ATTACK == moveCategory && move.doesDamage()) ||
-						(RandomizerMoveCategory.EMPTY == moveCategory && move.isEmpty()))
-				{
-					numFound++;
-				}
+				defaultMovesSet.add(groupPowersAndAttacks ? RandomizerMoveCategory.MOVE : RandomizerMoveCategory.ATTACK);
 			}
-			numPerCount[numFound] += 1;
-		}
-		
-		// Convert raw numbers to percentages
-		return MathUtils.convertNumbersToPercentages(numPerCount);
-	}
-	
-	public int sumThroughIndex(int[] numbers, int lastIndex)
-	{
-		int sum = 0;
-		for (int index = 0; index < lastIndex; index++)
-		{
-			sum += numbers[index];
-		}
-		return sum;
-	}
-	
-	public int numAttacks(List<RandomizerMoveCategory> moves)
-	{
-		int occurs = 0;
-		for (RandomizerMoveCategory moveCat : moves)
-		{
-			if (RandomizerMoveCategory.ATTACK == moveCat ||
-					RandomizerMoveCategory.MOVE == moveCat ||
-					RandomizerMoveCategory.DAMAGING_ATTACK == moveCat)
+			else
 			{
-				occurs++;
+				defaultMovesSet.add(RandomizerMoveCategory.EMPTY);
 			}
 		}
-		return occurs;
+		return defaultMovesSet;
 	}
 	
-	public int getIndexOfAttackNotReservedForDamaging(List<RandomizerMoveCategory> moves)
-	{
-		for (int moveIndex = 0; moveIndex < moves.size(); moveIndex++)
-		{
-			if (RandomizerMoveCategory.ATTACK == moves.get(moveIndex) ||
-					RandomizerMoveCategory.MOVE == moves.get(moveIndex))
-			{
-				return moveIndex;
-			}
-		}
-		
-		return -1;
-	}
-	
-	public void adjustForDamagingMoves(long seed, Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap)
+	public static void adjustForDamagingMoves(long seed, Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap)
 	{
 		// In the future, only if the setting is set
 		Random rand = new Random(seed);
@@ -397,8 +399,8 @@ public class MoveSetRandomizer {
 			}
 		}
 	}
-	
-	public void adjustForDamagingMovesNoAttacks(
+
+	private static void adjustForDamagingMovesNoAttacks(
 			List<RandomizerMoveCategory> pokeMoveTypes, 
 			Random rand, 
 			List<PokemonCard> donorPokes, 
@@ -433,53 +435,58 @@ public class MoveSetRandomizer {
 		}
 	}
 
-	/* Refactor to align with new approach when support for altering num moves per poke is added
-
-	
-
-
-	public Map<CardId, Integer> getRandNumMovesPerPokemonByType(
-			long seed,
-			Cards<PokemonCard> pokes, 
-			Map<CardType, double[]> percentWithNumMovesByType
-	)
+	// Helper functions
+	private static int sumThroughIndex(int[] numbers, int lastIndex)
 	{
-		Map<CardId, Integer> numMovesPerPoke = new EnumMap<>(CardId.class);
-
-		// Create and seed random generator
-		Random rand = new Random(seed);
-		
-		// Do one energy type at a time
-		for (CardType pokeType : CardType.pokemonValues())
-		{				
-			// Determine the number of moves per pokemon for this type
-			numMovesPerPoke.putAll(
-					getRandNumMovesPerPokemon(
-							rand,
-							pokes.getCardsOfCardType(pokeType), 
-							percentWithNumMovesByType.get(pokeType)));
-		}	
-		
-		return numMovesPerPoke;
+		int sum = 0;
+		for (int index = 0; index < lastIndex; index++)
+		{
+			sum += numbers[index];
+		}
+		return sum;
 	}
-	*/
+	
+	private static int numAttacks(List<RandomizerMoveCategory> moves)
+	{
+		int occurs = 0;
+		for (RandomizerMoveCategory moveCat : moves)
+		{
+			if (RandomizerMoveCategory.ATTACK == moveCat ||
+					RandomizerMoveCategory.MOVE == moveCat ||
+					RandomizerMoveCategory.DAMAGING_ATTACK == moveCat)
+			{
+				occurs++;
+			}
+		}
+		return occurs;
+	}
+	
+	private static int getIndexOfAttackNotReservedForDamaging(List<RandomizerMoveCategory> moves)
+	{
+		for (int moveIndex = 0; moveIndex < moves.size(); moveIndex++)
+		{
+			if (RandomizerMoveCategory.ATTACK == moves.get(moveIndex) ||
+					RandomizerMoveCategory.MOVE == moves.get(moveIndex))
+			{
+				return moveIndex;
+			}
+		}
+		
+		return -1;
+	}
 
-	/******************** Generate Movesets ************************************/
+	/************************** Generate Movesets ****************************************/
 	public void shuffleOrRandomizePokemonMoves(
 			long nextSeed,
-			Cards<PokemonCard> pokes,
+			Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap,
 			Settings settings
 	)
-	{		
-		// Get the current pokemon to move categories for each move map (read from ROM for now - in future add more options). 
-		Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap = getMoveTypesPerPokemon(pokes, settings.getPokePowers().isIncludeWithMoves());
-		nextSeed += 10; // Reserve seed space for when we add randomization to this
-		
+	{				
 		// Perform a first pass through the moves assigning at least the attacks (both forced damaging and others) and possible
 		// the pokepowers if set that way
 		firstPassMoveAssignment(nextSeed, cardMovesMap, pokeToGetAttacksFrom, settings);
 		nextSeed += 30;
-		
+
 		// Do the second pass for poke powers if they were not handled in the first pass
 		secondPassMoveAssignment(nextSeed, cardMovesMap, pokeToGetAttacksFrom, settings);
 		// Not needed now since this is the last one currently
@@ -492,7 +499,7 @@ public class MoveSetRandomizer {
 	public void firstPassMoveAssignment(
 			long nextSeed, 
 			Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap,
-			Cards<PokemonCard> originalPokesToTakeMovesFrom,
+			Cards<PokemonCard> pokesToGetMovesFrom,
 			Settings settings
 	)
 	{
@@ -520,7 +527,7 @@ public class MoveSetRandomizer {
 					firstPassMoveAssignmentHelper(nextSeed, 
 							getEntrysForType(cardMovesMap, pokeType), 
 							getSubsetOfMovePool(
-									originalPokesToTakeMovesFrom.getCardsOfCardType(pokeType).getAllMoves(), 
+									pokesToGetMovesFrom.getCardsOfCardType(pokeType).getAllMoves(), 
 									firstPassMoveCat), 
 							firstPassMoveCat, settings);
 					nextSeed += 3; // helper uses two seeds - leave one for expansion, 24 total
@@ -528,7 +535,7 @@ public class MoveSetRandomizer {
 			}
 			else
 			{
-				firstPassMoveAssignmentHelper(nextSeed, cardMovesMap, originalPokesToTakeMovesFrom.getAllMoves(), firstPassMoveCat, settings);
+				firstPassMoveAssignmentHelper(nextSeed, cardMovesMap, pokesToGetMovesFrom.getAllMoves(), firstPassMoveCat, settings);
 				// nextSeed += 3 * CardType.pokemonValues().size(); not needed at the moment - 24 total
 			}
 		}
