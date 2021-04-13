@@ -2,7 +2,9 @@ package constants;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class RomConstants 
 {
@@ -89,8 +91,29 @@ public class RomConstants
         MISPELLED_CARD_NAMES = Collections.unmodifiableMap(tempMap);
     }
     
-	
-	
+    // "Damaging" attacks that have no damage number associated with them
+	public static final Set<String> ZERO_DAMAGE_DAMAGING_MOVES;
+    static {
+    	Set<String> tempSet = new HashSet<>();
+    	tempSet.add("Ice Breath"); // Does 40 damage to 1 of your opponent's Pok`mon chosen at random. Don't apply Weakness and Resistance for this attack...
+    	tempSet.add("Big Thunder"); // Choose a Pok`mon other than  at random. This attack does 70 damage to that Pok`mon. Don't apply Weakness and Resistance for this attack. (Any other effects that would happen after applying Weakness and Resistance still happen.)
+    	tempSet.add("Stretch Kick"); // If your opponent has any Benched Pok`mon, choose 1 of them and this attack does 20 damage to it. (Don't apply Weakness and Resistance for Benched Pok`mon.)
+    	tempSet.add("Mystery Attack"); // Does a random amount of damage to the Defending Pok`mon and may cause a random effect to the Defending Pok`mon.
+    	tempSet.add("Slicing Wind"); // Does 30 damage to 1 of your opponent's Pok`mon chosen at random. Don't apply Weakness and Resistance for this attack... 
+    	tempSet.add("Super Fang"); //  Does damage to the Defending Pok`mon equal to half the Defending Pok`mon's remaining HP (rounded up to the nearest 10).
+    	tempSet.add("Metronome"); // Choose 1 of the Defending Pok`mon's attacks. Metronome copies that attack except for its Energy costs. (No matter what type the Defending Pokemon is, 's type is still Colorless.)
+    	tempSet.add("Cat Punch"); // Does 20 damage to 1 of your opponent's Pok`mon chosen at random. Don't apply Weakness and Resistance for this attack...
+    	
+    	// Status that can inflict damage
+    	tempSet.add("Spit Poison"); // Flip a coin. If heads, the Defending Pok`mon is now Poisoned.
+    	tempSet.add("Poisonpowder"); // The Defending Pok`mon is now Poisoned.
+
+    	// Possibilities not added to the list
+    	// tempSet.put("Supersonic"); // Flip a coin. If heads, the Defending Pok`mon is now Confused.
+ 		// Mirror Move DAMAGE_NORMAL -* If  was attacked last turn, do the final result of that attack on  to the Defending Pok`mon.
+    	ZERO_DAMAGE_DAMAGING_MOVES = Collections.unmodifiableSet(tempSet); 
+    }
+    
 	//Misc
 	public static final byte[] HEADER = 
 		{0x50, 0x4F, 0x4B, 0x45, 0x43, 0x41, 0x52, 0x44, 

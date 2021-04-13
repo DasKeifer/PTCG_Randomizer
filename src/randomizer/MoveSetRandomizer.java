@@ -557,7 +557,7 @@ public class MoveSetRandomizer {
 		{
 			// Get set of damaging moves from the pool
 			currentMovePool = getSubsetOfMovePool(allMovePool, RandomizerMoveCategory.DAMAGING_ATTACK);
-			
+
 			// Assign the damaging moves
 			assignMovesToPokemon(nextSeed, cardsMoveMap, new ArrayList<>(currentMovePool), unusedMoves, RandomizerMoveCategory.DAMAGING_ATTACK, 
 					RandomizationStrategy.SHUFFLE == settings.getAttacks().getRandomizationStrat()); // If its shuffle mode or not
