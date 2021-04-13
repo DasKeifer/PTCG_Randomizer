@@ -1,9 +1,0 @@
-Outstanding:
-Add tool tips for implemented interface items
-Reformat text
-
-
-Completed this release:
-
-
-Completed:

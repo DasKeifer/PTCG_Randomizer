@@ -4,3 +4,6 @@ Seed 42, randomize args: false, pokes, numMovesPerPokemon (in rom), true, 1
 3. pokepower/moves with names/categories? Diglett's Kabuto Armor, Tauros meowth's cat punch
 4. Snorlax still has thick fat despite not having the poke power?
 5. Self destruct does damage equal to HP
+6. Two poke powers per poke
+7. Pokepowers with energy and moves without energy/moves
+8. Convergent evolutions

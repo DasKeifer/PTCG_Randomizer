@@ -91,7 +91,14 @@ public class Move
 
 	public boolean doesDamage()
 	{
-		return isAttack() && MoveCategory.RESIDUAL != category;
+		if (isAttack())
+		{
+			// If its listed as doing damage or is one of the moves that does damage just doesn't
+			// have an associated damage number, this will return true
+			return damage > 0 || RomConstants.ZERO_DAMAGE_DAMAGING_MOVES.contains(name.getText());
+		}
+		
+		return false;
 	}
 	
 	public boolean isPokePower()
