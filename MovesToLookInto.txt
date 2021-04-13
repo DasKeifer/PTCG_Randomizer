@@ -1,0 +1,391 @@
+Type Specific
+
+Energy Trans POKEMON_POWER -* As often as you like during your turn (before your attack), you may take 1  Energy card attached to 1 of your Pok`mon and attach it to a different one. This power can't be used if  is Asleep, Confused, or Paralyzed.
+Ember DAMAGE_NORMAL 30* Discard 1  Energy card attached to  in order to use this attack.
+Flamethrower DAMAGE_NORMAL 50* Discard 1  Energy card attached to  in order to use this attack.
+Energy Burn POKEMON_POWER -* As often as you like during your turn (before your attack), you may turn all Energy attached to  into  Energy for the rest of the turn. This power can't be used if  is Asleep, Confused, or Paralyzed.
+Fire Blast DAMAGE_NORMAL 80* Discard 1  Energy card attached to  in order to use this attack.
+Flames of Rage DAMAGE_PLUS 40* Discard 2  Energy cards attached to  in order to use this attack. This attack does 40 damage plus 10 more damage for each damage counter on .
+Flamethrower DAMAGE_NORMAL 50* Discard 1  Energy card attached to  in order to use this attack.
+Flamethrower DAMAGE_NORMAL 50* Discard 1  Energy card attached to  in order to use this attack.
+Flamethrower DAMAGE_NORMAL 60* Discard 1  Energy card attached to  in order to use this attack.
+Wildfire RESIDUAL -* You may discard any number of  Energy cards attached to  when you use this attack. If you do, discard that many cards from the top of your opponent's deck.
+Firegiver POKEMON_POWER -* When you put  into play during your turn (not during set-up), put from 1 to 4 (chosen at random)  Energy cards from your deck into your hand. Shuffle your deck afterward.
+Rain Dance POKEMON_POWER -* As often as you like during your turn (before your attack), you may attach 1  Energy card to 1 of your  Pok`mon. (This doesn't use up your 1 Energy card attachment for the turn.)This power can't be used if  is Asleep, Confused, or Paralyzed.
+Hydro Pump DAMAGE_PLUS 40* Does 40 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Water Gun DAMAGE_PLUS 10* Does 10 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Water Gun DAMAGE_PLUS 30* Does 30 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Water Gun DAMAGE_PLUS 20* Does 20 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Recover RESIDUAL -* Discard 1  Energy card attached to  in order to use this attack. Remove all damage counters from .
+Water Gun DAMAGE_PLUS 10* Does 10 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Water Gun DAMAGE_PLUS 30* Does 30 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Water Gun DAMAGE_PLUS 10* Does 10 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Water Gun DAMAGE_PLUS 20* Does 20 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Recover RESIDUAL -* Discard 1  Energy card attached to  in order to use this attack. Remove all damage counters from .
+Scavenge RESIDUAL -* Discard 1  Energy card attached to  in order to use this attack. Put a Trainer card from your discard pile into your hand.
+Destiny Bond RESIDUAL -* Discard 1  Energy card attached to  in order to use this attack. If a Pok`mon Knocks Out  during your opponent's next turn, Knock Out that Pok`mon.
+Barrier RESIDUAL -* Discard 1  Energy card attached to  in order to use this attack. During your opponent's next turn, prevent all effects of attacks, including damage, done to .
+Call for Friend RESIDUAL -* Search your deck for a  Basic Pok`mon card and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)
+
+Poke Specific
+
+Call for Family RESIDUAL -* Search your deck for a Basic Pok`mon named  or Nidoran$ and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)
+Boyfriends DAMAGE_PLUS 20* Does 20 damage plus 20 more damage for each Nidoking you have in play.
+Sprout RESIDUAL -* Search your deck for a Basic Pok`mon named  and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)
+Call for Family RESIDUAL -* Search your deck for a Basic Pok`mon named  and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)
+Call for Family RESIDUAL -* Search your deck for a Basic Pok`mon named  and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)
+
+
+To See if randomizable
+
+Swords Dance RESIDUAL -* During your next turn, 's Slash attack's base damage is doubled.
+
+Search for NAK and ENQ in here to double check
+
+
+Leech Seed DAMAGE_NORMAL 20* Unless all damage from this attack is prevented, you may remove 1 damage counter from .
+Vine Whip DAMAGE_NORMAL 30  
+Poisonpowder DAMAGE_NORMAL 20* The Defending Pok`mon is now Poisoned.
+Solar Power POKEMON_POWER -* Once during your turn (before your attack), you may use this power. Your Active Pok`mon and the Defending Pok`mon are no longer Asleep, Confused, Paralyzed, or Poisoned.This power can't be used if  is Asleep, Confused, or Paralyzed.
+Mega Drain DAMAGE_NORMAL 40* Remove a number of damage counters from  equal to half the damage done to the Defending Pok`mon (after applying Weakness and Resistance) (rounded up to the nearest 10).If  has fewer damage counters than that, remove all of them.
+Energy Trans POKEMON_POWER -* As often as you like during your turn (before your attack), you may take 1  Energy card attached to 1 of your Pok`mon and attach it to a different one. This power can't be used if  is Asleep, Confused, or Paralyzed.
+Solarbeam DAMAGE_NORMAL 60  
+String Shot DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Stiffen RESIDUAL -* Flip a coin. If heads, prevent all damage done to  during your opponent's next turn. (Any other effects of attacks still happen.)
+Stun Spore DAMAGE_NORMAL 20* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Whirlwind DAMAGE_NORMAL 20* If your opponent has any Benched Pok`mon, he or she chooses 1 of them and switches it with the Defending Pok`mon. (Do the damage before switching the Pok`mon.)
+Mega Drain DAMAGE_NORMAL 40* Remove a number of damage counters from  equal to half the damage done to the Defending Pok`mon (after applying Weakness and Resistance) (rounded up to the nearest 10).If  has fewer damage counters than that, remove all of them.
+Poison Sting DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Poisoned.
+Stiffen RESIDUAL -* Flip a coin. If heads, prevent all damage done to  during your opponent's next turn. (Any other effects of attacks still happen.)
+Poisonpowder DAMAGE_NORMAL 20* Flip a coin. If heads, the Defending Pok`mon is now Poisoned.
+Twineedle DAMAGE_X 30* Flip 2 coins. This attack does 30 damage times the number of heads.
+Poison Sting DAMAGE_NORMAL 40* Flip a coin. If heads, the Defending Pok`mon is now Poisoned.
+Spit Poison DAMAGE_NORMAL -* Flip a coin. If heads, the Defending Pok`mon is now Poisoned.
+Wrap DAMAGE_NORMAL 20* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Terror Strike DAMAGE_NORMAL 10* Flip a coin. If heads and if your opponent has any Benched Pok`mon, he or she chooses 1 of them and switches it with the Defending Pok`mon. (Do the damage before switching the Pok`mon.)
+Poison Fang DAMAGE_NORMAL 20* The Defending Pok`mon is now Poisoned.
+Fury Swipes DAMAGE_X 10* Flip 3 coins. This attack does 10 damage times the number of heads.
+Call for Family RESIDUAL -* Search your deck for a Basic Pok`mon named  or Nidoran$ and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)
+Supersonic DAMAGE_NORMAL -* Flip a coin. If heads, the Defending Pok`mon is now Confused.
+Double Kick DAMAGE_X 30* Flip 2 coins. This attack does 30 damage times the number of heads.
+Boyfriends DAMAGE_PLUS 20* Does 20 damage plus 20 more damage for each Nidoking you have in play.
+Mega Punch DAMAGE_NORMAL 50  
+Horn Hazard DAMAGE_NORMAL 30* Flip a coin. If tails, this attack does nothing.
+Double Kick DAMAGE_X 30* Flip 2 coins. This attack does 30 damage times the number of heads.
+Horn Drill DAMAGE_NORMAL 50  
+Thrash DAMAGE_PLUS 30* Flip a coin. If heads, this attack does 30 damage plus 10 more damage; if tails, this attack does 30 damage and  does 10 damage to itself.
+Toxic DAMAGE_NORMAL 20* The Defending Pok`mon is now Poisoned. It now takes 20 Poison damage instead of 10 after each player's turn (even if it was already Poisoned).
+Supersonic DAMAGE_NORMAL -* Flip a coin. If heads, the Defending Pok`mon is now Confused.
+Leech Life DAMAGE_NORMAL 10* Remove a number of damage counters from  equal to the damage done to the Defending Pok`mon (after applying Weakness and Resistance). If  has fewer damage counters than that, remove all of them.
+Wing Attack DAMAGE_NORMAL 30  
+Leech Life DAMAGE_NORMAL 20* Remove a number of damage counters from  equal to the damage done to the Defending Pok`mon (after applying Weakness and Resistance). If  has fewer damage counters than that, remove all of them.
+Stun Spore DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Sprout RESIDUAL -* Search your deck for a Basic Pok`mon named  and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)
+Poisonpowder DAMAGE_NORMAL -* The Defending Pok`mon is now Poisoned.
+Foul Odor DAMAGE_NORMAL 20* Both the Defending Pok`mon and  are now Confused (after doing damage).
+Heal POKEMON_POWER -* Once during your turn (before your attack), you may flip a coin. If heads, remove 1 damage counter from 1 of your Pok`mon. This power can't be used if  is Asleep, Confused, or Paralyzed.
+Petal Dance DAMAGE_X 40* Flip 3 coins. This attack does 40 damage times the number of heads.  is now Confused (after doing damage).
+Scratch DAMAGE_NORMAL 20  
+Spore DAMAGE_NORMAL -* The Defending Pok`mon is now Asleep.
+Spore DAMAGE_NORMAL -* The Defending Pok`mon is now Asleep.
+Slash DAMAGE_NORMAL 30  
+Stun Spore DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Leech Life DAMAGE_NORMAL 10* Remove a number of damage counters from  equal to the damage done to the Defending Pok`mon (after applying Weakness and Resistance). If  has fewer damage counters than that, remove all of them.
+Shift POKEMON_POWER -* Once during your turn (before your attack), you may change the type of  to the type of any other Pok`mon in play other than Colorless. This power can't be used if  is Asleep, Confused, or Paralyzed.
+Venom Powder DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Confused and Poisoned.
+Vine Whip DAMAGE_NORMAL 10  
+Call for Family RESIDUAL -* Search your deck for a Basic Pok`mon named  and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)
+Poisonpowder DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Poisoned.
+Razor Leaf DAMAGE_NORMAL 30  
+Lure RESIDUAL -* If your opponent has any Benched Pok`mon, choose 1 of them and switch it with his or her Active Pok`mon.
+Acid DAMAGE_NORMAL 20* Flip a coin. If heads, the Defending Pok`mon can't retreat during your opponent's next turn.
+Nasty Goo DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Minimize RESIDUAL -* All damage done by attacks to  during your opponent's next turn is reduced by 20 (after applying Weakness and Resistance).
+Toxic Gas POKEMON_POWER -* Ignore all Pok`mon Powers other than Toxic Gases. This power stops working while  is Asleep, Confused, or Paralyzed.
+Sludge DAMAGE_NORMAL 30* Flip a coin. If heads, the Defending Pok`mon is now Poisoned.
+Hypnosis DAMAGE_NORMAL -* The Defending Pok`mon is now Asleep.
+Leech Seed DAMAGE_NORMAL 20* Unless all damage from this attack is prevented, you may remove 1 damage counter from .
+Teleport RESIDUAL -* Switch  with 1 of your Benched Pok`mon.
+Big Eggsplosion DAMAGE_X 20* Flip a number of coins equal to the number of Energy attached to . This attack does 20 damage times the number of heads.
+Foul Gas DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Poisoned; if tails, it is now Confused.
+Smog DAMAGE_NORMAL 20* Flip a coin. If heads, the Defending Pok`mon is now Poisoned.
+Selfdestruct DAMAGE_NORMAL 60* Does 10 damage to each Pok`mon on each player's Bench. (Don't apply Weakness and Resistance for Benched Pok`mon.)  does 60 damage to itself.
+Bind DAMAGE_NORMAL 20* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Poisonpowder DAMAGE_NORMAL 20* The Defending Pok`mon is now Poisoned.
+Stun Spore DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Poison Whip DAMAGE_NORMAL 10* The Defending Pok`mon is now Poisoned.
+Swords Dance RESIDUAL -* During your next turn, 's Slash attack's base damage is doubled.
+Slash DAMAGE_NORMAL 30  
+Irongrip DAMAGE_NORMAL 20* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Guillotine DAMAGE_NORMAL 50  
+Scratch DAMAGE_NORMAL 10  
+Ember DAMAGE_NORMAL 30* Discard 1  Energy card attached to  in order to use this attack.
+Slash DAMAGE_NORMAL 30  
+Flamethrower DAMAGE_NORMAL 50* Discard 1  Energy card attached to  in order to use this attack.
+Energy Burn POKEMON_POWER -* As often as you like during your turn (before your attack), you may turn all Energy attached to  into  Energy for the rest of the turn. This power can't be used if  is Asleep, Confused, or Paralyzed.
+Fire Spin DAMAGE_NORMAL 100* Discard 2 Energy cards attached to  in order to use this attack.
+Confuse Ray DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Confused.
+Lure RESIDUAL -* If your opponent has any Benched Pok`mon, choose 1 of them and switch it with the Defending Pok`mon.
+Fire Blast DAMAGE_NORMAL 80* Discard 1  Energy card attached to  in order to use this attack.
+Mix-Up RESIDUAL -* If your opponent has any Basic Pok`mon or Evolution cards in his or her hand, your opponent shuffles them into his or her deck. Then, your opponent puts an equal number of Basic Pok`mon or Evolution cards chosen at random from his orher deck into his or her hand. Your opponent shuffles his or her deck afterward.
+Dancing Embers DAMAGE_X 10* Flip 8 coins. This attack does 10 damage times the number of heads.
+Flare DAMAGE_NORMAL 20  
+Quick Attack DAMAGE_PLUS 10* Flip a coin. If heads, this attack does 10 damage plus 20 more damage; if tails, this attack does 10 damage.
+Flames of Rage DAMAGE_PLUS 40* Discard 2  Energy cards attached to  in order to use this attack. This attack does 40 damage plus 10 more damage for each damage counter on .
+Flamethrower DAMAGE_NORMAL 50* Discard 1  Energy card attached to  in order to use this attack.
+Take Down DAMAGE_NORMAL 80*  does 30 damage to itself.
+Smash Kick DAMAGE_NORMAL 20  
+Flame Tail DAMAGE_NORMAL 30  
+Stomp DAMAGE_PLUS 20* Flip a coin. If heads, this attack does 20 damage plus 10 more damage; if tails, this attack does 20 damage.
+Agility DAMAGE_NORMAL 30* Flip a coin. If heads, during your opponent's next turn, prevent all effects of attacks, including damage, done to .
+Fire Punch DAMAGE_NORMAL 30  
+Flamethrower DAMAGE_NORMAL 50* Discard 1  Energy card attached to  in order to use this attack.
+Smokescreen DAMAGE_NORMAL 10* If the Defending Pok`mon tries to attack during your opponent's next turn, your opponent flips a coin. If tails, that attack does nothing.
+Smog DAMAGE_NORMAL 20* Flip a coin. If heads, the Defending Pok`mon is now Poisoned.
+Bite DAMAGE_NORMAL 30  
+Rage DAMAGE_PLUS 10* Does 10 damage plus 10 more damage for each damage counter on .
+Quick Attack DAMAGE_PLUS 10* Flip a coin. If heads, this attack does 10 damage plus 20 more damage; if tails, this attack does 10 damage.
+Flamethrower DAMAGE_NORMAL 60* Discard 1  Energy card attached to  in order to use this attack.
+Wildfire RESIDUAL -* You may discard any number of  Energy cards attached to  when you use this attack. If you do, discard that many cards from the top of your opponent's deck.
+Dive Bomb DAMAGE_NORMAL 80* Flip a coin. If tails, this attack does nothing.
+Firegiver POKEMON_POWER -* When you put  into play during your turn (not during set-up), put from 1 to 4 (chosen at random)  Energy cards from your deck into your hand. Shuffle your deck afterward.
+Dive Bomb DAMAGE_NORMAL 70* Flip a coin. If tails, this attack does nothing.
+Bubble DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Withdraw RESIDUAL -* Flip a coin. If heads, prevent all damage done to  during your opponent's next turn. (Any other effects of attacks still happen.)
+Withdraw RESIDUAL -* Flip a coin. If heads, prevent all damage done to  during your opponent's next turn. (Any other effects of attacks still happen.)
+Bite DAMAGE_NORMAL 40  
+Rain Dance POKEMON_POWER -* As often as you like during your turn (before your attack), you may attach 1  Energy card to 1 of your  Pok`mon. (This doesn't use up your 1 Energy card attachment for the turn.)This power can't be used if  is Asleep, Confused, or Paralyzed.
+Hydro Pump DAMAGE_PLUS 40* Does 40 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Headache RESIDUAL -* Your opponent can't play Trainer cards during his or her next turn.
+Fury Swipes DAMAGE_X 10* Flip 3 coins. This attack does 10 damage times the number of heads.
+Psyshock DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Hyper Beam DAMAGE_NORMAL 20* If the Defending Pok`mon has any Energy cards attached to it, choose 1 of them and discard it.
+Water Gun DAMAGE_PLUS 10* Does 10 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Amnesia DAMAGE_NORMAL -* Choose 1 of the Defending Pok`mon's attacks. That Pok`mon can't use that attack during your opponent's next turn.
+Doubleslap DAMAGE_X 30* Flip 2 coins. This attack does 30 damage times the number of heads.
+Water Gun DAMAGE_PLUS 30* Does 30 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Whirlpool DAMAGE_NORMAL 40* If the Defending Pok`mon has any Energy cards attached to it, choose 1 of them and discard it.
+Cowardice POKEMON_POWER -* At any time during your turn (before your attack), you may return  to your hand. (Discard all cards attached to .) This power can't be used the turn you put  into play or if  is Asleep, Confused, or Paralyzed.
+Acid DAMAGE_NORMAL 10  
+Supersonic DAMAGE_NORMAL -* Flip a coin. If heads, the Defending Pok`mon is now Confused.
+Jellyfish Sting DAMAGE_NORMAL 10* The Defending Pok`mon is now Poisoned.
+Headbutt DAMAGE_NORMAL 10  
+Aurora Beam DAMAGE_NORMAL 50  
+Ice Beam DAMAGE_NORMAL 30* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Supersonic DAMAGE_NORMAL -* Flip a coin. If heads, the Defending Pok`mon is now Confused.
+Hide in Shell RESIDUAL -* Flip a coin. If heads, prevent all damage done to  during your opponent's next turn. (Any other effects of attacks still happen.)
+Clamp DAMAGE_NORMAL 30* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed. If tails, this attack does nothing (not even damage).
+Spike Cannon DAMAGE_X 30* Flip 2 coins. This attack does 30 damage times the number of heads.
+Call for Family RESIDUAL -* Search your deck for a Basic Pok`mon named  and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)
+Irongrip DAMAGE_NORMAL 20  
+Flail DAMAGE_X 10* Does 10 damage times the number of damage counters on .
+Crabhammer DAMAGE_NORMAL 40  
+Smokescreen DAMAGE_NORMAL 10* If the Defending Pok`mon tries to attack during your opponent's next turn, your opponent flips a coin. If tails, that attack does nothing.
+Water Gun DAMAGE_PLUS 20* Does 20 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Agility DAMAGE_NORMAL 20* Flip a coin. If heads, during your opponent's next turn, prevent all effects of attacks, including damage, done to .
+Horn Attack DAMAGE_NORMAL 10  
+Horn Attack DAMAGE_NORMAL 10  
+Waterfall DAMAGE_NORMAL 30  
+Slap DAMAGE_NORMAL 20  
+Recover RESIDUAL -* Discard 1  Energy card attached to  in order to use this attack. Remove all damage counters from .
+Star Freeze DAMAGE_NORMAL 20* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Tackle DAMAGE_NORMAL 10  
+Flail DAMAGE_X 10* Does 10 damage times the number of damage counters on .
+Dragon Rage DAMAGE_NORMAL 50  
+Bubblebeam DAMAGE_NORMAL 40* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Water Gun DAMAGE_PLUS 10* Does 10 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Confuse Ray DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Confused.
+Focus Energy RESIDUAL -* During your next turn, 's Bite attack's base damage is doubled.
+Bite DAMAGE_NORMAL 30  
+Quick Attack DAMAGE_PLUS 10* Flip a coin. If heads, this attack does 10 damage plus 20 more damage; if tails, this attack does 10 damage.
+Water Gun DAMAGE_PLUS 30* Does 30 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Clairvoyance POKEMON_POWER -* Your opponent plays with his or her hand face up. This power stops working while  is Asleep, Confused, or Paralyzed.
+Water Gun DAMAGE_PLUS 10* Does 10 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Water Gun DAMAGE_PLUS 20* Does 20 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Spike Cannon DAMAGE_X 30* Flip 2 coins. This attack does 30 damage times the number of heads.
+Freeze Dry DAMAGE_NORMAL 30* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Blizzard DAMAGE_NORMAL 50* Flip a coin. If heads, this attack does 10 damage to each of your opponent's Benched Pok`mon. If tails, this attack does 10 damage to each of your own Benched Pok`mon. (Don't apply Weakness and Resistance for Benched Pok`mon.)
+Quickfreeze POKEMON_POWER -* When you put  into play during your turn (not during set-up), flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Ice Breath RESIDUAL -* Does 40 damage to 1 of your opponent's Pok`mon chosen at random. Don't apply Weakness and Resistance for this attack. (Any other effects that would happen after applying Weakness and Resistance still happen.)
+Gnaw DAMAGE_NORMAL 10  
+Thunder Jolt DAMAGE_NORMAL 30* Flip a coin. If tails,  does 10 damage to itself.
+Spark DAMAGE_NORMAL 20* If your opponent has any Benched Pok`mon, choose 1 of them and this attack does 10 damage to it. (Don't apply Weakness and Resistance for Benched Pok`mon.)
+Growl DAMAGE_NORMAL -* If the Defending Pok`mon attacks  during your opponent's next turn, any damage done by the attack is reduced by 10 (after applying Weakness and Resistance). (Benching or evolving either Pok`mon ends this effect.)
+Thundershock DAMAGE_NORMAL 20* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Growl DAMAGE_NORMAL -* If the Defending Pok`mon attacks  during your opponent's next turn, any damage done by the attack is reduced by 10 (after applying Weakness and Resistance). (Benching or evolving either Pok`mon ends this effect.)
+Thundershock DAMAGE_NORMAL 20* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Thundershock DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Fly DAMAGE_NORMAL 30* Flip a coin. If heads, during your opponent's next turn, prevent all effects of attacks, including damage, done to . If tails, this attack does nothing (not even damage).
+Surf DAMAGE_NORMAL 30  
+Surf DAMAGE_NORMAL 30  
+Agility DAMAGE_NORMAL 20* Flip a coin. If heads, during your opponent's next turn, prevent all effects of attacks, including damage, done to .
+Thunder DAMAGE_NORMAL 60* Flip a coin. If tails,  does 30 damage to itself.
+Gigashock DAMAGE_NORMAL 30* Choose 3 of your opponent's Benched Pok`mon and this attack does 10 damage to each of them. (Don't apply Weakness and Resistance for Benched Pok`mon.) If your opponent has fewer than 3 Benched Pok`mon, do the damage to each of them.
+Thunder Wave DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Selfdestruct DAMAGE_NORMAL 40* Does 10 damage to each Pok`mon on each player's Bench. (Don't apply Weakness and Resistance for Benched Pok`mon.)  does 40 damage to itself.
+Tackle DAMAGE_NORMAL 10  
+Magnetic Storm RESIDUAL -* Remove all Energy cards attached to all of your Pok`mon, then randomly reattach each of them.
+Thunder Wave DAMAGE_NORMAL 30* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Selfdestruct DAMAGE_NORMAL 80* Does 20 damage to each Pok`mon on each player's Bench. (Don't apply Weakness and Resistance for Benched Pok`mon.)  does 80 damage to itself.
+Sonicboom DAMAGE_NORMAL 20* Don't apply Weakness and Resistance for this attack. (Any other effects that would happen after applying Weakness and Resistance still happen.)
+Selfdestruct DAMAGE_NORMAL 100* Does 20 damage to each Pok`mon on each player's Bench. (Don't apply Weakness and Resistance for Benched Pok`mon.)  does 100 damage to itself.
+Tackle DAMAGE_NORMAL 10  
+Sonicboom DAMAGE_NORMAL 30* Don't apply Weakness and Resistance for this attack. (Any other effects that would happen after applying Weakness and Resistance still happen.)
+Energy Spike RESIDUAL -* Search your deck for a basic Energy card and attach it to 1 of your Pok`mon. Shuffle your deck afterward.
+Tackle DAMAGE_NORMAL 20  
+Chain Lightning DAMAGE_NORMAL 20* If the Defending Pok`mon isn't Colorless, this attack does 10 damage to each Benched Pok`mon of the same type as the Defending Pok`mon (including your own).
+Light Screen RESIDUAL -* Whenever an attack does damage to  (after applying Weakness and Resistance) during your opponent's next turn, that attack only does half the damage to  (rounded down to the nearest 10).(Any other effects of attacks still happen.)
+Quick Attack DAMAGE_PLUS 10* Flip a coin. If heads, this attack does 10 damage plus 20 more damage; if tails, this attack does 10 damage.
+Thundershock DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Thunderpunch DAMAGE_PLUS 30* Flip a coin. If heads, this attack does 30 damage plus 10 more damage; if tails, this attack does 30 damage and  does 10 damage to itself.
+Double Kick DAMAGE_X 20* Flip 2 coins. This attack does 20 damage times the number of heads.
+Stun Needle DAMAGE_NORMAL 30* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Quick Attack DAMAGE_PLUS 10* Flip a coin. If heads, this attack does 10 damage plus 20 more damage; if tails, this attack does 10 damage.
+Pin Missile DAMAGE_X 20* Flip 4 coins. This attack does 20 damage times the number of heads.
+Thunderstorm DAMAGE_NORMAL 40* For each of your opponent's Benched Pok`mon, flip a coin. If heads, this attack does 20 damage to that Pok`mon. (Don't apply Weakness and Resistance for Benched Pok`mon.) Then,  does 10 damage times the number of tails to itself.
+Thunder DAMAGE_NORMAL 60* Flip a coin. If tails,  does 30 damage to itself.
+Thunderbolt DAMAGE_NORMAL 100* Discard all Energy cards attached to  in order to use this attack.
+Peal of Thunder POKEMON_POWER -* When you put  into play during your turn (not during set-up), do 30 damage to a Pok`mon other than  chosen at random. (Don't apply Weakness and Resistance.)
+Big Thunder RESIDUAL -* Choose a Pok`mon other than  at random. This attack does 70 damage to that Pok`mon. Don't apply Weakness and Resistance for this attack. (Any other effects that would happen after applying Weakness and Resistance still happen.)
+Sand-attack DAMAGE_NORMAL 10* If the Defending Pok`mon tries to attack during your opponent's next turn, your opponent flips a coin. If tails, that attack does nothing.
+Slash DAMAGE_NORMAL 20  
+Fury Swipes DAMAGE_X 20* Flip 3 coins. This attack does 20 damage times the number of heads.
+Dig DAMAGE_NORMAL 10  
+Mud Slap DAMAGE_NORMAL 30  
+Slash DAMAGE_NORMAL 40  
+Earthquake DAMAGE_NORMAL 70* Does 10 damage to each of your own Benched Pok`mon. (Don't apply Weakness and Resistance for Benched Pok`mon.)
+Peek POKEMON_POWER -* Once during your turn (before your attack), you may look at one of the following: the top card of either player's deck, a random card from your opponent's hand, or one of either player's Prizes.This power can't be used if  is Asleep, Confused, or Paralyzed.
+Scratch DAMAGE_NORMAL 10  
+Fury Swipes DAMAGE_X 20* Flip 3 coins. This attack does 20 damage times the number of heads.
+Tantrum DAMAGE_NORMAL 50* Flip a coin. If tails,  is now Confused (after doing damage).
+Low Kick DAMAGE_NORMAL 20  
+Karate Chop DAMAGE_MINUS 50* Does 50 damage minus 10 damage for each damage counter on .
+Submission DAMAGE_NORMAL 60*  does 20 damage to itself.
+Strikes Back POKEMON_POWER -* Whenever your opponent's attack damages  (even if  is Knocked Out), this power does 10 damage to the attacking Pok`mon. (Don't apply Weakness and Resistance.) This power can't be used if  is already Asleep, Confused, or Paralyzed when your opponent attacks.
+Seismic Toss DAMAGE_NORMAL 60  
+Stone Barrage DAMAGE_X 10* Flip a coin until you get tails. This attack does 10 damage times the number of heads.
+Harden RESIDUAL -* During your opponent's next turn, whenever 30 or less damage is done to  (after applying Weakness and Resistance), prevent that damage. (Any other effects of attacks still happen.)
+Rock Throw DAMAGE_NORMAL 40  
+Avalanche DAMAGE_NORMAL 60  
+Selfdestruct DAMAGE_NORMAL 100* Does 20 damage to each Pok`mon on each player's Bench. (Don't apply Weakness and Resistance for Benched Pok`mon.)  does 100 damage to itself.
+Rock Throw DAMAGE_NORMAL 10  
+Harden RESIDUAL -* During your opponent's next turn, whenever 30 or less damage is done to  (after applying Weakness and Resistance), prevent that damage. (Any other effects of attacks still happen.)
+Snivel DAMAGE_NORMAL -* If the Defending Pok`mon attacks  during your opponent's next turn, any damage done by the attack is reduced by 20 (after applying Weakness and Resistance). (Benching or evolving either Pok`mon ends this effect.)
+Rage DAMAGE_PLUS 10* Does 10 damage plus 10 more damage for each damage counter on .
+Bonemerang DAMAGE_X 30* Flip 2 coins. This attack does 30 damage times the number of heads.
+Call for Friend RESIDUAL -* Search your deck for a  Basic Pok`mon card and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)
+Bone Attack DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon can't attack during your opponent's next turn.
+Wail RESIDUAL -* Each player fills his or her Bench with Basic Pok`mon chosen at random from his or her deck. If a player has fewer Basic Pok`mon than that in his or deck, he or she chooses all of them. Each player shuffles his or her deck afterward.
+Stretch Kick RESIDUAL -* If your opponent has any Benched Pok`mon, choose 1 of them and this attack does 20 damage to it. (Don't apply Weakness and Resistance for Benched Pok`mon.)
+High Jump Kick DAMAGE_NORMAL 50  
+Jab DAMAGE_NORMAL 20  
+Special Punch DAMAGE_NORMAL 40  
+Leer DAMAGE_NORMAL -* Flip a coin. If heads, the Defending Pok`mon can't attack  during your opponent's next turn. (Benching or evolving either Pok`mon ends this effect.)
+Horn Attack DAMAGE_NORMAL 30  
+Horn Attack DAMAGE_NORMAL 30  
+Ram DAMAGE_NORMAL 50*  does 20 damage to itself. If your opponent has any Benched Pok`mon, he or she chooses 1 of them and switches it with the Defending Pok`mon.(Do the damage before switching the Pok`mon.Switch the Pok`mon even if  is Knocked Out.)
+Kabuto Armor POKEMON_POWER -* Whenever an attack (even your own) does damage to  (after applying Weakness and Resistance), that attack only does half the damage to  (rounded down to the nearest 10).(Any other effects of attacks still happen.) This power stops working while  is Asleep, Confused, or Paralyzed.
+Scratch DAMAGE_NORMAL 10  
+Sharp Sickle DAMAGE_NORMAL 30  
+Absorb DAMAGE_NORMAL 40* Remove a number of damage counters from  equal to half the damage done to the Defending Pok`mon (after applying Weakness and Resistance) (rounded up to the nearest 10).If  has fewer damage counters than that, remove all of them.
+Prehistoric Power POKEMON_POWER -* No more Evolution cards can be played. This power stops working while  is Asleep, Confused, or Paralyzed.
+Wing Attack DAMAGE_NORMAL 30  
+Psyshock DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Recover RESIDUAL -* Discard 1  Energy card attached to  in order to use this attack. Remove all damage counters from .
+Super Psy DAMAGE_NORMAL 50  
+Damage Swap POKEMON_POWER -* As often as you like during your turn (before your attack), you may move 1 damage counter from 1 of your Pok`mon to another as long as you don't Knock Out that Pok`mon. This power can't be used if  is Asleep, Confused, or Paralyzed.
+Confuse Ray DAMAGE_NORMAL 30* Flip a coin. If heads, the Defending Pok`mon is now Confused.
+Headbutt DAMAGE_NORMAL 10  
+Amnesia DAMAGE_NORMAL -* Choose 1 of the Defending Pok`mon's attacks. That Pok`mon can't use that attack during your opponent's next turn.
+Spacing Out RESIDUAL -* Flip a coin. If heads, remove a damage counter from . This attack can't be used if  has no damage counters on it.
+Scavenge RESIDUAL -* Discard 1  Energy card attached to  in order to use this attack. Put a Trainer card from your discard pile into your hand.
+Strange Behavior POKEMON_POWER -* As often as you like during your turn (before your attack), you may move 1 damage counter from 1 of your Pok`mon to  as long as you don't Knock Out . This power can't be used if  is Asleep, Confused, or Paralyzed.
+Psyshock DAMAGE_NORMAL 20* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Sleeping Gas DAMAGE_NORMAL -* Flip a coin. If heads, the Defending Pok`mon is now Asleep.
+Destiny Bond RESIDUAL -* Discard 1  Energy card attached to  in order to use this attack. If a Pok`mon Knocks Out  during your opponent's next turn, Knock Out that Pok`mon.
+Lick DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Energy Conversion RESIDUAL -* Put up to 2 Energy cards from your discard pile into your hand.  does 10 damage to itself.
+Transparency POKEMON_POWER -* Whenever an attack does anything to , flip a coin. If heads, prevent all effects of that attack, including damage, done to . This power stops working while  is Asleep, Confused, or Paralyzed.
+Nightmare DAMAGE_NORMAL 10* The Defending Pok`mon is now Asleep.
+Hypnosis DAMAGE_NORMAL -* The Defending Pok`mon is now Asleep.
+Dream Eater DAMAGE_NORMAL 50* You can't use this attack unless the Defending Pok`mon is Asleep.
+Curse POKEMON_POWER -* Once during your turn (before your attack), you may move 1 damage counter from 1 of your opponent's Pok`mon to another (even if it would Knock Out the other Pok`mon). This power can't be used if  is Asleep, Confused, or Paralyzed.
+Dark Mind DAMAGE_NORMAL 30* If your opponent has any Benched Pok`mon, choose 1 of them and this attack does 10 damage to it. (Don't apply Weakness and Resistance for Benched Pok`mon.)
+Pound DAMAGE_NORMAL 10  
+Confuse Ray DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Confused.
+Prophecy RESIDUAL -* Look at up to 3 cards from the top of either player's deck and rearrange them as you like.
+Dark Mind DAMAGE_NORMAL 30* If your opponent has any Benched Pok`mon, choose 1 of them and this attack does 10 damage to it. (Don't apply Weakness and Resistance for Benched Pok`mon.)
+Invisible Wall POKEMON_POWER -* Whenever an attack (including your own) does 30 or more damage to  (after applying Weakness and Resistance), prevent that damage. (Any other effects of attacks still happen.)This power can't be used if  is Asleep, Confused, or Paralyzed.
+Meditate DAMAGE_PLUS 10* Does 10 damage plus 10 more damage for each damage counter on the Defending Pok`mon.
+Doubleslap DAMAGE_X 10* Flip 2 coins. This attack does 10 damage times the number of heads.
+Meditate DAMAGE_PLUS 20* Does 20 damage plus 10 more damage for each damage counter on the Defending Pok`mon.
+Psychic DAMAGE_PLUS 10* Does 10 damage plus 10 more damage for each Energy card attached to the Defending Pok`mon.
+Barrier RESIDUAL -* Discard 1  Energy card attached to  in order to use this attack. During your opponent's next turn, prevent all effects of attacks, including damage, done to .
+Energy Absorption RESIDUAL -* Choose up to 2 Energy cards from your discard pile and attach them to .
+Psyburn DAMAGE_NORMAL 40  
+Energy Absorption RESIDUAL -* Choose up to 2 Energy cards from your discard pile and attach them to .
+Psyburn DAMAGE_NORMAL 40  
+Neutralizing Shield POKEMON_POWER -* Prevent all effects of attacks, including damage, done to  by evolved Pok`mon (excluding your own). This power stops working while  is Asleep, Confused, or Paralyzed.
+Psyshock DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Mystery Attack DAMAGE_NORMAL -* Does a random amount of damage to the Defending Pok`mon and may cause a random effect to the Defending Pok`mon.
+Psywave DAMAGE_X 10* Does 10 damage times the number of Energy cards attached to the Defending Pok`mon.
+Devolution Beam RESIDUAL -* Choose an evolved Pok`mon (Your own or your opponent's). Return the highest stage evolution card on that Pok`mon to Its player's hand.
+Whirlwind DAMAGE_NORMAL 10* If your opponent has any Benched Pok`mon, he or she chooses 1 of them and switches it with the Defending Pok`mon. (Do the damage before switching the Pok`mon.)
+Whirlwind DAMAGE_NORMAL 20* If your opponent has any Benched Pok`mon, he or she chooses 1 of them and switches it with the Defending Pok`mon. (Do the damage before switching the Pok`mon.)
+Mirror Move DAMAGE_NORMAL -* If  was attacked last turn, do the final result of that attack on  to the Defending Pok`mon.
+Slicing Wind RESIDUAL -* Does 30 damage to 1 of your opponent's Pok`mon chosen at random. Don't apply Weakness and Resistance for this attack. (Any other effects that would happen after applying Weakness and Resistance still happen.)
+Gale DAMAGE_NORMAL 20* Switch  with 1 of your Benched Pok`mon chosen at random. If your opponent has any Benched Pok`mon, switch the Defending Pok`mon with 1 of them chosen at random. (Do the damage before switching the Pok`mon.)
+Wing Attack DAMAGE_NORMAL 20  
+Hurricane DAMAGE_NORMAL 30* Unless this attack Knocks Out the Defending Pok`mon, return the Defending Pok`mon and all cards attached to it to your opponent's hand.
+Bite DAMAGE_NORMAL 20  
+Bite DAMAGE_NORMAL 20  
+Super Fang DAMAGE_NORMAL -* Does damage to the Defending Pok`mon equal to half the Defending Pok`mon's remaining HP (rounded up to the nearest 10).
+Peck DAMAGE_NORMAL 10  
+Mirror Move DAMAGE_NORMAL -* If  was attacked last turn, do the final result of that attack on  to the Defending Pok`mon.
+Agility DAMAGE_NORMAL 20* Flip a coin. If heads, during your opponent's next turn, prevent all effects of attacks, including damage, done to .
+Drill Peck DAMAGE_NORMAL 40  
+Sing DAMAGE_NORMAL -* Flip a coin. If heads, the Defending Pok`mon is now Asleep.
+Metronome RESIDUAL -* Choose 1 of the Defending Pok`mon's attacks. Metronome copies that attack except for its Energy costs. (No matter what type the Defending Pokemon is, 's type is still Colorless.)
+Metronome RESIDUAL -* Choose 1 of the Defending Pok`mon's attacks. Metronome copies that attack except for its Energy costs. (No matter what type the Defending Pok`mon is, 's type is still Colorless.)
+Minimize RESIDUAL -* All damage done by attacks to  during your opponent's next turn is reduced by 20 (after applying Weakness and Resistance).
+First Aid RESIDUAL -* Remove 1 damage counter from .
+Double-edge DAMAGE_NORMAL 40*  does 20 damage to itself.
+Friendship Song RESIDUAL -* Flip a coin. If heads, put a Basic Pok`mon card chosen at random from your deck onto your Bench. (You can't use this attack if your Bench is full.)
+Expand DAMAGE_NORMAL 10* All damage done to  during your opponent's next turn is reduced by 10 (after applying Weakness and Resistance).
+Lullaby DAMAGE_NORMAL -* The Defending Pok`mon is now Asleep.
+Pound DAMAGE_NORMAL 20  
+Lullaby DAMAGE_NORMAL -* The Defending Pok`mon is now Asleep.
+Do the Wave DAMAGE_PLUS 10* Does 10 damage plus 10 more damage for each of your Benched Pok`mon.
+Cat Punch RESIDUAL -* Does 20 damage to 1 of your opponent's Pok`mon chosen at random. Don't apply Weakness and Resistance for this attack. (Any other effects that would happen after applying Weakness and Resistance still happen.)
+Pay Day DAMAGE_NORMAL 10* Flip a coin. If heads, draw a card.
+Scratch DAMAGE_NORMAL 20  
+Pounce DAMAGE_NORMAL 30* If the Defending Pok`mon attacks  during your opponent's next turn, any damage done by the attack is reduced by 10 (after applying Weakness and Resistance). (Benching or evolving either Pok`mon ends this effect.)
+Leek Slap DAMAGE_NORMAL 30* Flip a coin. If tails, this attack does nothing. Either way, you can't use this attack again as long as  stays in play (even putting  on the Bench won't let you use it again).
+Pot Smash DAMAGE_NORMAL 30  
+Fury Attack DAMAGE_X 10* Flip 2 coins. This attack does 10 damage times the number of heads.
+Retreat Aid POKEMON_POWER -* As long as  is Benched, pay  less to retreat your Active Pok`mon.
+Rage DAMAGE_PLUS 10* Does 10 damage plus 10 more damage for each damage counter on .
+Tongue Wrap DAMAGE_NORMAL 10* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Supersonic DAMAGE_NORMAL -* Flip a coin. If heads, the Defending Pok`mon is now Confused.
+Scrunch RESIDUAL -* Flip a coin. If heads, prevent all damage done to  during your opponent's next turn. (Any other effects of attacks still happen.)
+Double-edge DAMAGE_NORMAL 80*  does 80 damage to itself.
+Fetch RESIDUAL -* Draw a card.
+Comet Punch DAMAGE_X 20* Flip 4 coins. This attack does 20 damage times the number of heads.
+Stomp DAMAGE_PLUS 20* Flip a coin. If heads, this attack does 20 damage plus 10 more damage; if tails, this attack does 20 damage.
+Rampage DAMAGE_PLUS 20* Does 20 damage plus 10 more damage for each damage counter on . Flip a coin. If tails,  is now Confused (after doing damage).
+Pound DAMAGE_NORMAL 10  
+Morph RESIDUAL -* Remove all damage counters from . For the rest of the game, replace  with a copy of a Basic Pok`mon card (other than ) chosen at random from your deck. is no longer Asleep, Confused, Paralyzed, Poisoned, or anything else that might be the result of an attack (just as if you had evolved it).
+Tail Wag DAMAGE_NORMAL -* Flip a coin. If heads, the Defending Pok`mon can't attack  during your opponent's next turn. (Benching or evolving either Pok`mon ends this effect.)
+Quick Attack DAMAGE_PLUS 10* Flip a coin. If heads, this attack does 10 damage plus 20 more damage; if tails, this attack does 10 damage.
+Conversion 1 DAMAGE_NORMAL -* If the Defending Pok`mon has a Weakness, you may change it to a type of your choice other than Colorless.
+Conversion 2 RESIDUAL -* Change 's Resistance to a type of your choice other than Colorless.
+Thick Skinned POKEMON_POWER -*  can't become Asleep, Confused, Paralyzed, or Poisoned. This power can't be used if  is already Asleep, Confused, or Paralyzed.
+Body Slam DAMAGE_NORMAL 30* Flip a coin. If heads, the Defending Pok`mon is now Paralyzed.
+Pound DAMAGE_NORMAL 10  
+Slam DAMAGE_X 30* Flip 2 coins. This attack does 30 damage times the number of heads.
+Hyper Beam DAMAGE_NORMAL 20* If the Defending Pok`mon has any Energy cards attached to it, choose 1 of them and discard it.
+Healing Wind POKEMON_POWER -* When you put  into play, remove 2 damage counters from each of your Pok`mon. If a Pok`mon has fewer damage counters than that, remove all of them from that Pok`mon.
+Slam DAMAGE_X 30* Flip 2 coins. This attack does 30 damage times the number of heads.
+Step In POKEMON_POWER -* Once during your turn (before your attack), if  is on your Bench, you may switch it with your Active Pok`mon.
+Slam DAMAGE_X 40* Flip 2 coins. This attack does 40 damage times the number of heads.
+
