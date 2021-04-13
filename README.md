@@ -35,11 +35,11 @@ Features that end with a "?" are ones that may or may not be feasible to do that
     🟢 Set seed
     🟢 Log seed
     🟢 Optionally log changes
-⚪ Advance Move Tweaks
+🟡 Advance Move Tweaks
     🟡 Update/Replace energy type specific effects (e.g. ember (Charmander), energy trans (Venusaur))
     🟡 Update/Replace pokemon specific effects (e.g. call for family (nidoran))
     🟡 Update/Replace boyfriends (attack of nidoqueen) with random, same type, 3rd stage evo
-    ⚪ Randomize trainer effects with poke Powers?
+    🟡 Randomize trainer effects with poke Powers?
 ⚪ HP, Retreat Cost 
     ⚪ Fully random/shuffle
     ⚪ Evo chain progressing - swap stats to make higher evos more powerful/higher retreat cost

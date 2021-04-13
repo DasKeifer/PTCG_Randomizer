@@ -94,7 +94,7 @@ public class Randomizer
 	{
 		// get and store the base seed as the next one to use
 		int nextSeed = settings.getSeedValue();
-		
+
 		// Make a copy of the data to modify and return
 		RomData randomizedData = new RomData(romData);
 		

@@ -162,6 +162,7 @@ public class MoveSetRandomizer {
 		if (settings.isMovesRandomNumberOfAttacks())
 		{
 			// In the future we will have more options for how to distribute these
+			// We may also want to go with straight numbers instead of fool around with percentages
 			double[] percentWithNumOverallMoves = getNumOfCategoryPercentages(pokes, RandomizerMoveCategory.MOVE);
 			double[] percentWithNumPokepowers = getNumOfCategoryPercentages(pokes, RandomizerMoveCategory.POKE_POWER);
 			cardMovesMap = getRandMoveTypesPerPoke(
@@ -236,8 +237,6 @@ public class MoveSetRandomizer {
 		return MathUtils.convertNumbersToPercentages(numPerCount);
 	}
 	
-	// TODO isn't quite working right - too many 1 attack pokes. Check the logic out
-	// Seems like the ones that were 1 attack pokes still are 1 attack pokes
 	public static Map<PokemonCard, List<RandomizerMoveCategory>> getRandMoveTypesPerPoke(
 			long nextSeed,
 			Cards<PokemonCard> pokes, 
@@ -331,7 +330,7 @@ public class MoveSetRandomizer {
 		// Now select how many poke powers this card will have
 		int numPowers = 0;
 		int selected = powersRand.nextInt(numPossibilities);
-		for (/*already set*/; numPowers < numberOfMoves; numPowers++)
+		for (/*already set*/; numPowers <= numberOfMoves; numPowers++)
 		{
 			selected -= numCardsWithNumPokePowers[numPowers];
 			if (selected < 0)
@@ -420,7 +419,7 @@ public class MoveSetRandomizer {
 			{
 				int randIndex = rand.nextInt(donorPokes.size());
 				List<RandomizerMoveCategory> donorPokeMoves = cardMovesMap.get(donorPokes.get(randIndex));
-				int moveIndex = getIndexOfAttackNotReservedForDamaging(pokeMoveTypes);
+				int moveIndex = getIndexOfAttackNotReservedForDamaging(donorPokeMoves);
 				if (moveIndex >= 0)
 				{
 					donorPokeMoves.set(moveIndex, RandomizerMoveCategory.POKE_POWER);
@@ -439,7 +438,7 @@ public class MoveSetRandomizer {
 	private static int sumThroughIndex(int[] numbers, int lastIndex)
 	{
 		int sum = 0;
-		for (int index = 0; index < lastIndex; index++)
+		for (int index = 0; index <= lastIndex; index++)
 		{
 			sum += numbers[index];
 		}
