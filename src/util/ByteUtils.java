@@ -130,4 +130,19 @@ public class ByteUtils
 			value = value >> 8;
 		}
 	}
+
+	public static void copyBytes(byte[] destination, int destinationStartIndex, byte[] source)
+	{
+		if (destinationStartIndex + source.length > destination.length)
+		{
+			throw new IllegalArgumentException("The destination array (size " + destination.length + 
+					") is not large enough to copy the source array (size " + source.length + 
+					") to it starting at index " + destinationStartIndex);
+		}
+		
+		for (int i = 0; i < source.length; i++)
+		{
+			destination[destinationStartIndex + i] = source[i];
+		}
+	}
 }

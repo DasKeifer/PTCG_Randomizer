@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import constants.CardConstants.CardId;
 import constants.CardDataConstants.*;
 import rom.Texts;
 import util.ByteUtils;
@@ -264,7 +265,7 @@ public class PokemonCard extends Card
 		sortMoves();
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
-			index = moves[moveIndex].convertToIdsAndWriteData(cardBytes, index, name, idToText);
+			index = moves[moveIndex].convertToIdsAndWriteData(cardBytes, index, name, id, idToText);
 		}
 		
 		cardBytes[index++] = retreatCost;

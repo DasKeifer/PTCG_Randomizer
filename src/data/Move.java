@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import constants.RomConstants;
+import constants.CardConstants.CardId;
 import constants.CardDataConstants.*;
 import rom.Texts;
 import util.ByteUtils;
@@ -20,7 +21,7 @@ public class Move
 	public OneLineText name;
 	public EffectDescription description;
 	public byte damage; // TODO: non multiple of 10?
-	MoveCategory category;
+	public MoveCategory category;
 	short effectPtr; // TODO: Make enum?
 	Set<MoveEffect1> effect1;
 	Set<MoveEffect2> effect2;
@@ -268,7 +269,7 @@ public class Move
 		return index;
 	}
 
-	public int convertToIdsAndWriteData(byte[] moveBytes, int startIndex, RomText cardName, Texts idToText) 
+	public int convertToIdsAndWriteData(byte[] moveBytes, int startIndex, OneLineText cardName, CardId cardId, Texts idToText) 
 	{
 		int index = startIndex;
 		
@@ -286,7 +287,13 @@ public class Move
 		
 		moveBytes[index++] = damage;
 		moveBytes[index++] = category.getValue();
+		
+		if (name.getText().compareToIgnoreCase("call for family") == 0)
+		{
+			effectPtr = HardcodedMoves.CallForFamily.convertToIdsAndWriteData(moveBytes, cardName, cardId, idToText);
+		}
 		ByteUtils.writeAsShort(effectPtr, moveBytes, index);
+		
 		index += 2;
 		moveBytes[index++] = MoveEffect1.storeAsByte(effect1);
 		moveBytes[index++] = MoveEffect2.storeAsByte(effect2);
