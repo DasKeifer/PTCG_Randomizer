@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import constants.RomConstants;
-import constants.CardConstants.CardId;
 import constants.CardDataConstants.*;
 import rom.Texts;
 import util.ByteUtils;
@@ -59,7 +58,7 @@ public class Move
 	{
 		public int compare(Move m1, Move m2)
 	    {   
-			int compareVal = m1.name.getText().compareTo(m2.name.getText());
+			int compareVal = m1.name.toString().compareTo(m2.name.toString());
 			
 			if (compareVal == 0)
 			{
@@ -96,7 +95,7 @@ public class Move
 		{
 			// If its listed as doing damage or is one of the moves that does damage just doesn't
 			// have an associated damage number, this will return true
-			return damage > 0 || RomConstants.ZERO_DAMAGE_DAMAGING_MOVES.contains(name.getText());
+			return damage > 0 || RomConstants.ZERO_DAMAGE_DAMAGING_MOVES.contains(name.toString());
 		}
 		
 		return false;
@@ -230,7 +229,7 @@ public class Move
 		energyCost.put(inType, inCost);
 	}
 	
-	public int readDataAndConvertIds(byte[] moveBytes, int startIndex, RomText cardName, Texts idToText, Set<Short> textIdsUsed) 
+	public int readDataAndConvertIds(byte[] moveBytes, int startIndex, RomText cardName, Texts idToText) 
 	{
 		int index = startIndex;
 		
@@ -250,10 +249,10 @@ public class Move
 		setCost(EnergyType.UNUSED_TYPE, ByteUtils.readLowerHexChar(moveBytes[index]));
 		index++;
 		
-		index = name.readDataAndConvertIds(moveBytes, index, idToText, textIdsUsed);
+		index = name.readDataAndConvertIds(moveBytes, index, idToText);
 		
 		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
-		description.readDataAndConvertIds(moveBytes, descIndexes, cardName, idToText, textIdsUsed);
+		description.readDataAndConvertIds(moveBytes, descIndexes, cardName, idToText);
 		index += RomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
 		
 		damage = moveBytes[index++];
@@ -268,8 +267,14 @@ public class Move
 		
 		return index;
 	}
+	
+	public void finalizeAndAddTexts(Texts idToText, String cardName)
+	{
+		name.finalizeAndAddTexts(idToText);
+		description.finalizeAndAddTexts(idToText, cardName);
+	}
 
-	public int convertToIdsAndWriteData(byte[] moveBytes, int startIndex, OneLineText cardName, CardId cardId, Texts idToText) 
+	public int convertToIdsAndWriteData(byte[] moveBytes, int startIndex) 
 	{
 		int index = startIndex;
 		
@@ -278,20 +283,22 @@ public class Move
 		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.FIGHTING), getCost(EnergyType.PSYCHIC));
 		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.COLORLESS), getCost(EnergyType.UNUSED_TYPE));
 
-		name.convertToIdsAndWriteData(moveBytes, index, idToText);
+		name.writeTextId(moveBytes, index);
 		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
 
 		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
-		description.convertToIdsAndWriteData(moveBytes, descIndexes, cardName, idToText);
+		description.writeTextId(moveBytes, descIndexes);
 		index += RomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
 		
 		moveBytes[index++] = damage;
 		moveBytes[index++] = category.getValue();
 		
-		if (name.getText().compareToIgnoreCase("call for family") == 0)
-		{
-			effectPtr = HardcodedMoves.CallForFamily.convertToIdsAndWriteData(moveBytes, cardName, cardId, idToText);
-		}
+		// TODO come back to this
+//		if (name.toString().compareToIgnoreCase("call for family") == 0)
+//		{
+//			effectPtr = RomUtils.convertToInBankOffset(
+//					HardcodedMoves.CallForFamily.writeEffectToMemory(moveBytes, cardName, cardId));
+//		}
 		ByteUtils.writeAsShort(effectPtr, moveBytes, index);
 		
 		index += 2;

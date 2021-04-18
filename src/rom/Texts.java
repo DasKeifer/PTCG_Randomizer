@@ -28,6 +28,12 @@ public class Texts
 		return nextId;
 	}
 	
+	public short getId(String text)
+	{
+		// TODO implement
+		return insertTextOrGetId(text);
+	}
+	
 	public short insertTextOrGetId(String text)
 	{
 		Short id = usedText.get(text);

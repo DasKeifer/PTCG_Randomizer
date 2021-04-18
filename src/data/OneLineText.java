@@ -1,9 +1,11 @@
 package data;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import constants.RomConstants;
 import rom.Texts;
+import util.StringUtils;
 
 public class OneLineText extends RomText
 {
@@ -17,17 +19,36 @@ public class OneLineText extends RomText
 		super(toCopy);
 	}
 
-	public int readDataAndConvertIds(byte[] bytes, int textIdIndex, Texts idToText, Set<Short> textIdsUsed)
+	@Override
+	protected boolean needsReformatting(List<String> text)
+	{
+		if (text.size() > 1)
+		{
+			return true;
+		}
+		
+		return StringUtils.contains(text, "\n") || StringUtils.contains(text, StringUtils.BLOCK_BREAK);
+	}
+
+	@Override
+	protected List<String> formatText(String text)
+	{
+		List<String> output = new ArrayList<>();
+		output.add(text);
+		return output;
+	}
+	
+	public int readDataAndConvertIds(byte[] bytes, int textIdIndex, Texts idToText)
 	{
 		int[] textIdIndexes = {textIdIndex};
-		genericReadTextFromIds(bytes, textIdIndexes, idToText, textIdsUsed);
+		genericReadTextFromIds(bytes, textIdIndexes, idToText);
 		return textIdIndex + RomConstants.TEXT_ID_SIZE_IN_BYTES;
 	}
 
-	public int convertToIdsAndWriteData(byte[] bytes, int textIdIndex, Texts idToText)
+	public int writeTextId(byte[] bytes, int textIdIndex)
 	{
 		int[] textIdIndexes = {textIdIndex};
-		genericConvertToIdsAndWriteText(bytes, textIdIndexes, idToText);
+		genericWriteTextIds(bytes, textIdIndexes);
 		return textIdIndex + RomConstants.TEXT_ID_SIZE_IN_BYTES;
 	}
 }

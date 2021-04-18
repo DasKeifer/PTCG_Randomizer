@@ -5,17 +5,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-import constants.RomConstants;
-import constants.CardDataConstants.MoveCategory;
 import data.Card;
 import data.Cards;
-import data.Move;
-import data.PokemonCard;
-import data.RomText;
 import rom.Texts;
 import util.Logger;
-import rom.RomData;
-import rom.RomHandler;
+import rom.Rom;
 
 public class Randomizer 
 {
@@ -23,7 +17,7 @@ public class Randomizer
 	static final String LOG_FILE_EXTENSION = ".log.txt";
 	
 	private Logger logger;
-	private RomData romData;
+	private Rom romData;
 	
 	public Randomizer()
 	{
@@ -34,12 +28,22 @@ public class Randomizer
 	{
 		try 
 		{
-			romData = RomHandler.readRom(romFile);
+			romData = new Rom(romFile);
 		} 
 		catch (IOException e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		
+//	File romFile
+// 2cc40 - 16 bytes - no changes needed - just point to it
+		for (int i = 0x36300; i < 0x3630f; i++)
+		{
+		//	if (randomizedData.rawBytes[0xce8a  + i] != -1)
+		//	{
+				System.out.println(String.format("0x%x - 0x%x", i, romData.rawBytes[i]));
+		//	}
 		}
 	}
 	
@@ -75,7 +79,7 @@ public class Randomizer
 			logger.open(romBasePath + LOG_FILE_EXTENSION);
 		}
 		
-		RomData randomized = randomize(settings);
+		Rom randomized = randomize(settings);
 
 		logger.close();
 		
@@ -83,7 +87,7 @@ public class Randomizer
 		// and when this happened, the text for some cards compoundly got worse.
 		// Need to look into why this is happening
 		try {
-			RomHandler.writeRom(randomized, romFile);
+			randomized.writeRom(romFile);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -92,27 +96,27 @@ public class Randomizer
 	}
 	
 	//public static void main(String[] args) throws IOException //Temp
-	public RomData randomize(Settings settings)
+	public Rom randomize(Settings settings)
 	{
 		// get and store the base seed as the next one to use
 		int nextSeed = settings.getSeedValue();
 		
-		
-		for (Move m : romData.allCards.getPokemonCards().getAllMoves())
-		{
-			if (m.isPokePower())
-				System.out.println(m.name.getText() + " " + m.category + " " + m.getDamageString() + " " + m.description.getText());
-		}
+//		
+//		for (Move m : romData.allCards.getPokemonCards().getAllMoves())
+//		{
+//			if (m.isPokePower())
+//				System.out.println(m.name.getText() + " " + m.category + " " + m.getDamageString() + " " + m.description.getText());
+//		}
 		
 		// Make a copy of the data to modify and return
-		RomData randomizedData = new RomData(romData);
+		Rom randomizedData = new Rom(romData);
 		
 		// Create sub randomizers. If they need to original data, they can save off a copy
 		// when they are creaeted
 		MoveSetRandomizer moveSetRand = new MoveSetRandomizer(randomizedData, logger);
 		
 		List<Card> venu = randomizedData.allCards.getCardsWithName("Venusaur").toList();
-		venu.get(1).name.setTextAndDeformat("Test-a-saur"); // Quick check to see if we ran and saved successfully
+		venu.get(1).name.setText("Test-a-saur"); // Quick check to see if we ran and saved successfully
 		
 		// Randomize Evolutions (either within current types or completely random)
 		// If randomizing evos and types but keeping lines consistent, completely 
@@ -172,31 +176,31 @@ public class Randomizer
 				randomizedData.rawBytes[0x1e4d4 + i] = 0;
 			}
 		}
-//			
-		// 2cc40 - 16 bytes - no changes needed - just point to it
-		for (int i = 0x1baf8; i < 0x1bafa; i++)
-		{
-//			if (randomizedData.rawBytes[0xce8a  + i] != -1)
-//			{
-				System.out.println(String.format("0x%x", randomizedData.rawBytes[i]));
-//			}
-		}
-		
-		int baseLoc = 0x2cf6d;
-		randomizedData.rawBytes[baseLoc + 8] = 0x2e;
-		randomizedData.rawBytes[baseLoc + 9] = 0x1;
-		randomizedData.rawBytes[baseLoc + 11] = 0x41;
-		randomizedData.rawBytes[baseLoc + 12] = 0x01;
-		randomizedData.rawBytes[baseLoc + 24] = 0x2f;
-		randomizedData.rawBytes[baseLoc + 25] = 0x01;
-		// chose from deck Belsprout text 8, 9 (2e, 01)
-		// Belsprout text 11, 12 (41, 01)
-		// choose Belsprout text 24, 25 (2f, 01)
-		
-		// BellsproutID at +14, 41, 74
-		randomizedData.rawBytes[baseLoc + 14] = (byte) 0x99;
-		randomizedData.rawBytes[baseLoc + 41] = (byte) 0x99;
-		randomizedData.rawBytes[baseLoc + 74] = (byte) 0x99;
+////			
+//		// 2cc40 - 16 bytes - no changes needed - just point to it
+//		for (int i = 0x1baf8; i < 0x1bafa; i++)
+//		{
+////			if (randomizedData.rawBytes[0xce8a  + i] != -1)
+////			{
+//				System.out.println(String.format("0x%x", randomizedData.rawBytes[i]));
+////			}
+//		}
+//		
+//		int baseLoc = 0x2cf6d;
+//		randomizedData.rawBytes[baseLoc + 8] = 0x2e;
+//		randomizedData.rawBytes[baseLoc + 9] = 0x1;
+//		randomizedData.rawBytes[baseLoc + 11] = 0x41;
+//		randomizedData.rawBytes[baseLoc + 12] = 0x01;
+//		randomizedData.rawBytes[baseLoc + 24] = 0x2f;
+//		randomizedData.rawBytes[baseLoc + 25] = 0x01;
+//		// chose from deck Belsprout text 8, 9 (2e, 01)
+//		// Belsprout text 11, 12 (41, 01)
+//		// choose Belsprout text 24, 25 (2f, 01)
+//		
+//		// BellsproutID at +14, 41, 74
+//		randomizedData.rawBytes[baseLoc + 14] = (byte) 0x99;
+//		randomizedData.rawBytes[baseLoc + 41] = (byte) 0x99;
+//		randomizedData.rawBytes[baseLoc + 74] = (byte) 0x99;
 		
 		return randomizedData;
 	}

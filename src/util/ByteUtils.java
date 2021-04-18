@@ -145,4 +145,12 @@ public class ByteUtils
 			destination[destinationStartIndex + i] = source[i];
 		}
 	}
+	
+	public static void setBytes(byte[] bytes, int startIndex, int numberToSet, byte valueToSet)
+	{
+		for (int i = 0; i < numberToSet; i ++)
+		{
+			bytes[startIndex + i] = valueToSet;
+		}
+	}
 }

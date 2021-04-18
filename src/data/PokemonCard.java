@@ -2,9 +2,7 @@ package data;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
-import constants.CardConstants.CardId;
 import constants.CardDataConstants.*;
 import rom.Texts;
 import util.ByteUtils;
@@ -215,27 +213,27 @@ public class PokemonCard extends Card
 	}
 	
 	@Override
-	public int readDataAndConvertIds(byte[] cardBytes, int startIndex, Texts idToText, Set<Short> textIdsUsed) 
+	public int readDataAndConvertIds(byte[] cardBytes, int startIndex, Texts idToText) 
 	{
-		readCommonNameAndDataAndConvertIds(cardBytes, startIndex, idToText, textIdsUsed);
+		readCommonNameAndDataAndConvertIds(cardBytes, startIndex, idToText);
 		
 		int index = startIndex + Card.CARD_COMMON_SIZE;
 		hp = cardBytes[index++];
 		stage = EvolutionStage.readFromByte(cardBytes[index++]);
 		
 		// Read the prev evolution
-		index = prevEvoName.readDataAndConvertIds(cardBytes, index, idToText, textIdsUsed);
+		index = prevEvoName.readDataAndConvertIds(cardBytes, index, idToText);
 
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
-			index = moves[moveIndex].readDataAndConvertIds(cardBytes, index, name, idToText, textIdsUsed);
+			index = moves[moveIndex].readDataAndConvertIds(cardBytes, index, name, idToText);
 		}
 		
 		retreatCost = cardBytes[index++];
 		weakness = WeaknessResistanceType.readFromByte(cardBytes[index++]);
 		resistance = WeaknessResistanceType.readFromByte(cardBytes[index++]);
 
-		index = pokemonCategory.readDataAndConvertIds(cardBytes, index, idToText, textIdsUsed);
+		index = pokemonCategory.readDataAndConvertIds(cardBytes, index, idToText);
 		
 		pokedexNumber = cardBytes[index++];
 		unknownByte1 = cardBytes[index++];
@@ -245,34 +243,49 @@ public class PokemonCard extends Card
 		weight = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 		
-		index = description.readDataAndConvertIds(cardBytes, index, idToText, textIdsUsed);
+		index = description.readDataAndConvertIds(cardBytes, index, idToText);
 		
 		unknownByte2 = cardBytes[index++];
 		
 		return index;
 	}
-
+	
 	@Override
-	public int convertToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts idToText) 
+	public void finalizeAndAddTexts(Texts idsToText)
 	{
-		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex, idToText);
+		finalizeAndAddCommonTexts(idsToText);
 		
-		cardBytes[index++] = hp;
-		cardBytes[index++] = stage.getValue();
-		
-		index = prevEvoName.convertToIdsAndWriteData(cardBytes, index, idToText);
+		prevEvoName.finalizeAndAddTexts(idsToText);
+		pokemonCategory.finalizeAndAddTexts(idsToText);
+		description.finalizeAndAddTexts(idsToText);
 
 		sortMoves();
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
-			index = moves[moveIndex].convertToIdsAndWriteData(cardBytes, index, name, id, idToText);
+			moves[moveIndex].finalizeAndAddTexts(idsToText, name.toString());
+		}
+	}
+
+	@Override
+	public int convertToIdsAndWriteData(byte[] cardBytes, int startIndex) 
+	{
+		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex);
+		
+		cardBytes[index++] = hp;
+		cardBytes[index++] = stage.getValue();
+		
+		index = prevEvoName.writeTextId(cardBytes, index);
+
+		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
+		{
+			index = moves[moveIndex].convertToIdsAndWriteData(cardBytes, index);
 		}
 		
 		cardBytes[index++] = retreatCost;
 		cardBytes[index++] = weakness.getValue();
 		cardBytes[index++] = resistance.getValue();
 
-		index = pokemonCategory.convertToIdsAndWriteData(cardBytes, index, idToText);
+		index = pokemonCategory.writeTextId(cardBytes, index);
 		
 		cardBytes[index++] = pokedexNumber;
 		cardBytes[index++] = unknownByte1;
@@ -282,7 +295,7 @@ public class PokemonCard extends Card
 		ByteUtils.writeAsShort(weight, cardBytes, index);
 		index += 2;
 
-		index = description.convertToIdsAndWriteData(cardBytes, index, idToText);
+		index = description.writeTextId(cardBytes, index);
 		
 		cardBytes[index++] = unknownByte2;
 		return index;

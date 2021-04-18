@@ -39,6 +39,8 @@ public class RomConstants
 	
 	//Locations
 	public static final int HEADER_LOCATION = 0x134;
+	
+	public static final int BANK_SIZE = 0x4000;
 
 	// TODO: It would potentially be more stable to read in from a location in the engine than
 	// hardcoded locations in case we ever want to support adding more cards or hacks that add
@@ -72,7 +74,6 @@ public class RomConstants
 	public static final int TEXT_POINTER_SIZE_IN_BYTES = 3;
 	public static final int TEXT_POINTERS_LOC = 0x34000 + TEXT_POINTER_SIZE_IN_BYTES; // TextOffsets
 	public static final int TEXT_POINTER_OFFSET = 0x34000;
-	public static final int TEXT_STORAGE_CHUNK_SIZE = 0x4000; // GB bank size is 0x4000 - only that much can be loaded in memory at once
 	
 	// TODO Remove - read from pointers
 	public static final int FIRST_CARD_BYTE = 0x30e28;

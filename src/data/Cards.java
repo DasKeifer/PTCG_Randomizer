@@ -39,7 +39,7 @@ public class Cards<T extends Card>
 	public Cards<T> getCardsWithName(String name)
 	{
 		return new Cards<>(cardSet.stream().filter(
-				card -> name.equals(card.name.getText())).collect(Collectors.toList()));
+				card -> name.equals(card.name.toString())).collect(Collectors.toList()));
 	}
 	
 	public Cards<NonPokemonCard> getEnergyCards()

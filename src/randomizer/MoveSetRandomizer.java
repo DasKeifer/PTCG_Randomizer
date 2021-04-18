@@ -20,16 +20,16 @@ import data.Move;
 import data.PokemonCard;
 import randomizer.Settings.MoveTypeChanges;
 import randomizer.Settings.RandomizationStrategy;
-import rom.RomData;
+import rom.Rom;
 import util.Logger;
 import util.MathUtils;
 
 public class MoveSetRandomizer {
-	private RomData romData;
+	private Rom romData;
 	private Logger logger;
 	private final Cards<PokemonCard> pokeToGetAttacksFrom;
 	
-	public MoveSetRandomizer(RomData inRomData, Logger inLogger)
+	public MoveSetRandomizer(Rom inRomData, Logger inLogger)
 	{
 		romData = inRomData;
 		logger = inLogger;

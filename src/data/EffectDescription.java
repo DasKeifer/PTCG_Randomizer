@@ -1,6 +1,6 @@
 package data;
 
-import java.util.Set;
+import java.util.List;
 
 import constants.RomConstants;
 import rom.Texts;
@@ -8,102 +8,131 @@ import util.StringUtils;
 
 public class EffectDescription extends RomText
 {	
-	private static final String NAME_PLACEHOLDER = "" + (char) 0x15; // NACK - just because
-	private static final int NUM_POINTERS_IN_FILE = 2;
+	private static final int NUM_BLOCKS_IN_ROM = 2;
+	private String sourceCardName;
 
 	public EffectDescription()
 	{
 		super();
+		sourceCardName = "";
 	}
 	
 	public EffectDescription(EffectDescription toCopy)
 	{
 		super(toCopy);
-	}
-
-	public void readDataAndConvertIds(byte[] bytes, int[] textIdIndexes, RomText cardName, Texts idToText, Set<Short> textIdsUsed)
-	{
-		if (textIdIndexes.length != NUM_POINTERS_IN_FILE)
-		{
-			throw new IllegalArgumentException("Reading effect description was passed the wrong number of id indexes :" + 
-					textIdIndexes.length);
-		}
-		genericReadTextFromIds(bytes, textIdIndexes, idToText, textIdsUsed);
-		replaceAll(cardName.getText(), NAME_PLACEHOLDER);
-		
-		// Some desciptions have mispelled names. Check if this is one and if so, replace it
-		if (RomConstants.MISPELLED_CARD_NAMES.containsKey(cardName.getText()))
-		{
-			replaceAll(RomConstants.MISPELLED_CARD_NAMES.get(cardName.getText()), NAME_PLACEHOLDER);
-		}
-	}
-
-	public void convertToIdsAndWriteData(byte[] bytes, int[] textIdIndexes, RomText cardName, Texts idToText)
-	{
-		if (textIdIndexes.length != NUM_POINTERS_IN_FILE)
-		{
-			throw new IllegalArgumentException("Writing effect description was passed the wrong number of id indexes :" + 
-					textIdIndexes.length);
-		}
-		replaceAll(NAME_PLACEHOLDER, cardName.getText());
-		setTextVerbatim(format(getText()));
-		genericConvertToIdsAndWriteText(bytes, textIdIndexes, idToText);
+		sourceCardName = toCopy.sourceCardName;
 	}
 	
-	private String format(String descExpanded)
+	// Effectively undefine the function without the names for this object
+	@Override
+	public void finalizeAndAddTexts(Texts idToText)
 	{
-		String formatted = "";
-		String tempText;
-		boolean failedFormatting = false;
-		boolean hasLineBreak = descExpanded.contains(StringUtils.BLOCK_BREAK);
+		throw new IllegalArgumentException("Must pass the name of the pokemon when finalizing effect descriptions");
+	}
+	
+	public void finalizeAndAddTexts(Texts idToText, String owningCardName)
+	{
+		// Get the flattened text
+		boolean changedText = false;
+		String deformatted = deformatAndMergeText();
 		
-		if (hasLineBreak)
-		{		
-			// First try to preserve any block breaks
-			String[] blocks = descExpanded.split(StringUtils.BLOCK_BREAK);
-			for (int blockIndex = 0; blockIndex < blocks.length; blockIndex++)
+		// Some descriptions have misspelled names. Check if this is one and if so, replace it
+		if (RomConstants.MISPELLED_CARD_NAMES.containsKey(sourceCardName))
+		{
+			if (deformatted.contains(RomConstants.MISPELLED_CARD_NAMES.get(sourceCardName)))
 			{
-				tempText = StringUtils.prettyFormatText(blocks[blockIndex],
-						RomConstants.MAX_CHARS_PER_LINE, RomConstants.MAX_LINES_PER_EFFECT_DESC);
-				if (tempText != null)
-				{
-					formatted += tempText;
-					if (blockIndex < blocks.length - 1)
-					{
-						formatted += StringUtils.BLOCK_BREAK;
-					}
-				}
-				else
-				{
-					System.out.println("Existing block breaks could not be used - reformatting. " +
-							"Block that was too large: \"" + blocks[blockIndex] + "\"");
-					formatted = "";
-					failedFormatting = true;
-					break;
-				}
+				StringUtils.replaceAll(deformatted, RomConstants.MISPELLED_CARD_NAMES.get(sourceCardName), owningCardName);
+				changedText = true;
 			}
 		}
 		
-		if (!hasLineBreak || failedFormatting)
+		// Now check if we need to change other references to the card's name
+		if (!sourceCardName.equals(owningCardName))
 		{
-			// Next try making our own blocks
-			tempText = descExpanded.replace(StringUtils.BLOCK_BREAK, " ");
-			formatted = StringUtils.prettyFormatText(tempText,
-					RomConstants.MAX_CHARS_PER_LINE, RomConstants.MAX_LINES_PER_EFFECT_DESC,
-					RomConstants.PREFERRED_LINES_PER_EFFECT_DESC, NUM_POINTERS_IN_FILE);
+			StringUtils.replaceAll(deformatted, sourceCardName, owningCardName);
+			changedText = true;
+		}
+		
+		// If we changed it, we need to update the text in the class
+		if (changedText)
+		{
+			setText(deformatted);
+		}
+
+		// Then call the parent version of the function
+		super.finalizeAndAddTexts(idToText);
+	}
+	
+	@Override
+	protected boolean needsReformatting(List<String> text)
+	{
+		if (text.size() > 2)
+		{
+			return true;
+		}
+		else if (text.isEmpty())
+		{
+			return false;
+		}
+		
+		return !StringUtils.isFormattedValidly(text, RomConstants.MAX_CHARS_PER_LINE, RomConstants.MAX_LINES_PER_POKE_DESC);
+	}
+
+	@Override
+	protected List<String> formatText(String text) 
+	{
+		List<String> formatted = StringUtils.prettyFormatText(text,
+				RomConstants.MAX_CHARS_PER_LINE, RomConstants.MAX_LINES_PER_EFFECT_DESC,
+				RomConstants.PREFERRED_LINES_PER_EFFECT_DESC, NUM_BLOCKS_IN_ROM);
+		
+		if (formatted.isEmpty())
+		{
+			System.out.println("Could not nicely fit effect text over line breaks - attempting to " +
+					"split words over lines to get it to fit for \"" + text + "\"");
 			
-			if (formatted == null)
+			// If all else fails, just pack as tight as possible
+			formatted = StringUtils.packFormatText(text,
+				RomConstants.MAX_CHARS_PER_LINE, RomConstants.MAX_LINES_PER_EFFECT_DESC,
+				NUM_BLOCKS_IN_ROM);
+			
+			if (formatted.isEmpty())
 			{
-				System.out.println("Could not nicely fit effect text over line breaks - attempting to " +
-						"split words over lines to get it to fit for \"" + tempText + "\"");
-				
-				// If all else fails, just pack as tight as possible
-				formatted = StringUtils.packFormatText(tempText,
-					RomConstants.MAX_CHARS_PER_LINE, RomConstants.MAX_LINES_PER_EFFECT_DESC,
-					NUM_POINTERS_IN_FILE);
+				System.out.println("Failed to nicely pack effect description \"" + 
+						StringUtils.createAbbreviation(text, 25) + "\" so words were split across lines to make it fit");
+			}
+			else
+			{
+				throw new IllegalArgumentException("Could not successfully format effect description \"" + 
+						StringUtils.createAbbreviation(text, 25) + "\"");
 			}
 		}
 		
 		return formatted;
 	}
+	
+	public void readDataAndConvertIds(byte[] bytes, int[] textIdIndexes, RomText cardName, Texts idToText)
+	{
+		if (textIdIndexes.length != NUM_BLOCKS_IN_ROM)
+		{
+			throw new IllegalArgumentException("Reading effect description was passed the wrong number of id indexes :" + 
+					textIdIndexes.length);
+		}
+		
+		// Save the poke name for later rewriting of the description and fixing misspellings
+		sourceCardName = cardName.toString();
+		
+		// Read the text
+		genericReadTextFromIds(bytes, textIdIndexes, idToText);
+	}
+	
+	public void writeTextId(byte[] bytes, int[] textIdIndexes)
+	{
+		if (textIdIndexes.length != NUM_BLOCKS_IN_ROM)
+		{
+			throw new IllegalArgumentException("Writing effect description was passed the wrong number of id indexes :" + 
+					textIdIndexes.length);
+		}
+		genericWriteTextIds(bytes, textIdIndexes);
+	}
+
 }

@@ -1,14 +1,10 @@
 package data;
 
-import constants.RomConstants;
 import constants.CardConstants.CardId;
-import constants.CardDataConstants.EnergyType;
-import constants.CardDataConstants.MoveEffect1;
-import constants.CardDataConstants.MoveEffect2;
-import constants.CardDataConstants.MoveEffect3;
 import constants.DuelConstants.EffectCommandTypes;
 import rom.Texts;
 import util.ByteUtils;
+import util.RomUtils;
 
 public class HardcodedMoves 
 {
@@ -32,8 +28,6 @@ public class HardcodedMoves
 		// EF, 4, 1B, 43
 		
 		// For saving to locations in the ROM
-		static final int bankBBaseAddrs = 0x2c000 - 0x4000;
-		static final int bank6BaseAddrs = 0x186f7 - 0x46f7;
 		static final int[] AVAIL_PLAYER_SEL_START_ADDRS = {0x2cc50};
 		static final int[] AVAIL_AI_SEL_START_ADDRS = {0x2ccad};
 		static int nextIndexToUse = 0;
@@ -43,6 +37,10 @@ public class HardcodedMoves
 		static final int INITIAL_EFFECT_ADDRESS = 0x2cc40; // Bellsprout's but they are all the same even for nidoran
 		static final int PUT_IN_PLAY_AREA_EFFECT_ADDRESS = 0x2ccc2; // Bellsprout's but they are all the same even for nidoran
 
+		// I've debating hardcoding the effect like this vs reading it from the ROM. This seems the "safer" way to do it
+		// but if we assume we can overwrite and reference the locations of the previous functions, I'm not sure it really 
+		// is any safer
+		
 		// Taken from bellsprout (id 0x23)
 		final static byte[] playerSelectEffect = new byte[] {
 				(byte) 0x3e, (byte) 0xff, (byte) 0xe0, (byte) 0xa0, (byte) 0xcd, (byte) 0xdf, (byte) 0x11, 
@@ -72,7 +70,33 @@ public class HardcodedMoves
 			nextIndexToUse = 0;
 		}
 		
-		public static short convertToIdsAndWriteData(byte[] romBytes, OneLineText cardName, CardId cardId, Texts idToText) 
+		public static void writeEffectCommand(byte[] romBytes, int effectCommandStartAddress, int playerSelectStartAddress, int aiSelectStartAddress)
+		{
+			// Same for all call for families
+			romBytes[effectCommandStartAddress++] = EffectCommandTypes.InitialEffect1.getValue();
+			ByteUtils.writeAsShort(RomUtils.convertToInBankOffset(INITIAL_EFFECT_ADDRESS), romBytes, effectCommandStartAddress);
+			effectCommandStartAddress += 2;
+
+			// Same for all call for families
+			romBytes[effectCommandStartAddress++] = EffectCommandTypes.AfterDamage.getValue();
+			ByteUtils.writeAsShort(RomUtils.convertToInBankOffset(PUT_IN_PLAY_AREA_EFFECT_ADDRESS), romBytes, effectCommandStartAddress);
+			effectCommandStartAddress += 2;
+			
+			// Unique to card
+			romBytes[effectCommandStartAddress++] = EffectCommandTypes.RequireSelection.getValue();
+			ByteUtils.writeAsShort(RomUtils.convertToInBankOffset(playerSelectStartAddress), romBytes, effectCommandStartAddress);
+			effectCommandStartAddress += 2;
+
+			// Unique to card
+			romBytes[effectCommandStartAddress++] = EffectCommandTypes.AiSelection.getValue();
+			ByteUtils.writeAsShort(RomUtils.convertToInBankOffset(aiSelectStartAddress), romBytes, effectCommandStartAddress);
+			effectCommandStartAddress += 2;
+			
+			// Ends the effect
+			romBytes[effectCommandStartAddress] = 0;
+		}
+		
+		public static int writeEffectToMemory(byte[] romBytes, OneLineText cardName, CardId cardId, Texts idToText) 
 		{
 			// Identify the open location
 			int playerSelectStartAddress;
@@ -90,37 +114,7 @@ public class HardcodedMoves
 				throw new IllegalArgumentException("TODO: Not yet implemented looking for free space!");
 			}
 
-			
-			// --------------- Create and write the effect command -------------------------
-			int effectCommandIndex = effectCommandAddress;
-			
-			// THIS WORKS! Now to clean it up
-			
-			// Same for all call for families
-			romBytes[effectCommandIndex++] = EffectCommandTypes.InitialEffect1.getValue();
-			ByteUtils.writeAsShort((short) 0x4c40, romBytes, effectCommandIndex);
-			effectCommandIndex += 2;
-
-			// Same for all call for families
-			romBytes[effectCommandIndex++] = EffectCommandTypes.AfterDamage.getValue();
-			ByteUtils.writeAsShort((short) 0x4cc2, romBytes, effectCommandIndex);
-			effectCommandIndex += 2;
-			
-			// Unique to card
-			romBytes[effectCommandIndex++] = EffectCommandTypes.RequireSelection.getValue();
-			ByteUtils.writeAsShort((short) (playerSelectStartAddress - bankBBaseAddrs), romBytes, effectCommandIndex);
-			effectCommandIndex += 2;
-
-			// Unique to card
-			romBytes[effectCommandIndex++] = EffectCommandTypes.AiSelection.getValue();
-			ByteUtils.writeAsShort((short) (aiSelectStartAddress - bankBBaseAddrs), romBytes, effectCommandIndex);
-			effectCommandIndex += 2;
-			
-			// Ends the effect
-			romBytes[effectCommandIndex] = 0;
-			
-			
-			// ---------------- Write the base function to the location in memory then modify them ----------------------
+			// Write the base function to the location in memory then modify them
 			ByteUtils.copyBytes(romBytes, playerSelectStartAddress, playerSelectEffect);
 			ByteUtils.copyBytes(romBytes, aiSelectStartAddress, aiSelectEffect);
 
@@ -135,19 +129,23 @@ public class HardcodedMoves
 			// 17 is where bellsprout ID is
 			romBytes[aiSelectStartAddress + 17] = cardId.getValue();
 			
+			// TODO come back to this
 			// Create the texts
-			OneLineText chosePoke = new OneLineText();
-			chosePoke.setTextVerbatim("Choose a " + cardName.getText());
-			
-			PokeDescription chosePokeFromDeck = new PokeDescription();
-			chosePokeFromDeck.setTextVerbatim("Choose a " + cardName.getText() + " from the deck.");
+//			OneLineText chosePoke = new OneLineText();
+//			chosePoke.setTextVerbatim("Choose a " + cardName.getText());
+//			
+//			PokeDescription chosePokeFromDeck = new PokeDescription();
+//			chosePokeFromDeck.setTextVerbatim("Choose a " + cardName.getText() + " from the deck.");
+//
+//			// Write the indexes of the text to the effect bytes and save the texts if needed
+//			chosePokeFromDeck.convertToIdsAndWriteData(romBytes, playerSelectStartAddress + 8, idToText);
+//			cardName.convertToIdsAndWriteData(romBytes, playerSelectStartAddress + 11, idToText);
+//			chosePoke.convertToIdsAndWriteData(romBytes, playerSelectStartAddress + 24, idToText);
 
-			// Write the indexes of the text to the effect bytes and save the texts if needed
-			chosePokeFromDeck.convertToIdsAndWriteData(romBytes, playerSelectStartAddress + 8, idToText);
-			cardName.convertToIdsAndWriteData(romBytes, playerSelectStartAddress + 11, idToText);
-			chosePoke.convertToIdsAndWriteData(romBytes, playerSelectStartAddress + 24, idToText);
+			// Finally, create and write the effect command
+			writeEffectCommand(romBytes, effectCommandAddress, playerSelectStartAddress, aiSelectStartAddress);
 			
-			return (short) (effectCommandAddress - bank6BaseAddrs);
+			return effectCommandAddress;
 		}
 	}
 }

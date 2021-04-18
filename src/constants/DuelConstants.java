@@ -1,6 +1,5 @@
 package constants;
 
-import constants.CardDataConstants.CardRarity;
 import util.ByteUtils;
 
 public class DuelConstants 

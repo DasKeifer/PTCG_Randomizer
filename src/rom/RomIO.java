@@ -5,18 +5,15 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import constants.RomConstants;
 import data.Card;
 import data.Cards;
 import util.ByteUtils;
 
-public class RomHandler
+public class RomIO
 {
-	private RomHandler() {}
+	private RomIO() {}
 	
 	static boolean verifyRom(byte[] rawBytes)
 	{
@@ -32,34 +29,12 @@ public class RomHandler
 		return true;
 	}
 	
-	public static RomData readRom(File romFile) throws IOException
-	{
-		RomData rom = new RomData();
-		
-		rom.rawBytes = readRaw(romFile);
-		verifyRom(rom.rawBytes);
-		
-		Texts allText = readAllTextFromPointers(rom.rawBytes);
-		rom.allCards = readAllCardsFromPointers(rom.rawBytes, allText);
-		rom.idsToText = allText;
-		
-		return rom;
-	}
-	
-	public static void writeRom(RomData rom, File romFile) throws IOException
-	{
-		setAllCardsAnPointers(rom.rawBytes, rom.allCards, rom.idsToText);
-		setTextAndPointers(rom.rawBytes, rom.idsToText);
-		
-		writeRaw(rom.rawBytes, romFile);
-	}
-	
-	private static byte[] readRaw(File romFile) throws IOException 
+	static byte[] readRaw(File romFile) throws IOException 
 	{
 		return Files.readAllBytes(romFile.toPath());
 	}
 	
-	private static void writeRaw(byte[] rawBytes, File romFile)
+	static void writeRaw(byte[] rawBytes, File romFile)
 	{
 		try (FileOutputStream fos = new FileOutputStream(romFile))
 		{
@@ -71,10 +46,9 @@ public class RomHandler
 		}
 	}
 	
-	private static Cards<Card> readAllCardsFromPointers(byte[] rawBytes, Texts allText)
+	static Cards<Card> readAllCardsFromPointers(byte[] rawBytes, Texts allText)
 	{
 		Cards<Card> allCards = new Cards<>();
-		Set<Short> convertedTextPtrs = new HashSet<>();
 
 		// Read the text based on the pointer map in the rom
 		int ptrIndex = RomConstants.CARD_POINTERS_LOC;
@@ -86,17 +60,18 @@ public class RomHandler
 				) != 0)
 		{
 			cardIndex += RomConstants.CARD_POINTER_OFFSET;
-			Card.addCardFromBytes(rawBytes, cardIndex, allText, convertedTextPtrs, allCards);
+			Card.addCardFromBytes(rawBytes, cardIndex, allText, allCards);
 
 			// Move our text pointer to the next pointer
 			ptrIndex += RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		}
 		
-		allText.removeTextAtIds(convertedTextPtrs);
 		return allCards;
 	}
-	
-	private static Texts readAllTextFromPointers(byte[] rawBytes)
+
+	// Note assumes that the first text in the pointer list is the first in the file as well. This is required
+	// since there is no null between the text pointer map and the texts themselves
+	static Texts readAllTextFromPointers(byte[] rawBytes)
 	{
 		Texts textMap = new Texts();
 		 
@@ -131,29 +106,36 @@ public class RomHandler
 		return textMap;
 	}
 	
-	private static void setAllCardsAnPointers(byte[] bytes, Cards<Card> cards, Texts allText)
+	static void finalizeAndAddTexts(Cards<Card> cards, Texts allText)
 	{
-		// First write the 0 index "null" text pointer
+		for (Card card : cards.toSortedList())
+		{
+			card.finalizeAndAddTexts(allText);
+		}
+	}
+	
+	static void setAllCardsAndPointers(byte[] bytes, FreeSpaceManager spaceManager, Cards<Card> cards)
+	{		
+		// First write the 0 index "null" card
 		int ptrIndex = RomConstants.CARD_POINTERS_LOC - RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		for (int byteIndex = 0; byteIndex < RomConstants.CARD_POINTER_SIZE_IN_BYTES; byteIndex++)
 		{
 			bytes[ptrIndex++] = 0;
 		}
 		
-		// determine where the first text will go based off the number of text we have
+		// determine where the first card will go based off the number of cards we have
 		// The first null pointer was already taken care of so we don't need to handle it 
 		// here but we still need to handle the last null pointer
 		int cardIndex = RomConstants.CARD_POINTERS_LOC + (cards.count() + 1) * RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		
-		List<Card> sorted = cards.toSortedList();
-		for (Card card : sorted)
+		for (Card card : cards.toSortedList())
 		{
 			// Write the pointer
 			ByteUtils.writeLittleEndian(cardIndex - RomConstants.CARD_POINTER_OFFSET, bytes, ptrIndex, RomConstants.CARD_POINTER_SIZE_IN_BYTES);
 			ptrIndex += RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 			
 			// Write the card
-			cardIndex = card.convertToIdsAndWriteData(bytes, cardIndex, allText);
+			cardIndex = card.convertToIdsAndWriteData(bytes, cardIndex);
 		}
 
 		// Write the null pointer at the end of the cards pointers
@@ -165,8 +147,12 @@ public class RomHandler
 		// Until it is determined to be necessary, don't worry about padding remaining space with 0xff
 	}
 	
-	private static void setTextAndPointers(byte[] rawBytes, Texts ptrToText) throws IOException
+	static void setTextAndPointers(byte[] rawBytes, FreeSpaceManager spaceManager, Texts ptrToText) throws IOException
 	{
+		// Get the free space needed for the text pointers
+		spaceManager.allocateSpecificSpace(RomConstants.TEXT_POINTERS_LOC - RomConstants.TEXT_POINTER_SIZE_IN_BYTES, 
+				ptrToText.count() * RomConstants.TEXT_POINTER_SIZE_IN_BYTES);
+		
 		// First write the 0 index "null" text pointer
 		int ptrIndex = RomConstants.TEXT_POINTERS_LOC - RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 		for (int byteIndex = 0; byteIndex < RomConstants.TEXT_POINTER_SIZE_IN_BYTES; byteIndex++)
@@ -178,10 +164,9 @@ public class RomHandler
 		// The null pointer was already taken care of so we don't need to handle it here
 		int textIndex = RomConstants.TEXT_POINTERS_LOC + ptrToText.count() * RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 
-		// Not sure why but every 0x4000 bytes there's a boundary that
-		// we can't write past without getting garbly-gook text. It aligns
-		// presumably causally with the text location offset
-		int nextTextStorageBlock = RomConstants.TEXT_POINTER_OFFSET + RomConstants.TEXT_STORAGE_CHUNK_SIZE;
+		// We need to align with the bank boundaries every 0x4000 bytes. If we write past 
+		// it we will get garbly-gook text
+		int nextBank = RomConstants.TEXT_POINTER_OFFSET + RomConstants.BANK_SIZE;
 		
 		// Now for each text, write the pointer then write the text at that address
 		// Note we intentionally do a index based lookup instead of iteration in order to
@@ -192,10 +177,10 @@ public class RomHandler
 			// First get the text and determine if we need to shift the index to 
 			// avoid a storage block boundary
 			byte[] textBytes = ptrToText.getAtId(textId).getBytes();
-			if (textIndex + textBytes.length + 2 > nextTextStorageBlock)
+			if (textIndex + textBytes.length + 2 > nextBank)
 			{
-				textIndex = nextTextStorageBlock;
-				nextTextStorageBlock += RomConstants.TEXT_STORAGE_CHUNK_SIZE;
+				textIndex = nextBank;
+				nextBank += RomConstants.BANK_SIZE;
 			}
 
 			// Write the pointer
@@ -211,5 +196,49 @@ public class RomHandler
 		}
 		
 		// Until it is determined to be necessary, don't worry about padding remaining space with 0xff
+	}
+
+	// Note assumes that the first text in the pointer list is the first in the file as well. This is required
+	// since there is no null between the text pointer map and the texts themselves
+	static void clearAllText(byte[] rawBytes)
+	{
+		// Free the starting set of 0's
+		ByteUtils.setBytes(rawBytes, RomConstants.TEXT_POINTERS_LOC - RomConstants.TEXT_POINTER_SIZE_IN_BYTES, 
+				RomConstants.TEXT_POINTER_SIZE_IN_BYTES, (byte) 0xFF);
+		
+		// Read the text based on the pointer map in the rom
+		int ptrIndex = RomConstants.TEXT_POINTERS_LOC;
+		int textAddress = 0;
+		int textIndex = 0;
+		int firstAddress = Integer.MAX_VALUE;
+		
+		// Read each pointer one at a time until we reach the ending null pointer
+		while (ptrIndex < firstAddress)
+		{
+			// Get the address from the ptr
+			textAddress = (int) ByteUtils.readLittleEndian(
+					rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES) + 
+					RomConstants.TEXT_POINTER_OFFSET;
+			if (textAddress < firstAddress)
+			{
+				firstAddress = textAddress;
+			}
+			
+			// go to the text index and loop until we finding the 0x00 termination of the
+			// string writing each as a empty byte 0xFF
+			textIndex = textAddress;
+			for (; rawBytes[textIndex] != 0x00; textIndex++)
+			{
+				rawBytes[textIndex] = (byte) 0xFF;
+			}
+			// Write over the 0x00 too
+			rawBytes[textIndex] = (byte) 0xFF;
+			
+			// Now write over the pointer as well
+			ByteUtils.setBytes(rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES, (byte) 0xFF);
+
+			// Finally, move our text pointer to the next pointer
+			ptrIndex += RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+		}
 	}
 }
