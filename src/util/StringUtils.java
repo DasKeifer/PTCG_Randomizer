@@ -75,7 +75,7 @@ public class StringUtils
 	
 	public static boolean isFormattedValidly(String text, int maxCharsPerLine, int maxLines)
 	{
-		String[] lines = text.split("/n");
+		String[] lines = text.split('\n' + "");
 		
 		if (lines.length > maxLines)
 		{
@@ -130,11 +130,15 @@ public class StringUtils
 			return new ArrayList<>();
 		}
 
-		// Figure our if we need to overpack it
 		int linesPerBlock = preferedLinesPerBlock;
-		if (formattedLines.size() > preferedLinesPerBlock * maxNumberOfBlocks)
+		// subtracting one from the count makes it so that a full page or anything less doesn't count
+		int numBlocksMinus1AtPreferred = (formattedLines.size() - 1) / preferedLinesPerBlock;
+		int numBlocksMinus1AtOverfilled = (formattedLines.size() - 1) / maxLinesPerBlock;
+		
+		// If we can save blocks by overpacking, do so
+		if (numBlocksMinus1AtOverfilled < numBlocksMinus1AtPreferred)
 		{
-			linesPerBlock = formattedLines.size() / maxNumberOfBlocks + 1;
+			linesPerBlock = formattedLines.size() / (numBlocksMinus1AtOverfilled + 1) + 1;
 		}
 
 		return formatIntoBlocks(formattedLines, linesPerBlock);
@@ -191,7 +195,8 @@ public class StringUtils
 				if (hasOrphan && totalLinesSoFar == lines.size() - 2)
 				{
 					// Orphan case detected! Prevent it
-					block.append(BLOCK_BREAK);
+					blocks.add(block.toString());
+					block.setLength(0); // Clear the builder
 					linesInBlock = 0;
 				}
 				else 

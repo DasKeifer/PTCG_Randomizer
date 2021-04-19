@@ -2,62 +2,55 @@ package rom;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class Texts 
 {
 	private Map<Short, String> textMap;
-	private Map<String, Short> usedText;
+	private Map<String, Short> reverseMap;
 
 	public Texts()
 	{
 		textMap = new HashMap<>();
-		usedText = new HashMap<>();
+		reverseMap = new HashMap<>();
+		
+		// Put in the "null pointer" reservation at ID 0
+		textMap.put((short) 0, "");
+		reverseMap.put("", (short) 0);
 	}
 	
 	public Texts(Texts toCopy)
 	{
 		textMap = new HashMap<>(toCopy.textMap);
-		usedText = new HashMap<>(toCopy.usedText);
+		reverseMap = new HashMap<>(toCopy.reverseMap);
 	}
 	
 	public short insertTextAtNextId(String text)
 	{
-		short nextId = (short) (count() + 1); // 0 is a null pointer
+		short nextId = count();
 		textMap.put(nextId, text);
+		reverseMap.put(text, nextId);
 		return nextId;
 	}
 	
 	public short getId(String text)
 	{
-		// TODO implement
-		return insertTextOrGetId(text);
+		Short id = reverseMap.get(text);
+		if (id == null)
+		{
+			return 0;
+		}
+		return id;
 	}
 	
 	public short insertTextOrGetId(String text)
 	{
-		Short id = usedText.get(text);
+		Short id = reverseMap.get(text);
 		if (id == null)
 		{
+			// This takes care of placing in both maps
 			id = insertTextAtNextId(text);
-			usedText.put(text, id);
 		}
-
 		return id;
-	}
-	
-	public void removeTextAtId(short idToRemove)
-	{
-		usedText.remove(textMap.get(idToRemove));
-		textMap.remove(idToRemove);
-	}
-	
-	public void removeTextAtIds(Set<Short> idsToRemove)
-	{
-		for (short id : idsToRemove)
-		{
-			removeTextAtId(id);
-		}
 	}
 	
 	public String getAtId(short id)
@@ -68,7 +61,7 @@ public class Texts
 	public void putAtId(short id, String text)
 	{
 		textMap.put(id, text);
-		usedText.put(text, id);
+		reverseMap.put(text, id);
 	}
 	
 	public short count()

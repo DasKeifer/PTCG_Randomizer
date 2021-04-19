@@ -76,7 +76,8 @@ public class RomIO
 		Texts textMap = new Texts();
 		 
 		 // Read the text based on the pointer map in the rom
-		int ptrIndex = RomConstants.TEXT_POINTERS_LOC;
+		// First pointer is a null pointer so we skip it
+		int ptrIndex = RomConstants.TEXT_POINTERS_LOC + RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 		int ptr = 0;
 		int textIndex = 0;
 		int firstPtr = Integer.MAX_VALUE;
@@ -114,6 +115,8 @@ public class RomIO
 		}
 	}
 	
+	// TODO: Check byte boundary stuff - "Hand" in the turn menu is garbly
+	
 	static void setAllCardsAndPointers(byte[] bytes, FreeSpaceManager spaceManager, Cards<Card> cards)
 	{		
 		// First write the 0 index "null" card
@@ -147,14 +150,14 @@ public class RomIO
 		// Until it is determined to be necessary, don't worry about padding remaining space with 0xff
 	}
 	
-	static void setTextAndPointers(byte[] rawBytes, FreeSpaceManager spaceManager, Texts ptrToText) throws IOException
+	static void writeTextAndIdMap(byte[] rawBytes, FreeSpaceManager spaceManager, Texts ptrToText) throws IOException
 	{
 		// Get the free space needed for the text pointers
-		spaceManager.allocateSpecificSpace(RomConstants.TEXT_POINTERS_LOC - RomConstants.TEXT_POINTER_SIZE_IN_BYTES, 
+		spaceManager.allocateSpecificSpace(RomConstants.TEXT_POINTERS_LOC, 
 				ptrToText.count() * RomConstants.TEXT_POINTER_SIZE_IN_BYTES);
 		
 		// First write the 0 index "null" text pointer
-		int ptrIndex = RomConstants.TEXT_POINTERS_LOC - RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+		int ptrIndex = RomConstants.TEXT_POINTERS_LOC;
 		for (int byteIndex = 0; byteIndex < RomConstants.TEXT_POINTER_SIZE_IN_BYTES; byteIndex++)
 		{
 			rawBytes[ptrIndex++] = 0;
@@ -162,7 +165,8 @@ public class RomIO
 		
 		// determine where the first text will go based off the number of text we have
 		// The null pointer was already taken care of so we don't need to handle it here
-		int textIndex = RomConstants.TEXT_POINTERS_LOC + ptrToText.count() * RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+		// hence the -1
+		int textIndex = RomConstants.TEXT_POINTERS_LOC + (ptrToText.count() - 1) * RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 
 		// We need to align with the bank boundaries every 0x4000 bytes. If we write past 
 		// it we will get garbly-gook text
@@ -171,8 +175,8 @@ public class RomIO
 		// Now for each text, write the pointer then write the text at that address
 		// Note we intentionally do a index based lookup instead of iteration in order to
 		// ensure that the IDs are sequential as they need to be (i.e. there are no gaps)
-		// We start at 1 because 0 is a null ptr
-		for (short textId = 1; textId < ptrToText.count() + 1; textId++)
+		// We start at 1 because we already handled the null pointer at 0
+		for (short textId = 1; textId < ptrToText.count(); textId++)
 		{			
 			// First get the text and determine if we need to shift the index to 
 			// avoid a storage block boundary
@@ -203,11 +207,13 @@ public class RomIO
 	static void clearAllText(byte[] rawBytes)
 	{
 		// Free the starting set of 0's
-		ByteUtils.setBytes(rawBytes, RomConstants.TEXT_POINTERS_LOC - RomConstants.TEXT_POINTER_SIZE_IN_BYTES, 
+		ByteUtils.setBytes(rawBytes, RomConstants.TEXT_POINTERS_LOC, 
 				RomConstants.TEXT_POINTER_SIZE_IN_BYTES, (byte) 0xFF);
 		
 		// Read the text based on the pointer map in the rom
-		int ptrIndex = RomConstants.TEXT_POINTERS_LOC;
+		// 0th is a null pointer and we already handled it so we jump to the
+		// first "real" pointer
+		int ptrIndex = RomConstants.TEXT_POINTERS_LOC + RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 		int textAddress = 0;
 		int textIndex = 0;
 		int firstAddress = Integer.MAX_VALUE;

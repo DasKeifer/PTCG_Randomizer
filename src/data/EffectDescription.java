@@ -34,23 +34,26 @@ public class EffectDescription extends RomText
 	{
 		// Get the flattened text
 		boolean changedText = false;
-		String deformatted = deformatAndMergeText();
+		String deformatted = getDeformattedAndMergedText();
 		
-		// Some descriptions have misspelled names. Check if this is one and if so, replace it
-		if (RomConstants.MISPELLED_CARD_NAMES.containsKey(sourceCardName))
+		if (!isEmpty())
 		{
-			if (deformatted.contains(RomConstants.MISPELLED_CARD_NAMES.get(sourceCardName)))
+			// Some descriptions have misspelled names. Check if this is one and if so, replace it
+			if (RomConstants.MISPELLED_CARD_NAMES.containsKey(sourceCardName))
 			{
-				StringUtils.replaceAll(deformatted, RomConstants.MISPELLED_CARD_NAMES.get(sourceCardName), owningCardName);
+				if (deformatted.contains(RomConstants.MISPELLED_CARD_NAMES.get(sourceCardName)))
+				{
+					StringUtils.replaceAll(deformatted, RomConstants.MISPELLED_CARD_NAMES.get(sourceCardName), owningCardName);
+					changedText = true;
+				}
+			}
+			
+			// Now check if we need to change other references to the card's name
+			if (!sourceCardName.equals(owningCardName))
+			{
+				deformatted = StringUtils.replaceAll(deformatted, sourceCardName, owningCardName);
 				changedText = true;
 			}
-		}
-		
-		// Now check if we need to change other references to the card's name
-		if (!sourceCardName.equals(owningCardName))
-		{
-			StringUtils.replaceAll(deformatted, sourceCardName, owningCardName);
-			changedText = true;
 		}
 		
 		// If we changed it, we need to update the text in the class
@@ -75,7 +78,7 @@ public class EffectDescription extends RomText
 			return false;
 		}
 		
-		return !StringUtils.isFormattedValidly(text, RomConstants.MAX_CHARS_PER_LINE, RomConstants.MAX_LINES_PER_POKE_DESC);
+		return !StringUtils.isFormattedValidly(text, RomConstants.MAX_CHARS_PER_LINE, RomConstants.MAX_LINES_PER_EFFECT_DESC);
 	}
 
 	@Override

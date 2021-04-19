@@ -72,7 +72,7 @@ public class RomConstants
 	// Starts with a null pointer
 	public static final int TEXT_ID_SIZE_IN_BYTES = 2;
 	public static final int TEXT_POINTER_SIZE_IN_BYTES = 3;
-	public static final int TEXT_POINTERS_LOC = 0x34000 + TEXT_POINTER_SIZE_IN_BYTES; // TextOffsets
+	public static final int TEXT_POINTERS_LOC = 0x34000; // TextOffsets
 	public static final int TEXT_POINTER_OFFSET = 0x34000;
 	
 	// TODO Remove - read from pointers

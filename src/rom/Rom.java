@@ -71,7 +71,7 @@ public class Rom
 
 		// Save the new data starting with the text so we can ensure it gets
 		// the space in memory it needs
-		RomIO.setTextAndPointers(rawBytes, spaceManager, idsToText);
+		RomIO.writeTextAndIdMap(rawBytes, spaceManager, idsToText);
 		RomIO.setAllCardsAndPointers(rawBytes, spaceManager, allCards);
 		
 		// Write it to the file

@@ -363,7 +363,8 @@ public class CardDataConstants
 
 	public enum WeaknessResistanceType
 	{
-		// TODO: This looks like a flag... Can we have multiple weaknesses?
+		// TODO: This looks like a flag... Can we have multiple weaknesses? 
+		// Yes - another randomizer does this. Is there a limit to the max number we can have?
 		FIRE      (0x80),
 		GRASS     (0x40),
 		LIGHTNING (0x20),

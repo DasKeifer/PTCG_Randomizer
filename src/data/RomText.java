@@ -11,39 +11,43 @@ import util.StringUtils;
 public abstract class RomText
 {	
 	public static final char SPECIAL_SYM_RESERVE_SPACE_CHAR = 0x11; // Device control 1 for no particular reason
-	private List<String> text;
-	private List<Short> textIds;
+	private List<String> textBlocks;
+	private List<Short> textBlockIds;
 	
 	public RomText()
 	{
-		text = new ArrayList<>();
-		textIds = new ArrayList<>();
+		textBlocks = new ArrayList<>();
+		textBlocks.add("");
+		textBlockIds = new ArrayList<>();
 	}
 	
 	public RomText(RomText toCopy)
 	{
-		text = new ArrayList<>(toCopy.text);
-		textIds = new ArrayList<>(toCopy.textIds);
+		textBlocks = new ArrayList<>(toCopy.textBlocks);
+		textBlockIds = new ArrayList<>(toCopy.textBlockIds);
 	}
 
 	public void setText(String newText)
 	{
-		text.clear();
-		textIds.clear();
-		text.add(newText);
-		processForInternalManaging();
+		textBlocks.clear();
+		textBlockIds.clear();
+		textBlocks.add(processForInternalManaging(newText));
 	}
 	
-	public void setText(List<String> newText)
+	public void setTextBlocks(List<String> newText)
 	{
-		text = new ArrayList<>(newText);
-		textIds.clear();
-		processForInternalManaging();
+		textBlocks = new ArrayList<>(newText);
+		if (textBlocks.isEmpty())
+		{
+			textBlocks.add("");
+		}
+		textBlockIds.clear();
+		processForInternalManaging(newText);
 	}
 	
-	public List<String> getText()
+	public List<String> getTextBlocks()
 	{
-		return new ArrayList<>(text);
+		return new ArrayList<>(textBlocks);
 	}
 	
 	@Override
@@ -56,11 +60,11 @@ public abstract class RomText
 	{
 		if (!keepFormatted)
 		{
-			return deformatAndMergeText();
+			return getDeformattedAndMergedText();
 		}
 		
 		StringBuilder textBuilder = new StringBuilder();
-		for (String string : text)
+		for (String string : textBlocks)
 		{
 			if (textBuilder.length() > 0)
 			{
@@ -73,20 +77,28 @@ public abstract class RomText
 	
 	public boolean isEmpty()
 	{
-		return text.isEmpty();
+		// Always will be at least one entry/block
+		for (String text : textBlocks)
+		{
+			if (!text.isEmpty())
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public boolean contains(String regex)
 	{
-		return StringUtils.contains(text, regex);
+		return StringUtils.contains(textBlocks, regex);
 	}
 	
 	public boolean replaceAll(String regex, String replacement)
 	{
 		if (contains(regex))
 		{
-			StringUtils.replaceAll(text, regex, replacement);
-			textIds.clear(); // Invalidated the existing ids
+			StringUtils.replaceAll(textBlocks, regex, replacement);
+			textBlockIds.clear(); // Invalidated the existing ids
 			return true;
 		}
 		return false;
@@ -94,31 +106,20 @@ public abstract class RomText
 	
 	public void finalizeAndAddTexts(Texts idToText)
 	{
-		// We clear the IDs if we changed/manully set the text
-		if (textIds.isEmpty() || needsReformatting(text))
+		// We clear the IDs if we changed/manually set the text
+		if ((textBlockIds.isEmpty() && !isEmpty()) || needsReformatting(textBlocks))
 		{
-			text = formatText(deformatAndMergeText());
+			textBlocks = formatText(getDeformattedAndMergedText());
 		}
 		
 		// Now add in the English chars and such - don't do it before reformatting or else
 		// it won't add at the start of block breaks correctly
-		prepareForWritting();
+		prepareForWritting(textBlocks);
 		
-		textIds.clear();
-		for (String block : text)
+		textBlockIds.clear();
+		for (String block : textBlocks)
 		{
-			textIds.add(idToText.insertTextOrGetId(block));
-		}
-	}
-	
-	protected void checkAndDeformatIfNeeded()
-	{
-		// We clear the IDs if we changed/manully set the text
-		if (textIds.isEmpty() || needsReformatting(text))
-		{
-			String deformatted = deformatAndMergeText();
-			text.clear();
-			text.add(deformatted);
+			textBlockIds.add(idToText.insertTextOrGetId(block));
 		}
 	}
 	
@@ -128,8 +129,8 @@ public abstract class RomText
 	
 	protected void genericReadTextFromIds(byte[] bytes, int[] textIdIndexes, Texts idsToText)
 	{
-		text.clear();
-		textIds.clear();
+		textBlocks.clear();
+		textBlockIds.clear();
 		
 		for (int index : textIdIndexes)
 		{
@@ -139,35 +140,42 @@ public abstract class RomText
 				break;
 			}
 			
-			text.add(idsToText.getAtId(textId));
-			textIds.add(textId);
+			textBlocks.add(idsToText.getAtId(textId));
+			textBlockIds.add(textId);
 		}
 		
-		processForInternalManaging();
+		// Guard against 0 length array
+		if (textIdIndexes.length == 0)
+		{
+			textBlocks.add("");
+			textBlockIds.add(idsToText.getId(""));
+		}
+		
+		processForInternalManaging(textBlocks);
 	}
 
 	protected void genericWriteTextIds(byte[] bytes, int[] indexesToWriteAt)
 	{
 		// TODO: fix throws
-		if (textIds.size() != text.size())
+		if (textBlockIds.size() != textBlocks.size())
 		{
 			throw new IllegalArgumentException("Object not setup to write! The found number of ids (" + 
-					textIds.size() + ") does not match the number of text blocks (" + text.size() + 
+					textBlockIds.size() + ") does not match the number of text blocks (" + textBlocks.size() + 
 					") for text \"" + StringUtils.createAbbreviation(toString(), 25) + "\"");
 		}
 		
 		int expectedBlocks = indexesToWriteAt.length;
-		if (text.size() > expectedBlocks)
+		if (textBlocks.size() > expectedBlocks)
 		{
 			throw new IllegalArgumentException("Too many text blocks passed in! Expected " + 
-					expectedBlocks + " got " + text.size() + ". First block is \"" + text.get(0) + "\"");
+					expectedBlocks + " got " + textBlocks.size() + ". First block is \"" + textBlocks.get(0) + "\"");
 		}
 		
 		// Write each blocks id
 		int blockIndex = 0;
-		for (; blockIndex < textIds.size(); blockIndex++)
+		for (; blockIndex < textBlockIds.size(); blockIndex++)
 		{
-			ByteUtils.writeAsShort(textIds.get(blockIndex).shortValue(), 
+			ByteUtils.writeAsShort(textBlockIds.get(blockIndex).shortValue(), 
 					bytes, indexesToWriteAt[blockIndex]);
 		}
 		
@@ -182,24 +190,24 @@ public abstract class RomText
 		}
 		
 		// Set it back
-		processForInternalManaging();
+		processForInternalManaging(textBlocks);
 	}
 	
-	protected String deformatAndMergeText()
+	protected String getDeformattedAndMergedText()
 	{
-		if (text.size() > 1)
+		if (textBlocks.size() > 1)
 		{
 			StringBuilder merged= new StringBuilder();
-			for (String string : text)
+			for (String string : textBlocks)
 			{
-				merged.append(stripOfFormatting(string));
+				merged.append(stripOfFormatting(processForInternalManaging(string)));
 			}
 			
 			return merged.toString();
 		}
-		else if (text.size() == 1)
+		else if (textBlocks.size() == 1)
 		{
-			return stripOfFormatting(text.get(0));
+			return stripOfFormatting(processForInternalManaging(textBlocks.get(0)));
 		}
 		return "";
 	}
@@ -209,71 +217,85 @@ public abstract class RomText
 		return toStrip.replaceAll(" \n", " ").replaceAll("\n", " ").replaceAll(StringUtils.BLOCK_BREAK, " ").replaceAll("  ", " ");
 	}
 
-	private void processForInternalManaging()
-	{
-		removeEnglishCharTypeChars();
-		reserveSpaceForSpecialChars();
+	private String processForInternalManaging(String text)
+	{		
+		if (!text.isEmpty())
+		{
+			return reserveSpaceForSpecialChars(removeEnglishCharTypeChars(text));
+		}
+		return "";
 	}
 	
-	private void prepareForWritting()
+	private void processForInternalManaging(List<String> text)
 	{
-		removeReserveSpaceForSpecialChars();
-		addEnglishCharsTypeCharIfNeeded();
+		for (int i = 0; i < text.size(); i++)
+		{
+			text.set(i, processForInternalManaging(text.get(i)));
+		}
+	}
+	
+	private String prepareForWritting(String text)
+	{
+		if (!text.isEmpty())
+		{
+			return removeReserveSpaceForSpecialChars(addEnglishCharsTypeCharIfNeeded(text));
+		}
+		return "";
+	}
+	
+	private void prepareForWritting(List<String> text)
+	{
+		for (int i = 0; i < text.size(); i++)
+		{
+			text.set(i, prepareForWritting(text.get(i)));
+		}
 	}
 			
-	private void addEnglishCharsTypeCharIfNeeded()
+	private static String addEnglishCharsTypeCharIfNeeded(String text)
 	{
-		for (int i = 0; i < text.size(); i++)
+		if (!text.startsWith("" + RomConstants.ENLGISH_TEXT_CHAR))
 		{
-			if (!text.get(i).startsWith("" + RomConstants.ENLGISH_TEXT_CHAR))
-			{
-				text.set(i, RomConstants.ENLGISH_TEXT_CHAR + text.get(i));
-			}
+			return RomConstants.ENLGISH_TEXT_CHAR + text;
 		}
+		return text;
 	}
 	
-	private void removeEnglishCharTypeChars()
+	private static String removeEnglishCharTypeChars(String text)
 	{
-		for (int i = 0; i < text.size(); i++)
+		if (text.startsWith("" + RomConstants.ENLGISH_TEXT_CHAR))
 		{
-			if (text.get(i).startsWith("" + RomConstants.ENLGISH_TEXT_CHAR))
-			{
-				text.set(i, text.get(i).substring(1));
-			}
+			return text.substring(1);
 		}
+		return text;
 	}
 	
-	private void reserveSpaceForSpecialChars()
+	private static String reserveSpaceForSpecialChars(String text)
 	{
 		// Energy types behave a bit oddly - if there is a space before them (which there always seems 
 		// to be is) then they need to align with an even char position. If the space is an even char, 
 		// that means it displays as two spaces but if its an odd char, it displays as one space. To 
 		// keep the  formatting generic, we add the extra space in for all energies to assume the 
 		// "worst" case
-		for (int i = 0; i < text.size(); i++)
+		for (String specialChars : RomConstants.SPECIAL_SYMBOLS)
 		{
-			for (String specialChars : RomConstants.SPECIAL_SYMBOLS)
-			{
-				// First remove in case this is called more than once or something
-				text.set(i, text.get(i).replaceAll(specialChars + SPECIAL_SYM_RESERVE_SPACE_CHAR, specialChars));
-				text.set(i, text.get(i).replaceAll(specialChars, specialChars + SPECIAL_SYM_RESERVE_SPACE_CHAR));
-			}
+			// First remove in case this is called more than once or something
+			text = text.replaceAll(specialChars + SPECIAL_SYM_RESERVE_SPACE_CHAR, specialChars);
+			text = text.replaceAll(specialChars, specialChars + SPECIAL_SYM_RESERVE_SPACE_CHAR);
 		}
+		return text;
 	}
 	
-	private void removeReserveSpaceForSpecialChars()
+	private static String removeReserveSpaceForSpecialChars(String text)
 	{
 		// Energy types behave a bit oddly - if there is a space before them (which there always seems 
 		// to be is) then they need to align with an even char position. If the space is an even char, 
 		// that means it displays as two spaces but if its an odd char, it displays as one space. To 
 		// keep the  formatting generic, we add the extra space in for all energies to assume the 
 		// "worst" case
-		for (int i = 0; i < text.size(); i++)
+		for (String specialChars : RomConstants.SPECIAL_SYMBOLS)
 		{
-			for (String specialChars : RomConstants.SPECIAL_SYMBOLS)
-			{
-				text.set(i, text.get(i).replaceAll(specialChars + SPECIAL_SYM_RESERVE_SPACE_CHAR, specialChars));
-			}
+			text = text.replaceAll(specialChars + SPECIAL_SYM_RESERVE_SPACE_CHAR, specialChars);
 		}
+		return text;
 	}
 }
