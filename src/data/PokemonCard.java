@@ -213,9 +213,9 @@ public class PokemonCard extends Card
 	}
 	
 	@Override
-	public int readDataAndConvertIds(byte[] cardBytes, int startIndex, Texts idToText) 
+	public int readAndConvertIds(byte[] cardBytes, int startIndex, Texts idToText) 
 	{
-		readCommonNameAndDataAndConvertIds(cardBytes, startIndex, idToText);
+		commonReadAndConvertIds(cardBytes, startIndex, idToText);
 		
 		int index = startIndex + Card.CARD_COMMON_SIZE;
 		hp = cardBytes[index++];
@@ -251,9 +251,9 @@ public class PokemonCard extends Card
 	}
 	
 	@Override
-	public void finalizeAndAddTexts(Texts idsToText)
+	public void finalizeAndConvertTextToIds(Texts idsToText)
 	{
-		finalizeAndAddCommonTexts(idsToText);
+		commonFinalizeAndConvertTextToIds(idsToText);
 		
 		prevEvoName.finalizeAndAddTexts(idsToText);
 		pokemonCategory.finalizeAndAddTexts(idsToText);
@@ -267,9 +267,9 @@ public class PokemonCard extends Card
 	}
 
 	@Override
-	public int convertToIdsAndWriteData(byte[] cardBytes, int startIndex) 
+	public int writeData(byte[] cardBytes, int startIndex) 
 	{
-		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex);
+		int index = commonWriteData(cardBytes, startIndex);
 		
 		cardBytes[index++] = hp;
 		cardBytes[index++] = stage.getValue();
@@ -278,7 +278,7 @@ public class PokemonCard extends Card
 
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
-			index = moves[moveIndex].convertToIdsAndWriteData(cardBytes, index);
+			index = moves[moveIndex].writeData(cardBytes, index);
 		}
 		
 		cardBytes[index++] = retreatCost;

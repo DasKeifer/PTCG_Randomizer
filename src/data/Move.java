@@ -274,7 +274,7 @@ public class Move
 		description.finalizeAndAddTexts(idToText, cardName);
 	}
 
-	public int convertToIdsAndWriteData(byte[] moveBytes, int startIndex) 
+	public int writeData(byte[] moveBytes, int startIndex) 
 	{
 		int index = startIndex;
 		

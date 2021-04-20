@@ -38,13 +38,13 @@ public class Randomizer
 		
 //	File romFile
 // 2cc40 - 16 bytes - no changes needed - just point to it
-		for (int i = 0x36300; i < 0x3630f; i++)
-		{
-		//	if (randomizedData.rawBytes[0xce8a  + i] != -1)
-		//	{
-				System.out.println(String.format("0x%x - 0x%x", i, romData.rawBytes[i]));
-		//	}
-		}
+//		for (int i = 0x36300; i < 0x3630f; i++)
+//		{
+//		//	if (randomizedData.rawBytes[0xce8a  + i] != -1)
+//		//	{
+//				System.out.println(String.format("0x%x - 0x%x", i, romData.rawBytes[i]));
+//		//	}
+//		}
 	}
 	
 	public void randomizeAndSaveRom(File romFile, Settings settings) throws IOException
@@ -101,7 +101,6 @@ public class Randomizer
 		// get and store the base seed as the next one to use
 		int nextSeed = settings.getSeedValue();
 		
-//		
 //		for (Move m : romData.allCards.getPokemonCards().getAllMoves())
 //		{
 //			if (m.isPokePower())

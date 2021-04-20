@@ -98,6 +98,11 @@ public class RomIO
 			while (rawBytes[++textIndex] != 0x00);
 			
 			// Read the string to the null char (but not including it)
+			String text = new String(rawBytes, ptr, textIndex - ptr);
+			if (text.contains("Hand"))
+			{
+				System.out.println(text + '\n' + '\n');
+			}
 			textMap.insertTextAtNextId(new String(rawBytes, ptr, textIndex - ptr));
 
 			// Move our text pointer to the next pointer
@@ -107,17 +112,17 @@ public class RomIO
 		return textMap;
 	}
 	
-	static void finalizeAndAddTexts(Cards<Card> cards, Texts allText)
+	static void finalizeAndConvertTextToIds(Cards<Card> cards, Texts allText)
 	{
 		for (Card card : cards.toSortedList())
 		{
-			card.finalizeAndAddTexts(allText);
+			card.finalizeAndConvertTextToIds(allText);
 		}
 	}
 	
 	// TODO: Check byte boundary stuff - "Hand" in the turn menu is garbly
 	
-	static void setAllCardsAndPointers(byte[] bytes, FreeSpaceManager spaceManager, Cards<Card> cards)
+	static void writeAllCards(byte[] bytes, FreeSpaceManager spaceManager, Cards<Card> cards)
 	{		
 		// First write the 0 index "null" card
 		int ptrIndex = RomConstants.CARD_POINTERS_LOC - RomConstants.CARD_POINTER_SIZE_IN_BYTES;
@@ -138,7 +143,7 @@ public class RomIO
 			ptrIndex += RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 			
 			// Write the card
-			cardIndex = card.convertToIdsAndWriteData(bytes, cardIndex);
+			cardIndex = card.writeData(bytes, cardIndex);
 		}
 
 		// Write the null pointer at the end of the cards pointers
@@ -164,9 +169,7 @@ public class RomIO
 		}
 		
 		// determine where the first text will go based off the number of text we have
-		// The null pointer was already taken care of so we don't need to handle it here
-		// hence the -1
-		int textIndex = RomConstants.TEXT_POINTERS_LOC + (ptrToText.count() - 1) * RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+		int textIndex = RomConstants.TEXT_POINTERS_LOC + ptrToText.count() * RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 
 		// We need to align with the bank boundaries every 0x4000 bytes. If we write past 
 		// it we will get garbly-gook text
@@ -190,7 +193,7 @@ public class RomIO
 			// Write the pointer
 			ByteUtils.writeLittleEndian(textIndex - RomConstants.TEXT_POINTER_OFFSET, rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES);
 			ptrIndex += RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
-			
+
 			// Now write the text
 			System.arraycopy(textBytes, 0, rawBytes, textIndex, textBytes.length);
 			textIndex += textBytes.length;

@@ -33,9 +33,9 @@ public class NonPokemonCard extends Card
 	}
 	
 	@Override
-	public int readDataAndConvertIds(byte[] cardBytes, int startIndex, Texts idToText) 
+	public int readAndConvertIds(byte[] cardBytes, int startIndex, Texts idToText) 
 	{
-		readCommonNameAndDataAndConvertIds(cardBytes, startIndex, idToText);
+		commonReadAndConvertIds(cardBytes, startIndex, idToText);
 		int index = startIndex + Card.CARD_COMMON_SIZE;
 		
 		// reading non pokemon specific data
@@ -48,17 +48,17 @@ public class NonPokemonCard extends Card
 	}
 	
 	@Override
-	public void finalizeAndAddTexts(Texts idsToText)
+	public void finalizeAndConvertTextToIds(Texts idsToText)
 	{
-		finalizeAndAddCommonTexts(idsToText);
+		commonFinalizeAndConvertTextToIds(idsToText);
 		
 		description.finalizeAndAddTexts(idsToText, name.toString());
 	}
 	
 	@Override
-	public int convertToIdsAndWriteData(byte[] cardBytes, int startIndex) 
+	public int writeData(byte[] cardBytes, int startIndex) 
 	{
-		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex);
+		int index = commonWriteData(cardBytes, startIndex);
 		
 		// write non pokemon specific data
 		ByteUtils.writeAsShort(effectPtr, cardBytes, index);

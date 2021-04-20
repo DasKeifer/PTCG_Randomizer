@@ -64,15 +64,18 @@ public class Rom
 		RomIO.clearAllText(rawBytes);
 		
 		// TODO: clear unused move commands/effects as well
+		
 		FreeSpaceManager spaceManager = new FreeSpaceManager(rawBytes);
 		
 		// Finalize and gather card text
-		RomIO.finalizeAndAddTexts(allCards, idsToText);
+		RomIO.finalizeAndConvertTextToIds(allCards, idsToText);
 
 		// Save the new data starting with the text so we can ensure it gets
 		// the space in memory it needs
 		RomIO.writeTextAndIdMap(rawBytes, spaceManager, idsToText);
-		RomIO.setAllCardsAndPointers(rawBytes, spaceManager, allCards);
+		
+		// Now save the cards
+		RomIO.writeAllCards(rawBytes, spaceManager, allCards);
 		
 		// Write it to the file
 		RomIO.writeRaw(rawBytes, romFile);

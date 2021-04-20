@@ -70,14 +70,14 @@ public abstract class Card
 					startIndex + " that is of type " + type);
 		}
 
-		startIndex = card.readDataAndConvertIds(cardBytes, startIndex, idToText);
+		startIndex = card.readAndConvertIds(cardBytes, startIndex, idToText);
 		toAddTo.add(card);
 		return startIndex;
 	}
 	
-	public abstract int readDataAndConvertIds(byte[] cardBytes, int startIndex, Texts idsToText);
-	public abstract void finalizeAndAddTexts(Texts idToText);
-	public abstract int convertToIdsAndWriteData(byte[] cardBytes, int startIndex);
+	public abstract int readAndConvertIds(byte[] cardBytes, int startIndex, Texts idsToText);
+	public abstract void finalizeAndConvertTextToIds(Texts idToText);
+	public abstract int writeData(byte[] cardBytes, int startIndex);
 
 	public String toString()
 	{
@@ -89,7 +89,7 @@ public abstract class Card
 				"\nPack = " + pack;
 	}
 	
-	protected int readCommonNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Texts idsToText) 
+	protected int commonReadAndConvertIds(byte[] cardBytes, int startIndex, Texts idsToText) 
 	{
 		int index = startIndex;
 		
@@ -109,12 +109,12 @@ public abstract class Card
 		return index;
 	}
 	
-	protected void finalizeAndAddCommonTexts(Texts idsToText)
+	protected void commonFinalizeAndConvertTextToIds(Texts idsToText)
 	{
 		name.finalizeAndAddTexts(idsToText);
 	}
 	
-	protected int convertCommonToIdsAndWriteData(byte[] cardBytes, int startIndex) 
+	protected int commonWriteData(byte[] cardBytes, int startIndex) 
 	{
 		int index = startIndex;
 		
