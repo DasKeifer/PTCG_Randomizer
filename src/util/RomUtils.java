@@ -26,4 +26,9 @@ public class RomUtils
 		// Otherwise adjust it appropriately to be in the second bank
 		return (short) (globalAddress - (bank - 1) * RomConstants.BANK_SIZE);
 	}
+	
+	public static int getEndOfBankAddressIsIn(int address)
+	{
+		return (determineBank(address) + 1) * RomConstants.BANK_SIZE;
+	}
 }

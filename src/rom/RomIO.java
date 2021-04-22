@@ -10,6 +10,7 @@ import constants.RomConstants;
 import data.Card;
 import data.Cards;
 import util.ByteUtils;
+import util.RomUtils;
 
 public class RomIO
 {
@@ -98,11 +99,6 @@ public class RomIO
 			while (rawBytes[++textIndex] != 0x00);
 			
 			// Read the string to the null char (but not including it)
-			String text = new String(rawBytes, ptr, textIndex - ptr);
-			if (text.contains("Hand"))
-			{
-				System.out.println(text + '\n' + '\n');
-			}
 			textMap.insertTextAtNextId(new String(rawBytes, ptr, textIndex - ptr));
 
 			// Move our text pointer to the next pointer
@@ -155,6 +151,7 @@ public class RomIO
 		// Until it is determined to be necessary, don't worry about padding remaining space with 0xff
 	}
 	
+	// TODO: pad to bank boundaries
 	static void writeTextAndIdMap(byte[] rawBytes, FreeSpaceManager spaceManager, Texts ptrToText) throws IOException
 	{
 		// Get the free space needed for the text pointers
@@ -208,7 +205,7 @@ public class RomIO
 	// Note assumes that the first text in the pointer list is the first in the file as well. This is required
 	// since there is no null between the text pointer map and the texts themselves
 	static void clearAllText(byte[] rawBytes)
-	{
+	{				
 		// Free the starting set of 0's
 		ByteUtils.setBytes(rawBytes, RomConstants.TEXT_POINTERS_LOC, 
 				RomConstants.TEXT_POINTER_SIZE_IN_BYTES, (byte) 0xFF);
@@ -221,6 +218,9 @@ public class RomIO
 		int textIndex = 0;
 		int firstAddress = Integer.MAX_VALUE;
 		
+		int endOfBankAddress;
+		int checkEOBIndex;
+		boolean foundEndOfBank;
 		// Read each pointer one at a time until we reach the ending null pointer
 		while (ptrIndex < firstAddress)
 		{
@@ -228,6 +228,8 @@ public class RomIO
 			textAddress = (int) ByteUtils.readLittleEndian(
 					rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES) + 
 					RomConstants.TEXT_POINTER_OFFSET;
+			
+			// If this is an earlier address, we need to update where to stop
 			if (textAddress < firstAddress)
 			{
 				firstAddress = textAddress;
@@ -240,8 +242,30 @@ public class RomIO
 			{
 				rawBytes[textIndex] = (byte) 0xFF;
 			}
-			// Write over the 0x00 too
+			
+			// overwrite the trailing 0x00 as well
 			rawBytes[textIndex] = (byte) 0xFF;
+			
+			// See if there are only 0x00 until the end of the bank and if so, overwrite them too
+			endOfBankAddress = RomUtils.getEndOfBankAddressIsIn(textIndex);
+			checkEOBIndex = textIndex + 1;
+			foundEndOfBank = false;
+			while(rawBytes[checkEOBIndex++] == 0x00)
+			{
+				if (checkEOBIndex >= endOfBankAddress)
+				{
+					foundEndOfBank = true;
+					break;
+				}
+			}
+			
+			if (foundEndOfBank)
+			{
+				for (;textIndex < endOfBankAddress; textIndex++)
+				{
+					rawBytes[textIndex] = (byte) 0xFF;
+				}
+			}
 			
 			// Now write over the pointer as well
 			ByteUtils.setBytes(rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES, (byte) 0xFF);
