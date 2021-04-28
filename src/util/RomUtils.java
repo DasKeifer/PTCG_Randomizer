@@ -31,4 +31,9 @@ public class RomUtils
 	{
 		return (determineBank(address) + 1) * RomConstants.BANK_SIZE;
 	}
+	
+	public static int[] getBankBounds(byte bank)
+	{
+		return new int[] {bank * RomConstants.BANK_SIZE, (bank + 1) * RomConstants.BANK_SIZE - 1};
+	}
 }

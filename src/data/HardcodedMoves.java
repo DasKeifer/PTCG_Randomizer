@@ -20,13 +20,7 @@ public class HardcodedMoves
 	}
 	
 	public static class CallForFamily
-	{
-		// farcall (1031b - 4:431b) bytes:
-		// EF
-		// [BankNumber] - 4
-		// [address] 1b, 43
-		// EF, 4, 1B, 43
-		
+	{		
 		// For saving to locations in the ROM
 		static final int[] AVAIL_PLAYER_SEL_START_ADDRS = {0x2cc50};
 		static final int[] AVAIL_AI_SEL_START_ADDRS = {0x2ccad};
@@ -64,6 +58,112 @@ public class HardcodedMoves
 				(byte) 0xe0, (byte) 0xa0, (byte) 0xfe, (byte) 0xff, (byte) 0xc8, (byte) 0xcd, (byte) 0x24,
 				(byte) 0x13, (byte) 0x7b, (byte) 0xfe, (byte) 0x23, (byte) 0x20, (byte) 0xf2, (byte) 0xc9
 		};
+		
+		public static void createBaseSnippits()
+		{
+			
+			// I want to call this like
+//				ld (a, FF)
+			
+//			byte[] playerSelectEffect = new byte[] {
+//				ld a FF (byte) 0x3e, (byte) 0xff,
+			
+//				ldh ,a (byte) 0xe0, (byte) 0xa0, 
+			
+//				call((byte) 0xcd, (byte) 0xdf, (byte) 0x11,)
+			
+//				ldTx hl (byte) 0x21,  TextPtr( (byte) 0x2e, (byte) 0x1),
+//					
+//				ldTx bc (byte) 0x1,  TextPtr((byte) 0x41, (byte) 0x1),
+//					
+//				lb de (byte) 0x11, CardID((byte) 0x23), (byte) 0x0, 
+			
+//				call((byte) 0xcd, (byte) 0xec, (byte) 0x42,)
+			
+//				ret c (byte) 0xd8, 
+			
+			//TODO Do we need special logic for this? Maybe just because its a byte shorter...
+//					Bank1 call ((byte) 0xdf, (byte) 0x91, (byte) 0x55,)
+			
+//				ldtx hl (byte) 0x21, TextPtr((byte) 0x2f, (byte) 0x1), 
+//					
+//				ldbtx de (byte) 0x11, (byte) 0xa9, (byte) 0x0, 
+			
+//					Bank1 call ((byte) 0xdf, (byte) 0x80, (byte) 0x55,)
+			
+//					Bank1 call ((byte) 0xdf, (byte) 0xf0, (byte) 0x55,)
+			
+//					JR c ((byte) 0x38, (byte) 0x16, )
+			
+//				call ((byte) 0xcd, (byte) 0x24, (byte) 0x13, )
+			
+//				ld bc (byte) 0x1, CardID((byte) 0x23), (byte) 0x0, 
+
+//				call ((byte) 0xcd, (byte) 0x90, (byte) 0x30,)
+			
+//					jr nz ((byte) 0x20, (byte) 0x6,)
+			
+//				ldh a, (byte) 0xf0, (byte) 0x98, 
+//				ldh ,a (byte) 0xe0, (byte) 0xa0, 
+			
+//				or a (byte) 0xb7, 
+//				ret (byte) 0xc9,
+			
+//				call ((byte) 0xcd, (byte) 0x94, (byte) 0x37,)
+			
+//					JR (byte) 0x18, (byte) 0xe5, 
+			
+//				ld a (byte) 0x3e, (byte) 0x0, 
+			
+//				call ((byte) 0xcd, (byte) 0xb, (byte) 0x16,)
+			
+//				ld a hl (byte) 0x7e, 
+			
+//				cp  (byte) 0xfe, (byte) 0x0, 
+			
+//					JR NZ ((byte) 0x20, (byte) 0xc,))
+			
+//				ld a l (byte) 0x7d,
+//					
+//				call (byte) 0xcd, (byte) 0x24, (byte) 0x13, )
+			
+//				ld bc (byte) 0x1, CardID((byte) 0x23), (byte) 0x0, 
+			
+//				call (byte) 0xcd,  (byte) 0x90, (byte) 0x30, 
+					
+//					jr z (byte) 0x28, (byte) 0xe5, 
+			
+//				inc l (byte) 0x2c, 
+			
+//				ld a l (byte) 0x7d,
+			
+//				cp (byte) 0xfe, (byte) 0x3c,
+			
+//					jr c (byte) 0x38, (byte) 0xe9, 
+					
+//				ld a (byte) 0x3e, (byte) 0xff, 
+			
+//				ldh ,a (byte) 0xe0, (byte) 0xa0, 
+			
+//				or a (byte) 0xb7, 
+					
+//				return (byte) 0xc9
+//			};
+			
+//			chosePokeFromDeck.convertToIdsAndWriteData(romBytes, playerSelectStartAddress + 8, idToText);
+//			cardName.convertToIdsAndWriteData(romBytes, playerSelectStartAddress + 11, idToText);
+//			chosePoke.convertToIdsAndWriteData(romBytes, playerSelectStartAddress + 24, idToText);
+			
+//			byte[] aiSelectEffect = new byte[] {
+//					(byte) 0xcd, (byte) 0xdf, (byte) 0x11, (byte) 0x21, (byte) 0x10, (byte) 0xc5, (byte) 0x2a,
+//					(byte) 0xe0, (byte) 0xa0, (byte) 0xfe, (byte) 0xff, (byte) 0xc8, (byte) 0xcd, (byte) 0x24,
+//					(byte) 0x13, (byte) 0x7b, (byte) 0xfe, 
+//					
+//					(byte) 0x23,
+//					
+//					(byte) 0x20, (byte) 0xf2, (byte) 0xc9
+//			};
+		}
 		
 		public static void resetTracker()
 		{

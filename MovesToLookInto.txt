@@ -69,6 +69,28 @@ Neutralizing Shield POKEMON_POWER -* Prevent all effects of attacks, including d
 Retreat Aid POKEMON_POWER -* As long as  is Benched, pay  less to retreat your Active Pok`mon.
 Thick Skinned POKEMON_POWER -*  can't become Asleep, Confused, Paralyzed, or Poisoned. This power can't be used if  is already Asleep, Confused, or Paralyzed.
 
+.not_null_pointer
+	ldh a, [hBankROM]
+	push af
+	ld a, BANK(EffectCommands)
+	call BankswitchROM
+	; store the bank number of command functions ($b) in wce22
+	ld a, $b
+	ld [wce22], a
+.check_command_loop
+	ld a, [hli]
+	or a
+	jr z, .no_more_commands
+	cp c // Compares the effect pointer value - if we add another value beyond what is defined, we can use that as a trigger
+		// to switch to set a non default bank in wce22
+		// problem is I need to find space in home to make this mod... There is 106 bytes free in home
+	jr z, .matching_command_found
+	; skip function pointer for this command and move to the next one
+	inc hl
+	inc hl
+	jr .check_command_loop
+
+
 NidoranFCallForFamilyEffectCommands:
 	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NidoranFCallForFamily_CheckDeckAndPlayArea		// Same for all
 	dbw EFFECTCMDTYPE_AFTER_DAMAGE, NidoranFCallForFamily_PutInPlayAreaEffect			// Same for all
@@ -185,24 +207,3 @@ BellsproutCallForFamily_PlayerSelectEffect: ; 2cc50 (b:4c50)
 	ret
 ; 0x2ccad
 
-c1 pop
-c5 push
-79 ld?
-ef
-4
-1b
-43
-3e
-1
-ea
-17
-d1
-c1
-78
-fe
-ff
-28
-10
-ef
-4
-1b

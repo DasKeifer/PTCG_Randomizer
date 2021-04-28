@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import data.Card;
 import data.Cards;
+import datamanager.FreeSpaceManager;
 
 public class Rom
 {
