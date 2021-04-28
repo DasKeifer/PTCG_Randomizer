@@ -1,6 +1,5 @@
 package datamanager;
 
-import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -14,83 +13,103 @@ import util.RomUtils;
 
 public class FreeSpaceManager
 {
-	// TODO: Do location specific replaces, do restricted places, then do free replaces
-
-	// TODO: it would be nice if we can chain allocs together based on if they are sequential in a space
-	// If we chain them, then it probably makes a whole lot of things easier...
-	
-	private class AddressRange
+	// TODO: Do location specific replaces, find the available space, then do restricted places and finally free replaces
+		
+	private class AllocatableSpace extends AddressRange
 	{
-		int start;
-		int stop;
+		Map<Byte, List<AllocData>> allocationsByPriority;
 		
-		public AddressRange(int start, int stop)
-		{
-			this.start = start;
-			this.stop = stop;
-		}
-		
-		public AddressRange(AddressRange toCopy)
-		{
-			this(toCopy.start, toCopy.stop);
-		}
-		
-		public int size()
-		{
-			return stop - start;
-		}
-
-		public boolean isInRange(int address)
-		{
-			return start <= address && address <= stop;
-		}
-		
-		// TODO default sorter based on start
-	}
-	
-	private class AllocatedRange extends AddressRange
-	{
-		AllocData data;
-		AllocatedRange nextAlloc;
-		
-		public AllocatedRange(int start, int stop, AllocData data)
+		public AllocatableSpace(int start, int stop)
 		{
 			super(start, stop);
-			this.data = data;
+			allocationsByPriority = new HashMap<>();
 		}
 		
-		public AllocatedRange(AllocatedRange toCopy)
+		public void add(AllocData alloc)
 		{
-			super(toCopy);
-			data = toCopy.data;
+			if (alloc.getSize() > spaceLeft())
+			{
+				if (!shrinkToMakeSpace(alloc))
+				{
+					throw new RuntimeException("Internal error - fialed to make space for new alloc");
+				}
+			}
+			
+			addToPriorityMap(allocationsByPriority, alloc);
+		}
+		
+		public int spaceLeft()
+		{ 
+			// TODO
+			return 0;
+		}
+		
+		public byte canShrinkingToMakeSpace(int space)
+		{
+			// TODO:
+			return 0;
+		}
+		
+		private boolean shrinkToMakeSpace(AllocData alloc)
+		{
+			// TODO
+			return false;
 		}
 	}
 	
 	private class AllocData
 	{
-		byte priority;
 		boolean shrunk;
 		FlexibleBlock block;
-		Map<Byte, AddressRange> allowedOptions;
+		
+		public AllocData(FlexibleBlock block)
+		{
+			shrunk = false;
+			this.block = block; // Intentionally a reference and not a copy
+		}
+		
+		public boolean canBeShrunk()
+		{
+			return block.hasMinimalOption();
+		}
+		
+		public int getSize()
+		{
+			if (shrunk)
+			{
+				return block.getMinimalSize();
+			}
+			else
+			{
+				return block.getFullSize();
+			}
+		}
+		
+		public byte getPriority()
+		{
+			return block.getPriority();
+		}
+		
+		public  Map<Byte, AddressRange> getPreferencedAllowableAddresses()
+		{
+			return block.getPreferencedAllowableAddresses();
+		}
 	}
 	
 	// Bank, object
-	private Map<Byte, Set<AddressRange>> freeSpace;
-	private Map<Byte, Set<AllocatedRange>> allocatedSpace;
+	private Map<Byte, Set<AllocatableSpace>> freeSpace;
 	
 	// Priority, object
 	private Map<Byte, List<AllocData>> allocsToProcess;
 	
+	// TODO a similar process for "free blocks" should be done as well. Perhaps reuse as those
+	// are special cases of these that can't be shrunk and can go anywhere
 	public void makeAllocations(List<FlexibleBlock> blocksToPlace)
 	{
 		// First add all the blocks to the pending allocations list
-		AllocData blockData;
 		for (FlexibleBlock block : blocksToPlace)
 		{
-			blockData = new AllocData();
-			blockData.allowedOptions = blockData.getPreferencedAllowableAddresses();
-			blockData.block = block; // Intentionally a reference and not a copy
-			addAllocToProcess(blockData);
+			addToPriorityMap(allocsToProcess, new AllocData(block));
 		}
 		
 		// Now go through each block in priority order and try to place it
@@ -117,114 +136,79 @@ public class FreeSpaceManager
 		}
 	}
 	
-	private void addAllocToProcess(AllocData data)
+	private void addToPriorityMap(Map<Byte, List<AllocData>> priorityMap, AllocData data)
 	{
-		List<AllocData> blocksWithPriority = allocsToProcess.get(data.priority);
+		List<AllocData> blocksWithPriority = priorityMap.get(data.getPriority());
 		
 		if (blocksWithPriority == null)
 		{
 			blocksWithPriority = new LinkedList<>();
-			allocsToProcess.put(data.priority, blocksWithPriority);
+			priorityMap.put(data.getPriority(), blocksWithPriority);
 		}
 		
 		blocksWithPriority.add(data);
 	}
 	
-	private void addAllocatedSpace(AllocatedRange allocated)
-	{
-		byte bank = RomUtils.determineBank(allocated.start);
-		Set<AllocatedRange> blocksInBank = allocatedSpace.get(bank);
-		
-		if (blocksInBank == null)
-		{
-			blocksInBank = new HashSet<>();
-			allocatedSpace.put(bank, blocksInBank);
-		}
-		
-		blocksInBank.add(allocated);
-	}
-	
-	private void addAllocToConflicts(Map<Byte, List<AllocatedRange>> conflictingAllocs, AllocatedRange conflict)
-	{
-		List<AllocatedRange> blocksWithPriority = conflictingAllocs.get(conflict.data.priority);
-		
-		if (blocksWithPriority == null)
-		{
-			blocksWithPriority = new LinkedList<>();
-			conflictingAllocs.put(conflict.data.priority, blocksWithPriority);
-		}
-		
-		blocksWithPriority.add(conflict);
-	}
 	
 	private boolean tryAllocate(AllocData data)
 	{
 		boolean success = false;
-		Map<Byte, List<AllocatedRange>> conflictingAllocs = new HashMap<>();
+		Set<AllocatableSpace> possibleSpacesWithShrinks = new HashSet<>();
 		
 		// First try to place and get the list of conflicting allocs
-		success = attemptToPlace(data, conflictingAllocs);
+		success = attemptToPlace(data, possibleSpacesWithShrinks);
 
 		// If we failed to place and we can shrink, shrink and try to place again
 		// This will update the conflicting allocs
 		if (!success)
 		{
-			if (data.block.canBeShrunk())
+			if (data.canBeShrunk())
 			{
 				data.shrunk = true;
-				success = attemptToPlace(data, conflictingAllocs);
+				success = attemptToPlace(data, possibleSpacesWithShrinks);
 			}
 		}
 
 		// If we still failed, try to shrink others
 		if (!success)
 		{
-			success = attemptToShrinkAndPlace(data, conflictingAllocs);
+			success = attemptToShrinkAndPlace(data, possibleSpacesWithShrinks);
 		}
 		
 		return success;
 	}
 	
-	private boolean attemptToPlace(AllocData data, Map<Byte, List<AllocatedRange>> conflictingAllocs)
+	
+	private boolean attemptToPlace(AllocData data, Set<AllocatableSpace> possibleSpacesWithShrinks)
 	{
 		// Make sure the list is clear
-		conflictingAllocs.clear();
-		
-		int allocatedStart;
-		int spaceToFind = data.size(); // TODO
+		possibleSpacesWithShrinks.clear();
 		
 		// For each possibility, try to allocate and add any allocations that 
 		// conflicted with the option
-		for (Entry<Byte, AddressRange> option : data.allowedOptions.entrySet())
+		for (Entry<Byte, AddressRange> option : data.getPreferencedAllowableAddresses().entrySet())
 		{
-			allocatedStart = allocateInRange(spaceToFind, option.getValue(), conflictingAllocs);
-			
-			// Did we successfully allocate?
-			if (allocatedStart >= 0)
+			if (allocateInRange(data, option.getValue(), possibleSpacesWithShrinks))
 			{
-				// Add the alloc, clear the list of conflicting allocs and return
-				addAllocatedSpace(new AllocatedRange(allocatedStart, allocatedStart + spaceToFind, data));
-				conflictingAllocs.clear();
 				return true;
 			}
 		}
 		
 		return false;
 	}
+	
 
-	private int allocateInRange(int spaceToFind, AddressRange range, Map<Byte, List<AllocatedRange>> conflictingAllocs)
+	private boolean allocateInRange(AllocData data, AddressRange range, Set<AllocatableSpace> possibleSpacesWithShrinks)
 	{
 		byte bank = RomUtils.determineBank(range.start);
 		byte endBank = RomUtils.determineBank(range.stop);
 
-		int allocSpaceIdx;
+		int spaceToFind = data.getSize();
 		int foundSpaceIdx;
-		Set<AddressRange> spaceInBank;
-		List<AddressRange> spaceInBankList;
-		AddressRange spaceFound;
-		
-		List<AddressRange> unallocSpace = new LinkedList<>();
-		Set<AllocatedRange> allocatedInBank;
+		Set<AllocatableSpace> spaceInBank;
+		List<AllocatableSpace> spaceInBankList;
+		AllocatableSpace spaceFound;
+	
 		// Go through each bank and try to find the space
 		for (; bank < endBank; bank++)
 		{
@@ -232,89 +216,31 @@ public class FreeSpaceManager
 			spaceInBankList = new LinkedList<>(spaceInBank);
 			
 			// Does it fit?
-			foundSpaceIdx = fitsInSpace(spaceToFind, spaceInBankList, 0);
+			foundSpaceIdx = fitsInSpaceIfEmpty(spaceToFind, spaceInBankList, 0);
 			while (foundSpaceIdx != -1)
 			{
 				// Get the space
 				spaceFound = spaceInBankList.get(foundSpaceIdx);
 				
-				// Break it into smaller segments based on what is allocated
-				unallocSpace.clear();
-				unallocSpace.add(new AddressRange(spaceFound));
-				allocatedInBank = allocatedSpace.get(bank);
-				for (AllocatedRange allocated : allocatedInBank)
+				if (spaceFound.spaceLeft() >= spaceToFind)
 				{
-					if (removeOverlap(allocated, unallocSpace))
-					{
-						addAllocToConflicts(conflictingAllocs, allocated);
-					}
+					possibleSpacesWithShrinks.clear();
+					spaceFound.add(data);
+					return true;
 				}
-				
-				// Does it still fit? If so we found a winner!
-				allocSpaceIdx = fitsInSpace(spaceToFind, unallocSpace, 0);
-				if (allocSpaceIdx >= 0)
+				else
 				{
-					conflictingAllocs.clear();
-					return unallocSpace.get(allocSpaceIdx).start;
+					possibleSpacesWithShrinks.add(spaceFound);
 				}
 				
 				// Otherwise keep searching
-				foundSpaceIdx = fitsInSpace(spaceToFind, spaceInBankList, foundSpaceIdx);
+				foundSpaceIdx = fitsInSpaceIfEmpty(spaceToFind, spaceInBankList, foundSpaceIdx);
 			}
 		}
 		
-		return -1;
+		return false;
 	}
-	
-	private boolean removeOverlap(AddressRange toRemove, List<AddressRange> ranges)
-	{
-		boolean removedSpace = false;
-		AddressRange current;
-		for(int i = 0; i < ranges.size(); i++)
-		{
-			current = ranges.get(i);
-			// overlaps with the start of what to remove
-			if (current.isInRange(toRemove.start))
-			{
-				// Full to remove is covered - bisect this and add
-				if (current.isInRange(toRemove.stop))
-				{
-					removedSpace = true;
-					
-					// Remove the current and replace with the split one
-					ranges.remove(i);
-					ranges.add(new AddressRange(current.start, toRemove.start));
-					ranges.add(new AddressRange(toRemove.stop, current.stop));
-					// Should be all done
-					break;
-				}
-				// Only overlaps with the start - modify in place
-				else
-				{
-					removedSpace = true;
-					current.stop = toRemove.start;
-				}
-			}
-			// Only overlaps with the stop - modify in place
-			else if (ranges.get(i).isInRange(toRemove.stop))
-			{
-				removedSpace = true;
-				current.start = toRemove.stop;
-			}
-			// Last check to see if the current range is completely enclosed by the remove
-			else if (toRemove.isInRange(current.stop)) 
-			{
-				// Remove and decrement so we don't skip any
-				removedSpace = true;
-				ranges.remove(i);
-				i--;
-			}
-		}
-		
-		return removedSpace;
-	}
-	
-	private int fitsInSpace(int size, List<AddressRange> spaces, int startIdx)
+	private int fitsInSpaceIfEmpty(int size, List<AllocatableSpace> spaces, int startIdx)
 	{
 		for (; startIdx < spaces.size(); startIdx++)
 		{
@@ -327,59 +253,32 @@ public class FreeSpaceManager
 		
 		return -1;
 	}
+
 	
-	// The assumption here is that the shrunk alloc can find space in the rom... but we do that in a second pass anyways?
-	private boolean attemptToShrinkAndPlace(AllocData data, Map<Byte, List<AllocatedRange>> conflictingAllocs)
+	private boolean attemptToShrinkAndPlace(AllocData data, Set<AllocatableSpace> possibleSpacesWithShrinks)
 	{
-		boolean place = false;
-		List<AllocatedRange> originalAllocs = new LinkedList<>();
+		int spaceNeeded = data.getSize();
 		
-		// Start with the lowest priority. Shrink it, shift it forward if possible and then see if the new alloc can fit
-		for (Entry<Byte, List<AllocatedRange>> allocsWithPriority : conflictingAllocs.entrySet())
+		byte bestOptionPriority = 0;
+		AllocatableSpace bestOption = null;
+		for (AllocatableSpace option : possibleSpacesWithShrinks)
 		{
-			for (AllocatedRange alloc : allocsWithPriority.getValue())
+			byte optionPriority = option.canShrinkingToMakeSpace(spaceNeeded);
+			if (optionPriority > bestOptionPriority)
 			{
-				if (alloc.canShrink())
-				{
-					originalAllocs.add(new AllocatedRange(alloc));
-					AddressRange largerRange = shrinkAllocation();
-					if (largerRange.size() >= data.size())
-					{
-						// Success!
-						
-						// Expand back as we can
-					}
-				}
+				bestOptionPriority = optionPriority;
+				bestOption = option;
 			}
 		}
-	}
-	
-	private void shrinkAllocation(AllocatedRange alloc)
-	{		
-		// Shrink this allocation
-		alloc.data.shrunk = true;
-		alloc.stop = alloc.start + alloc.data.size();
 		
-		// Try to move the others left
-		
-		// Finally figure out the new block size we created at the end of the moves
-		
-	}
-	
-	private void reexpandAllocations(Map<Byte, List<AllocatedRange>> allocsShrunk, AddressRange newAllocation)
-	{
-		for (Entry<Byte, List<AllocatedRange>> allocsWithPriority : allocsShrunk.entrySet())
+		// Did we find any that worked?
+		if (bestOption != null)
 		{
-			for (AllocatedRange alloc : allocsWithPriority.getValue())
-			{
-				// Try to expand it - if it overlaps with another alloc, try to push it too
-				int shift = alloc.data.getFullSize() - alloc.data.size();
-				int expandedEnd = alloc.end + shift;
-	
-				// Look through each alloc in this bank seeing if it overlaps
-//				for (Set<AllocatedRange> otherAlloc : allocatedSpace)
-			}
+			bestOption.add(data);
+			return true;
 		}
+		
+		return false;
 	}
 	
 	public FreeSpaceManager(byte[] rawBytes)
@@ -412,8 +311,8 @@ public class FreeSpaceManager
 		for (byte bank = 0; bank < numBanks; bank++)
 		{
 			// Insert map for this bank
-			Map<Integer, Integer> bankMap = new HashMap<>();
-			freeSpace.put(bank, bankMap);
+			Set<AllocatableSpace> bankSet = new HashSet<>();
+			freeSpace.put(bank, bankSet);
 			
 			// Reset the address in case the last bank ended with an empty space
 			address = nextBankBoundary;
@@ -444,99 +343,11 @@ public class FreeSpaceManager
 					// which can be 0xFF
 					if (address - spaceAddress > 40)
 					{
-						bankMap.put(spaceAddress, address - spaceAddress);
+						bankSet.add(new AllocatableSpace(spaceAddress, address));
 						System.out.println(String.format("0x%x - 0x%x - 0x%x", bank, spaceAddress, address - spaceAddress));
 					}
 				}
 			}
 		}
-	}
-	
-	public int allocateSpace(int spaceNeeded)
-	{
-		int allocatedSpace = -1;
-		// Go through each bank and try to find the space
-		for (Entry<Byte, Map<Integer, Integer>> bankMap : freeSpace.entrySet())
-		{
-			allocatedSpace = allocateSpaceInBank(bankMap.getValue(), spaceNeeded);
-			if (allocatedSpace >= 0)
-			{
-				break;
-			}
-		}
-		
-		return allocatedSpace;
-	}
-
-	public int allocateSpace(byte bank, int spaceNeeded)
-	{
-		return allocateSpaceInBank(freeSpace.get(bank), spaceNeeded);
-	}
-
-	public boolean allocateSpecificSpace(int address, int spaceNeeded)
-	{
-		boolean success = false;
-		
-		byte bank = RomUtils.determineBank(address);
-		short relativeAddress = RomUtils.convertToInBankOffset(bank, address);
-		Map<Integer, Integer> bankMap = freeSpace.get(bank);
-		
-		int freeSpaceEnd;
-		int allocEnd = address + spaceNeeded;
-		for (Entry<Integer, Integer> entry : bankMap.entrySet())
-		{
-			freeSpaceEnd = entry.getKey() + entry.getValue();
-			
-			// If its greater than or equal to the start of the free space
-			// and its less than the end of the free space, this is our entry
-			if (entry.getKey() <= relativeAddress && 
-					freeSpaceEnd > relativeAddress)
-			{
-				// See if the end of the free space is far enough from the start of it to fit this allocation
-				success = freeSpaceEnd >= allocEnd;
-				
-				if (success)
-				{
-					// Split the entry accordingly
-					bankMap.remove(entry.getKey());
-					
-					// Determine space before and add it to the map as needed
-					if (relativeAddress > entry.getKey())
-					{
-						bankMap.put(entry.getKey(), relativeAddress - entry.getKey());
-					}
-					
-					// Now handle space at the end if there is any
-					if (freeSpaceEnd > allocEnd)
-					{
-						bankMap.put(allocEnd, freeSpaceEnd - allocEnd);
-					}
-				}
-				
-				// We found the spot already - no sense in continuing the search
-				break;
-			}
-		}
-		
-		return success;
-	}
-	
-	private int allocateSpaceInBank(Map<Integer, Integer> bankMap, int spaceNeeded)
-	{
-		for (Entry<Integer, Integer> space : bankMap.entrySet())
-		{
-			// TODO: Try to find smallest spaces?
-			if (space.getValue() > spaceNeeded)
-			{
-				int totalSpace = space.getValue();
-				int spaceAddress = space.getKey();
-				
-				bankMap.remove(spaceAddress);
-				bankMap.put(spaceAddress + spaceNeeded, totalSpace - spaceNeeded);
-				return spaceAddress;
-			}
-		}
-		
-		return -1;
 	}
 }

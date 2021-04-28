@@ -13,6 +13,7 @@ public abstract class RelocatableBlock extends FlexibleBlock
 	
 	public void addAllowableBank(byte priority, byte bank)
 	{
-		allowableAddressPreferences.put(priority, RomUtils.getBankBounds(bank));
+		int[] range = RomUtils.getBankBounds(bank);
+		allowableAddressPreferences.put(priority, new AddressRange(range[0], range[1]));
 	}
 }
