@@ -112,10 +112,11 @@ public class CallJumpCompiler implements DynamicCompiler
 				throw new UnsupportedOperationException("JR - Size loaded");
 			}
 		}
-		// Far call - call to an unloaded bank
+		// TODO: add a farjump in RST
+		// Far call/jump - call to an unloaded bank
 		else
 		{
-			// Always need a farcall
+			// Always need a farcall/farjump
 			int size = FARCALL_BYTE_LENGTH;
 			
 			// If we have a condition, we need to add a JR

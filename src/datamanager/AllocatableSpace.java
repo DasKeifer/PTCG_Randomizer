@@ -14,7 +14,7 @@ class AllocatableSpace extends AddressRange
 		allocationsByPriority = new TreeMap<>();
 	}
 	
-	public void add(AllocData alloc)
+	public List<AllocData> add(AllocData alloc)
 	{
 		if (alloc.getCurrentSize() > spaceLeft())
 		{

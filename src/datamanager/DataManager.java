@@ -13,7 +13,8 @@ import util.RomUtils;
 
 public class DataManager
 {
-	// TODO: Do location specific replaces, find the available space, then do restricted places and finally free replaces
+	// This may cause a ripple effect through so we will need to handle that
+	
 	
 	// Bank, object
 	private TreeMap<Byte, TreeSet<AllocatableSpace>> freeSpace;
