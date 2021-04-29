@@ -13,11 +13,8 @@ import util.RomUtils;
 
 public class DataManager
 {
-	// This may cause a ripple effect through so we will need to handle that
-	
-	
 	// Bank, object
-	private TreeMap<Byte, TreeSet<AllocatableSpace>> freeSpace;
+	private TreeMap<Byte, AllocatableBank> freeSpace;
 	
 	// Priority, object
 	private TreeMap<Byte, List<AllocData>> allocsToProcess;
@@ -81,10 +78,10 @@ public class DataManager
 	private boolean tryAllocate(AllocData data)
 	{
 		boolean success = false;
-		Set<AllocatableSpace> possibleSpacesWithShrinks = new HashSet<>();
+		Set<AllocatableBank> possibleBanksWithShrinks = new HashSet<>();
 		
 		// First try to place and get the list of conflicting allocs
-		success = attemptToPlace(data, possibleSpacesWithShrinks);
+		success = attemptToPlace(data, possibleBanksWithShrinks);
 
 		// If we failed to place and we can shrink, shrink and try to place again
 		// This will update the conflicting allocs
@@ -93,29 +90,29 @@ public class DataManager
 			if (data.canBeShrunk())
 			{
 				data.shrunk = true;
-				success = attemptToPlace(data, possibleSpacesWithShrinks);
+				success = attemptToPlace(data, possibleBanksWithShrinks);
 			}
 		}
 
 		// If we still failed, try to shrink others
 		if (!success)
 		{
-			success = attemptToShrinkOtherAllocsAndPlace(data, possibleSpacesWithShrinks);
+			success = attemptToShrinkOtherAllocsAndPlace(data, possibleBanksWithShrinks);
 		}
 		
 		return success;
 	}
 	
-	private boolean attemptToPlace(AllocData data, Set<AllocatableSpace> possibleSpacesWithShrinks)
+	private boolean attemptToPlace(AllocData data, Set<AllocatableBank> possibleBanksWithShrinks)
 	{
 		// Make sure the list is clear
-		possibleSpacesWithShrinks.clear();
+		possibleBanksWithShrinks.clear();
 		
 		// For each possibility, try to allocate and add any allocations that 
 		// conflicted with the option
-		for (Entry<Byte, AddressRange> option : data.getPreferencedAllowableAddresses().entrySet())
+		for (Entry<Byte, BankRange> option : data.getPreferencedAllowableBanks().entrySet())
 		{
-			if (allocateInRange(data, option.getValue(), possibleSpacesWithShrinks))
+			if (allocateInRange(data, option.getValue(), possibleBanksWithShrinks))
 			{
 				return true;
 			}
@@ -124,70 +121,38 @@ public class DataManager
 		return false;
 	}
 
-	private boolean allocateInRange(AllocData data, AddressRange range, Set<AllocatableSpace> possibleSpacesWithShrinks)
+	private boolean allocateInRange(AllocData data, BankRange range, Set<AllocatableBank> possibleBanksWithShrinks)
 	{
-		byte bank = RomUtils.determineBank(range.start);
-		byte endBank = RomUtils.determineBank(range.stop);
-
 		int spaceToFind = data.getCurrentSize();
-		int foundSpaceIdx;
-		TreeSet<AllocatableSpace> spaceInBank;
-		List<AllocatableSpace> spaceInBankList;
-		AllocatableSpace spaceFound;
+		AllocatableBank bankSpace;
 	
 		// Go through each bank and try to find the space
-		for (; bank < endBank; bank++)
+		byte currBank = range.start;
+		for (; currBank < range.stop; currBank++)
 		{
-			spaceInBank = freeSpace.get(bank);
-			spaceInBankList = new LinkedList<>(spaceInBank);
-			
-			// Does it fit?
-			foundSpaceIdx = fitsInSpaceIfEmpty(spaceToFind, spaceInBankList, 0);
-			while (foundSpaceIdx != -1)
+			bankSpace = freeSpace.get(currBank);
+			if (bankSpace.doesHaveSpaceLeft(spaceToFind))
 			{
-				// Get the space
-				spaceFound = spaceInBankList.get(foundSpaceIdx);
-				
-				if (spaceFound.spaceLeft() >= spaceToFind)
-				{
-					possibleSpacesWithShrinks.clear();
-					spaceFound.add(data);
-					return true;
-				}
-				else
-				{
-					possibleSpacesWithShrinks.add(spaceFound);
-				}
-				
-				// Otherwise keep searching
-				foundSpaceIdx = fitsInSpaceIfEmpty(spaceToFind, spaceInBankList, foundSpaceIdx);
+				possibleBanksWithShrinks.clear();
+				bankSpace.add(data);
+				return true;
+			}
+			else
+			{
+				possibleBanksWithShrinks.add(bankSpace);
 			}
 		}
 		
 		return false;
 	}
 	
-	private int fitsInSpaceIfEmpty(int size, List<AllocatableSpace> spaces, int startIdx)
-	{
-		for (; startIdx < spaces.size(); startIdx++)
-		{
-			// Does it fit?
-			if (spaces.get(startIdx).size() >= size)
-			{
-				return startIdx;
-			}
-		}
-		
-		return -1;
-	}
-	
-	private boolean attemptToShrinkOtherAllocsAndPlace(AllocData data, Set<AllocatableSpace> possibleSpacesWithShrinks)
+	private boolean attemptToShrinkOtherAllocsAndPlace(AllocData data, Set<AllocatableBank> possibleBanksWithShrinks)
 	{
 		int spaceNeeded = data.getCurrentSize();
 		
 		byte bestOptionPriority = 0;
-		AllocatableSpace bestOption = null;
-		for (AllocatableSpace option : possibleSpacesWithShrinks)
+		AllocatableBank bestOption = null;
+		for (AllocatableBank option : possibleBanksWithShrinks)
 		{
 			byte optionPriority = option.canShrinkingToMakeSpace(spaceNeeded);
 			if (optionPriority > bestOptionPriority)
@@ -231,8 +196,8 @@ public class DataManager
 		for (byte bank = 0; bank < numBanks; bank++)
 		{
 			// Insert map for this bank
-			TreeSet<AllocatableSpace> bankSet = new TreeSet<>();
-			freeSpace.put(bank, bankSet);
+			AllocatableBank bankSpace = new AllocatableBank();
+			freeSpace.put(bank, bankSpace);
 			
 			// Reset the address in case the last bank ended with an empty space
 			address = nextBankBoundary;
@@ -263,7 +228,7 @@ public class DataManager
 					// which can be 0xFF
 					if (address - spaceAddress > 40)
 					{
-						bankSet.add(new AllocatableSpace(spaceAddress, address));
+						bankSpace.addSpace(spaceAddress, address);
 						System.out.println(String.format("0x%x - 0x%x - 0x%x", bank, spaceAddress, address - spaceAddress));
 					}
 				}

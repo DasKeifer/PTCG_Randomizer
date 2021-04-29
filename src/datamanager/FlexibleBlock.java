@@ -9,13 +9,13 @@ public abstract class FlexibleBlock
 {
 	private byte priority;
 	protected CodeSnippit toAdd;
-	protected TreeMap<Byte, AddressRange> allowableAddressPreferences;
+	protected TreeMap<Byte, BankRange> allowableBankPreferences;
 	
 	protected FlexibleBlock(byte priority, CodeSnippit toPlaceInBank)
 	{
 		this.priority = priority;
 		toAdd = new CodeSnippit(toPlaceInBank);
-		allowableAddressPreferences = new TreeMap<>();
+		allowableBankPreferences = new TreeMap<>();
 	}
 	
 	public int writeData(byte[] bytes, int index)
@@ -23,22 +23,22 @@ public abstract class FlexibleBlock
 		return toAdd.writeData(byte[] bytes, int index);
 	}
 	
-	protected void addAllowableAddressRange(byte priority, int globalAddressStart, int globalAddressEnd)
+	protected void addAllowableBankRange(byte priority, byte startBank, byte stopBank)
 	{
-		if (globalAddressStart > globalAddressEnd)
+		if (startBank > stopBank)
 		{
-			throw new UnsupportedOperationException("Start address is after the end address!");
+			throw new UnsupportedOperationException("Start bank is after the end bank!");
 		}
 		
-		allowableAddressPreferences.put(priority, new AddressRange(globalAddressStart, globalAddressEnd));
+		allowableBankPreferences.put(priority, new BankRange(startBank, stopBank));
 	}
 	
-	public TreeMap<Byte, AddressRange> getPreferencedAllowableAddresses()
+	public TreeMap<Byte, BankRange> getPreferencedAllowableBanks()
 	{
-		TreeMap<Byte, AddressRange> copy = new TreeMap<>();
-		for (Entry<Byte, AddressRange> entry : allowableAddressPreferences.entrySet())
+		TreeMap<Byte, BankRange> copy = new TreeMap<>();
+		for (Entry<Byte, BankRange> entry : allowableBankPreferences.entrySet())
 		{
-			copy.put(entry.getKey(), new AddressRange(entry.getValue()));
+			copy.put(entry.getKey(), new BankRange(entry.getValue()));
 		}
 		return copy;
 	}

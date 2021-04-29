@@ -2,7 +2,6 @@ package datamanager;
 
 import java.util.List;
 import java.util.TreeMap;
-import java.util.Map.Entry;
 
 class AllocatableSpace extends AddressRange
 {
@@ -14,17 +13,25 @@ class AllocatableSpace extends AddressRange
 		allocationsByPriority = new TreeMap<>();
 	}
 	
-	public List<AllocData> add(AllocData alloc)
+	public AllocatableSpace(AddressRange range)
+	{
+		super(range);
+		allocationsByPriority = new TreeMap<>();
+	}
+
+	public void clear()
+	{
+		allocationsByPriority.clear();
+	}
+	
+	public boolean addIfSpaceLeft(AllocData alloc)
 	{
 		if (alloc.getCurrentSize() > spaceLeft())
 		{
-			if (!shrinkToMakeSpace(alloc))
-			{
-				throw new RuntimeException("Internal error - fialed to make space for new alloc");
-			}
+			return false;
 		}
-		
 		DataManagerUtils.addToPriorityMap(allocationsByPriority, alloc);
+		return true;
 	}
 	
 	public int spaceLeft()
@@ -38,36 +45,6 @@ class AllocatableSpace extends AddressRange
 			}
 		}
 		
-		// Sanity/tamper check
-		if (spaceLeft < 0)
-		{
-			throw new RuntimeException("More space was used than was available in the space!");
-		}
-		
 		return spaceLeft;
-	}
-	
-	public byte canShrinkingToMakeSpace(int space)
-	{
-		int availSpace = spaceLeft();
-		for (Entry<Byte, List<AllocData>> allocWithPriority : allocationsByPriority.descendingMap().entrySet())
-		{
-			for (AllocData alloc : allocWithPriority.getValue())
-			{
-				availSpace += alloc.getCurrentSize() - alloc.getMinimalSize();
-				if (availSpace >= space)
-				{
-					return allocWithPriority.getKey();
-				}
-			}
-		}
-		
-		return 0;
-	}
-	
-	private boolean shrinkToMakeSpace(AllocData alloc)
-	{
-		// TODO
-		return false;
 	}
 }

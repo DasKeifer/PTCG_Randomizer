@@ -1,6 +1,6 @@
 package datamanager;
 
-import java.util.TreeMap;
+import java.util.SortedMap;
 
 class AllocData 
 {
@@ -15,7 +15,7 @@ class AllocData
 	
 	public boolean canBeShrunk()
 	{
-		return block.hasMinimalOption();
+		return !shrunk && block.hasMinimalOption();
 	}
 	
 	public int getCurrentSize()
@@ -40,8 +40,8 @@ class AllocData
 		return block.getPriority();
 	}
 	
-	public TreeMap<Byte, AddressRange> getPreferencedAllowableAddresses()
+	public SortedMap<Byte, BankRange> getPreferencedAllowableBanks()
 	{
-		return block.getPreferencedAllowableAddresses();
+		return block.getPreferencedAllowableBanks();
 	}
 }
