@@ -99,6 +99,12 @@ public class CodeSnippit
 		return size;
 	}
 	
+	public int getMaxSizeOnBank(byte bank)
+	{
+		// TODO:
+		return 0;
+	}
+	
 	// Change to write bytes in bank
 	public byte[] getBytesForBank(char bank)
 	{

@@ -8,21 +8,25 @@ import java.util.TreeMap;
 
 public class AllocatableBank 
 {
+	byte bank;
 	List<AllocatableSpace> spaces;
 	TreeMap<Byte, List<AllocData>> allocationsByPriority;
 	
-	public AllocatableBank()
+	public AllocatableBank(byte bank)
 	{
+		this.bank = bank;
 		spaces = new LinkedList<>();
 	}
 	
 	public void addSpace(int startAddress, int stopAddress)
 	{
+		// TODO check in bank?
 		spaces.add(new AllocatableSpace(startAddress, stopAddress));
 	}
 	
 	public void addSpace(AddressRange space)
 	{
+		// TODO check in bank?
 		spaces.add(new AllocatableSpace(space));
 	}
 	
@@ -37,8 +41,82 @@ public class AllocatableBank
 		DataManagerUtils.addToPriorityMap(allocationsByPriority, alloc);
 		return displacedAllocs;
 	}
+	
+	public void assignBanks()
+	{
+		// Set the bank in the code snippet. Then we determine jump/call vs farjump/call
+		for (List<AllocData> allocsWithPriority : allocationsByPriority.values())
+		{
+			for (AllocData alloc : allocsWithPriority)
+			{
+				alloc.setBank(bank);
+			}
+		}
+	}
+	
+	public byte adjustAllocs()
+	{
+		byte earliestBankImpacted = Byte.MAX_VALUE;
+		
+		// Try to unpack allocs. If we can, then we remove the remote call which then
+		// may trigger more unpacks
+		List<Byte> priorityKeys = new ArrayList<>(allocationsByPriority.keySet());
+		for (int priorityIdx = 0; priorityIdx < priorityKeys.size(); priorityIdx++)
+		{
+			List<AllocData> allocsWithPriority = allocationsByPriority.get(priorityKeys.get(priorityIdx));
+			for (int allocIdx = 0; allocIdx < allocsWithPriority.size(); allocIdx++)
+			{
+				AllocData alloc = allocsWithPriority.get(allocIdx);
+				
+				alloc.shrunk = false;
+				if (reassignToSpaces())
+				{
+					byte remoteAllocPriority = alloc.getRemoteAllocPriority();
+					byte hostBank = alloc.removeRemoteAlloc();
+					
+					// If it has a higher priority in this bank, we need to reset our iterator
+					// and see if it can be decompressed too
+					if (hostBank == bank)
+					{
+						if (remoteAllocPriority >= 0 && remoteAllocPriority <= priorityKeys.get(priorityIdx))
+						{
+							priorityKeys = new ArrayList<>(allocationsByPriority.keySet());
+							priorityIdx = 0;
+						}
+					}
+					if (hostBank < earliestBankImpacted)
+					{
+						earliestBankImpacted = bank;
+					}
+				}
+				// Couldn't unshrink - revert change and continue
+				else
+				{
+					alloc.shrunk = true;
+				}
 
-	private int largestSpaceLeft()
+			}
+		}
+		
+		if (earliestBankImpacted < bank)
+		{
+			return earliestBankImpacted;
+		}
+		return -1;
+	}
+	
+	public void assignAddresses()
+	{
+		// Now we do the final space assignment and give out actual addresses to the bank
+		reassignToSpaces();
+
+		for (AllocatableSpace space : spaces)
+		{
+			space.assignAddresses();
+		}
+	}
+	
+	private boolean reassignToSpaces()
 	{
 		// Clear the spaces
 		for (AllocatableSpace space : spaces)
@@ -46,19 +124,37 @@ public class AllocatableBank
 			space.clear();
 		}
 		
-		// Go through an allocate each to a space
+		boolean placed;
 		for (List<AllocData> allocWithPriority : allocationsByPriority.values())
 		{
 			for (AllocData alloc : allocWithPriority)
 			{
+				placed = false;
 				for (AllocatableSpace space : spaces)
 				{
 					if (space.addIfSpaceLeft(alloc))
 					{
+						placed = true;
 						break;
 					}
 				}
+				
+				if (!placed)
+				{
+					return false;
+				}
 			}
+		}
+		
+		return true;
+	}
+
+	private int largestSpaceLeft()
+	{
+		// Go through an allocate each to a space
+		if (!reassignToSpaces())
+		{
+			return -1;
 		}
 		
 		// Now go through each space and find the largest
@@ -104,14 +200,20 @@ public class AllocatableBank
 		// Otherwise, try to unshrink as much as possible
 		unshrinkAsMuchAsPossible(space, shrunkenAllocs);
 		
-		// Remove any that were shrunken but still present so only the ones
-		// shrunken out of existence are here
-		ListIterator<AllocData> iter = shrunkenAllocs.listIterator();
-		while (iter.hasNext())
+		// Remove any that were shrunken and replace them with their dependencies
+		// So the shrunken out of existence ones and the new blocks are
+		// returned
+		List<AllocData> allocsToPlace = new LinkedList<>();
+		for (AllocData alloc : shrunkenAllocs)
 		{
-			if (iter.next().getCurrentSize() != 0)
+			if (alloc instanceof NoConstraintBlock)
 			{
-				iter.remove();
+				alloc.shrunk = false;
+				allocsToPlace.add(alloc);
+			}
+			else if (alloc instanceof ConstrainedBlock)
+			{
+				allocsToPlace.add(alloc.createRemoteAlloc());
 			}
 		}
 		

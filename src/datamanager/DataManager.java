@@ -1,6 +1,8 @@
 package datamanager;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -22,8 +24,7 @@ public class DataManager
 	public void determineDataLocations(
 			byte[] bytesToPlaceIn,
 			List<ReplacementBlock> replacementBlocks, 
-			List<ConstrainedBlock> constrainedBlocks, 
-			List<NoConstraintBlock> noConstraintBlocks
+			List<FlexibleBlock> blocksToPlace
 	)
 	{
 		freeSpace.clear();
@@ -32,15 +33,20 @@ public class DataManager
 		// Write each replacement block
 		for (ReplacementBlock block : replacementBlocks)
 		{
-			block.write(bytesToPlaceIn);
+			// TODO
+//			block.write(bytesToPlaceIn);
 		}
 		
 		// Determine what space we have free
 		determineAllFreeSpace(bytesToPlaceIn);
 	
 		// Allocate space for the constrained blocks then the unconstrained ones
-		makeAllocations(constrainedBlocks);
-		makeAllocations(noConstraintBlocks);
+		makeAllocations(blocksToPlace);
+		
+		// Attempt to pack and optimize the allocs
+		assignAndPackAllocs();
+		
+		// TODO: Write blocks?
 	}
 	
 	public <T extends FlexibleBlock> void makeAllocations(List<T> blocksToPlace)
@@ -172,6 +178,36 @@ public class DataManager
 		return false;
 	}
 
+	private void assignAndPackAllocs()
+	{
+		// Go through and assign the banks
+		for (AllocatableBank bank : freeSpace.values())
+		{
+			bank.assignBanks();
+		}
+		
+		List<Byte> keys = new ArrayList<>(freeSpace.keySet());
+		byte currBank;
+		byte earliestTouchedBank;
+		for (int keyIdx = 0; keyIdx < keys.size(); keyIdx++)
+		{
+			currBank = keys.get(keyIdx);
+			
+			// Adjust the allocs. If any alloc was removed, we need to start over
+			// and try again
+			earliestTouchedBank = freeSpace.get(currBank).adjustAllocs();
+			if (earliestTouchedBank > 0)
+			{
+				keyIdx = earliestTouchedBank;
+			}
+		}
+		
+		for (AllocatableBank bank : freeSpace.values())
+		{
+			bank.assignAddresses();
+		}
+	}
+	
 	// TODO: we need to avoid images/gfx somehow - perhaps have it hardcoded which banks these occur in?
 	// GFX banks
 	

@@ -4,22 +4,22 @@ package datamanager;
 class AddressRange 
 {
 	int start;
-	int stop;
+	int stopExclusive;
 	
-	public AddressRange(int start, int stop)
+	public AddressRange(int start, int stopExclusive)
 	{
 		this.start = start;
-		this.stop = stop;
+		this.stopExclusive = stopExclusive;
 	}
 	
 	public AddressRange(AddressRange toCopy)
 	{
-		this(toCopy.start, toCopy.stop);
+		this(toCopy.start, toCopy.stopExclusive);
 	}
 	
 	public int size()
 	{
-		return stop - start;
+		return stopExclusive - start;
 	}
 	
 	// TODO default sorter based on start

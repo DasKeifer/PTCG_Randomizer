@@ -7,9 +7,9 @@ class AllocatableSpace extends AddressRange
 {
 	TreeMap<Byte, List<AllocData>> allocationsByPriority;
 	
-	public AllocatableSpace(int start, int stop)
+	public AllocatableSpace(int start, int stopExclusive)
 	{
-		super(start, stop);
+		super(start, stopExclusive);
 		allocationsByPriority = new TreeMap<>();
 	}
 	
@@ -32,6 +32,24 @@ class AllocatableSpace extends AddressRange
 		}
 		DataManagerUtils.addToPriorityMap(allocationsByPriority, alloc);
 		return true;
+	}
+	
+	public void assignAddresses()
+	{
+		int nextStart = start;
+		for (List<AllocData> allocWithPriority : allocationsByPriority.values())
+		{
+			for (AllocData alloc : allocWithPriority)
+			{
+				alloc.setAddress(nextStart);
+				nextStart += alloc.getCurrentSize();
+				
+				if (nextStart > stopExclusive)
+				{
+					throw new RuntimeException("Error - misaccounted for allocatable space! ran out of space!");
+				}
+			}
+		}
 	}
 	
 	public int spaceLeft()
