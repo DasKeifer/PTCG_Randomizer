@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import datamanager.FreeSpaceManager;
+import datamanager.DataManager;
 
 public class CodeSnippitCompiler 
 {
@@ -44,7 +44,7 @@ public class CodeSnippitCompiler
 		snippits.add(snippit);
 	}
 	
-	public void writeAllSnippits(byte[] data, FreeSpaceManager space)
+	public void writeAllSnippits(byte[] data, DataManager space)
 	{
 		// For each priority go through and attempt to add the snippit
 		// if it fails, take action accordingly

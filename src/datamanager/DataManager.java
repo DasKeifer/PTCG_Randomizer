@@ -1,115 +1,56 @@
 package datamanager;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.Set;
 
 import constants.RomConstants;
 import util.RomUtils;
 
-public class FreeSpaceManager
+public class DataManager
 {
 	// TODO: Do location specific replaces, find the available space, then do restricted places and finally free replaces
-		
-	private class AllocatableSpace extends AddressRange
-	{
-		Map<Byte, List<AllocData>> allocationsByPriority;
-		
-		public AllocatableSpace(int start, int stop)
-		{
-			super(start, stop);
-			allocationsByPriority = new HashMap<>();
-		}
-		
-		public void add(AllocData alloc)
-		{
-			if (alloc.getSize() > spaceLeft())
-			{
-				if (!shrinkToMakeSpace(alloc))
-				{
-					throw new RuntimeException("Internal error - fialed to make space for new alloc");
-				}
-			}
-			
-			addToPriorityMap(allocationsByPriority, alloc);
-		}
-		
-		public int spaceLeft()
-		{ 
-			// TODO
-			return 0;
-		}
-		
-		public byte canShrinkingToMakeSpace(int space)
-		{
-			// TODO:
-			return 0;
-		}
-		
-		private boolean shrinkToMakeSpace(AllocData alloc)
-		{
-			// TODO
-			return false;
-		}
-	}
-	
-	private class AllocData
-	{
-		boolean shrunk;
-		FlexibleBlock block;
-		
-		public AllocData(FlexibleBlock block)
-		{
-			shrunk = false;
-			this.block = block; // Intentionally a reference and not a copy
-		}
-		
-		public boolean canBeShrunk()
-		{
-			return block.hasMinimalOption();
-		}
-		
-		public int getSize()
-		{
-			if (shrunk)
-			{
-				return block.getMinimalSize();
-			}
-			else
-			{
-				return block.getFullSize();
-			}
-		}
-		
-		public byte getPriority()
-		{
-			return block.getPriority();
-		}
-		
-		public  Map<Byte, AddressRange> getPreferencedAllowableAddresses()
-		{
-			return block.getPreferencedAllowableAddresses();
-		}
-	}
 	
 	// Bank, object
-	private Map<Byte, Set<AllocatableSpace>> freeSpace;
+	private TreeMap<Byte, TreeSet<AllocatableSpace>> freeSpace;
 	
 	// Priority, object
-	private Map<Byte, List<AllocData>> allocsToProcess;
+	private TreeMap<Byte, List<AllocData>> allocsToProcess;
 	
-	// TODO a similar process for "free blocks" should be done as well. Perhaps reuse as those
-	// are special cases of these that can't be shrunk and can go anywhere
-	public void makeAllocations(List<FlexibleBlock> blocksToPlace)
+	public void determineDataLocations(
+			byte[] bytesToPlaceIn,
+			List<ReplacementBlock> replacementBlocks, 
+			List<ConstrainedBlock> constrainedBlocks, 
+			List<NoConstraintBlock> noConstraintBlocks
+	)
+	{
+		freeSpace.clear();
+		allocsToProcess.clear();
+		
+		// Write each replacement block
+		for (ReplacementBlock block : replacementBlocks)
+		{
+			block.write(bytesToPlaceIn);
+		}
+		
+		// Determine what space we have free
+		determineAllFreeSpace(bytesToPlaceIn);
+	
+		// Allocate space for the constrained blocks then the unconstrained ones
+		makeAllocations(constrainedBlocks);
+		makeAllocations(noConstraintBlocks);
+	}
+	
+	public <T extends FlexibleBlock> void makeAllocations(List<T> blocksToPlace)
 	{
 		// First add all the blocks to the pending allocations list
 		for (FlexibleBlock block : blocksToPlace)
 		{
-			addToPriorityMap(allocsToProcess, new AllocData(block));
+			DataManagerUtils.addToPriorityMap(allocsToProcess, new AllocData(block));
 		}
 		
 		// Now go through each block in priority order and try to place it
@@ -136,20 +77,6 @@ public class FreeSpaceManager
 		}
 	}
 	
-	private void addToPriorityMap(Map<Byte, List<AllocData>> priorityMap, AllocData data)
-	{
-		List<AllocData> blocksWithPriority = priorityMap.get(data.getPriority());
-		
-		if (blocksWithPriority == null)
-		{
-			blocksWithPriority = new LinkedList<>();
-			priorityMap.put(data.getPriority(), blocksWithPriority);
-		}
-		
-		blocksWithPriority.add(data);
-	}
-	
-	
 	private boolean tryAllocate(AllocData data)
 	{
 		boolean success = false;
@@ -172,12 +99,11 @@ public class FreeSpaceManager
 		// If we still failed, try to shrink others
 		if (!success)
 		{
-			success = attemptToShrinkAndPlace(data, possibleSpacesWithShrinks);
+			success = attemptToShrinkOtherAllocsAndPlace(data, possibleSpacesWithShrinks);
 		}
 		
 		return success;
 	}
-	
 	
 	private boolean attemptToPlace(AllocData data, Set<AllocatableSpace> possibleSpacesWithShrinks)
 	{
@@ -196,16 +122,15 @@ public class FreeSpaceManager
 		
 		return false;
 	}
-	
 
 	private boolean allocateInRange(AllocData data, AddressRange range, Set<AllocatableSpace> possibleSpacesWithShrinks)
 	{
 		byte bank = RomUtils.determineBank(range.start);
 		byte endBank = RomUtils.determineBank(range.stop);
 
-		int spaceToFind = data.getSize();
+		int spaceToFind = data.getCurrentSize();
 		int foundSpaceIdx;
-		Set<AllocatableSpace> spaceInBank;
+		TreeSet<AllocatableSpace> spaceInBank;
 		List<AllocatableSpace> spaceInBankList;
 		AllocatableSpace spaceFound;
 	
@@ -240,6 +165,7 @@ public class FreeSpaceManager
 		
 		return false;
 	}
+	
 	private int fitsInSpaceIfEmpty(int size, List<AllocatableSpace> spaces, int startIdx)
 	{
 		for (; startIdx < spaces.size(); startIdx++)
@@ -253,11 +179,10 @@ public class FreeSpaceManager
 		
 		return -1;
 	}
-
 	
-	private boolean attemptToShrinkAndPlace(AllocData data, Set<AllocatableSpace> possibleSpacesWithShrinks)
+	private boolean attemptToShrinkOtherAllocsAndPlace(AllocData data, Set<AllocatableSpace> possibleSpacesWithShrinks)
 	{
-		int spaceNeeded = data.getSize();
+		int spaceNeeded = data.getCurrentSize();
 		
 		byte bestOptionPriority = 0;
 		AllocatableSpace bestOption = null;
@@ -280,13 +205,7 @@ public class FreeSpaceManager
 		
 		return false;
 	}
-	
-	public FreeSpaceManager(byte[] rawBytes)
-	{
-		freeSpace = new HashMap<>();
-		determineAllFreeSpace(rawBytes);		
-	}
-	
+
 	// TODO: we need to avoid images/gfx somehow - perhaps have it hardcoded which banks these occur in?
 	// GFX banks
 	
@@ -311,7 +230,7 @@ public class FreeSpaceManager
 		for (byte bank = 0; bank < numBanks; bank++)
 		{
 			// Insert map for this bank
-			Set<AllocatableSpace> bankSet = new HashSet<>();
+			TreeSet<AllocatableSpace> bankSet = new TreeSet<>();
 			freeSpace.put(bank, bankSet);
 			
 			// Reset the address in case the last bank ended with an empty space

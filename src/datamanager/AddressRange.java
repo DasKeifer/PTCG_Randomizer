@@ -1,7 +1,7 @@
 package datamanager;
 
 
-public class AddressRange 
+class AddressRange 
 {
 	int start;
 	int stop;

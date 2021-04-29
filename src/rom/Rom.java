@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import data.Card;
 import data.Cards;
-import datamanager.FreeSpaceManager;
+import datamanager.DataManager;
 
 public class Rom
 {
@@ -66,7 +66,7 @@ public class Rom
 		
 		// TODO: clear unused move commands/effects as well
 		
-		FreeSpaceManager spaceManager = new FreeSpaceManager(rawBytes);
+		DataManager spaceManager = new DataManager(rawBytes);
 		
 		// Finalize and gather card text
 		RomIO.finalizeAndConvertTextToIds(allCards, idsToText);

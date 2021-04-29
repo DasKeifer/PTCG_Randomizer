@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import constants.RomConstants;
 import data.Card;
 import data.Cards;
-import datamanager.FreeSpaceManager;
+import datamanager.DataManager;
 import util.ByteUtils;
 import util.RomUtils;
 
@@ -119,7 +119,7 @@ public class RomIO
 	
 	// TODO: Check byte boundary stuff - "Hand" in the turn menu is garbly
 	
-	static void writeAllCards(byte[] bytes, FreeSpaceManager spaceManager, Cards<Card> cards)
+	static void writeAllCards(byte[] bytes, DataManager spaceManager, Cards<Card> cards)
 	{		
 		// First write the 0 index "null" card
 		int ptrIndex = RomConstants.CARD_POINTERS_LOC - RomConstants.CARD_POINTER_SIZE_IN_BYTES;
@@ -153,7 +153,7 @@ public class RomIO
 	}
 	
 	// TODO: pad to bank boundaries
-	static void writeTextAndIdMap(byte[] rawBytes, FreeSpaceManager spaceManager, Texts ptrToText) throws IOException
+	static void writeTextAndIdMap(byte[] rawBytes, DataManager spaceManager, Texts ptrToText) throws IOException
 	{
 		// Get the free space needed for the text pointers
 		spaceManager.allocateSpecificSpace(RomConstants.TEXT_POINTERS_LOC, 

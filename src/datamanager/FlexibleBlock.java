@@ -1,8 +1,7 @@
 package datamanager;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import compiler.CodeSnippit;
 
@@ -10,16 +9,21 @@ public abstract class FlexibleBlock
 {
 	private byte priority;
 	protected CodeSnippit toAdd;
-	protected Map<Byte, AddressRange> allowableAddressPreferences;
+	protected TreeMap<Byte, AddressRange> allowableAddressPreferences;
 	
 	protected FlexibleBlock(byte priority, CodeSnippit toPlaceInBank)
 	{
 		this.priority = priority;
 		toAdd = new CodeSnippit(toPlaceInBank);
-		allowableAddressPreferences = new HashMap<>();
+		allowableAddressPreferences = new TreeMap<>();
 	}
 	
-	public void addAllowableAddressRange(byte priority, int globalAddressStart, int globalAddressEnd)
+	public int writeData(byte[] bytes, int index)
+	{
+		return toAdd.writeData(byte[] bytes, int index);
+	}
+	
+	protected void addAllowableAddressRange(byte priority, int globalAddressStart, int globalAddressEnd)
 	{
 		if (globalAddressStart > globalAddressEnd)
 		{
@@ -29,9 +33,9 @@ public abstract class FlexibleBlock
 		allowableAddressPreferences.put(priority, new AddressRange(globalAddressStart, globalAddressEnd));
 	}
 	
-	public Map<Byte, AddressRange> getPreferencedAllowableAddresses()
+	public TreeMap<Byte, AddressRange> getPreferencedAllowableAddresses()
 	{
-		Map<Byte, AddressRange> copy = new HashMap<>();
+		TreeMap<Byte, AddressRange> copy = new TreeMap<>();
 		for (Entry<Byte, AddressRange> entry : allowableAddressPreferences.entrySet())
 		{
 			copy.put(entry.getKey(), new AddressRange(entry.getValue()));
@@ -41,21 +45,11 @@ public abstract class FlexibleBlock
 	
 	public int getFullSize()
 	{
-		// TODO
-		return 0;
+		return toAdd.getSizeOnBank();
 	}
 	
-	public int getMinimalSize()
-	{
-		// TODO
-		return 0;
-	}
-	
-	public boolean hasMinimalOption()
-	{
-		// TODO
-		return false;
-	}
+	public abstract int getMinimalSize();
+	public abstract boolean hasMinimalOption();
 	
 	public byte getPriority()
 	{
