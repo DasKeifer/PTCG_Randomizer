@@ -10,34 +10,32 @@ public class CustomMinimalBlock extends ConstrainedBlock
 	public CustomMinimalBlock(byte priority, CodeSnippit toPlaceInBank, CodeSnippit compressedSnippit) 
 	{
 		super(priority, toPlaceInBank);
-		this.compressedSnippit = new CodeSnippit(compressedSnippit);
+		// TODO: Copy? this.compressedSnippit = new CodeSnippit(compressedSnippit);
 	}
 
 	@Override
-	public int writeData(byte[] bytes, int index)
+	public int getMinimalSizeOnBank(byte bank) 
 	{
-		if (hasMinimalOption())
-		{
-			return compressedSnippit.write(bytes, index);
-		}
-		return super.writeData(bytes, index);
+		return compressedSnippit.getMaxSizeOnBank(bank);
 	}
 
 	@Override
-	public int getMinimalSize() 
+	public boolean shrinksNotMoves() 
 	{
-		if (hasMinimalOption())
-		{
-			return compressedSnippit.size();
-		}
-		return getFullSize();
+		return true;
 	}
 
 	@Override
-	public boolean hasMinimalOption() 
+	public NoConstraintBlock applyShrink() 
 	{
-		return compressedSnippit != null;
+		// TODO Auto-generated method stub
+		return null;
 	}
 
+	@Override
+	public NoConstraintBlock revertShrink() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
 

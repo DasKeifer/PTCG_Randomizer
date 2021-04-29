@@ -2,24 +2,19 @@ package datamanager;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.Set;
 
 import constants.RomConstants;
-import util.RomUtils;
-
 public class DataManager
 {
 	// Bank, object
 	private TreeMap<Byte, AllocatableBank> freeSpace;
 	
 	// Priority, object
-	private TreeMap<Byte, List<AllocData>> allocsToProcess;
+	private TreeMap<Byte, List<FlexibleBlock>> allocsToProcess;
 	
 	public void determineDataLocations(
 			byte[] bytesToPlaceIn,
@@ -49,12 +44,12 @@ public class DataManager
 		// TODO: Write blocks?
 	}
 	
-	public <T extends FlexibleBlock> void makeAllocations(List<T> blocksToPlace)
+	public void makeAllocations(List<FlexibleBlock> blocksToPlace)
 	{
 		// First add all the blocks to the pending allocations list
 		for (FlexibleBlock block : blocksToPlace)
 		{
-			DataManagerUtils.addToPriorityMap(allocsToProcess, new AllocData(block));
+			DataManagerUtils.addToPriorityMap(allocsToProcess, block);
 		}
 		
 		// Now go through each block in priority order and try to place it
@@ -65,8 +60,8 @@ public class DataManager
 		// How do we allow circular dependencies then?
 		while (!allocsToProcess.isEmpty())
 		{
-			Entry<Byte, List<AllocData>> allocsWithPriority = allocsToProcess.entrySet().iterator().next();
-			AllocData nextToPlace = allocsWithPriority.getValue().remove(0);
+			Entry<Byte, List<FlexibleBlock>> allocsWithPriority = allocsToProcess.entrySet().iterator().next();
+			FlexibleBlock nextToPlace = allocsWithPriority.getValue().remove(0);
 			if (allocsWithPriority.getValue().isEmpty())
 			{
 				allocsToProcess.remove(allocsWithPriority.getKey());
@@ -81,7 +76,7 @@ public class DataManager
 		}
 	}
 	
-	private boolean tryAllocate(AllocData data)
+	private boolean tryAllocate(FlexibleBlock data)
 	{
 		boolean success = false;
 		Set<AllocatableBank> possibleBanksWithShrinks = new HashSet<>();
@@ -93,9 +88,9 @@ public class DataManager
 		// This will update the conflicting allocs
 		if (!success)
 		{
-			if (data.canBeShrunk())
+			if (data.canBeShrunkOrMoved())
 			{
-				data.shrunk = true;
+				data.setShrunkOrMoved(true);
 				success = attemptToPlace(data, possibleBanksWithShrinks);
 			}
 		}
@@ -109,7 +104,7 @@ public class DataManager
 		return success;
 	}
 	
-	private boolean attemptToPlace(AllocData data, Set<AllocatableBank> possibleBanksWithShrinks)
+	private boolean attemptToPlace(FlexibleBlock data, Set<AllocatableBank> possibleBanksWithShrinks)
 	{
 		// Make sure the list is clear
 		possibleBanksWithShrinks.clear();
@@ -127,17 +122,13 @@ public class DataManager
 		return false;
 	}
 
-	private boolean allocateInRange(AllocData data, BankRange range, Set<AllocatableBank> possibleBanksWithShrinks)
+	private boolean allocateInRange(FlexibleBlock data, BankRange range, Set<AllocatableBank> possibleBanksWithShrinks)
 	{
-		int spaceToFind = data.getCurrentSize();
-		AllocatableBank bankSpace;
-	
 		// Go through each bank and try to find the space
-		byte currBank = range.start;
-		for (; currBank < range.stop; currBank++)
+		for (byte currBank = range.start; currBank < range.stopExclusive; currBank++)
 		{
-			bankSpace = freeSpace.get(currBank);
-			if (bankSpace.doesHaveSpaceLeft(spaceToFind))
+			AllocatableBank bankSpace = freeSpace.get(currBank);
+			if (bankSpace.doesHaveSpaceLeft(data.getCurrentSizeOnBank(currBank)))
 			{
 				possibleBanksWithShrinks.clear();
 				bankSpace.add(data);
@@ -152,15 +143,13 @@ public class DataManager
 		return false;
 	}
 	
-	private boolean attemptToShrinkOtherAllocsAndPlace(AllocData data, Set<AllocatableBank> possibleBanksWithShrinks)
-	{
-		int spaceNeeded = data.getCurrentSize();
-		
+	private boolean attemptToShrinkOtherAllocsAndPlace(FlexibleBlock data, Set<AllocatableBank> possibleBanksWithShrinks)
+	{		
 		byte bestOptionPriority = 0;
 		AllocatableBank bestOption = null;
 		for (AllocatableBank option : possibleBanksWithShrinks)
 		{
-			byte optionPriority = option.canShrinkingToMakeSpace(spaceNeeded);
+			byte optionPriority = option.canShrinkingToMakeSpace(data.getCurrentSizeOnBank(option.getBank()));
 			if (optionPriority > bestOptionPriority)
 			{
 				bestOptionPriority = optionPriority;
@@ -232,7 +221,7 @@ public class DataManager
 		for (byte bank = 0; bank < numBanks; bank++)
 		{
 			// Insert map for this bank
-			AllocatableBank bankSpace = new AllocatableBank();
+			AllocatableBank bankSpace = new AllocatableBank(bank);
 			freeSpace.put(bank, bankSpace);
 			
 			// Reset the address in case the last bank ended with an empty space

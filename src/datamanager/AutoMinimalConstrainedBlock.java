@@ -2,11 +2,12 @@ package datamanager;
 
 import compiler.CodeSnippit;
 
+// TODO: extend customConstraintedBlock? or maybe better make this as a helper/constructor for it
 public class AutoMinimalConstrainedBlock extends ConstrainedBlock
 {
 	public enum CompressOption
 	{
-		NONE, CALL, JUMP;
+		CALL, JUMP;
 	}
 	private CompressOption compressOption;
 	
@@ -17,34 +18,29 @@ public class AutoMinimalConstrainedBlock extends ConstrainedBlock
 	}
 
 	@Override
-	public int writeData(byte[] bytes, int index)
+	public int getMinimalSizeOnBank(byte bank) 
 	{
-		if (hasMinimalOption())
-		{
-			// TODO: generate and write?
-			return compressedSnippit.write(bytes, index);
-		}
-		return super.writeData(bytes, index);
+		// TODO: Far call/jump size
+		return 4;
 	}
 
 	@Override
-	public int getMinimalSize() 
+	public boolean shrinksNotMoves() 
 	{
-		switch(compressOption)
-		{
-			case JUMP:
-			case CALL:
-				// Far call/jump size
-				return 4;
-			case NONE:
-			default:
-				return getFullSize();
-		}
+		return true;
 	}
 
 	@Override
-	public boolean hasMinimalOption() 
+	public NoConstraintBlock applyShrink() 
 	{
-		return CompressOption.NONE != compressOption;
+		// TODO
+		return null;
+	}
+
+	@Override
+	public NoConstraintBlock revertShrink() 
+	{
+		// TODO
+		return null;
 	}
 }

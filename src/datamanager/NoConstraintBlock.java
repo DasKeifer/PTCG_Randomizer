@@ -1,6 +1,6 @@
 package datamanager;
 
-import java.util.Map;
+import java.util.SortedMap;
 
 import compiler.CodeSnippit;
 
@@ -11,28 +11,46 @@ public class NoConstraintBlock extends FlexibleBlock
 		super(priority, toPlaceInBank);
 	}
 	
-	protected void addAddressRangePreference(byte priority, int globalAddressStart, int globalAddressEnd)
+	protected void addAllowableBank(byte priority, byte bank)
 	{
-		addAllowableAddressRange(priority, globalAddressStart, globalAddressEnd);
+		addAllowableBank(priority, bank);
+	}
+	
+	protected void addAllowableBankRange(byte priority, byte bankStart, byte bankStopExclusive)
+	{
+		addAllowableBankRange(priority, bankStart, bankStopExclusive);
 	}
 
 	@Override
-	public TreeMap<Byte, AddressRange> getPreferencedAllowableAddresses()
+	public SortedMap<Byte, BankRange> getPreferencedAllowableBanks()
 	{
-		Map<Byte, AddressRange> toReturn = super.getPreferencedAllowableAddresses();
-		toReturn.put(Byte.MAX_VALUE, new AddressRange(0, Integer.MAX_VALUE));
+		SortedMap<Byte, BankRange> toReturn = super.getPreferencedAllowableBanks();
+		toReturn.put(Byte.MAX_VALUE, new BankRange((byte) 0, Byte.MAX_VALUE));
 		return toReturn;
 	}
 
 	@Override
-	public int getMinimalSize()
+	public boolean shrinksNotMoves() 
 	{
-		return getFullSize();
+		// This moves
+		return false;
 	}
 
 	@Override
-	public boolean hasMinimalOption()
+	public int getMinimalSizeOnBank(byte bank) 
 	{
-		return false;
+		return 0;
+	}
+
+	@Override
+	public NoConstraintBlock applyShrink() 
+	{
+		return null;
+	}
+
+	@Override
+	public NoConstraintBlock revertShrink() 
+	{
+		return null;
 	}
 }

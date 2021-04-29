@@ -27,6 +27,7 @@ public class CallJumpCompiler implements DynamicCompiler
 	// Implement JP to HL?
 	// Implement JR as well since this may change with our reprogramming/changing of lengths?
 	// TODO: implement JR - assume it will always be local, may need to replace with JP though
+		// First do all the call jumps. Then go through top to bottom and do the JRs?
 	
 	byte bank;
 	Short address;

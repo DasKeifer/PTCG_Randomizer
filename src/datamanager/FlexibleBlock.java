@@ -1,12 +1,14 @@
 package datamanager;
 
 import java.util.Map.Entry;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import compiler.CodeSnippit;
 
 public abstract class FlexibleBlock 
 {
+	private boolean shrunkMoved; // TODO make this temp somehow?
 	private byte assignedBank;
 	private int assignedAddress;
 	
@@ -16,14 +18,19 @@ public abstract class FlexibleBlock
 	
 	protected FlexibleBlock(byte priority, CodeSnippit toPlaceInBank)
 	{
+		shrunkMoved = false;
+		assignedBank = -1;
+		assignedAddress = -1;
+		
 		this.priority = priority;
-		toAdd = new CodeSnippit(toPlaceInBank);
+		// TODO: Copy? toAdd = new CodeSnippit(toPlaceInBank);
 		allowableBankPreferences = new TreeMap<>();
 	}
 	
 	public int writeData(byte[] bytes, int index)
 	{
-		return toAdd.writeData(bytes, index);
+		// TODO: return toAdd.writeData(bytes, index);
+		return 0;
 	}
 	
 	protected void addAllowableBankRange(byte priority, byte startBank, byte stopBank)
@@ -46,6 +53,11 @@ public abstract class FlexibleBlock
 		assignedAddress = address;
 	}
 	
+	void setShrunkOrMoved(boolean isShrunkOrMoved)
+	{
+		shrunkMoved = isShrunkOrMoved;
+	}
+	
 	byte getAssignedBank()
 	{
 		return assignedBank;
@@ -56,9 +68,19 @@ public abstract class FlexibleBlock
 		return assignedAddress;
 	}
 	
-	public TreeMap<Byte, BankRange> getPreferencedAllowableBanks()
+	boolean isShrunkOrMoved()
 	{
-		TreeMap<Byte, BankRange> copy = new TreeMap<>();
+		return shrunkMoved;
+	}
+	
+	boolean canBeShrunkOrMoved()
+	{
+		return !isShrunkOrMoved();
+	}
+		
+	public SortedMap<Byte, BankRange> getPreferencedAllowableBanks()
+	{
+		SortedMap<Byte, BankRange> copy = new TreeMap<>();
 		for (Entry<Byte, BankRange> entry : allowableBankPreferences.entrySet())
 		{
 			copy.put(entry.getKey(), new BankRange(entry.getValue()));
@@ -66,13 +88,29 @@ public abstract class FlexibleBlock
 		return copy;
 	}
 	
-	public int getMaxSizeOnBank(byte bank)
-	{
-		return toAdd.getMaxSizeOnBank(bank);
-	}
+	public abstract boolean shrinksNotMoves();
+	public abstract NoConstraintBlock applyShrink();	
+	public abstract NoConstraintBlock revertShrink();
+	public abstract int getMinimalSizeOnBank(byte bank);
 	
-	public abstract int getMinimalSize();
-	public abstract boolean hasMinimalOption();
+	public int getCurrentSizeOnBank(byte bank)
+	{
+		if (shrunkMoved)
+		{
+			// If it moves instead of shrinking, we can reduce it to 0
+			if (!shrinksNotMoves())
+			{
+				return 0;
+			}
+			
+			// Otherwise get its shrunk size
+			return getMinimalSizeOnBank(bank);
+		}
+		else
+		{
+			return toAdd.getMaxSizeOnBank(bank);
+		}
+	}
 	
 	public byte getPriority()
 	{

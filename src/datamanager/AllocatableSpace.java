@@ -3,9 +3,11 @@ package datamanager;
 import java.util.List;
 import java.util.TreeMap;
 
+import util.RomUtils;
+
 class AllocatableSpace extends AddressRange
 {
-	TreeMap<Byte, List<AllocData>> allocationsByPriority;
+	TreeMap<Byte, List<FlexibleBlock>> allocationsByPriority;
 	
 	public AllocatableSpace(int start, int stopExclusive)
 	{
@@ -24,9 +26,9 @@ class AllocatableSpace extends AddressRange
 		allocationsByPriority.clear();
 	}
 	
-	public boolean addIfSpaceLeft(AllocData alloc)
+	public boolean addIfSpaceLeft(FlexibleBlock alloc)
 	{
-		if (alloc.getCurrentSize() > spaceLeft())
+		if (alloc.getCurrentSizeOnBank(RomUtils.determineBank(start)) > spaceLeft())
 		{
 			return false;
 		}
@@ -37,12 +39,12 @@ class AllocatableSpace extends AddressRange
 	public void assignAddresses()
 	{
 		int nextStart = start;
-		for (List<AllocData> allocWithPriority : allocationsByPriority.values())
+		for (List<FlexibleBlock> allocWithPriority : allocationsByPriority.values())
 		{
-			for (AllocData alloc : allocWithPriority)
+			for (FlexibleBlock alloc : allocWithPriority)
 			{
-				alloc.setAddress(nextStart);
-				nextStart += alloc.getCurrentSize();
+				alloc.setAssignedAddress(nextStart);
+				nextStart += alloc.getCurrentSizeOnBank(RomUtils.determineBank(start));
 				
 				if (nextStart > stopExclusive)
 				{
@@ -55,11 +57,11 @@ class AllocatableSpace extends AddressRange
 	public int spaceLeft()
 	{ 
 		int spaceLeft = size();
-		for (List<AllocData> allocWithPriority : allocationsByPriority.values())
+		for (List<FlexibleBlock> allocWithPriority : allocationsByPriority.values())
 		{
-			for (AllocData alloc : allocWithPriority)
+			for (FlexibleBlock alloc : allocWithPriority)
 			{
-				spaceLeft -= alloc.getCurrentSize();
+				spaceLeft -= alloc.getCurrentSizeOnBank(RomUtils.determineBank(start));
 			}
 		}
 		
