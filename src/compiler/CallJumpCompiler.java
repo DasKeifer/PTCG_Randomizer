@@ -1,8 +1,6 @@
-package compiler.dynamic;
+package compiler;
 
-import compiler.CompilerConstants.InstructionConditions;
 import constants.RomConstants;
-import compiler.BasicInstructionCompiler;
 
 public class CallJumpCompiler implements DynamicCompiler
 {
@@ -129,7 +127,7 @@ public class CallJumpCompiler implements DynamicCompiler
 			// If its a jump, we need to add a return
 			if (CallJumpType.CALL != type)
 			{
-				size += compiler.instructions.Ret.SIZE;
+				size += compiler.fixed.Ret.SIZE;
 			}
 			return size;
 		}
@@ -166,7 +164,7 @@ public class CallJumpCompiler implements DynamicCompiler
 				byte jumpSize = FARCALL_BYTE_LENGTH;
 				if (CallJumpType.CALL != type)
 				{
-					jumpSize += compiler.instructions.Ret.SIZE;
+					jumpSize += compiler.fixed.Ret.SIZE;
 				}
 				indexToWriteAt = BasicInstructionCompiler.writeJr(bytes, indexToWriteAt, jumpSize, condition);
 			}

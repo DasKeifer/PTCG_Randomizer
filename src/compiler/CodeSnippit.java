@@ -1,11 +1,7 @@
 package compiler;
 
 import java.util.List;
-
-import compiler.dynamic.CallJumpCompiler;
-import compiler.dynamic.DynamicCompiler;
-import compiler.dynamic.RawBytesCompiler;
-import compiler.dynamic.TextPtrCompiler;
+import java.util.Map;
 
 // Helpful links:
 //		https://github.com/gbdev/rgbds/blob/master/src/asm/parser.y
@@ -47,6 +43,7 @@ public class CodeSnippit
 	// static ID counter?
 	
 	
+	private String id;
 	private byte preferredBank;
 	private boolean isRequiredToBeInBank;
 	private List<DynamicCompiler> data;
@@ -72,6 +69,11 @@ public class CodeSnippit
 	public void addCall(byte bankToCall, short addressToCall, boolean isCallNotJp)
 	{
 //		data.add(new CallJumpCompiler(bankToCall, addressToCall, isCallNotJp));
+	}
+	
+	public String getId()
+	{
+		return id;
 	}
 	
 	public byte getPreferredBank()
@@ -110,5 +112,11 @@ public class CodeSnippit
 	{
 		// Work on this more
 		return null;
+	}
+
+	public int writeData(byte[] bytes, Map<String, Integer> blockIdsToAddresses) 
+	{
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

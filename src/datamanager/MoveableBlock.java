@@ -1,36 +1,34 @@
 package datamanager;
 
 import java.util.Map.Entry;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import compiler.CodeSnippit;
 
-public abstract class FlexibleBlock 
+public abstract class MoveableBlock 
 {
 	private boolean shrunkMoved; // TODO make this temp somehow?
 	private byte assignedBank;
-	private int assignedAddress;
 	
 	private byte priority;
 	protected CodeSnippit toAdd;
 	protected TreeMap<Byte, BankRange> allowableBankPreferences;
 	
-	protected FlexibleBlock(byte priority, CodeSnippit toPlaceInBank)
+	protected MoveableBlock(byte priority, CodeSnippit toPlaceInBank)
 	{
 		shrunkMoved = false;
 		assignedBank = -1;
-		assignedAddress = -1;
 		
 		this.priority = priority;
 		// TODO: Copy? toAdd = new CodeSnippit(toPlaceInBank);
 		allowableBankPreferences = new TreeMap<>();
 	}
 	
-	public int writeData(byte[] bytes, int index)
+	public int writeData(byte[] bytes, Map<String, Integer> blockIdsToAddresses)
 	{
-		// TODO: return toAdd.writeData(bytes, index);
-		return 0;
+		return toAdd.writeData(bytes, blockIdsToAddresses);
 	}
 	
 	protected void addAllowableBankRange(byte priority, byte startBank, byte stopBank)
@@ -48,24 +46,19 @@ public abstract class FlexibleBlock
 		assignedBank = bank;
 	}
 	
-	void setAssignedAddress(int address)
-	{
-		assignedAddress = address;
-	}
-	
 	void setShrunkOrMoved(boolean isShrunkOrMoved)
 	{
 		shrunkMoved = isShrunkOrMoved;
 	}
 	
+	String getId()
+	{
+		return toAdd.getId();
+	}
+	
 	byte getAssignedBank()
 	{
 		return assignedBank;
-	}
-	
-	int getAssignedAddress()
-	{
-		return assignedAddress;
 	}
 	
 	boolean isShrunkOrMoved()
@@ -89,8 +82,8 @@ public abstract class FlexibleBlock
 	}
 	
 	public abstract boolean shrinksNotMoves();
-	public abstract NoConstraintBlock applyShrink();	
-	public abstract NoConstraintBlock revertShrink();
+	public abstract FloatingBlock applyShrink();	
+	public abstract FloatingBlock revertShrink();
 	public abstract int getMinimalSizeOnBank(byte bank);
 	
 	public int getCurrentSizeOnBank(byte bank)
@@ -110,6 +103,15 @@ public abstract class FlexibleBlock
 		{
 			return toAdd.getMaxSizeOnBank(bank);
 		}
+	}
+	
+	public int getCurrentSizeOnAssignedBank()
+	{
+		if (assignedBank < 0)
+		{
+			return -1;
+		}
+		return getCurrentSizeOnBank(assignedBank);
 	}
 	
 	public byte getPriority()

@@ -2,9 +2,9 @@ package datamanager;
 
 import compiler.CodeSnippit;
 
-public class UnshrinkableConstrainedBlock extends ConstrainedBlock
+public class UnshrinkableBlock extends MoveableBlock
 {
-	public UnshrinkableConstrainedBlock(byte priority, CodeSnippit toPlaceInBank) 
+	public UnshrinkableBlock(byte priority, CodeSnippit toPlaceInBank) 
 	{
 		super(priority, toPlaceInBank);
 	}
@@ -22,13 +22,13 @@ public class UnshrinkableConstrainedBlock extends ConstrainedBlock
 	}
 
 	@Override
-	public NoConstraintBlock applyShrink() 
+	public FloatingBlock applyShrink() 
 	{
 		return null;
 	}
 
 	@Override
-	public NoConstraintBlock revertShrink() 
+	public FloatingBlock revertShrink() 
 	{
 		return null;
 	}

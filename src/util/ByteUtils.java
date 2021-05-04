@@ -24,6 +24,7 @@ public class ByteUtils
 		}
 	}
 
+	// Sorts so the negatives are treated as positive - i.e. -128 is treated as 255
 	public static int unsignedCompareBytes(byte b1, byte b2)
 	{
 		return unsignedCompare(b1, b2, 1);
@@ -31,8 +32,7 @@ public class ByteUtils
 	
 	public static int unsignedCompare(int i1, int i2, int numBytes)
 	{
-		// Since shorts are signed, we need to do some bit magic
-		// to get them to their unsigned values so we sort correctly
+		// Treats the negatives as positives. Useful for sorting
 		long l1 = i1;
 		if (l1 < 0)
 		{
@@ -152,5 +152,17 @@ public class ByteUtils
 		{
 			bytes[startIndex + i] = valueToSet;
 		}
+	}
+	
+	public static boolean compareBytes(byte[] compareAgainst, int compareAgainstIdx, byte[] compareTo)
+	{
+		for (int i = 0; i < compareTo.length; i ++)
+		{
+			if (compareAgainst[compareAgainstIdx + i] != compareTo[i])
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 }

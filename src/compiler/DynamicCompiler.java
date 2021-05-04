@@ -1,4 +1,4 @@
-package compiler.dynamic;
+package compiler;
 
 public interface DynamicCompiler
 {

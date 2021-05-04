@@ -1,4 +1,4 @@
-package compiler.instructions;
+package compiler.fixed;
 
 import compiler.CompilerConstants.RegisterPair;
 import util.ByteUtils;

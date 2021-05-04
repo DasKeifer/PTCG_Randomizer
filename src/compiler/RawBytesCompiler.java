@@ -1,4 +1,4 @@
-package compiler.dynamic;
+package compiler;
 
 import util.ByteUtils;
 

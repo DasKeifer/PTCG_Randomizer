@@ -2,13 +2,13 @@ package datamanager;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.TreeMap;
+import java.util.SortedMap;
 
 class DataManagerUtils 
 {
-	static void addToPriorityMap(TreeMap<Byte, List<FlexibleBlock>> priorityMap, FlexibleBlock data)
+	static void addToPriorityMap(SortedMap<Byte, List<MoveableBlock>> priorityMap, MoveableBlock data)
 	{
-		List<FlexibleBlock> blocksWithPriority = priorityMap.get(data.getPriority());
+		List<MoveableBlock> blocksWithPriority = priorityMap.get(data.getPriority());
 		
 		if (blocksWithPriority == null)
 		{

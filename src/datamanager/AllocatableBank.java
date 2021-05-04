@@ -1,16 +1,18 @@
 package datamanager;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.TreeMap;
 
 public class AllocatableBank 
 {
 	byte bank;
 	List<AllocatableSpace> spaces;
-	TreeMap<Byte, List<FlexibleBlock>> allocationsByPriority;
+	TreeMap<Byte, List<MoveableBlock>> allocationsByPriority;
 	
 	public AllocatableBank(byte bank)
 	{
@@ -30,9 +32,9 @@ public class AllocatableBank
 		spaces.add(new AllocatableSpace(space));
 	}
 	
-	public List<FlexibleBlock> add(FlexibleBlock alloc)
+	public List<MoveableBlock> add(MoveableBlock alloc)
 	{
-		List<FlexibleBlock> displacedAllocs = new LinkedList<>();
+		List<MoveableBlock> displacedAllocs = new LinkedList<>();
 		if (!doesHaveSpaceLeft(alloc.getCurrentSizeOnBank(bank)))
 		{
 			displacedAllocs = shrinkToMakeSpace(alloc.getCurrentSizeOnBank(bank));
@@ -42,31 +44,48 @@ public class AllocatableBank
 		return displacedAllocs;
 	}
 	
+	public void removeBlock(String Id)
+	{
+		// Set the bank in the code snippet. Then we determine jump/call vs farjump/call
+		for (List<MoveableBlock> allocsWithPriority : allocationsByPriority.values())
+		{
+			Iterator<MoveableBlock> iter = allocsWithPriority.iterator();
+			while (iter.hasNext())
+			{
+				if (iter.next().getId().equalsIgnoreCase(Id))
+				{
+					iter.remove();
+					return;
+				}
+			}
+		}
+	}
+	
 	public void assignBanks()
 	{
 		// Set the bank in the code snippet. Then we determine jump/call vs farjump/call
-		for (List<FlexibleBlock> allocsWithPriority : allocationsByPriority.values())
+		for (List<MoveableBlock> allocsWithPriority : allocationsByPriority.values())
 		{
-			for (FlexibleBlock alloc : allocsWithPriority)
+			for (MoveableBlock alloc : allocsWithPriority)
 			{
 				alloc.setAssignedBank(bank);
 			}
 		}
 	}
 	
-	public byte adjustAllocs()
+	public List<MoveableBlock> adjustAllocs()
 	{
-		byte earliestBankImpacted = Byte.MAX_VALUE;
+		List<MoveableBlock> blocksToRemove = new LinkedList<>();
 		
 		// Try to unpack allocs. If we can, then we remove the remote call which then
 		// may trigger more unpacks
 		List<Byte> priorityKeys = new ArrayList<>(allocationsByPriority.keySet());
 		for (int priorityIdx = 0; priorityIdx < priorityKeys.size(); priorityIdx++)
 		{
-			List<FlexibleBlock> allocsWithPriority = allocationsByPriority.get(priorityKeys.get(priorityIdx));
+			List<MoveableBlock> allocsWithPriority = allocationsByPriority.get(priorityKeys.get(priorityIdx));
 			for (int allocIdx = 0; allocIdx < allocsWithPriority.size(); allocIdx++)
 			{
-				FlexibleBlock alloc = allocsWithPriority.get(allocIdx);
+				MoveableBlock alloc = allocsWithPriority.get(allocIdx);
 				
 				// Only try to unshrink if it was shrunk
 				if (alloc.shrinksNotMoves() && alloc.isShrunkOrMoved())
@@ -74,24 +93,24 @@ public class AllocatableBank
 					alloc.setShrunkOrMoved(false);
 					if (reassignToSpaces())
 					{
-						NoConstraintBlock removed = alloc.revertShrink();
-						
-						// TODO remove the block
+						FloatingBlock removed = alloc.revertShrink();
 						
 						// Check to see if we need to restart our iteration because the removed
 						// block was a higher priority block in this bank
 						if (removed.getAssignedBank() == bank)
 						{
+							// Remove it from this bank
+							removeBlock(removed.getId());
 							if (removed.getPriority() >= 0 && removed.getPriority() <= priorityKeys.get(priorityIdx))
 							{
 								priorityKeys = new ArrayList<>(allocationsByPriority.keySet());
 								priorityIdx = 0;
 							}
 						}
-						
-						if (removed.getAssignedBank() < earliestBankImpacted)
+						else
 						{
-							earliestBankImpacted = bank;
+							// Needs to be removed from elsewhere
+							blocksToRemove.add(removed);
 						}
 					}
 					// Couldn't expand
@@ -103,21 +122,17 @@ public class AllocatableBank
 			}
 		}
 		
-		if (earliestBankImpacted < bank)
-		{
-			return earliestBankImpacted;
-		}
-		return -1;
+		return blocksToRemove;
 	}
 	
-	public void assignAddresses()
+	public void assignAddresses(Map<String, Integer> blockIdsToAddresses)
 	{
 		// Now we do the final space assignment and give out actual addresses to the bank
 		reassignToSpaces();
 
 		for (AllocatableSpace space : spaces)
 		{
-			space.assignAddresses();
+			space.assignAddresses(blockIdsToAddresses);
 		}
 	}
 	
@@ -130,9 +145,9 @@ public class AllocatableBank
 		}
 		
 		boolean placed;
-		for (List<FlexibleBlock> allocWithPriority : allocationsByPriority.values())
+		for (List<MoveableBlock> allocWithPriority : allocationsByPriority.values())
 		{
-			for (FlexibleBlock alloc : allocWithPriority)
+			for (MoveableBlock alloc : allocWithPriority)
 			{
 				placed = false;
 				for (AllocatableSpace space : spaces)
@@ -184,7 +199,7 @@ public class AllocatableBank
 	
 	public byte canShrinkingToMakeSpace(int space)
 	{
-		List<FlexibleBlock> shrunkenAllocs = new LinkedList<>();
+		List<MoveableBlock> shrunkenAllocs = new LinkedList<>();
 		byte priorityValue = shrinkToMakeSpace(space, shrunkenAllocs);
 		
 		// Always revert the changes
@@ -192,9 +207,9 @@ public class AllocatableBank
 		return priorityValue;
 	}
 	
-	private List<FlexibleBlock> shrinkToMakeSpace(int space)
+	private List<MoveableBlock> shrinkToMakeSpace(int space)
 	{
-		List<FlexibleBlock> shrunkenAllocs = new LinkedList<>();
+		List<MoveableBlock> shrunkenAllocs = new LinkedList<>();
 		
 		// If we failed, revert the changes
 		if (shrinkToMakeSpace(space, shrunkenAllocs) < 0)
@@ -208,8 +223,8 @@ public class AllocatableBank
 		// Remove any that were shrunken and replace them with their dependencies
 		// So the shrunken out of existence ones and the new blocks are
 		// returned
-		List<FlexibleBlock> allocsToPlace = new LinkedList<>();
-		for (FlexibleBlock alloc : shrunkenAllocs)
+		List<MoveableBlock> allocsToPlace = new LinkedList<>();
+		for (MoveableBlock alloc : shrunkenAllocs)
 		{
 			if (alloc.shrinksNotMoves())
 			{
@@ -225,13 +240,13 @@ public class AllocatableBank
 		return shrunkenAllocs;
 	}
 	
-	private byte shrinkToMakeSpace(int space, List<FlexibleBlock> shrunkenAllocsByReversePriority)
+	private byte shrinkToMakeSpace(int space, List<MoveableBlock> shrunkenAllocsByReversePriority)
 	{
-		List<List<FlexibleBlock>> allocByPriority = new ArrayList<>(allocationsByPriority.descendingMap().values());
-		ListIterator<FlexibleBlock> revIterator;
-		FlexibleBlock alloc;
+		List<List<MoveableBlock>> allocByPriority = new ArrayList<>(allocationsByPriority.descendingMap().values());
+		ListIterator<MoveableBlock> revIterator;
+		MoveableBlock alloc;
 		
-		for (List<FlexibleBlock> allocWithPriority : allocByPriority)
+		for (List<MoveableBlock> allocWithPriority : allocByPriority)
 		{
 			revIterator = allocWithPriority.listIterator(allocWithPriority.size());
 			while (revIterator.hasPrevious())
@@ -253,10 +268,10 @@ public class AllocatableBank
 		return -1;
 	}
 	
-	private void unshrinkAsMuchAsPossible(int space, List<FlexibleBlock> shrunkenAllocsByReversePriority)
+	private void unshrinkAsMuchAsPossible(int space, List<MoveableBlock> shrunkenAllocsByReversePriority)
 	{
-		FlexibleBlock toProcess;
-		ListIterator<FlexibleBlock> revIterator = shrunkenAllocsByReversePriority.listIterator(shrunkenAllocsByReversePriority.size());
+		MoveableBlock toProcess;
+		ListIterator<MoveableBlock> revIterator = shrunkenAllocsByReversePriority.listIterator(shrunkenAllocsByReversePriority.size());
 		while (revIterator.hasPrevious())
 		{
 			toProcess = revIterator.previous();
@@ -274,9 +289,9 @@ public class AllocatableBank
 		}
 	}
 
-	private void unshrinkAllAllocs(List<FlexibleBlock> shrunkenAllocs)
+	private void unshrinkAllAllocs(List<MoveableBlock> shrunkenAllocs)
 	{
-		for (FlexibleBlock alloc : shrunkenAllocs)
+		for (MoveableBlock alloc : shrunkenAllocs)
 		{
 			alloc.setShrunkOrMoved(false);
 		}

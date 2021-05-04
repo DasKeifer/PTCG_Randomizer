@@ -1,4 +1,4 @@
-package compiler.dynamic;
+package compiler;
 
 import constants.RomConstants;
 import util.ByteUtils;

@@ -4,9 +4,9 @@ import java.util.SortedMap;
 
 import compiler.CodeSnippit;
 
-public class NoConstraintBlock extends FlexibleBlock
+public class FloatingBlock extends MoveableBlock
 {
-	protected NoConstraintBlock(byte priority, CodeSnippit toPlaceInBank)
+	protected FloatingBlock(byte priority, CodeSnippit toPlaceInBank)
 	{
 		super(priority, toPlaceInBank);
 	}
@@ -43,13 +43,13 @@ public class NoConstraintBlock extends FlexibleBlock
 	}
 
 	@Override
-	public NoConstraintBlock applyShrink() 
+	public FloatingBlock applyShrink() 
 	{
 		return null;
 	}
 
 	@Override
-	public NoConstraintBlock revertShrink() 
+	public FloatingBlock revertShrink() 
 	{
 		return null;
 	}

@@ -25,7 +25,7 @@ public class CompilerConstants
 			if (inValue > ByteUtils.MAX_HEX_CHAR_VALUE || inValue < ByteUtils.MIN_HEX_CHAR_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
-						+ "InstructionConditions enum " + inValue + " (" + (inValue << 4) + " )");
+						+ "Register enum " + inValue);
 			}
 			value = (byte) inValue;
 		}
@@ -53,7 +53,35 @@ public class CompilerConstants
 			if (inValue > ByteUtils.MAX_HEX_CHAR_VALUE || inValue < ByteUtils.MIN_HEX_CHAR_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
-						+ "InstructionConditions enum " + inValue + " (" + (inValue << 4) + " )");
+						+ "RegisterPair enum " + inValue);
+			}
+			value = (byte) inValue;
+		}
+
+		public byte getValue()
+		{
+			return value;
+		}
+	}
+	
+	public enum PushPopRegisterPair
+	{
+		BC	(0x0), 
+		DE	(0x1), 
+		HL	(0x2),
+		AF	(0x3),
+		NONE(0xFF);
+		
+		private byte value;
+		
+		private PushPopRegisterPair(int inValue)
+		{
+			// stored in upper half of byte with set in the lower half but we treat it as the lower 
+			// half to make things make more sense in this code
+			if (inValue > ByteUtils.MAX_HEX_CHAR_VALUE || inValue < ByteUtils.MIN_HEX_CHAR_VALUE)
+			{
+				throw new IllegalArgumentException("Invalid constant input for "
+						+ "PushPopRegisterPair enum " + inValue);
 			}
 			value = (byte) inValue;
 		}
@@ -81,7 +109,7 @@ public class CompilerConstants
 			if (inValue > ByteUtils.MAX_HEX_CHAR_VALUE || inValue < ByteUtils.MIN_HEX_CHAR_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
-						+ "InstructionConditions enum " + inValue + " (" + (inValue << 4) + " )");
+						+ "InstructionConditions enum " + inValue);
 			}
 			value = (byte) inValue;
 		}
