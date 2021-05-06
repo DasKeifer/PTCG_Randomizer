@@ -3,7 +3,7 @@ package compiler.fixed;
 import compiler.CompilerUtils;
 import compiler.CompilerConstants.RegisterPair;
 
-public class Push extends Instruction
+public class Push extends FixedInstruction
 {
 	public static final int SIZE = 1;
 	RegisterPair pair;

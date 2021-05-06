@@ -1,74 +1,68 @@
 package datamanager;
 
 import java.util.List;
-import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
+import compiler.DataBlock;
 import util.RomUtils;
 
 class AllocatableSpace extends AddressRange
 {
-	TreeMap<Byte, List<MoveableBlock>> allocationsByPriority;
+	SortedMap<Byte, List<MoveableBlock>> allocationsByPriority;
+	int nextStartAddress;
 	
 	public AllocatableSpace(int start, int stopExclusive)
 	{
 		super(start, stopExclusive);
 		allocationsByPriority = new TreeMap<>();
+		nextStartAddress = start;
 	}
 	
 	public AllocatableSpace(AddressRange range)
 	{
 		super(range);
 		allocationsByPriority = new TreeMap<>();
+		nextStartAddress = start;
 	}
 
 	public void clear()
 	{
+		clear(false);
+	}
+	
+	public void clear(boolean willStayInBank)
+	{
 		allocationsByPriority.clear();
-	}
-	
-	public boolean addIfSpaceLeft(MoveableBlock alloc)
-	{
-		if (alloc.getCurrentSizeOnBank(RomUtils.determineBank(start)) > spaceLeft())
-		{
-			return false;
-		}
-		DataManagerUtils.addToPriorityMap(allocationsByPriority, alloc);
-		return true;
-	}
-	
-	public void assignAddresses(Map<String, Integer> blockIdsToAddresses)
-	{
-		int nextStart = start;
+		nextStartAddress = start;
+		
+		int unassignAddr = willStayInBank ? DataBlock.UNASSIGNED_LOCAL_ADDRESS : DataBlock.UNASSIGNED_ADDRESS;
 		for (List<MoveableBlock> allocWithPriority : allocationsByPriority.values())
 		{
 			for (MoveableBlock alloc : allocWithPriority)
 			{
-				// Assign the location
-				blockIdsToAddresses.put(alloc.getId(), nextStart);
-				
-				// TODO: assign label addresses - pass in a set to the block for it to add to
-				
-				nextStart += alloc.getCurrentSizeOnBank(RomUtils.determineBank(start));
-				if (nextStart > stopExclusive)
-				{
-					throw new RuntimeException("Error - misaccounted for allocatable space! ran out of space!");
-				}
+				alloc.setAssignedAddress(unassignAddr);
 			}
 		}
+	}
+	
+	// Any reassigning is handled by the bank clearing and re-adding blocks
+	public boolean addAndAssignAddressIfSpaceLeft(MoveableBlock alloc)
+	{
+		int blockSizeOnBank = alloc.getCurrentSizeOnBank(RomUtils.determineBank(start)); 
+		if (nextStartAddress + blockSizeOnBank > stopExclusive)
+		{
+			return false;
+		}
+		
+		DataManagerUtils.addToPriorityMap(allocationsByPriority, alloc);
+		alloc.setAssignedAddress(nextStartAddress);
+		nextStartAddress += blockSizeOnBank;
+		return true;
 	}
 	
 	public int spaceLeft()
 	{ 
-		int spaceLeft = size();
-		for (List<MoveableBlock> allocWithPriority : allocationsByPriority.values())
-		{
-			for (MoveableBlock alloc : allocWithPriority)
-			{
-				spaceLeft -= alloc.getCurrentSizeOnBank(RomUtils.determineBank(start));
-			}
-		}
-		
-		return spaceLeft;
+		return stopExclusive - nextStartAddress;
 	}
 }

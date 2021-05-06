@@ -3,7 +3,7 @@ package compiler.fixed;
 import compiler.CompilerUtils;
 import compiler.CompilerConstants.Register;
 
-public class Dec extends Instruction
+public class Dec extends FixedInstruction
 {
 	public static final int SIZE = 1;
 	Register reg;

@@ -3,7 +3,7 @@ package compiler.fixed;
 import compiler.CompilerUtils;
 import compiler.CompilerConstants.Register;
 
-public class Or extends Instruction
+public class Or extends FixedInstruction
 {
 	Register reg;
 	

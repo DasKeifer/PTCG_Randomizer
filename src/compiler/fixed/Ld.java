@@ -2,7 +2,7 @@ package compiler.fixed;
 
 import compiler.CompilerUtils;
 
-public abstract class Ld extends Instruction
+public abstract class Ld extends FixedInstruction
 {
 	protected Ld(int size)
 	{

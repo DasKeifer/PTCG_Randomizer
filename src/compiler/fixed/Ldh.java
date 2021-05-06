@@ -3,7 +3,7 @@ package compiler.fixed;
 import compiler.CompilerUtils;
 import compiler.CompilerConstants.Register;
 
-public class Ldh extends Instruction
+public class Ldh extends FixedInstruction
 {
 	byte value;
 	boolean isAFirst;

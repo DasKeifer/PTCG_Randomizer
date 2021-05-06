@@ -1,32 +1,32 @@
 package datamanager;
 
-import compiler.CodeSnippit;
+import compiler.DataBlock;
 
 public class ConstrainedBlock extends MoveableBlock
 {	
-	private CodeSnippit compressedSnippit;
+	private DataBlock compressedBlock;
 	
 	public enum AutoCompressOption
 	{
 		CALL, JUMP;
 	}
 	
-	public ConstrainedBlock(byte priority, CodeSnippit toPlaceInBank, CodeSnippit compressedSnippit) 
+	public ConstrainedBlock(byte priority, DataBlock toPlaceInBank, DataBlock compressedBlock) 
 	{
 		super(priority, toPlaceInBank);
-		// TODO: Copy? this.compressedSnippit = new CodeSnippit(compressedSnippit);
+		// TODO: Copy? this.compressedBlock = new Block(compressedBlock);
 	}
 	
-	public ConstrainedBlock(byte priority, CodeSnippit toPlaceInBank, AutoCompressOption compressOption) 
+	public ConstrainedBlock(byte priority, DataBlock toPlaceInBank, AutoCompressOption compressOption) 
 	{
 		super(priority, toPlaceInBank);
 		// TODO: generate snippet
 	}
 
 	@Override
-	public int getMinimalSizeOnBank(byte bank) 
+	public int getShrunkWorstCaseSizeOnBank(byte bank) 
 	{
-		return compressedSnippit.getMaxSizeOnBank(bank);
+		return compressedBlock.getWorstCaseSizeOnBank(bank);
 	}
 
 	@Override
@@ -43,7 +43,8 @@ public class ConstrainedBlock extends MoveableBlock
 	}
 
 	@Override
-	public FloatingBlock revertShrink() {
+	public FloatingBlock revertShrink() 
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}

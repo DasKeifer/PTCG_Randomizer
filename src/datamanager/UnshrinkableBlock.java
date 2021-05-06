@@ -1,10 +1,10 @@
 package datamanager;
 
-import compiler.CodeSnippit;
+import compiler.DataBlock;
 
 public class UnshrinkableBlock extends MoveableBlock
 {
-	public UnshrinkableBlock(byte priority, CodeSnippit toPlaceInBank) 
+	public UnshrinkableBlock(byte priority, DataBlock toPlaceInBank) 
 	{
 		super(priority, toPlaceInBank);
 	}
@@ -34,9 +34,9 @@ public class UnshrinkableBlock extends MoveableBlock
 	}
 
 	@Override
-	public int getMinimalSizeOnBank(byte bank) 
+	public int getShrunkWorstCaseSizeOnBank(byte bank) 
 	{
-		return toAdd.getMaxSizeOnBank(bank);
+		return toAdd.getWorstCaseSizeOnBank(bank);
 	}
 
 }

@@ -3,7 +3,7 @@ package compiler.fixed;
 import compiler.CompilerUtils;
 import compiler.CompilerConstants.InstructionConditions;
 
-public class Ret extends Instruction
+public class Ret extends FixedInstruction
 {
 	public static final int SIZE = 1;
 	InstructionConditions conditions;

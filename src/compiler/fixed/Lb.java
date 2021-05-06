@@ -3,7 +3,7 @@ package compiler.fixed;
 import compiler.CompilerUtils;
 import compiler.CompilerConstants.RegisterPair;
 
-public class Lb extends Instruction
+public class Lb extends FixedInstruction
 {
 	public static final int SIZE = 3;
 	private RegisterPair pair;

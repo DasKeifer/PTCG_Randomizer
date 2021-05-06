@@ -2,11 +2,11 @@ package datamanager;
 
 import java.util.SortedMap;
 
-import compiler.CodeSnippit;
+import compiler.DataBlock;
 
 public class FloatingBlock extends MoveableBlock
 {
-	protected FloatingBlock(byte priority, CodeSnippit toPlaceInBank)
+	protected FloatingBlock(byte priority, DataBlock toPlaceInBank)
 	{
 		super(priority, toPlaceInBank);
 	}
@@ -37,7 +37,7 @@ public class FloatingBlock extends MoveableBlock
 	}
 
 	@Override
-	public int getMinimalSizeOnBank(byte bank) 
+	public int getShrunkWorstCaseSizeOnBank(byte bank) 
 	{
 		return 0;
 	}

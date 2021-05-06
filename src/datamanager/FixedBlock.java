@@ -2,16 +2,16 @@ package datamanager;
 
 import java.util.Map;
 
-import compiler.CodeSnippit;
-import compiler.dynamic.Block;
+import compiler.DataBlock;
+import compiler.tmp.CodeSnippit;
 import datamanager.ConstrainedBlock.AutoCompressOption;
 import util.ByteUtils;
 
-public abstract class FixedBlock
+public abstract class FixedBlock implements BlockAllocData
 {
 	int addressStartToReplace;
 	int replaceLength; // needed since we want to pad space... or just use replaced bytes?
-	Block replaceWith;
+	DataBlock replaceWith;
 	byte[] verifyPreBytes;
 	byte[] verifyReplacedBytes;
 	byte[] verifyPostBytes;
@@ -53,7 +53,7 @@ public abstract class FixedBlock
 		// Assume 0xFF
 	}
 	
-	public int writeData(byte[] bytes, Map<String, Integer> blockIdsToAddresses)
+	public int writeData(byte[] bytes)
 	{
 		Integer address = blockIdsToAddresses.get(replaceWith.getId());
 		// Check null?

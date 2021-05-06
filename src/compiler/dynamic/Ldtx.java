@@ -1,10 +1,10 @@
 package compiler.dynamic;
 
-import compiler.fixed.Instruction;
+import compiler.fixed.FixedInstruction;
 
-// TODO: lots more other load functions...
+// TODO: Have this separate? Depends on how we do things
 
-public class Ldtx extends Instruction
+public class Ldtx extends FixedInstruction
 {
 	// TODO Does this belong here or in dynamic?
 	

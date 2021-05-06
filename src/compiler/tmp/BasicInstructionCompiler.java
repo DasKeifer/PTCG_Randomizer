@@ -1,5 +1,6 @@
-package compiler;
+package compiler.tmp;
 
+import compiler.CompilerConstants;
 import compiler.CompilerConstants.InstructionConditions;
 import compiler.CompilerConstants.Register;
 import compiler.CompilerConstants.RegisterPair;

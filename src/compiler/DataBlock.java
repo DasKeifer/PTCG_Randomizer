@@ -1,34 +1,37 @@
-package compiler.dynamic;
+package compiler;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import compiler.fixed.Cp;
-import compiler.fixed.Inc;
-import compiler.fixed.Instruction;
-import compiler.fixed.Lb;
-import compiler.fixed.Ld;
+import compiler.fixed.*;
 
-public class Block 
+public class DataBlock 
 {
+	public static final int UNASSIGNED_ADDRESS = -1;
+	public static final int UNASSIGNED_LOCAL_ADDRESS = -2;
 	private static final String SEGMENT_ENDLINE = ":";
 	private static final String SUBSEGMENT_STARTLINE = ".";
 	private static final String LINE_BREAK = "\n";
-	private int address;
+	
+	private int assignedAddress;
 	List<Segment> segments;
+	private String id;
 	
 	// Generic, highest level construct for holding just raw data or a series of functions
 	// Represents one block that we want to place contiguously in the ROM
 	// I.e. replace Code Snippet
-	public Block(String startingSegmentName, String source)
+	public DataBlock(String startingSegmentName, String source)
 	{
+		assignedAddress = UNASSIGNED_ADDRESS;
 		segments = new LinkedList<Segment>();
+		id = startingSegmentName;
 		String sourcePlusSegmentName = startingSegmentName + SEGMENT_ENDLINE + LINE_BREAK + source;
 		parseSource(startingSegmentName, sourcePlusSegmentName.split(LINE_BREAK));
 	}
 	
-	public Block(String source)
+	public DataBlock(String source)
 	{
+		assignedAddress = UNASSIGNED_ADDRESS;
 		segments = new LinkedList<Segment>();
 		
 		String[] lines = source.split(LINE_BREAK);
@@ -37,7 +40,8 @@ public class Block
 			throw new IllegalArgumentException("The first line must be a Segment label (i.e. the segment name followed by a ':'");
 		}
 
-		parseSource(getSegmentName(lines[0]), lines);
+		id = getSegmentName(lines[0]);
+		parseSource(id, lines);
 	}
 	
 	private void parseSource(String startingSegmentName, String[] sourceLines)
@@ -68,16 +72,6 @@ public class Block
 		}
 	}
 	
-	public void assignAddress(int address)
-	{
-		this.address = address;
-	}
-	
-	public int getAssignedAddress(int address)
-	{
-		return address;
-	}
-	
 	private String getSegmentName(String line)
 	{
 		return line.substring(0, line.indexOf(SEGMENT_ENDLINE)).trim();
@@ -88,13 +82,37 @@ public class Block
 		return segmentName + line.trim();
 	}
 	
+	public void setAssignedAddress(int address)
+	{
+		this.assignedAddress = address;
+	}
+	
+	public int getAssignedAddress()
+	{
+		return assignedAddress;
+	}
+	
+	public String getId()
+	{
+		return id;
+	}
+	
+	public int getWorstCaseSizeOnBank(byte bank)
+	{
+		int worstCaseSize = 0;
+		for (Segment segment : segments)
+		{
+			worstCaseSize += segment.getWorstCaseSizeOnBank(bank);
+		}
+		return worstCaseSize;
+	}
+	
 	public static Data create(String line)
 	{
 		// Split the keyword off
 		String[] keyArgs = line.split(" ", 1);
 		
-		// TODO determine types and put in object list. Then sub objects call the instance of to see if its compatible
-		// Maybe use something less generic than object too
+		// Split the args apart
 		String[] args = new String[0];
 		if (keyArgs.length >= 1)
 		{
@@ -103,6 +121,7 @@ public class Block
 		
 		switch (keyArgs[0])
 		{
+			// TODO: complete this list
 			// Loading
 			case "lb":
 				return Lb.create(args);
@@ -115,9 +134,10 @@ public class Block
 			case "inc":
 				return Inc.create(args);
 				
-			// Flow control? Maybe handled in separate class?
+			// Flow control
 				
-			// Writing raw
+			// Writing raw data
+				
 			default:
 				throw new UnsupportedOperationException("Unrecognized instruction key: " + keyArgs[0]);
 		}

@@ -1,10 +1,12 @@
 package compiler.fixed;
 
-public abstract class Instruction
+import compiler.Data;
+
+public abstract class FixedInstruction extends Data
 {
 	private int size;
 	
-	protected Instruction(int size) 
+	protected FixedInstruction(int size) 
 	{
 		this.size = size;
 	}

@@ -1,4 +1,4 @@
-package compiler;
+package compiler.tmp;
 
 public class SetLengthCodeSnippet {
 

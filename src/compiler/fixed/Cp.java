@@ -2,7 +2,7 @@ package compiler.fixed;
 
 import compiler.CompilerUtils;
 
-public class Cp extends Instruction
+public class Cp extends FixedInstruction
 {
 	public static final int SIZE = 2;
 	byte value;

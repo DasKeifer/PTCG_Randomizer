@@ -1,22 +1,22 @@
 package datamanager;
 
 import java.util.Map.Entry;
-import java.util.Map;
+
+import compiler.DataBlock;
+
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import compiler.CodeSnippit;
-
-public abstract class MoveableBlock 
+public abstract class MoveableBlock implements BlockAllocData
 {
 	private boolean shrunkMoved; // TODO make this temp somehow?
 	private byte assignedBank;
 	
 	private byte priority;
-	protected CodeSnippit toAdd;
+	protected DataBlock toAdd;
 	protected TreeMap<Byte, BankRange> allowableBankPreferences;
 	
-	protected MoveableBlock(byte priority, CodeSnippit toPlaceInBank)
+	protected MoveableBlock(byte priority, DataBlock toPlaceInBank)
 	{
 		shrunkMoved = false;
 		assignedBank = -1;
@@ -26,9 +26,9 @@ public abstract class MoveableBlock
 		allowableBankPreferences = new TreeMap<>();
 	}
 	
-	public int writeData(byte[] bytes, Map<String, Integer> blockIdsToAddresses)
+	public int writeData(byte[] bytes)
 	{
-		return toAdd.writeData(bytes, blockIdsToAddresses);
+		return 0; //TODO toAdd.writeData(bytes, blockIdsToAddresses);
 	}
 	
 	protected void addAllowableBankRange(byte priority, byte startBank, byte stopBank)
@@ -40,10 +40,17 @@ public abstract class MoveableBlock
 		
 		allowableBankPreferences.put(priority, new BankRange(startBank, stopBank));
 	}
-	
-	void setAssignedBank(byte bank)
+
+	public void setAssignedAddress(int address) 
 	{
-		assignedBank = bank;
+		toAdd.setAssignedAddress(address);
+	}
+
+
+	@Override
+	public int getAddress() 
+	{
+		return toAdd.getAssignedAddress();
 	}
 	
 	void setShrunkOrMoved(boolean isShrunkOrMoved)
@@ -51,14 +58,10 @@ public abstract class MoveableBlock
 		shrunkMoved = isShrunkOrMoved;
 	}
 	
-	String getId()
+	@Override
+	public String getId()
 	{
 		return toAdd.getId();
-	}
-	
-	byte getAssignedBank()
-	{
-		return assignedBank;
 	}
 	
 	boolean isShrunkOrMoved()
@@ -84,7 +87,7 @@ public abstract class MoveableBlock
 	public abstract boolean shrinksNotMoves();
 	public abstract FloatingBlock applyShrink();	
 	public abstract FloatingBlock revertShrink();
-	public abstract int getMinimalSizeOnBank(byte bank);
+	public abstract int getShrunkWorstCaseSizeOnBank(byte bank);
 	
 	public int getCurrentSizeOnBank(byte bank)
 	{
@@ -97,11 +100,11 @@ public abstract class MoveableBlock
 			}
 			
 			// Otherwise get its shrunk size
-			return getMinimalSizeOnBank(bank);
+			return getShrunkWorstCaseSizeOnBank(bank);
 		}
 		else
 		{
-			return toAdd.getMaxSizeOnBank(bank);
+			return toAdd.getWorstCaseSizeOnBank(bank);
 		}
 	}
 	

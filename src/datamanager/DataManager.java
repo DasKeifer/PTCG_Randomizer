@@ -1,15 +1,12 @@
 package datamanager;
 
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.SortedMap;
 
 import constants.RomConstants;
-import rom.Texts;
 
 public class DataManager
 {
@@ -20,9 +17,10 @@ public class DataManager
 	// Priority, object
 	private SortedMap<Byte, List<MoveableBlock>> allocsToProcess;
 	
-	// BlockId, write address
-	private Map<String, Byte> blockIdsToBanks;
-	private Map<String, Integer> blockIdsToAddresses;
+	// BlockId, Block
+	// This can be used for determining references of one block in another and ensures
+	// each ID is unique
+	private Map<String, BlockAllocData> blocksById;
 	
 	public void writeData(
 			byte[] bytesToPlaceIn,
@@ -41,13 +39,31 @@ public class DataManager
 		// This needs to be done after the movable blocks
 		for (FixedBlock block : replacementBlocks)
 		{
-			block.writeData(bytesToPlaceIn, blockIdsToAddresses);
+			block.writeData(bytesToPlaceIn);
 		}
 		
 		for (MoveableBlock block : blocksToPlace)
 		{
-			block.writeData(bytesToPlaceIn, blockIdsToAddresses);
+			block.writeData(bytesToPlaceIn);
 		}
+	}
+	
+	private void addBlockById(BlockAllocData block)
+	{
+		// Ensure no duplicate Ids
+		if (blocksById.put(block.getId(), block) != null)
+		{
+			throw new IllegalArgumentException("Duplicate block ID detected! There must be only " +
+					"one allocation block per data block");
+		}
+	}
+	
+	private void addBlockToAllocate(MoveableBlock block)
+	{
+		addBlockById(block);
+		
+		// Add it to the map of ones to allocate
+		DataManagerUtils.addToPriorityMap(allocsToProcess, block);
 	}
 	
 	private void determineDataLocations(
@@ -58,22 +74,17 @@ public class DataManager
 	{
 		freeSpace.clear();
 		allocsToProcess.clear();	
-		blockIdsToAddresses.clear();
+		blocksById.clear();
 
-		// TODO: First add all the blocks to the pending allocations list and ensure
-		// we don't have ID conflicts
+		// First add all the blocks to  we don't have ID conflicts
+		for (FixedBlock block : replacementBlocks)
+		{
+			addBlockById(block);
+		}
+		
 		for (MoveableBlock block : blocksToPlace)
 		{
-			// Ensure no duplicate Ids
-			if (blockIdsToBanks.put(block.getId(), (byte) -1) != null)
-			{
-				throw new IllegalArgumentException("Duplicate block ID detected! There must be only " +
-						"one block per code snippet");
-			}
-			blockIdsToAddresses.put(block.getId(), -1);
-			
-			// Add it to the map
-			DataManagerUtils.addToPriorityMap(allocsToProcess, block);
+			addBlockToAllocate(block);
 		}
 		
 		// Determine what space we have free
@@ -81,9 +92,6 @@ public class DataManager
 	
 		// Allocate space for the constrained blocks then the unconstrained ones
 		makeAllocations();
-		
-		// Attempt to pack and optimize the allocs
-		assignAndPackAllocs();
 	}
 	
 	private void makeAllocations()
@@ -97,28 +105,28 @@ public class DataManager
 		while (!allocsToProcess.isEmpty())
 		{
 			Entry<Byte, List<MoveableBlock>> allocsWithPriority = allocsToProcess.entrySet().iterator().next();
-			MoveableBlock nextToPlace = allocsWithPriority.getValue().remove(0);
-			if (allocsWithPriority.getValue().isEmpty())
+			while (!allocsWithPriority.getValue().isEmpty())
 			{
-				allocsToProcess.remove(allocsWithPriority.getKey());
-			}
-			
-			// If we fail to allocate, throw
-			// Maybe we should allow the block to specify if its necessary or nice to have?
-			if (!tryAllocate(nextToPlace))
-			{
-				throw new RuntimeException("Failed to place a block!");
+				MoveableBlock nextToPlace = allocsWithPriority.getValue().remove(0);
+				// clean the map up if the list is now empty
+				if (allocsWithPriority.getValue().isEmpty())
+				{
+					allocsToProcess.remove(allocsWithPriority.getKey());
+				}
+				
+				// If we fail to allocate, throw
+				if (!tryAllocate(nextToPlace))
+				{
+					throw new RuntimeException("Failed to place a block! Aborting!");
+				}
 			}
 		}
 	}
 	
 	private boolean tryAllocate(MoveableBlock data)
 	{
-		boolean success = false;
-		Set<AllocatableBank> possibleBanksWithShrinks = new HashSet<>();
-		
 		// First try to place and get the list of conflicting allocs
-		success = attemptToPlace(data, possibleBanksWithShrinks);
+		boolean success = attemptToPlace(data);
 
 		// If we failed to place and we can shrink, shrink and try to place again
 		// This will update the conflicting allocs
@@ -129,29 +137,28 @@ public class DataManager
 			if (data.canBeShrunkOrMoved())
 			{
 				data.setShrunkOrMoved(true);
-				success = attemptToPlace(data, possibleBanksWithShrinks);
+				success = attemptToPlace(data);
 			}
 		}
 
 		// If we still failed, try to shrink others
 		if (!success)
 		{
-			success = attemptToShrinkOtherAllocsAndPlace(data, possibleBanksWithShrinks);
+			// TODO: rework this some more - if we shrunk, we will need to add
+			// new entries into our maps
+			success = attemptToShrinkOtherAllocsAndPlace(data);
 		}
 		
 		return success;
 	}
 	
-	private boolean attemptToPlace(MoveableBlock data, Set<AllocatableBank> possibleBanksWithShrinks)
-	{
-		// Make sure the list is clear
-		possibleBanksWithShrinks.clear();
-		
+	private boolean attemptToPlace(MoveableBlock data)
+	{		
 		// For each possibility, try to allocate and add any allocations that 
 		// conflicted with the option
 		for (Entry<Byte, BankRange> option : data.getPreferencedAllowableBanks().entrySet())
 		{
-			if (allocateInRange(data, option.getValue(), possibleBanksWithShrinks))
+			if (allocateInRange(data, option.getValue()))
 			{
 				return true;
 			}
@@ -160,91 +167,51 @@ public class DataManager
 		return false;
 	}
 
-	private boolean allocateInRange(MoveableBlock data, BankRange range, Set<AllocatableBank> possibleBanksWithShrinks)
+	private boolean allocateInRange(MoveableBlock data, BankRange range)
 	{
 		// Go through each bank and try to find the space
 		for (byte currBank = range.start; currBank < range.stopExclusive; currBank++)
 		{
 			AllocatableBank bankSpace = freeSpace.get(currBank);
-			if (bankSpace.doesHaveSpaceLeft(data.getCurrentSizeOnBank(currBank)))
+			if (bankSpace.attemptToAdd(data))
 			{
-				possibleBanksWithShrinks.clear();
-				data.setAssignedBank(currBank);
-				bankSpace.add(data);
 				return true;
-			}
-			else
-			{
-				possibleBanksWithShrinks.add(bankSpace);
 			}
 		}
 		
 		return false;
 	}
 	
-	private boolean attemptToShrinkOtherAllocsAndPlace(MoveableBlock data, Set<AllocatableBank> possibleBanksWithShrinks)
+	private boolean attemptToShrinkOtherAllocsAndPlace(MoveableBlock data)
 	{		
 		byte bestOptionPriority = 0;
 		AllocatableBank bestOption = null;
-		for (AllocatableBank option : possibleBanksWithShrinks)
+		for (Entry<Byte, BankRange> option : data.getPreferencedAllowableBanks().entrySet())
 		{
-			byte optionPriority = option.canShrinkingToMakeSpace(data.getCurrentSizeOnBank(option.getBank()));
-			if (optionPriority > bestOptionPriority)
+			for (byte currBank = option.getValue().start; currBank < option.getValue().stopExclusive; currBank++)
 			{
-				bestOptionPriority = optionPriority;
-				bestOption = option;
+				AllocatableBank currOption = freeSpace.get(currBank);
+				byte optionPriority = currOption.canShrinkingToMakeSpace(data.getCurrentSizeOnBank(currOption.getBank()));
+				if (optionPriority > bestOptionPriority)
+				{
+					bestOptionPriority = optionPriority;
+					bestOption = currOption;
+				}
 			}
 		}
 		
 		// Did we find any that worked?
 		if (bestOption != null)
 		{
-			data.setAssignedBank(bestOption.getBank());
-			bestOption.add(data);
+			// TODO: flow this out and include it in stuff that needs allocating
+			List<MoveableBlock> displacedBlocks = new LinkedList<>();
+			bestOption.attemptToAdd(data, displacedBlocks);
 			return true;
 		}
 		
 		return false;
 	}
-
-	private void assignAndPackAllocs()
-	{		
-		List<Byte> keys = new ArrayList<>(freeSpace.keySet());
-		byte currBank;
-		byte earliestEffected;
-		for (int keyIdx = 0; keyIdx < keys.size(); keyIdx++)
-		{
-			currBank = keys.get(keyIdx);
-			
-			// Adjust the allocs. If any alloc was removed, we need to start over
-			// and try again
-			earliestEffected = removeBlocks(freeSpace.get(currBank).adjustAllocs());
-			if (earliestEffected < keyIdx)
-			{
-				keyIdx = earliestEffected;
-			}
-		}
-		
-		for (AllocatableBank bank : freeSpace.values())
-		{
-			bank.assignAddresses(blockIdsToAddresses);
-		}
-	}
 	
-	private byte removeBlocks(List<MoveableBlock> blocksToRemove)
-	{
-		byte earliestBank = Byte.MAX_VALUE;
-		for (MoveableBlock toRemove : blocksToRemove)
-		{
-			if (toRemove.getAssignedBank() < earliestBank)
-			{
-				earliestBank = toRemove.getAssignedBank();
-			}
-			
-			freeSpace.get(toRemove.getAssignedBank()).removeBlock(toRemove.getId());
-		}
-		return earliestBank;
-	}
 	
 	// TODO: we need to avoid images/gfx somehow - perhaps have it hardcoded which banks these occur in?
 	// GFX banks
@@ -257,7 +224,7 @@ public class DataManager
 	//audio 3d & 3e
 	//sfx 3f
 	
-	// TODO: detect all spaces then clear the data. Then we don't have to worry about 
+	// TODO: detect all spaces then clear the data? Then we don't have to worry about 
 	// overflowing as much
 	private void determineAllFreeSpace(byte[] rawBytes)
 	{
