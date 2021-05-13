@@ -174,22 +174,22 @@ public class HardcodedMoves
 		{
 			// Same for all call for families
 			romBytes[effectCommandStartAddress++] = EffectCommandTypes.InitialEffect1.getValue();
-			ByteUtils.writeAsShort(RomUtils.convertToInBankOffset(INITIAL_EFFECT_ADDRESS), romBytes, effectCommandStartAddress);
+			ByteUtils.writeAsShort(RomUtils.convertToLoadedBankOffset(INITIAL_EFFECT_ADDRESS), romBytes, effectCommandStartAddress);
 			effectCommandStartAddress += 2;
 
 			// Same for all call for families
 			romBytes[effectCommandStartAddress++] = EffectCommandTypes.AfterDamage.getValue();
-			ByteUtils.writeAsShort(RomUtils.convertToInBankOffset(PUT_IN_PLAY_AREA_EFFECT_ADDRESS), romBytes, effectCommandStartAddress);
+			ByteUtils.writeAsShort(RomUtils.convertToLoadedBankOffset(PUT_IN_PLAY_AREA_EFFECT_ADDRESS), romBytes, effectCommandStartAddress);
 			effectCommandStartAddress += 2;
 			
 			// Unique to card
 			romBytes[effectCommandStartAddress++] = EffectCommandTypes.RequireSelection.getValue();
-			ByteUtils.writeAsShort(RomUtils.convertToInBankOffset(playerSelectStartAddress), romBytes, effectCommandStartAddress);
+			ByteUtils.writeAsShort(RomUtils.convertToLoadedBankOffset(playerSelectStartAddress), romBytes, effectCommandStartAddress);
 			effectCommandStartAddress += 2;
 
 			// Unique to card
 			romBytes[effectCommandStartAddress++] = EffectCommandTypes.AiSelection.getValue();
-			ByteUtils.writeAsShort(RomUtils.convertToInBankOffset(aiSelectStartAddress), romBytes, effectCommandStartAddress);
+			ByteUtils.writeAsShort(RomUtils.convertToLoadedBankOffset(aiSelectStartAddress), romBytes, effectCommandStartAddress);
 			effectCommandStartAddress += 2;
 			
 			// Ends the effect

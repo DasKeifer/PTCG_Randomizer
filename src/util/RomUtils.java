@@ -9,13 +9,13 @@ public class RomUtils
 		return (byte) (address / RomConstants.BANK_SIZE);
 	}
 	
-	public static short convertToInBankOffset(int globalAddress)
+	public static short convertToLoadedBankOffset(int globalAddress)
 	{
 		byte bank = determineBank(globalAddress);
-		return convertToInBankOffset(bank, globalAddress);
+		return convertToLoadedBankOffset(bank, globalAddress);
 	}
 	
-	public static short convertToInBankOffset(byte bank, int globalAddress)
+	public static short convertToLoadedBankOffset(byte bank, int globalAddress)
 	{
 		// If its bank 0 or 1, no changes are needed
 		if (bank == 0 || bank == 1)
@@ -35,5 +35,10 @@ public class RomUtils
 	public static int[] getBankBounds(byte bank)
 	{
 		return new int[] {bank * RomConstants.BANK_SIZE, (bank + 1) * RomConstants.BANK_SIZE - 1};
+	}
+	
+	public static boolean isInBank(int address, byte bank)
+	{
+		return determineBank(address) == bank;
 	}
 }

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.TreeMap;
 
+import compiler.CompilerUtils;
 import compiler.DataBlock;
 
 public class AllocatableBank 
@@ -100,7 +101,7 @@ public class AllocatableBank
 				alloc = iter.next();
 				if (alloc.getId().equalsIgnoreCase(Id))
 				{
-					alloc.setAssignedAddress(DataBlock.UNASSIGNED_ADDRESS);
+					alloc.setAssignedAddress(CompilerUtils.UNASSIGNED_ADDRESS);
 					iter.remove();
 					if (!reassignAndRefresh())
 					{

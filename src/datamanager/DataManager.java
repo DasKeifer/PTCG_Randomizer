@@ -20,6 +20,7 @@ public class DataManager
 	// BlockId, Block
 	// This can be used for determining references of one block in another and ensures
 	// each ID is unique
+	// TODO: change this to segment or keep a parallel segment version?
 	private Map<String, BlockAllocData> blocksById;
 	
 	public void writeData(
@@ -30,6 +31,9 @@ public class DataManager
 		// Assign Ids (I.e. processes idsToText)
 		// TODO: should this be done here or before this?
 		// I'm thinking before this - i.e. finalize (fill in placeholders) then write
+		// But maybe as a first step - gather all the blocks and ids, link them all,
+		// then allocate and write. Perhaps the linking is done external to here though?
+		// Probably should be
 		
 		determineDataLocations(bytesToPlaceIn, replacementBlocks, blocksToPlace);
 		

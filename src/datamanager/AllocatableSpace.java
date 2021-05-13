@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import compiler.CompilerUtils;
 import compiler.DataBlock;
 import util.RomUtils;
 
@@ -36,7 +37,7 @@ class AllocatableSpace extends AddressRange
 		allocationsByPriority.clear();
 		nextStartAddress = start;
 		
-		int unassignAddr = willStayInBank ? DataBlock.UNASSIGNED_LOCAL_ADDRESS : DataBlock.UNASSIGNED_ADDRESS;
+		int unassignAddr = willStayInBank ? CompilerUtils.UNASSIGNED_LOCAL_ADDRESS : CompilerUtils.UNASSIGNED_ADDRESS;
 		for (List<MoveableBlock> allocWithPriority : allocationsByPriority.values())
 		{
 			for (MoveableBlock alloc : allocWithPriority)

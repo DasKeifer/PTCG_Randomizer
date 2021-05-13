@@ -89,6 +89,7 @@ public abstract class MoveableBlock implements BlockAllocData
 	public abstract FloatingBlock revertShrink();
 	public abstract int getShrunkWorstCaseSizeOnBank(byte bank);
 	
+	// TODO: Worst case size 
 	public int getCurrentSizeOnBank(byte bank)
 	{
 		if (shrunkMoved)

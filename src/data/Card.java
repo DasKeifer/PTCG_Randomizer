@@ -5,6 +5,7 @@ import constants.CardDataConstants.BoosterPack;
 import constants.CardDataConstants.CardRarity;
 import constants.CardDataConstants.CardSet;
 import constants.CardDataConstants.CardType;
+import rom.Cards;
 import rom.Texts;
 import util.ByteUtils;
 

@@ -6,9 +6,9 @@ import java.io.IOException;
 import java.util.List;
 
 import data.Card;
-import data.Cards;
 import rom.Texts;
 import util.Logger;
+import rom.Cards;
 import rom.Rom;
 
 public class Randomizer 

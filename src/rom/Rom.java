@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 
 import data.Card;
-import data.Cards;
 import datamanager.DataManager;
 
 public class Rom
@@ -69,6 +68,7 @@ public class Rom
 		DataManager spaceManager = new DataManager(rawBytes);
 		
 		// Finalize and gather card text
+		// TODO: include the data segments to write too?
 		RomIO.finalizeAndConvertTextToIds(allCards, idsToText);
 
 		// Save the new data starting with the text so we can ensure it gets

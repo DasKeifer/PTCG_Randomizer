@@ -2,7 +2,7 @@ package compiler.tmp;
 
 import constants.RomConstants;
 
-public class CallJumpCompiler implements DynamicCompiler
+public class JpCall implements DynamicCompiler
 {
 	private static final byte JR_BYTE_LENGTH = 2;
 	private static final byte JP_BYTE_LENGTH = 3;
@@ -34,7 +34,7 @@ public class CallJumpCompiler implements DynamicCompiler
 	
 	// We use a private constructor and factory-like constructors so we can name them to make it clear
 	// what is being created
-	private CallJumpCompiler(byte bankToCall, short addressToCall, boolean isCallNotJp, InstructionConditions instructCond)
+	private JpCall(byte bankToCall, short addressToCall, boolean isCallNotJp, InstructionConditions instructCond)
 	{
 		this(bankToCall, 
 				addressToCall, 
@@ -43,7 +43,7 @@ public class CallJumpCompiler implements DynamicCompiler
 		);
 	}
 	
-	private CallJumpCompiler(byte bankToCall, short addressToCall, CallJumpType jumpCallType, InstructionConditions instructCond)
+	private JpCall(byte bankToCall, short addressToCall, CallJumpType jumpCallType, InstructionConditions instructCond)
 	{
 		bank = bankToCall;
 		address = addressToCall;
@@ -52,37 +52,37 @@ public class CallJumpCompiler implements DynamicCompiler
 	}
 	
 	// TODO: probably should error check these factories
-	public static CallJumpCompiler createLocalCallJump(short localAddressToCall, boolean isCallNotJp)
+	public static JpCall createLocalCallJump(short localAddressToCall, boolean isCallNotJp)
 	{
-		return new CallJumpCompiler(LOCAL_CALL_BANK, localAddressToCall, isCallNotJp, InstructionConditions.NONE);
+		return new JpCall(LOCAL_CALL_BANK, localAddressToCall, isCallNotJp, InstructionConditions.NONE);
 	}
 	
-	public static CallJumpCompiler createLocalConditionalCallJump(short localAddressToCall, boolean isCallNotJp, InstructionConditions instructCond)
+	public static JpCall createLocalConditionalCallJump(short localAddressToCall, boolean isCallNotJp, InstructionConditions instructCond)
 	{
-		return new CallJumpCompiler(LOCAL_CALL_BANK, localAddressToCall, isCallNotJp, instructCond);
+		return new JpCall(LOCAL_CALL_BANK, localAddressToCall, isCallNotJp, instructCond);
 	}
 	
-	public static CallJumpCompiler createCallJump(byte bankToCall, short addressToCall, boolean isCallNotJp)
+	public static JpCall createCallJump(byte bankToCall, short addressToCall, boolean isCallNotJp)
 	{
 		// If its in the home bank, its a local call/jump
 		if (addressToCall < RomConstants.BANK_SIZE)
 		{
 			createLocalCallJump(addressToCall, isCallNotJp);
 		}
-		return new CallJumpCompiler(bankToCall, addressToCall, isCallNotJp, InstructionConditions.NONE);
+		return new JpCall(bankToCall, addressToCall, isCallNotJp, InstructionConditions.NONE);
 	}
 	
-	public static CallJumpCompiler createConditionalCallJump(byte bankToCall, short addressToCall, boolean isCallNotJp, InstructionConditions instructCond)
+	public static JpCall createConditionalCallJump(byte bankToCall, short addressToCall, boolean isCallNotJp, InstructionConditions instructCond)
 	{
 		// If its in the home bank, its a local call/jump
 		if (addressToCall < RomConstants.BANK_SIZE)
 		{
 			createLocalConditionalCallJump(addressToCall, isCallNotJp, instructCond);
 		}
-		return new CallJumpCompiler(bankToCall, addressToCall, isCallNotJp, instructCond);
+		return new JpCall(bankToCall, addressToCall, isCallNotJp, instructCond);
 	}
 
-	public static CallJumpCompiler crateJumpRelative(byte jpOffset, InstructionConditions instructCond)
+	public static JpCall crateJumpRelative(byte jpOffset, InstructionConditions instructCond)
 	{
 		throw new UnsupportedOperationException("JR");
 		//return new CallJumpCompiler(LOCAL_CALL_BANK, jpOffset, JumpCallType.JR, instructCond);
