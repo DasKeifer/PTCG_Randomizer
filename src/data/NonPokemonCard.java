@@ -1,6 +1,7 @@
 package data;
 
 import constants.RomConstants;
+import data.romtexts.EffectDescription;
 import rom.Texts;
 import util.ByteUtils;
 

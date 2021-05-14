@@ -1,5 +1,6 @@
 package constants;
 
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,12 +16,18 @@ public class RomConstants
 	public static final int TOTAL_NUM_CARDS = TOTAL_NUM_POKEMON_CARDS + TOTAL_NUM_ENERGY_CARDS + TOTAL_NUM_TRAINER_CARDS;
 	
 	// Text info
-	public static final int MAX_CHARS_PER_POKE_NAME = 20; // not including starting char
-	public static final int MAX_CHARS_PER_LINE = 36; // Not including newline or starting char
+	public static final int MAX_CHARS_POKE_NAME = 20; // not including starting char
+	public static final int MAX_CHARS_POKE_CATEGORY = 20; // not including starting char // TODO figure out
+	public static final int MAX_CHARS_MOVE_NAME = 20; // not including starting char // TODO figure out
+	public static final int MAX_CHARS_PER_LINE_CARD = 36; // Not including newline or starting char 
+	public static final int MAX_CHARS_PER_LINE_TEXTBOX = 36; // Not including newline or starting char // TODO figure out
+	public static final int MAX_CHARS_PER_LINE_HALF_TEXTBOX = 20; // Not including newline or starting char // TODO figure out
 	
-	public static final int MAX_LINES_PER_POKE_DESC = 4;
-	public static final int PREFERRED_LINES_PER_EFFECT_DESC = 6;
-	public static final int MAX_LINES_PER_EFFECT_DESC = 7;
+	public static final int MAX_LINES_POKE_DESC = 4;
+	public static final int MAX_LINES_HALF_TEXTBOX = 2;
+	public static final int PREFERRED_LINES_PER_BLOCK_EFFECT_DESC = 6;
+	public static final int MAX_LINES_PER_BLOCK_EFFECT_DESC = 7;
+	public static final int MAX_BLOCKS_EFFECT_DESC = 2;
 	
 	// Text type chars and other special text
 	public static final char ENLGISH_TEXT_CHAR = 0x06;

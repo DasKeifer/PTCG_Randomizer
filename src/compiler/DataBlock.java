@@ -43,6 +43,7 @@ public class DataBlock
 		parseSource(id, lines);
 	}
 	
+	// TODO change to manually input lines as separate strings so we can format strings inline
 	private void parseSource(String startingSegmentName, String[] sourceLines)
 	{
 		segments.clear();

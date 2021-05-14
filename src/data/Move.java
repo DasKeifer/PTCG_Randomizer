@@ -7,6 +7,8 @@ import java.util.Set;
 
 import constants.RomConstants;
 import constants.CardDataConstants.*;
+import data.romtexts.EffectDescription;
+import data.romtexts.MoveName;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -17,7 +19,7 @@ public class Move
 	public static final Comparator<Move> BASIC_SORTER = new BasicSorter();
 	
 	EnumMap<EnergyType, Byte> energyCost;
-	public OneLineText name;
+	public MoveName name;
 	public EffectDescription description;
 	public byte damage; // TODO: non multiple of 10?
 	public MoveCategory category;
@@ -31,7 +33,7 @@ public class Move
 	public Move()
 	{
 		energyCost = new EnumMap<>(EnergyType.class);
-		name = new OneLineText();
+		name = new MoveName();
 		description = new EffectDescription();
 		category = MoveCategory.DAMAGE_NORMAL;
 		effect1 = new HashSet<>();
@@ -42,7 +44,7 @@ public class Move
 	public Move(Move toCopy) 
 	{
 		energyCost = toCopy.energyCost;
-		name = new OneLineText(toCopy.name);
+		name = new MoveName(toCopy.name);
 		description = new EffectDescription(toCopy.description);
 		damage = toCopy.damage;
 		category = toCopy.category;

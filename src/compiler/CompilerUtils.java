@@ -1,15 +1,19 @@
 package compiler;
 
+
 import java.util.Map;
 import java.util.Map.Entry;
 
 import compiler.CompilerConstants.*;
 import compiler.dynamic.Jump;
 import compiler.dynamic.JumpCallCommon;
+import compiler.dynamic.Ldtx;
 import compiler.fixed.Cp;
 import compiler.fixed.Inc;
 import compiler.fixed.Lb;
 import compiler.fixed.Ld;
+import constants.RomConstants;
+import data.romtexts.*;
 
 public class CompilerUtils 
 {
@@ -17,6 +21,7 @@ public class CompilerUtils
 	public static final int UNASSIGNED_LOCAL_ADDRESS = -2;
 	static final String SEGMENT_ENDLINE = ":";
 	static final String SUBSEGMENT_STARTLINE = ".";
+	static final String STRING_QUOTE = "\n";
 	static final String LINE_BREAK = "\n";
 	static final String HEX_VAL_MARKER = "$";
 	static final String PLACEHOLDER_MARKER = "#";
@@ -86,9 +91,46 @@ public class CompilerUtils
 	
 	// TODO - make only a verify instead of a parse - i.e. no markers for placeholders?
 	// We do possibly want some parsing for addresses so we can handle ".name" type ones
-	public static String parseTextPlaceholder(String arg)
+	public static OneBlockText parseOneBlockTextArg(String arg)
 	{
-		return null; // TODO needed?
+		// TODO: add prefixes so we know what type of RomText to use
+		// Maybe input unformatted and let the utils handle formatting it
+		// based on prefixes? To do this I need to research what is allowed in
+		// text first - i.e. line lengths, max blocks etc. and make more romTexts
+		// to allow this. I think all text cannot use line breaks and that is something
+		// I added to support things like the pokemon descriptions
+		String[] formatAndVal = arg.trim().split(":", 1);
+		if (formatAndVal.length != 2)
+		{
+			throw new IllegalArgumentException("Malformed rom text - does not begin with format info (e.g. 'textbox' or '36,3:'): " + arg);
+		}		
+
+		int maxLines = Integer.MAX_VALUE; // Unbounded by default
+		int charsPerLine = Integer.MAX_VALUE; // Unbounded by default
+		switch (formatAndVal[0])
+		{
+			case "pokename":
+				return new PokeName(formatAndVal[1]);
+			case "pokedesc":
+				return new PokeDescription(formatAndVal[1]);
+			case "textbox":
+				charsPerLine = RomConstants.MAX_CHARS_PER_LINE_TEXTBOX;
+				break;
+			case "halftextbox":
+				charsPerLine = RomConstants.MAX_CHARS_PER_LINE_HALF_TEXTBOX;
+				maxLines = RomConstants.MAX_LINES_HALF_TEXTBOX;
+				break;
+			default:
+				String[] charsLines = formatAndVal[0].split(",");
+				charsPerLine = Integer.parseInt(charsLines[0]);
+				if (charsLines.length > 1)
+				{
+					maxLines = Integer.parseInt(charsLines[1]);
+				}
+				break;
+		}
+		
+		return new OneBlockText(formatAndVal[1], charsPerLine, maxLines);
 	}
 
 	public static String formSegmentLabelArg(String arg, String rootSegment)
@@ -140,6 +182,10 @@ public class CompilerUtils
 				return Lb.create(args);
 			case "ld":
 				return Ld.create(args);
+			case "ldtx":
+				// we don't want to split on commas since the text
+				// may have it - let it handle it itself
+				return Ldtx.create(keyArgs[1]);
 		
 			// Logic
 			case "cp":

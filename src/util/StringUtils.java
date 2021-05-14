@@ -60,8 +60,13 @@ public class StringUtils
 		return stringToAbbreviate;
 	}
 	
-	public static boolean isFormattedValidly(List<String> blocksOfText, int maxCharsPerLine, int maxLines)
+	public static boolean isFormattedValidly(List<String> blocksOfText, int maxCharsPerLine, int maxLines, int maxBlocks)
 	{
+		if (blocksOfText.size() > maxBlocks)
+		{
+			return false;
+		}
+		
 		for (String block : blocksOfText)
 		{
 			if (!isFormattedValidly(block, maxCharsPerLine, maxLines))
@@ -70,6 +75,7 @@ public class StringUtils
 			}
 		}
 		
+		// Empty will return true intentionally
 		return true;
 	}
 	

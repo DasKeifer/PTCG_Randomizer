@@ -5,6 +5,7 @@ import constants.CardDataConstants.BoosterPack;
 import constants.CardDataConstants.CardRarity;
 import constants.CardDataConstants.CardSet;
 import constants.CardDataConstants.CardType;
+import data.romtexts.PokeName;
 import rom.Cards;
 import rom.Texts;
 import util.ByteUtils;
@@ -20,7 +21,7 @@ public abstract class Card
 	
 	// TODO encapsulate these or make public
 	public CardType type;
-	public OneLineText name;
+	public PokeName name;
 	short gfx; // Card art
 	CardRarity rarity;
 
@@ -32,13 +33,13 @@ public abstract class Card
 	
 	public Card()
 	{
-		name = new OneLineText();
+		name = new PokeName();
 	}
 	
 	public Card(Card toCopy)
 	{
 		type = toCopy.type;
-		name = new OneLineText(toCopy.name);
+		name = new PokeName(toCopy.name);
 		gfx = toCopy.gfx;
 		rarity = toCopy.rarity;
 		set = toCopy.set;

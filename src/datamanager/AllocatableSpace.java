@@ -5,7 +5,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import compiler.CompilerUtils;
-import compiler.DataBlock;
 import util.RomUtils;
 
 class AllocatableSpace extends AddressRange

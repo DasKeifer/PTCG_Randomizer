@@ -8,14 +8,22 @@ import rom.Texts;
 import util.ByteUtils;
 import util.StringUtils;
 
-public abstract class RomText
+public class RomText
 {	
+	// TODO: update messages
 	public static final char SPECIAL_SYM_RESERVE_SPACE_CHAR = 0x11; // Device control 1 for no particular reason
+	private int maxCharsPerLine;
+	private int preferredLinesPerBlock;
+	private int maxLinesPerBlock;
+	private int maxBlocks;
 	private List<String> textBlocks;
 	private List<Short> textBlockIds;
 	
-	public RomText()
+	public RomText(int maxCharsPerLine, int preferredLinesPerBlock, int maxLinesPerBlock, int maxBlocks)
 	{
+		this.maxCharsPerLine = maxCharsPerLine;
+		this.maxLinesPerBlock = maxLinesPerBlock;
+		this.maxBlocks = maxBlocks;
 		textBlocks = new ArrayList<>();
 		textBlocks.add("");
 		textBlockIds = new ArrayList<>();
@@ -104,6 +112,8 @@ public abstract class RomText
 		return false;
 	}
 	
+	// Default implementation. Some need more info in which case they should
+	// override this and throw an exception
 	public void finalizeAndAddTexts(Texts idToText)
 	{
 		// We clear the IDs if we changed/manually set the text
@@ -123,12 +133,50 @@ public abstract class RomText
 		}
 	}
 	
-	protected abstract boolean needsReformatting(List<String> text);
-	
-	protected abstract List<String> formatText(String text);
-	
-	protected void genericReadTextFromIds(byte[] bytes, int[] textIdIndexes, Texts idsToText)
+	protected boolean needsReformatting(List<String> text)
+	{		
+		return !StringUtils.isFormattedValidly(text, maxCharsPerLine, maxLinesPerBlock, maxBlocks);
+	}
+
+	protected List<String> formatText(String text) 
 	{
+		List<String> formatted = StringUtils.prettyFormatText(text,
+				maxCharsPerLine, maxLinesPerBlock,
+				preferredLinesPerBlock, maxBlocks);
+		
+		if (formatted.isEmpty())
+		{
+			System.out.println("Could not nicely fit effect text over line breaks - attempting to " +
+					"split words over lines to get it to fit for \"" + text + "\"");
+			
+			// If all else fails, just pack as tight as possible
+			formatted = StringUtils.packFormatText(text,
+				maxCharsPerLine, maxLinesPerBlock,
+				maxBlocks);
+			
+			if (formatted.isEmpty())
+			{
+				System.out.println("Failed to nicely pack effect description \"" + 
+						StringUtils.createAbbreviation(text, 25) + "\" so words were split across lines to make it fit");
+			}
+			else
+			{
+				throw new IllegalArgumentException("Could not successfully format effect description \"" + 
+						StringUtils.createAbbreviation(text, 25) + "\"");
+			}
+		}
+		
+		return formatted;
+	}
+	
+	public void readDataAndConvertIds(byte[] bytes, int[] textIdIndexes, Texts idsToText)
+	{		
+		if (textIdIndexes.length != maxBlocks)
+		{
+			throw new IllegalArgumentException("Reading effect description was passed the wrong number of id indexes :" + 
+					textIdIndexes.length);
+		}
+		
 		textBlocks.clear();
 		textBlockIds.clear();
 		
@@ -153,9 +201,15 @@ public abstract class RomText
 		
 		processForInternalManaging(textBlocks);
 	}
-
-	protected void genericWriteTextIds(byte[] bytes, int[] indexesToWriteAt)
+	
+	public void writeTextId(byte[] bytes, int[] indexesToWriteAt)
 	{
+		if (indexesToWriteAt.length != maxBlocks)
+		{
+			throw new IllegalArgumentException("Writing RomText was passed the wrong number of id indexes :" + 
+					indexesToWriteAt.length);
+		}
+		
 		// TODO: fix throws
 		if (textBlockIds.size() != textBlocks.size())
 		{

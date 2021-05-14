@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import constants.CardDataConstants.*;
+import data.romtexts.PokeCategory;
+import data.romtexts.PokeName;
+import data.romtexts.PokeDescription;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -15,34 +18,33 @@ public class PokemonCard extends Card
 	
 	byte hp; // TODO: non multiples of 10?
 	EvolutionStage stage;
-	OneLineText prevEvoName;
+	PokeName prevEvoName;
 	
 	private Move[] moves;
 	
 	byte retreatCost; // TODO: max allowed?
-	WeaknessResistanceType weakness; // TODO: Allows multiple?
-	WeaknessResistanceType resistance; // TODO: Allows multiple?
-	public OneLineText pokemonCategory; // TODO: Investigate
+	WeaknessResistanceType weakness; // TODO: Allows multiple? Yes
+	WeaknessResistanceType resistance; // TODO: Allows multiple? Yes
+	public PokeCategory pokemonCategory; // TODO: Investigate? Any gameplay impact?
 	public byte pokedexNumber;
 	byte unknownByte1; // TODO: Always 0?
 	byte level; // TODO: Investigate No gameplay impact?
 	short length; //TODO: One byte is feet, another is inches - separate them // TODO: Investigate No gameplay impact?
 	short weight; // TODO: Investigate No gameplay impact?
 	PokeDescription description;
-	 // TODO: At least somewhat tracks with evo stage in asm files - 19 for first stage, 16 for second stage, 0 for final stage?
-	byte unknownByte2;
+	byte unknownByte2; // TODO: At least somewhat tracks with evo stage in asm files - 19 for first stage, 16 for second stage, 0 for final stage?
 
 	public PokemonCard()
 	{
 		super();
 		
-		prevEvoName = new OneLineText();
+		prevEvoName = new PokeName();
 		moves = new Move[MAX_NUM_MOVES];
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
 			moves[moveIndex] = new Move();
 		}
-		pokemonCategory = new OneLineText();
+		pokemonCategory = new PokeCategory();
 		description = new PokeDescription();
 	}
 	
@@ -52,7 +54,7 @@ public class PokemonCard extends Card
 		
 		hp = toCopy.hp;
 		stage = toCopy.stage;
-		prevEvoName = new OneLineText(toCopy.prevEvoName);
+		prevEvoName = new PokeName(toCopy.prevEvoName);
 		moves = new Move[MAX_NUM_MOVES];
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
@@ -61,7 +63,7 @@ public class PokemonCard extends Card
 		retreatCost = toCopy.retreatCost;
 		weakness = toCopy.weakness;
 		resistance = toCopy.resistance;
-		pokemonCategory = new OneLineText(toCopy.pokemonCategory);
+		pokemonCategory = new PokeCategory(toCopy.pokemonCategory);
 		pokedexNumber = toCopy.pokedexNumber;
 		unknownByte1 = toCopy.unknownByte1;
 		level = toCopy.level;

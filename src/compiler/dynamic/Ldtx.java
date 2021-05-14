@@ -1,43 +1,68 @@
 package compiler.dynamic;
 
+
 import java.util.Map;
 
+import compiler.CompilerUtils;
 import compiler.Instruction;
 import compiler.Segment;
-import data.RomText;
+import data.romtexts.OneBlockText;
+import compiler.CompilerConstants.RegisterPair;
 import rom.Texts;
-
-// TODO: Have this separate? Depends on how we do things
 
 public class Ldtx extends Instruction
 {
-	// TODO: two options - The raw text or a value from a register/address?
+	RegisterPair pair;
+	OneBlockText text;
 	
-	RomText text;
-	
-	public Ldtx(RomText text)
+	public Ldtx(RegisterPair pair, OneBlockText text)
 	{
+		this.pair = pair;
 		this.text = text;
 	}
+	
+	public static Ldtx create(String arg)
+	{	
+		final String supportedArgs = "ldtx only supports (RegisterPair, String): ";	
 
-	@Override
-	public void evaluatePlaceholders(Texts romTexts, Map<String, Segment> labelToSegment)
-	{
-		// TODO Auto-generated method stub
-		// TODO: call finalizeandadd here. This should work since we are before
-		// the text is actually written
+		// Assume we have a RegisterPair first then the string
+		String[] args = arg.split(",", 1);
+		if (args.length != 2)
+		{
+			throw new IllegalArgumentException(supportedArgs + "given: " + args.toString());
+		}
+		
+		try
+		{
+			return new Ldtx(CompilerUtils.parseRegisterPairArg(args[0]), CompilerUtils.parseOneBlockTextArg(args[1]));
+		}
+		catch (IllegalArgumentException iae)
+		{
+			throw new IllegalArgumentException(supportedArgs + iae.getMessage());
+		}
 	}
 
 	@Override
-	public int getWorstCaseSizeOnBank(byte bank) 
+	public void linkData(
+			Texts idToText, 
+			Map<String, Segment> labelToLocalSegment,
+			Map<String, Segment> labelToSegment) 
 	{
-		return 2; // TODO: is this right?
+		text.finalizeAndAddTexts(idToText);
 	}
 
 	@Override
-	public int writeBytes(byte[] bytes, int indexToWriteAt) 
+	public int getWorstCaseSizeOnBank(byte bank, int instructionOffset) 
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		return 3;
+	}
+
+	@Override
+	public int writeBytes(byte[] bytes, int blockStartIdx, int writeOffset) 
+	{		
+		// Write the instruction value then the text id
+		bytes[blockStartIdx + writeOffset] = (byte) (0x01 | (pair.getValue() << 4));
+		text.writeTextId(bytes, blockStartIdx + writeOffset + 1);
+		return 3;
 	}
 }

@@ -2,6 +2,7 @@ package data;
 
 import constants.CardConstants.CardId;
 import constants.DuelConstants.EffectCommandTypes;
+import data.romtexts.OneLineText;
 import rom.Texts;
 import util.ByteUtils;
 import util.RomUtils;
