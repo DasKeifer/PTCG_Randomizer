@@ -1,7 +1,11 @@
 package compiler.dynamic;
 
 
+import java.util.Map;
+
+import compiler.Segment;
 import compiler.CompilerConstants.InstructionConditions;
+import rom.Texts;
 
 public class Call extends JumpCallCommon
 {
@@ -17,5 +21,24 @@ public class Call extends JumpCallCommon
 	public Call(int addressToGoTo, InstructionConditions conditions) 
 	{
 		super(addressToGoTo, conditions, CONDITIONLESS_INSTRUCT, CONDITIONED_INSTRUCT, FAR_INSTRUCT_RST_VAL);
+	}
+
+	@Override
+	public void linkData(
+			Texts romTexts,
+			Map<String, Segment> labelToLocalSegment, 
+			Map<String, Segment> labelToSegment
+	) 
+	{		
+		// If its calling a label and is not already assigned
+		if (!labelToGoTo.isEmpty() && toGoTo == null)
+		{
+			// No need to check for local ones - they are treated the same
+			toGoTo = labelToSegment.get(labelToGoTo);
+			if (toGoTo == null)
+			{
+				throw new IllegalArgumentException("Specified label '" + labelToGoTo + "' was not found!");
+			}
+		}
 	}
 }

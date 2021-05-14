@@ -8,7 +8,6 @@ import java.util.ListIterator;
 import java.util.TreeMap;
 
 import compiler.CompilerUtils;
-import compiler.DataBlock;
 
 public class AllocatableBank 
 {

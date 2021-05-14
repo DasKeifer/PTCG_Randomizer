@@ -3,11 +3,10 @@ package compiler;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
-import compiler.dynamic.Instruction;
-import compiler.dynamic.Jump;
-import compiler.dynamic.JumpCallCommon;
-import compiler.fixed.*;
+import rom.Texts;
 
 public class DataBlock 
 {	
@@ -49,8 +48,7 @@ public class DataBlock
 		segments.clear();
 		
 		String rootSegmentName = startingSegmentName;
-		short currOffset = 0;
-		Segment currSegment = new Segment(rootSegmentName, currOffset);
+		Segment currSegment = new Segment();
 		segments.put(rootSegmentName, currSegment);
 		
 		// Plus one because we already handled the first line
@@ -64,7 +62,7 @@ public class DataBlock
 			if (line.endsWith(CompilerUtils.SEGMENT_ENDLINE))
 			{
 				rootSegmentName = getSegmentName(line);
-				currSegment = new Segment(rootSegmentName, currOffset);
+				currSegment = new Segment();
 				
 				// Ensure there was no conflict within the block
 				if (segments.put(rootSegmentName, currSegment) != null)
@@ -76,30 +74,27 @@ public class DataBlock
 			{
 				// Form it with the addition of the "."
 				String secondarySegName = getSubsegmentName(rootSegmentName, line);
-				currSegment = new Segment(secondarySegName, currOffset);
+				currSegment = new Segment();
 
 				// Ensure there was no conflict within the block
 				if (segments.put(secondarySegName, currSegment) != null)
 				{
-					throw new IllegalArgumentException("Duplicate segment label was found: " + rootSegmentName);
+					throw new IllegalArgumentException("Duplicate segment label was found: " + secondarySegName);
 				}
 			}
 			// A line that will turn into bytes
 			else
 			{
-				Instruction instruct = create(line, rootSegmentName);
-				currSegment.appendInstruction(instruct);
-				
-				// We assume worst case. Later when we link and place, we will use the more
-				// accurate sizes
-				currOffset += instruct.getMaxSize();
+				// If its a placeholder, we defer filling it out
+				if (CompilerUtils.isPlaceholderLine(line))
+				{
+					currSegment.appendPlaceholderInstruction(PlaceholderInstruction.create(line, rootSegmentName));
+				}
+				else
+				{
+					currSegment.appendInstruction(CompilerUtils.parseInstruction(line, rootSegmentName));
+				}
 			}
-		}
-		
-		// Go through and try to make any intrablock links
-		for (Segment seg : segments.values())
-		{
-			seg.linkIntrablockLinks(segments);
 		}
 	}
 	
@@ -128,6 +123,11 @@ public class DataBlock
 		return id;
 	}
 	
+	public Set<String> getAllSegmentIds()
+	{
+		return segments.keySet();
+	}
+	
 	public int getWorstCaseSizeOnBank(byte bank)
 	{
 		// Because some instructions like JR can change in size based on the other
@@ -154,50 +154,32 @@ public class DataBlock
 		
 		return worstCaseSize;
 	}
+
+	// TODO: copy as many times as needed, evaluate placeholders in labels/ids, create 
+	// list of all strings to segments, replace all instruction placeholders and link, 
+	// then allocate/pack then write
 	
-	public static Instruction create(String line, String rootSegment)
+	public void replacePlaceholderIds(Map<String, String> placeholderToArgsForIds)
 	{
-		// Split the keyword off
-		String[] keyArgs = line.split(" ", 1);
-		
-		// Split the args apart
-		String[] args = new String[0];
-		if (keyArgs.length >= 1)
+		Map<String, Segment> refreshedSegments = new HashMap<>();
+		for (Entry<String, Segment> seg : segments.entrySet())
 		{
-			args = keyArgs[1].split(",");
+			String segId = CompilerUtils.replacePlaceholders(seg.getKey(), placeholderToArgsForIds);
+			if (refreshedSegments.put(segId, seg.getValue()) != null)
+			{
+				throw new IllegalArgumentException("Duplicate segment label was found while replacing placeholders: " + segId);
+			}
 		}
-		
-		switch (keyArgs[0])
+		segments = refreshedSegments;
+	}
+	
+	public void evaluateInstructionPlaceholdersAndLinkData(Texts romTexts, Map<String, Segment> labelToSegment, Map<String, String> placeholderToArgs)
+	{
+		for (Segment seg : segments.values())
 		{
-			// TODO: complete this list
-			// Loading
-			case "lb":
-				return Lb.create(args);
-			case "ld":
-				return Ld.create(args);
-		
-			// Logic
-			case "cp":
-				return Cp.create(args);
-			case "inc":
-				return Inc.create(args);
-				
-			// Flow control
-			case "jr":
-				// JR is a bit special because we only allow it inside a block and we only
-				// allow referencing labels
-				return Jump.createJr(args, rootSegment);
-			case "jp":
-			case "farjp":
-				return JumpCallCommon.create(args, rootSegment, true); // true == jump
-			case "call":
-			case "farcall":
-				return JumpCallCommon.create(args, rootSegment, false); // false == call
-				
-			// Writing raw data
-				
-			default:
-				throw new UnsupportedOperationException("Unrecognized instruction key: " + keyArgs[0]);
+			seg.evaluatePlaceholdersAndLinkData(romTexts, segments, labelToSegment, placeholderToArgs);
 		}
 	}
+		
+	// TODO: write
 }

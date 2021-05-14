@@ -4,24 +4,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import compiler.dynamic.Instruction;
+import rom.Texts;
 
 public class Segment 
 {
-	String id; // TODO: needed?
 	List<Instruction> data;
+	List<PlaceholderInstruction> placeholderInstructs;
 	private int address;
 	private short blockOffset;
 	
-	// TODO: instead of creating versions of the instructions with placeholders, create placeholder
-	// instructions. Then when I go to finalize these, I can do a mass replace and write at that point
-	
-	public Segment(String id, short blockOffset)
+	public Segment()
 	{
-		this.id = id;
 		data = new LinkedList<>();
 		address = CompilerUtils.UNASSIGNED_ADDRESS;
-		this.blockOffset = blockOffset;
+		blockOffset = CompilerUtils.UNASSIGNED_ADDRESS;
 	}
 	
 	boolean setOffset(short blockOffset)
@@ -38,6 +34,12 @@ public class Segment
 	public void appendInstruction(Instruction instruct)
 	{
 		data.add(instruct);
+	}
+	
+	public void appendPlaceholderInstruction(PlaceholderInstruction instruct)
+	{
+		appendInstruction(instruct);
+		placeholderInstructs.add(instruct);
 	}
 	
 	public int getWorstCaseSizeOnBank(byte bank)
@@ -59,12 +61,24 @@ public class Segment
 	{
 		return blockOffset;
 	}
-
-	public void linkIntrablockLinks(Map<String, Segment> localSegments) 
-	{
+	
+	public void evaluatePlaceholdersAndLinkData(
+			Texts romTexts, 
+			Map<String, Segment> labelToLocalSegment, 
+			Map<String, Segment> labelToSegment, 
+			Map<String, String> placeholderToArgs
+	)
+	{		
+		// First replace any placeholder lines
+		for (PlaceholderInstruction instruct : placeholderInstructs)
+		{
+			instruct.evaluatePlaceholdersAndCreateInstruction(placeholderToArgs);
+		}
+		
+		// Then go through and link the data
 		for (Instruction item : data)
 		{
-			item.linkLocalLinks(localSegments);
+			item.linkData(romTexts, labelToLocalSegment, labelToSegment);
 		}
 	}
 	

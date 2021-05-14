@@ -1,11 +1,10 @@
 package compiler.dynamic;
 
-import java.util.Map;
 
 import compiler.CompilerConstants.InstructionConditions;
 import compiler.CompilerUtils;
+import compiler.Instruction;
 import compiler.Segment;
-import rom.Texts;
 import util.ByteUtils;
 import util.RomUtils;
 
@@ -109,36 +108,6 @@ public abstract class JumpCallCommon extends Instruction
 	}
 
 	@Override
-	public void evaluatePlaceholders(Texts romTexts, Map<String, Segment> labelToSegment) 
-	{
-		// If its calling a label and is not already assigned
-		if (!labelToGoTo.isEmpty() && toGoTo == null)
-		{
-			toGoTo = labelToSegment.get(labelToGoTo);
-			if (toGoTo == null)
-			{
-				throw new IllegalArgumentException("Specified label '" + labelToGoTo + "' was not found!");
-			}
-		}
-	}
-	
-	@Override
-	public boolean linkLocalLinks(Map<String, Segment> localSegments)
-	{
-		// If its calling a label and is not already assigned
-		if (!labelToGoTo.isEmpty() && toGoTo == null)
-		{
-			toGoTo = localSegments.get(labelToGoTo);
-			if (toGoTo != null)
-			{
-				return true;
-			}
-		}
-		
-		return false;
-	}
-
-	@Override
 	public int getWorstCaseSizeOnBank(byte bank, int instOffset)
 	{
 		if (isFarJpCall(bank))
@@ -149,12 +118,6 @@ public abstract class JumpCallCommon extends Instruction
 		
 		// local jp/call
 		return 3;
-	}
-	
-	@Override
-	public int getMaxSize()
-	{
-		return 6; // farcall/jump
 	}
 	
 	protected boolean isFarJpCall(byte bank)

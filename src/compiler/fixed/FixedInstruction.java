@@ -2,8 +2,8 @@ package compiler.fixed;
 
 import java.util.Map;
 
+import compiler.Instruction;
 import compiler.Segment;
-import compiler.dynamic.Instruction;
 import rom.Texts;
 
 public abstract class FixedInstruction extends Instruction
@@ -23,27 +23,18 @@ public abstract class FixedInstruction extends Instruction
 	public abstract int writeBytes(byte[] bytes, int indexToWriteAt);
 
 	@Override
-	public void evaluatePlaceholders(Texts romTexts, Map<String, Segment> labelToSegment) 
+	public void linkData(
+			Texts romTexts,
+			Map<String, Segment> labelToLocalSegment, 
+			Map<String, Segment> labelToSegment
+	) 
 	{
 		// Nothing to do since these don't have placeholders
 		return;
 	}
-	
-	@Override
-	public boolean linkLocalLinks(Map<String, Segment> localSegments)
-	{
-		// Never assigned locally since these don't have placeholders
-		return false;
-	}
 
 	@Override
 	public int getWorstCaseSizeOnBank(byte bank, int instructionOffset)
-	{
-		return getSize();
-	}
-	
-	@Override
-	public int getMaxSize()
 	{
 		return getSize();
 	}

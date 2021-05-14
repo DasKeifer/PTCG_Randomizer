@@ -1,6 +1,15 @@
 package compiler;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 import compiler.CompilerConstants.*;
+import compiler.dynamic.Jump;
+import compiler.dynamic.JumpCallCommon;
+import compiler.fixed.Cp;
+import compiler.fixed.Inc;
+import compiler.fixed.Lb;
+import compiler.fixed.Ld;
 
 public class CompilerUtils 
 {
@@ -10,6 +19,7 @@ public class CompilerUtils
 	static final String SUBSEGMENT_STARTLINE = ".";
 	static final String LINE_BREAK = "\n";
 	static final String HEX_VAL_MARKER = "$";
+	static final String PLACEHOLDER_MARKER = "#";
 	
 	public static byte parseByteArg(String arg)
 	{
@@ -78,7 +88,7 @@ public class CompilerUtils
 	// We do possibly want some parsing for addresses so we can handle ".name" type ones
 	public static String parseTextPlaceholder(String arg)
 	{
-		
+		return null; // TODO needed?
 	}
 
 	public static String formSegmentLabelArg(String arg, String rootSegment)
@@ -90,5 +100,69 @@ public class CompilerUtils
 		}
 		// Otherwise we assume its the full name
 		return trimmed;
+	}
+	
+	public static boolean isPlaceholderLine(String line)
+	{
+		if (line.contains(PLACEHOLDER_MARKER))
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	public static String replacePlaceholders(String line, Map<String, String> placeholderToArgs)
+	{
+		for (Entry<String, String> entry : placeholderToArgs.entrySet())
+		{
+			line.replaceAll(PLACEHOLDER_MARKER + entry.getKey(), entry.getValue());
+		}
+		return line;
+	}
+	
+	public static Instruction parseInstruction(String line, String rootSegment)
+	{		
+		// Split the keyword off
+		String[] keyArgs = line.split(" ", 1);
+		
+		// Split the args apart
+		String[] args = new String[0];
+		if (keyArgs.length >= 1)
+		{
+			args = keyArgs[1].split(",");
+		}
+		
+		switch (keyArgs[0])
+		{
+			// TODO: complete this list
+			// Loading
+			case "lb":
+				return Lb.create(args);
+			case "ld":
+				return Ld.create(args);
+		
+			// Logic
+			case "cp":
+				return Cp.create(args);
+			case "inc":
+				return Inc.create(args);
+				
+			// Flow control
+			case "jr":
+				// JR is a bit special because we only allow it inside a block and we only
+				// allow referencing labels
+				return Jump.createJr(args, rootSegment);
+			case "jp":
+			case "farjp":
+				return JumpCallCommon.create(args, rootSegment, true); // true == jump
+			case "call":
+			case "farcall":
+				return JumpCallCommon.create(args, rootSegment, false); // false == call
+				
+			// Writing raw data
+				
+			default:
+				throw new UnsupportedOperationException("Unrecognized instruction key: " + keyArgs[0]);
+		}
 	}
 }

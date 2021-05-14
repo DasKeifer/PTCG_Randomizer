@@ -6,6 +6,7 @@ import java.util.Map;
 import compiler.CompilerUtils;
 import compiler.Segment;
 import compiler.CompilerConstants.InstructionConditions;
+import rom.Texts;
 
 public class Jump extends JumpCallCommon
 {
@@ -55,15 +56,29 @@ public class Jump extends JumpCallCommon
 	}
 
 	@Override
-	public boolean linkLocalLinks(Map<String, Segment> localSegments)
+	public void linkData(
+			Texts romTexts,
+			Map<String, Segment> labelToLocalSegment, 
+			Map<String, Segment> labelToSegment
+	) 
 	{
-		if (super.linkLocalLinks(localSegments))
+		if (!labelToGoTo.isEmpty() && toGoTo == null)
 		{
-			isLocalLabel = true;
-			return true;
+			toGoTo = labelToLocalSegment.get(labelToGoTo);
+			if (toGoTo != null)
+			{
+				isLocalLabel = true;
+			}
+			else
+			{
+				isLocalLabel = false;
+				toGoTo = labelToSegment.get(labelToGoTo);
+			}
+			if (toGoTo == null)
+			{
+				throw new IllegalArgumentException("Specified label '" + labelToGoTo + "' was not found!");
+			}
 		}
-		
-		return false;
 	}
 
 	@Override

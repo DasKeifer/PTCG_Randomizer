@@ -2,6 +2,7 @@ package compiler.dynamic;
 
 import java.util.Map;
 
+import compiler.Instruction;
 import compiler.Segment;
 import data.RomText;
 import rom.Texts;
