@@ -49,7 +49,7 @@ class AllocatableSpace extends AddressRange
 	// Any reassigning is handled by the bank clearing and re-adding blocks
 	public boolean addAndAssignAddressIfSpaceLeft(MoveableBlock alloc)
 	{
-		int blockSizeOnBank = alloc.getCurrentSizeOnBank(RomUtils.determineBank(start)); 
+		int blockSizeOnBank = alloc.getCurrentWorstCaseSizeOnBank(RomUtils.determineBank(start)); 
 		if (nextStartAddress + blockSizeOnBank > stopExclusive)
 		{
 			return false;

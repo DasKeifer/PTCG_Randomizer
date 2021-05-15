@@ -116,8 +116,6 @@ public class RomIO
 		}
 	}
 	
-	// TODO: Check byte boundary stuff - "Hand" in the turn menu is garbly
-	
 	static void writeAllCards(byte[] bytes, DataManager spaceManager, Cards<Card> cards)
 	{		
 		// First write the 0 index "null" card
@@ -151,7 +149,7 @@ public class RomIO
 		// Until it is determined to be necessary, don't worry about padding remaining space with 0xff
 	}
 	
-	// TODO: pad to bank boundaries
+	// TODO: pad to bank boundaries?
 	static void writeTextAndIdMap(byte[] rawBytes, DataManager spaceManager, Texts ptrToText) throws IOException
 	{
 		// Get the free space needed for the text pointers

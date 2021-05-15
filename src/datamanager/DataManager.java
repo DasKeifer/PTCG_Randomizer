@@ -20,7 +20,7 @@ public class DataManager
 	// BlockId, Block
 	// This can be used for determining references of one block in another and ensures
 	// each ID is unique
-	// TODO: change this to segment or keep a parallel segment version?
+	// TODO: change this to segment or keep a parallel segment version? Probably the latter?
 	private Map<String, BlockAllocData> blocksById;
 	
 	public void writeData(
@@ -43,12 +43,12 @@ public class DataManager
 		// This needs to be done after the movable blocks
 		for (FixedBlock block : replacementBlocks)
 		{
-			block.writeData(bytesToPlaceIn);
+			block.writeBytes(bytesToPlaceIn);
 		}
 		
 		for (MoveableBlock block : blocksToPlace)
 		{
-			block.writeData(bytesToPlaceIn);
+			block.writeBytes(bytesToPlaceIn);
 		}
 	}
 	
@@ -195,7 +195,7 @@ public class DataManager
 			for (byte currBank = option.getValue().start; currBank < option.getValue().stopExclusive; currBank++)
 			{
 				AllocatableBank currOption = freeSpace.get(currBank);
-				byte optionPriority = currOption.canShrinkingToMakeSpace(data.getCurrentSizeOnBank(currOption.getBank()));
+				byte optionPriority = currOption.canShrinkingToMakeSpace(data.getCurrentWorstCaseSizeOnBank(currOption.getBank()));
 				if (optionPriority > bestOptionPriority)
 				{
 					bestOptionPriority = optionPriority;

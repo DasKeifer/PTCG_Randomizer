@@ -70,9 +70,9 @@ public class AllocatableBank
 	
 	private boolean attemptToAdd(MoveableBlock alloc, boolean attemptToShrinkOthers, List<MoveableBlock> displacedBlocks)
 	{
-		if (largestFreeSpace < alloc.getCurrentSizeOnBank(bank))
+		if (largestFreeSpace < alloc.getCurrentWorstCaseSizeOnBank(bank))
 		{
-			if (attemptToShrinkOthers && !shrinkToMakeSpace(alloc.getCurrentSizeOnBank(bank), displacedBlocks))
+			if (attemptToShrinkOthers && !shrinkToMakeSpace(alloc.getCurrentWorstCaseSizeOnBank(bank), displacedBlocks))
 			{
 				unshrinkAllTempShrunkAllocs(displacedBlocks);				
 				return false;

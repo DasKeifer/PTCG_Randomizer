@@ -102,7 +102,7 @@ public abstract class JumpCallCommon extends Instruction
 		int address = addressToGoTo;
 		if (addressToGoTo == CompilerUtils.UNASSIGNED_ADDRESS && toGoTo != null)
 		{
-			address = toGoTo.getAddress();
+			address = toGoTo.getAssignedAddress();
 		}
 		return address;
 	}
@@ -148,23 +148,21 @@ public abstract class JumpCallCommon extends Instruction
 	}
 	
 	@Override
-	public int writeBytes(byte[] bytes, int blockStartIdx, int writeOffset) 
+	public int writeBytes(byte[] bytes, int addressToWriteAt) 
 	{
-		int writeIdx = blockStartIdx + writeOffset;
+		int writeIdx = addressToWriteAt;
 		
-		if (isFarJpCall(RomUtils.determineBank(blockStartIdx)))
-		{
-			int instWriteOffset = 0;
-			
+		if (isFarJpCall(RomUtils.determineBank(writeIdx)))
+		{			
 			// To do a conditional far jp/call we need to do a JR before it
 			if (conditions != InstructionConditions.NONE)
 			{
 				// Write a local JR to skip the farcall/jp
-				instWriteOffset += writeJr(bytes, writeIdx, (byte) 4);
+				writeIdx += writeJr(bytes, writeIdx, (byte) 4);
 			}
 			
-			instWriteOffset += writeFarJpCall(bytes, writeIdx + instWriteOffset);
-			return instWriteOffset;
+			writeIdx += writeFarJpCall(bytes, writeIdx);
+			return writeIdx - addressToWriteAt;
 		}
 		else
 		{

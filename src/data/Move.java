@@ -23,7 +23,7 @@ public class Move
 	public EffectDescription description;
 	public byte damage; // TODO: non multiple of 10?
 	public MoveCategory category;
-	short effectPtr; // TODO: Make enum?
+	short effectPtr;
 	Set<MoveEffect1> effect1;
 	Set<MoveEffect2> effect2;
 	Set<MoveEffect3> effect3;

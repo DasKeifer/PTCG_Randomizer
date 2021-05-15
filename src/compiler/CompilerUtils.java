@@ -89,16 +89,8 @@ public class CompilerUtils
 		return InstructionConditions.valueOf(arg.trim().toUpperCase());
 	}
 	
-	// TODO - make only a verify instead of a parse - i.e. no markers for placeholders?
-	// We do possibly want some parsing for addresses so we can handle ".name" type ones
 	public static OneBlockText parseOneBlockTextArg(String arg)
 	{
-		// TODO: add prefixes so we know what type of RomText to use
-		// Maybe input unformatted and let the utils handle formatting it
-		// based on prefixes? To do this I need to research what is allowed in
-		// text first - i.e. line lengths, max blocks etc. and make more romTexts
-		// to allow this. I think all text cannot use line breaks and that is something
-		// I added to support things like the pokemon descriptions
 		String[] formatAndVal = arg.trim().split(":", 1);
 		if (formatAndVal.length != 2)
 		{

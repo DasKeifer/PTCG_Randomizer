@@ -4,31 +4,26 @@ import compiler.DataBlock;
 
 public class ConstrainedBlock extends MoveableBlock
 {	
-	private DataBlock compressedBlock;
+	private FloatingBlock shrunkBlock;
 	
 	public enum AutoCompressOption
 	{
 		CALL, JUMP;
 	}
 	
-	public ConstrainedBlock(byte priority, DataBlock toPlaceInBank, DataBlock compressedBlock) 
+	public ConstrainedBlock(byte priority, DataBlock toPlaceInBank, DataBlock remotePortion) 
 	{
 		super(priority, toPlaceInBank);
-		// TODO: Copy? this.compressedBlock = new Block(compressedBlock);
-	}
-	
-	public ConstrainedBlock(byte priority, DataBlock toPlaceInBank, AutoCompressOption compressOption) 
-	{
-		super(priority, toPlaceInBank);
-		// TODO: generate snippet
+		shrunkBlock = new FloatingBlock(priority, remotePortion);
 	}
 
 	@Override
 	public int getShrunkWorstCaseSizeOnBank(byte bank) 
 	{
-		return compressedBlock.getWorstCaseSizeOnBank(bank);
+		return shrunkBlock.getCurrentWorstCaseSizeOnBank(bank);
 	}
 
+	// TODO: Condense?
 	@Override
 	public boolean shrinksNotMoves() 
 	{
@@ -38,14 +33,12 @@ public class ConstrainedBlock extends MoveableBlock
 	@Override
 	public FloatingBlock applyShrink() 
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return shrunkBlock;
 	}
 
 	@Override
 	public FloatingBlock revertShrink() 
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return shrunkBlock;
 	}
 }

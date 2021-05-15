@@ -100,7 +100,7 @@ public class Jump extends JumpCallCommon
 		}
 	}
 	
-	private boolean canJr(int instOffset)
+	private boolean canJr(int instAddress)
 	{
 		// If its not local or we don't have a link yet, we can't JR
 		if (!isLocalLabel || toGoTo == null)
@@ -112,7 +112,7 @@ public class Jump extends JumpCallCommon
 		// JR or JP
 		
 		// See how far we need to jump. 
-		int diff = getJrValue(instOffset);
+		int diff = getJrValue(instAddress);
 		if (diff > 127 || diff < -128)
 		{
 			return false;
@@ -121,34 +121,40 @@ public class Jump extends JumpCallCommon
 		return true;
 	}
 	
-	private int getJrValue(int instOffset)
+	private int getJrValue(int instAddress)
 	{
+		int goToAddr = toGoTo.getAssignedAddress();
+		if (goToAddr == CompilerUtils.UNASSIGNED_ADDRESS || goToAddr == CompilerUtils.UNASSIGNED_LOCAL_ADDRESS)
+		{
+			return Integer.MAX_VALUE;
+		}
+		
 		// Plus 2 because its relative to the
 		// end of the jump instruction and we assume JR for this
-		return toGoTo.getBlockOffset() - instOffset + 2;
+		return goToAddr - instAddress + 2;
 	}
 
 	@Override
-	public int writeBytes(byte[] bytes, int blockStartIdx, int writeOffset) 
+	public int writeBytes(byte[] bytes, int addressToWriteAt) 
 	{		
 		if (isLocalLabel)
 		{
 			// See if we want to JR
-			if (canJr(writeOffset))
+			if (canJr(addressToWriteAt))
 			{
-				return writeJr(bytes, blockStartIdx + writeOffset, (byte) getJrValue(writeOffset));
+				return writeJr(bytes, addressToWriteAt, (byte) getJrValue(addressToWriteAt));
 			}
 			// Otherwise its a normal jump
 			else
 			{
-				return writeJpCall(bytes, blockStartIdx + writeOffset);
+				return writeJpCall(bytes, addressToWriteAt);
 			}
 		}
 		// If its not a local label, just do the parent - don't worry about trying
 		// to do JR between blocks
 		else
 		{
-			return super.writeBytes(bytes, blockStartIdx, writeOffset);
+			return super.writeBytes(bytes, addressToWriteAt);
 		}
 	}
 }

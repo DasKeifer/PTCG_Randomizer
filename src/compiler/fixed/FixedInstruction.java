@@ -20,8 +20,6 @@ public abstract class FixedInstruction extends Instruction
 		return size;
 	}
 	
-	public abstract int writeBytes(byte[] bytes, int indexToWriteAt);
-
 	@Override
 	public void linkData(
 			Texts romTexts,
@@ -37,11 +35,5 @@ public abstract class FixedInstruction extends Instruction
 	public int getWorstCaseSizeOnBank(byte bank, int instructionOffset)
 	{
 		return getSize();
-	}
-
-	@Override
-	public int writeBytes(byte[] bytes, int blockStartIdx, int writeOffset) 
-	{
-		return writeBytes(bytes, blockStartIdx + writeOffset);
 	}
 }

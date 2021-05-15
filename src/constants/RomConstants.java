@@ -51,7 +51,7 @@ public class RomConstants
 
 	// TODO: It would potentially be more stable to read in from a location in the engine than
 	// hardcoded locations in case we ever want to support adding more cards or hacks that add
-	// more cards or shifted data around
+	// more cards or shifted data around. Not sure how easy that would be though
 	
 	// Note: We have to block 0x30000 to 0x67fff that is used to store decks, cards, and text.
 	// In order to add more cards, we would need to shift all the data back but as long as it
@@ -81,10 +81,6 @@ public class RomConstants
 	public static final int TEXT_POINTER_SIZE_IN_BYTES = 3;
 	public static final int TEXT_POINTERS_LOC = 0x34000; // TextOffsets
 	public static final int TEXT_POINTER_OFFSET = 0x34000;
-	
-	// TODO Remove - read from pointers
-	public static final int FIRST_CARD_BYTE = 0x30e28;
-	public static final int LAST_CARD_BYTE = 0x33fff; // used for padding data as needed
 
 	// There is alot of text that comes before this but for now we just
 	// care about the card texts which are all grouped at the end

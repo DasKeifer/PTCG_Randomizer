@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import compiler.dynamic.PlaceholderInstruction;
+
 import java.util.Set;
 
 import rom.Texts;
@@ -135,6 +138,11 @@ public class DataBlock
 		// code lengths, we need to do this somewhat iteratively in case the size
 		// does change
 		short worstCaseSize = 0;
+		int baseAddress = assignedAddress;
+		if (baseAddress == CompilerUtils.UNASSIGNED_ADDRESS || baseAddress == CompilerUtils.UNASSIGNED_LOCAL_ADDRESS)
+		{
+			baseAddress = 0;
+		}
 		
 		Iterator<Segment> segItr = segments.values().iterator();
 		Segment currSeg;
@@ -144,7 +152,7 @@ public class DataBlock
 			
 			// If its a new segment offset, that means something shrunk earlier on so
 			// we need to start over in case it impacted other segments
-			if (currSeg.setOffset(worstCaseSize))
+			if (currSeg.setAssignedAddress(baseAddress + worstCaseSize))
 			{
 				segItr = segments.values().iterator();
 				worstCaseSize = 0;
@@ -182,5 +190,13 @@ public class DataBlock
 		}
 	}
 		
-	// TODO: write
+	public int writeBytes(byte[] bytes)
+	{
+		int lastEnd = 0;
+		for (Segment seg : segments.values())
+		{
+			lastEnd = seg.writeBytes(bytes);
+		}
+		return lastEnd;
+	}
 }

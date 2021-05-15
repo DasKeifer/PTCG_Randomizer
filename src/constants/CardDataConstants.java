@@ -75,7 +75,7 @@ public class CardDataConstants
 			case PSYCHIC:
 				return WeaknessResistanceType.PSYCHIC;
 			case COLORLESS:
-				// TODO: May have a valid value
+				// TODO: May have a valid value?
 				return WeaknessResistanceType.NONE; 
 			case UNUSED_TYPE:
 				return WeaknessResistanceType.NONE;
@@ -518,7 +518,7 @@ public class CardDataConstants
 
 	public enum MoveEffect2
 	{
-		// TODO: bits 5, 6 and 7 cover a wide variety of effects
+		// TODO: bits 5, 6 and 7 cover a wide variety of effects. See if we can figure something out for them
 		SWITCH_OPPONENT_POKEMON  (1 << 0),
 		HEAL_USER                (1 << 1),
 		NULLIFY_OR_WEAKEN_ATTACK (1 << 2),
@@ -573,7 +573,7 @@ public class CardDataConstants
 
 	public enum MoveEffect3
 	{
-		// TODO: bit 1 covers a wide variety of effects
+		// TODO: bit 1 covers a wide variety of effects. See if we can figure it out
 		// bits 2-7 are unused
 		BOOST_IF_TAKEN_DAMAGE    (1 << 0),
 		FLAG_3_BIT_1             (1 << 1);

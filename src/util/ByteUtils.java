@@ -1,10 +1,7 @@
 package util;
 
 public class ByteUtils 
-{
-	// TODO consider storing everything as a long but only writing so many bits
-	// Or maybe just store as bytes?
-	
+{	
 	public static final int MAX_BYTE_VALUE = 0xff;
 	public static final int MIN_BYTE_VALUE = 0x00;
 

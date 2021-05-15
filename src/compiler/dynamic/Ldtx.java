@@ -58,11 +58,11 @@ public class Ldtx extends Instruction
 	}
 
 	@Override
-	public int writeBytes(byte[] bytes, int blockStartIdx, int writeOffset) 
+	public int writeBytes(byte[] bytes, int addressToWriteAt) 
 	{		
 		// Write the instruction value then the text id
-		bytes[blockStartIdx + writeOffset] = (byte) (0x01 | (pair.getValue() << 4));
-		text.writeTextId(bytes, blockStartIdx + writeOffset + 1);
+		bytes[addressToWriteAt] = (byte) (0x01 | (pair.getValue() << 4));
+		text.writeTextId(bytes, addressToWriteAt + 1);
 		return 3;
 	}
 }

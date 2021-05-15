@@ -14,6 +14,6 @@ public abstract class Instruction
 	
 	public abstract int getWorstCaseSizeOnBank(byte bank, int instructionOffset);
 	
-	// Return size or something else?
-	public abstract int writeBytes(byte[] bytes, int blockStartIdx, int writeOffset);
+	// Return size written or something else?
+	public abstract int writeBytes(byte[] bytes, int addressToWriteAt);
 }

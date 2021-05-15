@@ -210,7 +210,7 @@ public class RomText
 					indexesToWriteAt.length);
 		}
 		
-		// TODO: fix throws
+		// TODO: update messages
 		if (textBlockIds.size() != textBlocks.size())
 		{
 			throw new IllegalArgumentException("Object not setup to write! The found number of ids (" + 

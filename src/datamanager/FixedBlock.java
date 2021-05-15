@@ -1,79 +1,50 @@
 package datamanager;
 
-import java.util.Map;
 
 import compiler.DataBlock;
-import compiler.tmp.CodeSnippit;
-import datamanager.ConstrainedBlock.AutoCompressOption;
 import util.ByteUtils;
 
 public abstract class FixedBlock implements BlockAllocData
 {
-	int addressStartToReplace;
-	int replaceLength; // needed since we want to pad space... or just use replaced bytes?
-	DataBlock replaceWith;
-	byte[] verifyPreBytes;
-	byte[] verifyReplacedBytes;
-	byte[] verifyPostBytes;
+	int replaceLength;
+	DataBlock replaceWith; // The remote block (if needed), should be referred to in the DataBlock so no need to track it here
 	
-	// TODO: Integrity checking surrounding area and replace
+	// TODO: Add optional integrity checking surrounding area and replace
+
+	// For specific location writes with specific size or of empty data
+	public FixedBlock(int startAddress, DataBlock toPlace)
+	{
+		replaceWith = toPlace;
+		replaceWith.setAssignedAddress(startAddress);
+		replaceLength = -1;
+	}
 	
-	// Write a block of up to the specified size
+	// For write overs with unpredictable sizes including "minimal jumps" for extending/slicing existing code
 	// Auto fill with nop (0x00) after
-	public FixedBlock(int startAddress, CodeSnippit replaceWith, byte[] bytesToReplace)
+	public FixedBlock(int startAddress, DataBlock replaceWith, int replaceLength)
 	{
-		addressStartToReplace = startAddress;
-		// TODO copy? this.replaceWith = new CodeSnippit(replaceWith);
-		//this.dataToReplace = bytesToReplace.clone();
+		this.replaceWith = replaceWith;
+		replaceWith.setAssignedAddress(startAddress);
+		this.replaceLength = replaceLength;
 	}
 	
-	public FixedBlock(int startAddress, CodeSnippit replaceWith)
+	public int writeBytes(byte[] bytes)
 	{
-		// Assume 0xFF
-	}
-	
-	// Write a relocate block (3 or 4 bytes long)
-	// Auto fill with nop (0x00) after
-	public FixedBlock(
-			String genSnippetId, // Needed?
-			int startAddress, 
-			String callToBlockId, 
-			AutoCompressOption compressOption, 
-			boolean mustBeLocal, 
-			byte[] bytesToReplace
-	)
-	{
-		addressStartToReplace = startAddress;
-		// TODO: generate this.replaceWith = new CodeSnippit(replaceWith);
-		//this.dataToReplace = bytesToReplace.clone();
-	}
-	
-	public FixedBlock(int startAddress, AutoCompressOption compressOption, boolean mustBeLocal)
-	{
-		// Assume 0xFF
-	}
-	
-	public int writeData(byte[] bytes)
-	{
-		Integer address = blockIdsToAddresses.get(replaceWith.getId());
-		// Check null?
+		int lengthWritten = replaceWith.writeBytes(bytes);
 		
-		// TODO: throw or warn?
-		if (ByteUtils.compareBytes(bytes, address - verifyPreBytes.length, verifyPreBytes))
+		if (replaceLength >= 0)
 		{
-			throw new RuntimeException("Pre check failed!");
-		}
-		else if (ByteUtils.compareBytes(bytes, address + replaceLength, verifyPostBytes))
-		{
-			throw new RuntimeException("Post check failed!");
-		}
-		// TODO: do more logic to see if the change was already made? Maybe just warn instead
-		// and replace anyways. Greater question for all of these.
-		else if (ByteUtils.compareBytes(bytes, address, verifyReplacedBytes))
-		{
-			throw new RuntimeException("replacement bytes check failed!");
+			if (lengthWritten > replaceLength)
+			{
+				throw new IllegalArgumentException("Data written (" + lengthWritten + ") is larger than allowed size (" + replaceLength + ")");
+			}
+			else if (lengthWritten < replaceLength)
+			{
+				// Write the remainder of the length with no-ops
+				ByteUtils.setBytes(bytes, replaceWith.getAssignedAddress() + lengthWritten, replaceLength - lengthWritten, (byte) 0);
+			}
 		}
 		
-		return replaceWith.writeData(bytes, blockIdsToAddresses);
+		return lengthWritten;
 	}
 }

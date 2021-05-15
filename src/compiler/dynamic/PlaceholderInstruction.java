@@ -1,8 +1,11 @@
-package compiler;
+package compiler.dynamic;
 
 
 import java.util.Map;
 
+import compiler.CompilerUtils;
+import compiler.Instruction;
+import compiler.Segment;
 import rom.Texts;
 
 public class PlaceholderInstruction extends Instruction
@@ -53,12 +56,12 @@ public class PlaceholderInstruction extends Instruction
 	}
 
 	@Override
-	public int writeBytes(byte[] bytes, int blockStartIdx, int writeOffset) 
+	public int writeBytes(byte[] bytes, int addressToWriteAt) 
 	{
 		if (inst == null)
 		{
 			throw new IllegalArgumentException("Cannot write placeholder instructions! Must replace all values in it");
 		}
-		return inst.writeBytes(bytes, blockStartIdx, writeOffset);
+		return inst.writeBytes(bytes, addressToWriteAt);
 	}
 }

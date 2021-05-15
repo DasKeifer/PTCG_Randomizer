@@ -4,31 +4,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import compiler.dynamic.PlaceholderInstruction;
 import rom.Texts;
 
 public class Segment 
 {
 	List<Instruction> data;
 	List<PlaceholderInstruction> placeholderInstructs;
-	private int address;
-	private short blockOffset;
+	private int assignedAddress;
 	
 	public Segment()
 	{
 		data = new LinkedList<>();
-		address = CompilerUtils.UNASSIGNED_ADDRESS;
-		blockOffset = CompilerUtils.UNASSIGNED_ADDRESS;
-	}
-	
-	boolean setOffset(short blockOffset)
-	{
-		if (this.blockOffset == blockOffset)
-		{
-			return false;
-		}
-		
-		this.blockOffset = blockOffset;
-		return true;
+		assignedAddress = CompilerUtils.UNASSIGNED_ADDRESS;
 	}
 	
 	public void appendInstruction(Instruction instruct)
@@ -44,22 +32,28 @@ public class Segment
 	
 	public int getWorstCaseSizeOnBank(byte bank)
 	{
-		int offset = blockOffset;
+		int size = 0;
 		for (Instruction item : data)
 		{
-			offset += item.getWorstCaseSizeOnBank(bank, offset);
+			size += item.getWorstCaseSizeOnBank(bank, assignedAddress + size);
 		}
-		return offset - blockOffset;
+		return size;
+	}
+	
+	public boolean setAssignedAddress(int address) 
+	{
+		if (this.assignedAddress == address)
+		{
+			return false;
+		}
+		
+		this.assignedAddress = address;
+		return true;
 	}
 
-	public int getAddress() 
+	public int getAssignedAddress() 
 	{
-		return address;
-	}
-
-	public short getBlockOffset() 
-	{
-		return blockOffset;
+		return assignedAddress;
 	}
 	
 	public void evaluatePlaceholdersAndLinkData(
@@ -82,5 +76,13 @@ public class Segment
 		}
 	}
 	
-	// TODO write
+	public int writeBytes(byte[] bytes)
+	{
+		int writeAddress = assignedAddress;
+		for (Instruction item : data)
+		{
+			writeAddress += item.writeBytes(bytes, writeAddress);
+		}
+		return writeAddress - assignedAddress;
+	}
 }

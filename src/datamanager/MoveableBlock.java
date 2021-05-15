@@ -10,7 +10,7 @@ import java.util.TreeMap;
 public abstract class MoveableBlock implements BlockAllocData
 {
 	private boolean shrunkMoved; // TODO make this temp somehow?
-	private byte assignedBank;
+	private byte assignedBank; // TODO: used?
 	
 	private byte priority;
 	protected DataBlock toAdd;
@@ -24,11 +24,6 @@ public abstract class MoveableBlock implements BlockAllocData
 		this.priority = priority;
 		// TODO: Copy? toAdd = new CodeSnippit(toPlaceInBank);
 		allowableBankPreferences = new TreeMap<>();
-	}
-	
-	public int writeData(byte[] bytes)
-	{
-		return 0; //TODO toAdd.writeData(bytes, blockIdsToAddresses);
 	}
 	
 	protected void addAllowableBankRange(byte priority, byte startBank, byte stopBank)
@@ -45,7 +40,6 @@ public abstract class MoveableBlock implements BlockAllocData
 	{
 		toAdd.setAssignedAddress(address);
 	}
-
 
 	@Override
 	public int getAddress() 
@@ -89,8 +83,7 @@ public abstract class MoveableBlock implements BlockAllocData
 	public abstract FloatingBlock revertShrink();
 	public abstract int getShrunkWorstCaseSizeOnBank(byte bank);
 	
-	// TODO: Worst case size 
-	public int getCurrentSizeOnBank(byte bank)
+	public int getCurrentWorstCaseSizeOnBank(byte bank)
 	{
 		if (shrunkMoved)
 		{
@@ -115,11 +108,16 @@ public abstract class MoveableBlock implements BlockAllocData
 		{
 			return -1;
 		}
-		return getCurrentSizeOnBank(assignedBank);
+		return getCurrentWorstCaseSizeOnBank(assignedBank);
 	}
 	
 	public byte getPriority()
 	{
 		return priority;
+	}
+	
+	public int writeBytes(byte[] bytes)
+	{
+		return toAdd.writeBytes(bytes);
 	}
 }
