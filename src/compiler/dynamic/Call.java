@@ -3,7 +3,7 @@ package compiler.dynamic;
 
 import java.util.Map;
 
-import compiler.Segment;
+import compiler.SegmentReference;
 import compiler.CompilerConstants.InstructionConditions;
 import rom.Texts;
 
@@ -26,8 +26,8 @@ public class Call extends JumpCallCommon
 	@Override
 	public void linkData(
 			Texts romTexts,
-			Map<String, Segment> labelToLocalSegment, 
-			Map<String, Segment> labelToSegment
+			Map<String, SegmentReference> labelToLocalSegment, 
+			Map<String, SegmentReference> labelToSegment
 	) 
 	{		
 		// If its calling a label and is not already assigned

@@ -5,13 +5,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import compiler.CompilerConstants.*;
-import compiler.dynamic.Jump;
-import compiler.dynamic.JumpCallCommon;
-import compiler.dynamic.Ldtx;
-import compiler.fixed.Cp;
-import compiler.fixed.Inc;
-import compiler.fixed.Lb;
-import compiler.fixed.Ld;
+import compiler.dynamic.*;
+import compiler.fixed.*;
 import constants.RomConstants;
 import data.romtexts.*;
 
@@ -25,6 +20,45 @@ public class CompilerUtils
 	static final String LINE_BREAK = "\n";
 	static final String HEX_VAL_MARKER = "$";
 	static final String PLACEHOLDER_MARKER = "#";
+	
+	public static String tryParseSegmentName(String line)
+	{
+		if (line.endsWith(CompilerUtils.SEGMENT_ENDLINE))
+		{
+			return getSegmentName(line);
+		}
+		return null;
+	}
+
+	private static String getSegmentName(String line)
+	{
+		return line.substring(0, line.indexOf(CompilerUtils.SEGMENT_ENDLINE)).trim();
+	}
+	
+	public static String tryParseSubsegmentName(String line, String rootSegmentName)
+	{
+		if (line.startsWith(CompilerUtils.SUBSEGMENT_STARTLINE))
+		{
+			return getSubsegmentName(line, rootSegmentName);
+		}
+		return null;
+	}
+	
+	private static String getSubsegmentName(String segmentName, String line)
+	{
+		return segmentName + line.trim();
+	}
+	
+	public static String tryParseBracketedArg(String arg)
+	{
+		arg = arg.trim();
+		if (arg.startsWith("[") && arg.endsWith("]"))
+		{
+			return arg.substring(1, arg.length() - 2);
+		}
+		
+		return null;
+	}
 	
 	public static byte parseByteArg(String arg)
 	{
@@ -51,23 +85,25 @@ public class CompilerUtils
 		return extractHexValString(arg, numChars, 0);
 	}
 	
-	// TODO handle shortened hex values?
-	private static String extractHexValString(String arg, int numChars, int offsetChars)
+	private static String extractHexValString(String arg, int maxNumChars, int offsetChars)
 	{
 		int valIdx = arg.indexOf(HEX_VAL_MARKER);
-		try
-		{
-			return arg.substring(valIdx + 1 + offsetChars, valIdx + numChars + offsetChars);
-		} 
-		catch (IndexOutOfBoundsException iobe)
+		if (valIdx < 0)
 		{
 			throw new IllegalArgumentException("Failed to find the " + HEX_VAL_MARKER + 
-					" hex value marker or " + numChars + " characters were found after the " + 
-					offsetChars + " character offset: " + arg);
+					" hex value marker: " + arg);
 		}
+		
+		// Handle shorter strings
+		int endIdx = valIdx + maxNumChars + offsetChars;
+		if (endIdx > arg.length())
+		{
+			endIdx = arg.length();
+		}
+		
+		// Get the base string, split on space and return the first in case we overflowed into another arg
+		return arg.substring(valIdx + 1 + offsetChars, endIdx).split(" ", 1)[0];
 	}
-	
-	// TODO: Parse brackets? How do we handle those
 	
 	public static Register parseRegisterArg(String arg)
 	{
@@ -168,12 +204,13 @@ public class CompilerUtils
 		
 		switch (keyArgs[0])
 		{
-			// TODO: complete this list
 			// Loading
 			case "lb":
 				return Lb.create(args);
 			case "ld":
 				return Ld.create(args);
+			case "ldh":
+				return Ldh.create(args);
 			case "ldtx":
 				// we don't want to split on commas since the text
 				// may have it - let it handle it itself
@@ -182,8 +219,8 @@ public class CompilerUtils
 			// Logic
 			case "cp":
 				return Cp.create(args);
-			case "inc":
-				return Inc.create(args);
+			case "or":
+				return Or.create(args);				
 				
 			// Flow control
 			case "jr":
@@ -196,6 +233,18 @@ public class CompilerUtils
 			case "call":
 			case "farcall":
 				return JumpCallCommon.create(args, rootSegment, false); // false == call
+			case "ret":
+				return Ret.create(args);		
+				
+			// Misc
+			case "dec":
+				return Dec.create(args);
+			case "inc":
+				return Inc.create(args);
+			case "pop":
+				return Pop.create(args);
+			case "push":
+				return Push.create(args);
 				
 			// Writing raw data
 				

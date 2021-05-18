@@ -1,28 +1,24 @@
 package datamanager;
 
-import java.util.Map.Entry;
 
 import compiler.DataBlock;
 
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.Map.Entry;
 
-public abstract class MoveableBlock implements BlockAllocData
+public abstract class MoveableBlock extends BlockAllocData
 {
-	private boolean shrunkMoved; // TODO make this temp somehow?
-	private byte assignedBank; // TODO: used?
-	
+	private boolean shrunkMoved;	
 	private byte priority;
-	protected DataBlock toAdd;
 	protected TreeMap<Byte, BankRange> allowableBankPreferences;
 	
 	protected MoveableBlock(byte priority, DataBlock toPlaceInBank)
 	{
-		shrunkMoved = false;
-		assignedBank = -1;
+		super(toPlaceInBank);
 		
+		shrunkMoved = false;
 		this.priority = priority;
-		// TODO: Copy? toAdd = new CodeSnippit(toPlaceInBank);
 		allowableBankPreferences = new TreeMap<>();
 	}
 	
@@ -38,24 +34,17 @@ public abstract class MoveableBlock implements BlockAllocData
 
 	public void setAssignedAddress(int address) 
 	{
-		toAdd.setAssignedAddress(address);
+		dataBlock.setAssignedAddress(address);
 	}
 
-	@Override
 	public int getAddress() 
 	{
-		return toAdd.getAssignedAddress();
+		return dataBlock.getAssignedAddress();
 	}
 	
 	void setShrunkOrMoved(boolean isShrunkOrMoved)
 	{
 		shrunkMoved = isShrunkOrMoved;
-	}
-	
-	@Override
-	public String getId()
-	{
-		return toAdd.getId();
 	}
 	
 	boolean isShrunkOrMoved()
@@ -98,17 +87,8 @@ public abstract class MoveableBlock implements BlockAllocData
 		}
 		else
 		{
-			return toAdd.getWorstCaseSizeOnBank(bank);
+			return dataBlock.getWorstCaseSizeOnBank(bank);
 		}
-	}
-	
-	public int getCurrentSizeOnAssignedBank()
-	{
-		if (assignedBank < 0)
-		{
-			return -1;
-		}
-		return getCurrentWorstCaseSizeOnBank(assignedBank);
 	}
 	
 	public byte getPriority()
@@ -118,6 +98,6 @@ public abstract class MoveableBlock implements BlockAllocData
 	
 	public int writeBytes(byte[] bytes)
 	{
-		return toAdd.writeBytes(bytes);
+		return dataBlock.writeBytes(bytes);
 	}
 }

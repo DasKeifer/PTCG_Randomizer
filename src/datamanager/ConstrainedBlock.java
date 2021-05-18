@@ -1,29 +1,28 @@
 package datamanager;
 
+import java.util.Map;
+
 import compiler.DataBlock;
+import compiler.SegmentReference;
 
 public class ConstrainedBlock extends MoveableBlock
 {	
-	private FloatingBlock shrunkBlock;
+	private DataBlock shrunkLocalBlock;
+	private FloatingBlock shrunkRemoteBlock;
 	
-	public enum AutoCompressOption
+	public ConstrainedBlock(byte priority, DataBlock fullInBank, DataBlock shrunkLocalBlock, DataBlock shrunkRemoteBlock) 
 	{
-		CALL, JUMP;
-	}
-	
-	public ConstrainedBlock(byte priority, DataBlock toPlaceInBank, DataBlock remotePortion) 
-	{
-		super(priority, toPlaceInBank);
-		shrunkBlock = new FloatingBlock(priority, remotePortion);
+		super(priority, fullInBank);
+		this.shrunkLocalBlock = shrunkLocalBlock;
+		this.shrunkRemoteBlock = new FloatingBlock(priority, shrunkRemoteBlock);
 	}
 
 	@Override
 	public int getShrunkWorstCaseSizeOnBank(byte bank) 
 	{
-		return shrunkBlock.getCurrentWorstCaseSizeOnBank(bank);
+		return shrunkLocalBlock.getWorstCaseSizeOnBank(bank);
 	}
 
-	// TODO: Condense?
 	@Override
 	public boolean shrinksNotMoves() 
 	{
@@ -33,12 +32,34 @@ public class ConstrainedBlock extends MoveableBlock
 	@Override
 	public FloatingBlock applyShrink() 
 	{
-		return shrunkBlock;
+		return shrunkRemoteBlock;
 	}
 
 	@Override
 	public FloatingBlock revertShrink() 
 	{
-		return shrunkBlock;
+		return shrunkRemoteBlock;
+	}
+
+	@Override
+	public Map<String, SegmentReference> getSegmentReferencesById() 
+	{
+		if (isShrunkOrMoved())
+		{
+			return shrunkLocalBlock.getSegmentReferencesById();
+		}
+		
+		return super.getSegmentReferencesById();
+	}
+	
+	@Override
+	public int writeBytes(byte[] bytes)
+	{
+		if (isShrunkOrMoved())
+		{
+			return shrunkLocalBlock.writeBytes(bytes);
+		}
+		
+		return super.writeBytes(bytes);
 	}
 }

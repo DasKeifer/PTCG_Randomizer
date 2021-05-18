@@ -1,5 +1,6 @@
 package datamanager;
 
+
 import compiler.DataBlock;
 
 public class UnshrinkableBlock extends MoveableBlock
@@ -36,7 +37,6 @@ public class UnshrinkableBlock extends MoveableBlock
 	@Override
 	public int getShrunkWorstCaseSizeOnBank(byte bank) 
 	{
-		return toAdd.getWorstCaseSizeOnBank(bank);
+		return dataBlock.getWorstCaseSizeOnBank(bank);
 	}
-
 }

@@ -4,7 +4,7 @@ package compiler.dynamic;
 import java.util.Map;
 
 import compiler.CompilerUtils;
-import compiler.Segment;
+import compiler.SegmentReference;
 import compiler.CompilerConstants.InstructionConditions;
 import rom.Texts;
 
@@ -58,8 +58,8 @@ public class Jump extends JumpCallCommon
 	@Override
 	public void linkData(
 			Texts romTexts,
-			Map<String, Segment> labelToLocalSegment, 
-			Map<String, Segment> labelToSegment
+			Map<String, SegmentReference> labelToLocalSegment, 
+			Map<String, SegmentReference> labelToSegment
 	) 
 	{
 		if (!labelToGoTo.isEmpty() && toGoTo == null)

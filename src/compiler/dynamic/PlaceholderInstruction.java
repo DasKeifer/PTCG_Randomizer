@@ -5,7 +5,7 @@ import java.util.Map;
 
 import compiler.CompilerUtils;
 import compiler.Instruction;
-import compiler.Segment;
+import compiler.SegmentReference;
 import rom.Texts;
 
 public class PlaceholderInstruction extends Instruction
@@ -38,8 +38,8 @@ public class PlaceholderInstruction extends Instruction
 	@Override
 	public void linkData(
 			Texts romTexts, 
-			Map<String, Segment> labelToLocalSegment, 
-			Map<String, Segment> labelToSegment
+			Map<String, SegmentReference> labelToLocalSegment, 
+			Map<String, SegmentReference> labelToSegment
 	)
 	{
 		inst.linkData(romTexts, labelToLocalSegment, labelToSegment);

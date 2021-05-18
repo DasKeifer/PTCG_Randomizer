@@ -6,11 +6,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 
+import compiler.SegmentReference;
 import constants.RomConstants;
 
 public class DataManager
 {
-	// TODO: allocate based on how much wants to go where
 	// Bank, object
 	private SortedMap<Byte, AllocatableBank> freeSpace;
 	
@@ -20,8 +20,10 @@ public class DataManager
 	// BlockId, Block
 	// This can be used for determining references of one block in another and ensures
 	// each ID is unique
-	// TODO: change this to segment or keep a parallel segment version? Probably the latter?
 	private Map<String, BlockAllocData> blocksById;
+	
+	// SegmentId, Segment Reference
+	private Map<String, SegmentReference> segmentRefsById;
 	
 	public void writeData(
 			byte[] bytesToPlaceIn,
@@ -60,6 +62,15 @@ public class DataManager
 			throw new IllegalArgumentException("Duplicate block ID detected! There must be only " +
 					"one allocation block per data block");
 		}
+
+		// Add the references for its segments
+		for (Entry<String, SegmentReference> idSegRef : block.getSegmentReferencesById().entrySet())
+		{
+			if (segmentRefsById.put(idSegRef.getKey(), idSegRef.getValue()) != null)
+			{
+				throw new IllegalArgumentException("Duplicate segment ID detected: " + idSegRef.getKey());
+			}
+		}
 	}
 	
 	private void addBlockToAllocate(MoveableBlock block)
@@ -79,6 +90,7 @@ public class DataManager
 		freeSpace.clear();
 		allocsToProcess.clear();	
 		blocksById.clear();
+		segmentRefsById.clear();
 
 		// First add all the blocks to  we don't have ID conflicts
 		for (FixedBlock block : replacementBlocks)
@@ -137,7 +149,7 @@ public class DataManager
 		if (!success)
 		{
 			// TODO: rework this some more - if we shrunk, we will need to add
-			// new entries into our maps
+			// new entries into our maps. Also need to handle the unshrink case possibly
 			if (data.canBeShrunkOrMoved())
 			{
 				data.setShrunkOrMoved(true);
@@ -149,7 +161,7 @@ public class DataManager
 		if (!success)
 		{
 			// TODO: rework this some more - if we shrunk, we will need to add
-			// new entries into our maps
+			// new entries into our maps.  Also need to handle the unshrink case possibly
 			success = attemptToShrinkOtherAllocsAndPlace(data);
 		}
 		

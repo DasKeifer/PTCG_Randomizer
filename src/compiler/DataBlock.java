@@ -1,13 +1,13 @@
 package compiler;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import compiler.dynamic.PlaceholderInstruction;
-
-import java.util.Set;
 
 import rom.Texts;
 
@@ -17,37 +17,32 @@ public class DataBlock
 	Map<String, Segment> segments;
 	private String id;
 	
-	// TODO move most of the CompilerUtils references inside functions in the compiler utils class
-	
 	// Generic, highest level construct for holding just raw data or a series of functions
 	// Represents one block that we want to place contiguously in the ROM
 	// I.e. replace Code Snippet
-	public DataBlock(String startingSegmentName, String source)
+	public DataBlock(String startingSegmentName, List<String> sourceLines)
 	{
 		assignedAddress = CompilerUtils.UNASSIGNED_ADDRESS;
 		segments = new HashMap<>();
 		id = startingSegmentName.trim();
-		String sourcePlusSegmentName = startingSegmentName + CompilerUtils.SEGMENT_ENDLINE + CompilerUtils.LINE_BREAK + source;
-		parseSource(startingSegmentName, sourcePlusSegmentName.split(CompilerUtils.LINE_BREAK));
+		parseSource(startingSegmentName, sourceLines);
 	}
 	
-	public DataBlock(String source)
+	public DataBlock(List<String> sourceLines)
 	{
 		assignedAddress = CompilerUtils.UNASSIGNED_ADDRESS;
 		segments = new HashMap<>();
-		
-		String[] lines = source.split(CompilerUtils.LINE_BREAK);
-		if (!lines[0].trim().endsWith(CompilerUtils.SEGMENT_ENDLINE))
+
+		List<String> sourceLinesTrimmed = new ArrayList<>(sourceLines);
+		id = CompilerUtils.tryParseSegmentName(sourceLinesTrimmed.remove(0));
+		if (id == null)
 		{
 			throw new IllegalArgumentException("The first line must be a Segment label (i.e. the segment name followed by a ':'");
 		}
-
-		id = getSegmentName(lines[0]);
-		parseSource(id, lines);
+		parseSource(id, sourceLinesTrimmed);
 	}
 	
-	// TODO change to manually input lines as separate strings so we can format strings inline
-	private void parseSource(String startingSegmentName, String[] sourceLines)
+	private void parseSource(String startingSegmentName, List<String> sourceLines)
 	{
 		segments.clear();
 		
@@ -55,38 +50,34 @@ public class DataBlock
 		Segment currSegment = new Segment();
 		segments.put(rootSegmentName, currSegment);
 		
-		// Plus one because we already handled the first line
-		String line;
-		for (int lineIdx = 1; lineIdx < sourceLines.length; lineIdx++)
+		for (String line : sourceLines)
 		{
-			// TODO: alot of this maybe should be moved to compiler utils
-			
 			// split of the instruction (if there is one)
-			line = sourceLines[lineIdx].trim();
-			if (line.endsWith(CompilerUtils.SEGMENT_ENDLINE))
+			line = line.trim();
+			
+			String segName = CompilerUtils.tryParseSegmentName(line);
+			// If its not null, its a new segment
+			if (line != null)
 			{
-				rootSegmentName = getSegmentName(line);
+				rootSegmentName = segName;
+			}
+			else // Otherwise see if its a subsegment
+			{
+				segName = CompilerUtils.tryParseSubsegmentName(line, rootSegmentName);
+			}
+			
+			// If we found a new segment, create it and check that its name is unique
+			if (segName != null)
+			{
 				currSegment = new Segment();
 				
 				// Ensure there was no conflict within the block
-				if (segments.put(rootSegmentName, currSegment) != null)
+				if (segments.put(segName, currSegment) != null)
 				{
 					throw new IllegalArgumentException("Duplicate segment label was found: " + rootSegmentName);
 				}
 			}
-			else if (line.startsWith(CompilerUtils.SUBSEGMENT_STARTLINE))
-			{
-				// Form it with the addition of the "."
-				String secondarySegName = getSubsegmentName(rootSegmentName, line);
-				currSegment = new Segment();
-
-				// Ensure there was no conflict within the block
-				if (segments.put(secondarySegName, currSegment) != null)
-				{
-					throw new IllegalArgumentException("Duplicate segment label was found: " + secondarySegName);
-				}
-			}
-			// A line that will turn into bytes
+			// If its not a segment, then its a line that will turn into bytes
 			else
 			{
 				// If its a placeholder, we defer filling it out
@@ -100,16 +91,6 @@ public class DataBlock
 				}
 			}
 		}
-	}
-	
-	private String getSegmentName(String line)
-	{
-		return line.substring(0, line.indexOf(CompilerUtils.SEGMENT_ENDLINE)).trim();
-	}
-	
-	private String getSubsegmentName(String segmentName, String line)
-	{
-		return segmentName + line.trim();
 	}
 	
 	public void setAssignedAddress(int address)
@@ -127,9 +108,14 @@ public class DataBlock
 		return id;
 	}
 	
-	public Set<String> getAllSegmentIds()
+	public Map<String, SegmentReference> getSegmentReferencesById()
 	{
-		return segments.keySet();
+		Map<String, SegmentReference> segRefsById = new HashMap<>();
+		for (Entry<String, Segment> idSeg : segments.entrySet())
+		{
+			segRefsById.put(idSeg.getKey(), idSeg.getValue());
+		}
+		return segRefsById;
 	}
 	
 	public int getWorstCaseSizeOnBank(byte bank)
@@ -182,11 +168,11 @@ public class DataBlock
 		segments = refreshedSegments;
 	}
 	
-	public void evaluateInstructionPlaceholdersAndLinkData(Texts romTexts, Map<String, Segment> labelToSegment, Map<String, String> placeholderToArgs)
+	public void evaluateInstructionPlaceholdersAndLinkData(Texts romTexts, Map<String, SegmentReference> segRefsById, Map<String, String> placeholderToArgs)
 	{
 		for (Segment seg : segments.values())
 		{
-			seg.evaluatePlaceholdersAndLinkData(romTexts, segments, labelToSegment, placeholderToArgs);
+			seg.evaluatePlaceholdersAndLinkData(romTexts, getSegmentReferencesById(), segRefsById, placeholderToArgs);
 		}
 	}
 		

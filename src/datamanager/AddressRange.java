@@ -21,6 +21,4 @@ class AddressRange
 	{
 		return stopExclusive - start;
 	}
-	
-	// TODO default sorter based on start?
 }

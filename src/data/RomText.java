@@ -10,7 +10,6 @@ import util.StringUtils;
 
 public class RomText
 {	
-	// TODO: update messages
 	public static final char SPECIAL_SYM_RESERVE_SPACE_CHAR = 0x11; // Device control 1 for no particular reason
 	private int maxCharsPerLine;
 	private int preferredLinesPerBlock;
@@ -156,12 +155,13 @@ public class RomText
 			
 			if (formatted.isEmpty())
 			{
-				System.out.println("Failed to nicely pack effect description \"" + 
-						StringUtils.createAbbreviation(text, 25) + "\" so words were split across lines to make it fit");
+				System.out.println("Failed to nicely pack rom text \"" + 
+						StringUtils.createAbbreviation(text, 25) + 
+						"\" so words were split across lines to make it fit");
 			}
 			else
 			{
-				throw new IllegalArgumentException("Could not successfully format effect description \"" + 
+				throw new IllegalArgumentException("Could not successfully format rom text \"" + 
 						StringUtils.createAbbreviation(text, 25) + "\"");
 			}
 		}
@@ -173,7 +173,7 @@ public class RomText
 	{		
 		if (textIdIndexes.length != maxBlocks)
 		{
-			throw new IllegalArgumentException("Reading effect description was passed the wrong number of id indexes :" + 
+			throw new IllegalArgumentException("Reading rom text was passed the wrong number of id indexes :" + 
 					textIdIndexes.length);
 		}
 		
@@ -206,11 +206,10 @@ public class RomText
 	{
 		if (indexesToWriteAt.length != maxBlocks)
 		{
-			throw new IllegalArgumentException("Writing RomText was passed the wrong number of id indexes :" + 
+			throw new IllegalArgumentException("Writing rom text was passed the wrong number of id indexes :" + 
 					indexesToWriteAt.length);
 		}
 		
-		// TODO: update messages
 		if (textBlockIds.size() != textBlocks.size())
 		{
 			throw new IllegalArgumentException("Object not setup to write! The found number of ids (" + 

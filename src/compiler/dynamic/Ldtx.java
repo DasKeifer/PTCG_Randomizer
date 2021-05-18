@@ -5,7 +5,7 @@ import java.util.Map;
 
 import compiler.CompilerUtils;
 import compiler.Instruction;
-import compiler.Segment;
+import compiler.SegmentReference;
 import data.romtexts.OneBlockText;
 import compiler.CompilerConstants.RegisterPair;
 import rom.Texts;
@@ -45,8 +45,8 @@ public class Ldtx extends Instruction
 	@Override
 	public void linkData(
 			Texts idToText, 
-			Map<String, Segment> labelToLocalSegment,
-			Map<String, Segment> labelToSegment) 
+			Map<String, SegmentReference> labelToLocalSegment,
+			Map<String, SegmentReference> labelToSegment) 
 	{
 		text.finalizeAndAddTexts(idToText);
 	}

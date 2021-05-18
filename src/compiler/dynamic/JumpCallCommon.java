@@ -4,7 +4,7 @@ package compiler.dynamic;
 import compiler.CompilerConstants.InstructionConditions;
 import compiler.CompilerUtils;
 import compiler.Instruction;
-import compiler.Segment;
+import compiler.SegmentReference;
 import util.ByteUtils;
 import util.RomUtils;
 
@@ -12,7 +12,7 @@ public abstract class JumpCallCommon extends Instruction
 {
 	InstructionConditions conditions;
 	String labelToGoTo;
-	protected Segment toGoTo;
+	protected SegmentReference toGoTo;
 	int addressToGoTo;
 	
 	private byte conditionlessInstruct;

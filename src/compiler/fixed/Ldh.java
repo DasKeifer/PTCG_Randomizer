@@ -8,6 +8,8 @@ public class Ldh extends FixedInstruction
 	byte value;
 	boolean isAFirst;
 	
+	// values for constants defined in hram.asm if I want to add them as an enum
+	
 	public Ldh(byte ffAddressSecondByte, boolean isACommaVal) 
 	{
 		super(2); // Size
@@ -17,18 +19,22 @@ public class Ldh extends FixedInstruction
 	
 	public static Ldh create(String[] args)
 	{		
+		String allowedFormatText = "Ldh only supports (A, [$FF(00 - FF)]) or ([$FF(00 - FF)], A): ";
 		if (args.length != 2)
 		{
-			throw new IllegalArgumentException("Ldh only supports (A, $FF(00 - FF)) or ($FF(00 - FF), A): Given " + args.toString());
+			throw new IllegalArgumentException(allowedFormatText + " Given " + args.toString());
 		}
 
 		// A, val
+		String bracketsRemoved;
 		try
 		{
-			if (CompilerUtils.parseRegisterArg(args[0]) == Register.A &&
-					CompilerUtils.parseByteArg(args[1]) == 0xFF) // Only reads the first byte of the short
+			bracketsRemoved = CompilerUtils.tryParseBracketedArg(args[1]);
+			if (bracketsRemoved == null ||
+					(CompilerUtils.parseRegisterArg(args[0]) == Register.A &&
+					CompilerUtils.parseByteArg(bracketsRemoved) == 0xFF)) // Only reads the first byte of the short
 			{
-				return new Ldh(CompilerUtils.parseSecondByteOfShort(args[1]), true); // true = A, val
+				return new Ldh(CompilerUtils.parseSecondByteOfShort(bracketsRemoved), true); // true = A, val
 			}
 		}
 		catch (IllegalArgumentException iae) {}
@@ -36,15 +42,16 @@ public class Ldh extends FixedInstruction
 		// val, A
 		try
 		{
-			if (CompilerUtils.parseByteArg(args[0]) == 0xFF && // Only reads the first byte of the short
+			bracketsRemoved = CompilerUtils.tryParseBracketedArg(args[0]);
+			if (CompilerUtils.parseByteArg(bracketsRemoved) == 0xFF && // Only reads the first byte of the short
 					CompilerUtils.parseRegisterArg(args[1]) == Register.A)
 			{
-				return new Ldh(CompilerUtils.parseSecondByteOfShort(args[0]), false); // true = val, A
+				return new Ldh(CompilerUtils.parseSecondByteOfShort(bracketsRemoved), false); // true = val, A
 			}
 		}
 		catch (IllegalArgumentException iae) {}
 		
-		throw new IllegalArgumentException("Ldh only supports (A, $FF(00 - FF)) or ($FF(00 - FF), A): Given " + args.toString());
+		throw new IllegalArgumentException(allowedFormatText + " Given " + args.toString());
 	}
 	
 	public int writeBytes(byte[] bytes, int indexToAddAt)

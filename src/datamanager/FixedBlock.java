@@ -4,18 +4,18 @@ package datamanager;
 import compiler.DataBlock;
 import util.ByteUtils;
 
-public abstract class FixedBlock implements BlockAllocData
+public class FixedBlock extends BlockAllocData
 {
 	int replaceLength;
-	DataBlock replaceWith; // The remote block (if needed), should be referred to in the DataBlock so no need to track it here
+	// The remote block (if needed), should be referred to in the DataBlock so no need to track it here
 	
 	// TODO: Add optional integrity checking surrounding area and replace
 
 	// For specific location writes with specific size or of empty data
 	public FixedBlock(int startAddress, DataBlock toPlace)
 	{
-		replaceWith = toPlace;
-		replaceWith.setAssignedAddress(startAddress);
+		super(toPlace);
+		toPlace.setAssignedAddress(startAddress);
 		replaceLength = -1;
 	}
 	
@@ -23,14 +23,14 @@ public abstract class FixedBlock implements BlockAllocData
 	// Auto fill with nop (0x00) after
 	public FixedBlock(int startAddress, DataBlock replaceWith, int replaceLength)
 	{
-		this.replaceWith = replaceWith;
+		super(replaceWith);
 		replaceWith.setAssignedAddress(startAddress);
 		this.replaceLength = replaceLength;
 	}
 	
 	public int writeBytes(byte[] bytes)
 	{
-		int lengthWritten = replaceWith.writeBytes(bytes);
+		int lengthWritten = dataBlock.writeBytes(bytes);
 		
 		if (replaceLength >= 0)
 		{
@@ -41,7 +41,7 @@ public abstract class FixedBlock implements BlockAllocData
 			else if (lengthWritten < replaceLength)
 			{
 				// Write the remainder of the length with no-ops
-				ByteUtils.setBytes(bytes, replaceWith.getAssignedAddress() + lengthWritten, replaceLength - lengthWritten, (byte) 0);
+				ByteUtils.setBytes(bytes, dataBlock.getAssignedAddress() + lengthWritten, replaceLength - lengthWritten, (byte) 0);
 			}
 		}
 		

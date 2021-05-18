@@ -8,6 +8,7 @@ import java.util.ListIterator;
 import java.util.TreeMap;
 
 import compiler.CompilerUtils;
+import util.RomUtils;
 
 public class AllocatableBank 
 {
@@ -39,7 +40,13 @@ public class AllocatableBank
 	
 	private void addSpace(AllocatableSpace space)
 	{
-		// TODO check in bank?
+		if (!RomUtils.isInBank(space.start, bank) || RomUtils.isInBank(space.stopExclusive, bank))
+		{
+			throw new IllegalArgumentException("Passed space is not entirely in this bank (" + bank + ")!" +
+					" bank addresses: " + RomUtils.getBankBounds(bank).toString() + " and space addresses: " +
+					space.start + ", " + space.stopExclusive);
+		}
+		
 		if (space.size() > largestSpace)
 		{
 			largestSpace = space.size();

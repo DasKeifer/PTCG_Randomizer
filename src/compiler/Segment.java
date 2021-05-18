@@ -7,16 +7,14 @@ import java.util.Map;
 import compiler.dynamic.PlaceholderInstruction;
 import rom.Texts;
 
-public class Segment 
+class Segment extends SegmentReference
 {
 	List<Instruction> data;
 	List<PlaceholderInstruction> placeholderInstructs;
-	private int assignedAddress;
 	
 	public Segment()
 	{
 		data = new LinkedList<>();
-		assignedAddress = CompilerUtils.UNASSIGNED_ADDRESS;
 	}
 	
 	public void appendInstruction(Instruction instruct)
@@ -50,16 +48,11 @@ public class Segment
 		this.assignedAddress = address;
 		return true;
 	}
-
-	public int getAssignedAddress() 
-	{
-		return assignedAddress;
-	}
 	
 	public void evaluatePlaceholdersAndLinkData(
 			Texts romTexts, 
-			Map<String, Segment> labelToLocalSegment, 
-			Map<String, Segment> labelToSegment, 
+			Map<String, SegmentReference> labelToLocalSegment, 
+			Map<String, SegmentReference> labelToSegment, 
 			Map<String, String> placeholderToArgs
 	)
 	{		
