@@ -17,19 +17,13 @@ public class UnshrinkableBlock extends MoveableBlock
 	}
 	
 	@Override
-	public boolean shrinksNotMoves() 
+	public boolean movesNotShrinks() 
 	{
-		return false;
+		return false; // Does neither but default to shrink since that would at least leave it in the bank
 	}
 
 	@Override
-	public FloatingBlock applyShrink() 
-	{
-		return null;
-	}
-
-	@Override
-	public FloatingBlock revertShrink() 
+	public FloatingBlock getRemoteBlock() 
 	{
 		return null;
 	}

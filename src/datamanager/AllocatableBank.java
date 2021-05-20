@@ -1,13 +1,11 @@
 package datamanager;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.TreeMap;
 
-import compiler.CompilerUtils;
 import util.RomUtils;
 
 public class AllocatableBank 
@@ -68,20 +66,22 @@ public class AllocatableBank
 	{
 		return attemptToAdd(alloc, false, null);
 	}
-	
-	public boolean attemptToAdd(MoveableBlock alloc, List<MoveableBlock> displacedBlocks)
+
+	// Only (potentially) modifies blocks to alloc if true is returned
+	public boolean attemptToAdd(MoveableBlock alloc, List<FloatingBlock> blocksToAlloc)
 	{
-		displacedBlocks.clear();
-		return attemptToAdd(alloc, true, displacedBlocks);
+		return attemptToAdd(alloc, true, blocksToAlloc);
 	}
-	
-	private boolean attemptToAdd(MoveableBlock alloc, boolean attemptToShrinkOthers, List<MoveableBlock> displacedBlocks)
+
+	// Only (potentially) modifies blocks to alloc if true is returned
+	private boolean attemptToAdd(MoveableBlock alloc, boolean attemptToShrinkOthers, List<FloatingBlock> blocksToAlloc)
 	{
 		if (largestFreeSpace < alloc.getCurrentWorstCaseSizeOnBank(bank))
 		{
-			if (attemptToShrinkOthers && !shrinkToMakeSpace(alloc.getCurrentWorstCaseSizeOnBank(bank), displacedBlocks))
+			List<MoveableBlock> shrunkBlocks = new LinkedList<>();
+			if (attemptToShrinkOthers && !shrinkToMakeSpace(alloc.getCurrentWorstCaseSizeOnBank(bank), shrunkBlocks, blocksToAlloc))
 			{
-				unshrinkAllTempShrunkAllocs(displacedBlocks);				
+				unshrinkAllTempShrunkAllocs(shrunkBlocks);				
 				return false;
 			}
 		}
@@ -92,31 +92,6 @@ public class AllocatableBank
 			throw new RuntimeException("Failed to assign addresses! This should never happen here (attemptToAdd)!");
 		}
 		return true;
-	}
-	
-	public void removeBlock(String Id)
-	{
-		// Set the bank in the code snippet. Then we determine jump/call vs farjump/call
-		Iterator<MoveableBlock> iter;
-		MoveableBlock alloc;
-		for (List<MoveableBlock> allocsWithPriority : allocationsByPriority.values())
-		{
-			iter = allocsWithPriority.iterator();
-			while (iter.hasNext())
-			{
-				alloc = iter.next();
-				if (alloc.getId().equalsIgnoreCase(Id))
-				{
-					alloc.setAssignedAddress(CompilerUtils.UNASSIGNED_ADDRESS);
-					iter.remove();
-					if (!reassignAndRefresh())
-					{
-						throw new RuntimeException("Failed to assign addresses! This should never happen here (removeBlock)!");
-					}
-					return;
-				}
-			}
-		}
 	}
 	
 	// Maybe add a priority as an optimization?
@@ -133,6 +108,8 @@ public class AllocatableBank
 		boolean placed;
 		for (List<MoveableBlock> allocWithPriority : allocationsByPriority.values())
 		{
+			// For each block, we go through each space and see if there is room until
+			// we either find room or run out of spaces
 			for (MoveableBlock alloc : allocWithPriority)
 			{
 				placed = false;
@@ -170,7 +147,8 @@ public class AllocatableBank
 	{
 		byte priorityValue = -1;
 		List<MoveableBlock> shrunkenAllocs = new LinkedList<>();
-		if (shrinkToMakeSpace(space, shrunkenAllocs))
+		List<FloatingBlock> toAlloc = new LinkedList<>();
+		if (shrinkToMakeSpace(space, shrunkenAllocs, toAlloc))
 		{
 			if (shrunkenAllocs.isEmpty())
 			{
@@ -179,6 +157,7 @@ public class AllocatableBank
 			}
 			else
 			{
+				// Last added will be the highest priority
 				priorityValue = shrunkenAllocs.get(shrunkenAllocs.size()).getPriority();
 			}
 		}
@@ -193,6 +172,12 @@ public class AllocatableBank
 		for (MoveableBlock alloc : shrunkenAllocs)
 		{
 			alloc.setShrunkOrMoved(false);
+			
+			// If it was moved, add it back in
+			if (alloc.movesNotShrinks())
+			{
+				DataManagerUtils.addToPriorityMap(allocationsByPriority, alloc);
+			}
 		}
 		
 		if (!reassignAndRefresh())
@@ -201,9 +186,12 @@ public class AllocatableBank
 		}
 	}
 
-	private boolean shrinkToMakeSpace(int space, List<MoveableBlock> shrunkenAllocsByReversePriority)
+	// Only (potentially) modifies blocks to alloc if true is returned
+	private boolean shrinkToMakeSpace(int space, List<MoveableBlock> shrunkenAllocsByReversePriority, List<FloatingBlock> blocksToAllocate)
 	{
-		shrunkenAllocsByReversePriority.clear();
+		// Create a separate list so the passed list is only modified if true is returned
+		List<FloatingBlock> runningToAlloc = new LinkedList<>();
+		
 		List<List<MoveableBlock>> allocByPriority = new ArrayList<>(allocationsByPriority.descendingMap().values());
 		ListIterator<MoveableBlock> revIterator;
 		MoveableBlock alloc;
@@ -216,11 +204,32 @@ public class AllocatableBank
 				alloc = revIterator.previous();
 				if (alloc.canBeShrunkOrMoved())
 				{
+					// Shrink it and add it to our list
 					alloc.setShrunkOrMoved(true);
 					shrunkenAllocsByReversePriority.add(alloc);
 					
+					// Get the remote block that will need to be allocated
+					if (alloc.getRemoteBlock() != null)
+					{
+						blocksToAllocate.add(alloc.getRemoteBlock());
+						
+						// If it moves, we need to remove it from this block too
+						if (alloc.movesNotShrinks())
+						{
+							revIterator.remove();
+						}
+					}
+					
+					// See if we have space now
+					if (!reassignAndRefresh())
+					{
+						throw new RuntimeException("Failed to assign addresses! This should never happen here (shrinkToMakeSpace)!");
+					}
 					if (largestFreeSpace >= space)
-					{						
+					{			
+						// Add the list prior to returning now that we know
+						// we are successful
+						blocksToAllocate.addAll(runningToAlloc);
 						return true;
 					}
 				}				

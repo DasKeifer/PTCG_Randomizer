@@ -24,19 +24,13 @@ public class ConstrainedBlock extends MoveableBlock
 	}
 
 	@Override
-	public boolean shrinksNotMoves() 
+	public boolean movesNotShrinks() 
 	{
-		return true;
+		return false; // shrinks
 	}
 
 	@Override
-	public FloatingBlock applyShrink() 
-	{
-		return shrunkRemoteBlock;
-	}
-
-	@Override
-	public FloatingBlock revertShrink() 
+	public FloatingBlock getRemoteBlock() 
 	{
 		return shrunkRemoteBlock;
 	}

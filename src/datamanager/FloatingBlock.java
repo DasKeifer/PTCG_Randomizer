@@ -30,10 +30,10 @@ public class FloatingBlock extends MoveableBlock
 	}
 
 	@Override
-	public boolean shrinksNotMoves() 
+	public boolean movesNotShrinks() 
 	{
 		// This moves
-		return false;
+		return true;
 	}
 
 	@Override
@@ -43,14 +43,8 @@ public class FloatingBlock extends MoveableBlock
 	}
 
 	@Override
-	public FloatingBlock applyShrink() 
+	public FloatingBlock getRemoteBlock() 
 	{
-		return null;
-	}
-
-	@Override
-	public FloatingBlock revertShrink() 
-	{
-		return null;
+		return this;
 	}
 }

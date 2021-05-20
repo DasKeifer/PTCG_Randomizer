@@ -67,21 +67,14 @@ public abstract class MoveableBlock extends BlockAllocData
 		return copy;
 	}
 	
-	public abstract boolean shrinksNotMoves();
-	public abstract FloatingBlock applyShrink();	
-	public abstract FloatingBlock revertShrink();
+	public abstract boolean movesNotShrinks();
+	public abstract FloatingBlock getRemoteBlock();	
 	public abstract int getShrunkWorstCaseSizeOnBank(byte bank);
 	
 	public int getCurrentWorstCaseSizeOnBank(byte bank)
 	{
 		if (shrunkMoved)
-		{
-			// If it moves instead of shrinking, we can reduce it to 0
-			if (!shrinksNotMoves())
-			{
-				return 0;
-			}
-			
+		{			
 			// Otherwise get its shrunk size
 			return getShrunkWorstCaseSizeOnBank(bank);
 		}

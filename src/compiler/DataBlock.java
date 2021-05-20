@@ -149,10 +149,6 @@ public class DataBlock
 		
 		return worstCaseSize;
 	}
-
-	// TODO: copy as many times as needed, evaluate placeholders in labels/ids, create 
-	// list of all strings to segments, replace all instruction placeholders and link, 
-	// then allocate/pack then write
 	
 	public void replacePlaceholderIds(Map<String, String> placeholderToArgsForIds)
 	{

@@ -37,6 +37,12 @@ public class DataManager
 		// then allocate and write. Perhaps the linking is done external to here though?
 		// Probably should be
 		
+
+
+		// TODO: copy as many times as needed, evaluate placeholders in labels/ids, create 
+		// list of all strings to segments, replace all instruction placeholders and link, 
+		// then allocate/pack then write
+		
 		determineDataLocations(bytesToPlaceIn, replacementBlocks, blocksToPlace);
 		
 		// At this point all Ids and addresses should be known
@@ -56,8 +62,9 @@ public class DataManager
 	
 	private void addBlockById(BlockAllocData block)
 	{
-		// Ensure no duplicate Ids
-		if (blocksById.put(block.getId(), block) != null)
+		// See if it already had an entry that is not this instance of the block
+		BlockAllocData existing = blocksById.put(block.getId(), block);
+		if (existing != null && existing != block)
 		{
 			throw new IllegalArgumentException("Duplicate block ID detected! There must be only " +
 					"one allocation block per data block");
@@ -112,35 +119,33 @@ public class DataManager
 	
 	private void makeAllocations()
 	{		
-		// Now go through each block in priority order and try to place it
-		// TODO: assume dependencies have higher priorities than the ones they are dependent upon/enforce it when
-		// objects are being created. Or do dependencies not have their own priorities?
-		// Dependency type - Require same bank, prefer same bank but allow different, exhaust preferences before splitting banks
-		// Dependency type has priority, list of snippets, and each snippet has preferred addresses
-		// How do we allow circular dependencies then?
+		// Go through each block in priority order that still needs to be allocated and try to place it
 		while (!allocsToProcess.isEmpty())
 		{
+			// Get the list new each time. That way if we add a higher priority one back in,
+			// it will get allocated immediately
 			Entry<Byte, List<MoveableBlock>> allocsWithPriority = allocsToProcess.entrySet().iterator().next();
-			while (!allocsWithPriority.getValue().isEmpty())
+			MoveableBlock nextToPlace = allocsWithPriority.getValue().remove(0);
+			
+			// clean the map up if the list is now empty
+			if (allocsWithPriority.getValue().isEmpty())
 			{
-				MoveableBlock nextToPlace = allocsWithPriority.getValue().remove(0);
-				// clean the map up if the list is now empty
-				if (allocsWithPriority.getValue().isEmpty())
-				{
-					allocsToProcess.remove(allocsWithPriority.getKey());
-				}
-				
-				// If we fail to allocate, throw
-				if (!tryAllocate(nextToPlace))
-				{
-					throw new RuntimeException("Failed to place a block! Aborting!");
-				}
+				allocsToProcess.remove(allocsWithPriority.getKey());
+			}
+			
+			// If we fail to allocate, throw
+			if (!tryAllocate(nextToPlace))
+			{
+				throw new RuntimeException("Failed to place a block! Aborting!");
 			}
 		}
 	}
 	
 	private boolean tryAllocate(MoveableBlock data)
 	{
+		// As we go we may find blocks that need to be allocated/reallocated
+		List<FloatingBlock> blocksToAlloc = new LinkedList<>();
+		
 		// First try to place and get the list of conflicting allocs
 		boolean success = attemptToPlace(data);
 
@@ -148,21 +153,31 @@ public class DataManager
 		// This will update the conflicting allocs
 		if (!success)
 		{
-			// TODO: rework this some more - if we shrunk, we will need to add
-			// new entries into our maps. Also need to handle the unshrink case possibly
-			if (data.canBeShrunkOrMoved())
+			// See if we can shrink this block and then place it]
+			if (data.canBeShrunkOrMoved() && !data.movesNotShrinks())
 			{
 				data.setShrunkOrMoved(true);
 				success = attemptToPlace(data);
+				if (success)
+				{
+					blocksToAlloc.add(data.getRemoteBlock());
+				}
 			}
 		}
 
 		// If we still failed, try to shrink others
 		if (!success)
 		{
-			// TODO: rework this some more - if we shrunk, we will need to add
-			// new entries into our maps.  Also need to handle the unshrink case possibly
-			success = attemptToShrinkOtherAllocsAndPlace(data);
+			success = attemptToShrinkOtherAllocsAndPlace(data, blocksToAlloc);
+		}
+		
+		// If we succeeded, add any additional blocks that need to be allocated back in
+		if (success)
+		{
+			for (FloatingBlock block : blocksToAlloc)
+			{
+				addBlockToAllocate(block);
+			}
 		}
 		
 		return success;
@@ -198,7 +213,8 @@ public class DataManager
 		return false;
 	}
 	
-	private boolean attemptToShrinkOtherAllocsAndPlace(MoveableBlock data)
+	// Blocks to Alloc only potentially modified if true is returned (or error if caught)
+	private boolean attemptToShrinkOtherAllocsAndPlace(MoveableBlock data, List<FloatingBlock> blocksToAlloc)
 	{		
 		byte bestOptionPriority = 0;
 		AllocatableBank bestOption = null;
@@ -219,9 +235,11 @@ public class DataManager
 		// Did we find any that worked?
 		if (bestOption != null)
 		{
-			// TODO: flow this out and include it in stuff that needs allocating
-			List<MoveableBlock> displacedBlocks = new LinkedList<>();
-			bestOption.attemptToAdd(data, displacedBlocks);
+			// We just checked so we should always succeed here
+			if (!bestOption.attemptToAdd(data, blocksToAlloc))
+			{
+				throw new IllegalArgumentException("Logic error: The selected bank (" + bestOption + ") no longer has space to add the block!");
+			}
 			return true;
 		}
 		
