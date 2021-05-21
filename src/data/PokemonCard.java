@@ -7,6 +7,7 @@ import constants.CardDataConstants.*;
 import data.romtexts.PokeCategory;
 import data.romtexts.PokeName;
 import data.romtexts.PokeDescription;
+import rom.Blocks;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -253,18 +254,18 @@ public class PokemonCard extends Card
 	}
 	
 	@Override
-	public void finalizeAndConvertTextToIds(Texts idsToText)
+	public void finalizeDataForAllocating(Texts texts, Blocks blocks)
 	{
-		commonFinalizeAndConvertTextToIds(idsToText);
+		commonFinalizeDataForAllocating(texts);
 		
-		prevEvoName.finalizeAndAddTexts(idsToText);
-		pokemonCategory.finalizeAndAddTexts(idsToText);
-		description.finalizeAndAddTexts(idsToText);
+		prevEvoName.finalizeAndAddTexts(texts);
+		pokemonCategory.finalizeAndAddTexts(texts);
+		description.finalizeAndAddTexts(texts);
 
 		sortMoves();
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
-			moves[moveIndex].finalizeAndAddTexts(idsToText, name.toString());
+			moves[moveIndex].finalizeDataForAllocating(texts, blocks, name.toString());
 		}
 	}
 

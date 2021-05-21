@@ -49,20 +49,20 @@ class Segment extends SegmentReference
 		return true;
 	}
 	
-	public void evaluatePlaceholdersAndLinkData(
-			Texts romTexts, 
-			Map<String, SegmentReference> labelToLocalSegment, 
-			Map<String, SegmentReference> labelToSegment, 
-			Map<String, String> placeholderToArgs
-	)
-	{		
-		// First replace any placeholder lines
+	public void evaluatePlaceholders(Map<String, String> placeholderToArgs)
+	{
 		for (PlaceholderInstruction instruct : placeholderInstructs)
 		{
 			instruct.evaluatePlaceholdersAndCreateInstruction(placeholderToArgs);
 		}
-		
-		// Then go through and link the data
+	}
+	
+	public void linkData(
+			Texts romTexts, 
+			Map<String, SegmentReference> labelToLocalSegment, 
+			Map<String, SegmentReference> labelToSegment
+	)
+	{		
 		for (Instruction item : data)
 		{
 			item.linkData(romTexts, labelToLocalSegment, labelToSegment);

@@ -9,6 +9,7 @@ import constants.RomConstants;
 import constants.CardDataConstants.*;
 import data.romtexts.EffectDescription;
 import data.romtexts.MoveName;
+import rom.Blocks;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -270,10 +271,10 @@ public class Move
 		return index;
 	}
 	
-	public void finalizeAndAddTexts(Texts idToText, String cardName)
+	public void finalizeDataForAllocating(Texts texts, Blocks blocks, String cardName)
 	{
-		name.finalizeAndAddTexts(idToText);
-		description.finalizeAndAddTexts(idToText, cardName);
+		name.finalizeAndAddTexts(texts);
+		description.finalizeAndAddTexts(texts, cardName);
 	}
 
 	public int writeData(byte[] moveBytes, int startIndex) 

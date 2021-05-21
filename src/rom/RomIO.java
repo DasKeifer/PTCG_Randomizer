@@ -8,7 +8,6 @@ import java.nio.file.Files;
 
 import constants.RomConstants;
 import data.Card;
-import datamanager.DataManager;
 import util.ByteUtils;
 import util.RomUtils;
 
@@ -108,15 +107,21 @@ public class RomIO
 		return textMap;
 	}
 	
-	static void finalizeAndConvertTextToIds(Cards<Card> cards, Texts allText)
+	static void finalizeDataForAllocating(Cards<Card> cards, Texts texts, Blocks blocks)
 	{
-		for (Card card : cards.toSortedList())
-		{
-			card.finalizeAndConvertTextToIds(allText);
-		}
+		// Finalize the card data, texts and blocks
+		cards.finalizeDataForAllocating(texts, blocks);
+		
+		// TODO convert cards to blocks?
+		
+		// Convert the text to blocks
+		texts.convertAndAddBlocks(blocks);
+		
+		// Link the blocks
+		blocks.linkBlocks(texts);
 	}
 	
-	static void writeAllCards(byte[] bytes, DataManager spaceManager, Cards<Card> cards)
+	static void writeAllCards(byte[] bytes, Cards<Card> cards)
 	{		
 		// First write the 0 index "null" card
 		int ptrIndex = RomConstants.CARD_POINTERS_LOC - RomConstants.CARD_POINTER_SIZE_IN_BYTES;
@@ -149,57 +154,6 @@ public class RomIO
 		// Until it is determined to be necessary, don't worry about padding remaining space with 0xff
 	}
 	
-	// TODO: pad to bank boundaries?
-	static void writeTextAndIdMap(byte[] rawBytes, DataManager spaceManager, Texts ptrToText) throws IOException
-	{
-		// Get the free space needed for the text pointers
-		spaceManager.allocateSpecificSpace(RomConstants.TEXT_POINTERS_LOC, 
-				ptrToText.count() * RomConstants.TEXT_POINTER_SIZE_IN_BYTES);
-		
-		// First write the 0 index "null" text pointer
-		int ptrIndex = RomConstants.TEXT_POINTERS_LOC;
-		for (int byteIndex = 0; byteIndex < RomConstants.TEXT_POINTER_SIZE_IN_BYTES; byteIndex++)
-		{
-			rawBytes[ptrIndex++] = 0;
-		}
-		
-		// determine where the first text will go based off the number of text we have
-		int textIndex = RomConstants.TEXT_POINTERS_LOC + ptrToText.count() * RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
-
-		// We need to align with the bank boundaries every 0x4000 bytes. If we write past 
-		// it we will get garbly-gook text
-		int nextBank = RomConstants.TEXT_POINTER_OFFSET + RomConstants.BANK_SIZE;
-		
-		// Now for each text, write the pointer then write the text at that address
-		// Note we intentionally do a index based lookup instead of iteration in order to
-		// ensure that the IDs are sequential as they need to be (i.e. there are no gaps)
-		// We start at 1 because we already handled the null pointer at 0
-		for (short textId = 1; textId < ptrToText.count(); textId++)
-		{			
-			// First get the text and determine if we need to shift the index to 
-			// avoid a storage block boundary
-			byte[] textBytes = ptrToText.getAtId(textId).getBytes();
-			if (textIndex + textBytes.length + 2 > nextBank)
-			{
-				textIndex = nextBank;
-				nextBank += RomConstants.BANK_SIZE;
-			}
-
-			// Write the pointer
-			ByteUtils.writeLittleEndian(textIndex - RomConstants.TEXT_POINTER_OFFSET, rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES);
-			ptrIndex += RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
-
-			// Now write the text
-			System.arraycopy(textBytes, 0, rawBytes, textIndex, textBytes.length);
-			textIndex += textBytes.length;
-			
-			// Write trailing null
-			rawBytes[textIndex++] = 0x00;
-		}
-		
-		// Until it is determined to be necessary, don't worry about padding remaining space with 0xff
-	}
-
 	// Note assumes that the first text in the pointer list is the first in the file as well. This is required
 	// since there is no null between the text pointer map and the texts themselves
 	static void clearAllText(byte[] rawBytes)

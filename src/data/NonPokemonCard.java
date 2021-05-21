@@ -2,6 +2,7 @@ package data;
 
 import constants.RomConstants;
 import data.romtexts.EffectDescription;
+import rom.Blocks;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -49,11 +50,11 @@ public class NonPokemonCard extends Card
 	}
 	
 	@Override
-	public void finalizeAndConvertTextToIds(Texts idsToText)
+	public void finalizeDataForAllocating(Texts texts, Blocks blocks)
 	{
-		commonFinalizeAndConvertTextToIds(idsToText);
+		commonFinalizeDataForAllocating(texts);
 		
-		description.finalizeAndAddTexts(idsToText, name.toString());
+		description.finalizeAndAddTexts(texts, name.toString());
 	}
 	
 	@Override

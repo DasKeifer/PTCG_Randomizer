@@ -4,15 +4,16 @@ import java.util.Map;
 
 import compiler.DataBlock;
 import compiler.SegmentReference;
+import rom.Texts;
 
 public class ConstrainedBlock extends MoveableBlock
 {	
 	private DataBlock shrunkLocalBlock;
 	private FloatingBlock shrunkRemoteBlock;
 	
-	public ConstrainedBlock(byte priority, DataBlock fullInBank, DataBlock shrunkLocalBlock, DataBlock shrunkRemoteBlock) 
+	public ConstrainedBlock(byte priority, DataBlock fullInBank, DataBlock shrunkLocalBlock, DataBlock shrunkRemoteBlock, BankPreference... prefs)
 	{
-		super(priority, fullInBank);
+		super(priority, fullInBank, prefs);
 		this.shrunkLocalBlock = shrunkLocalBlock;
 		this.shrunkRemoteBlock = new FloatingBlock(priority, shrunkRemoteBlock);
 	}
@@ -47,13 +48,28 @@ public class ConstrainedBlock extends MoveableBlock
 	}
 	
 	@Override
-	public int writeBytes(byte[] bytes)
+	public void linkData(Texts romTexts, Map<String, SegmentReference> segRefsById)
 	{
 		if (isShrunkOrMoved())
 		{
-			return shrunkLocalBlock.writeBytes(bytes);
+			shrunkLocalBlock.linkData(romTexts, segRefsById);
 		}
-		
-		return super.writeBytes(bytes);
+		else
+		{		
+			super.linkData(romTexts, segRefsById);
+		}
+	}
+
+	@Override
+	public void writeData(byte[] bytes)
+	{
+		if (isShrunkOrMoved())
+		{
+			shrunkLocalBlock.writeBytes(bytes);
+		}
+		else
+		{
+			super.writeData(bytes);
+		}
 	}
 }

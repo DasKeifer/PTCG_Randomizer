@@ -3,11 +3,12 @@ package datamanager;
 
 import compiler.DataBlock;
 
+// TODO what is this useful for?
 public class UnshrinkableBlock extends MoveableBlock
 {
-	public UnshrinkableBlock(byte priority, DataBlock toPlaceInBank) 
+	public UnshrinkableBlock(byte priority, DataBlock toPlaceInBank, BankPreference... prefs)
 	{
-		super(priority, toPlaceInBank);
+		super(priority, toPlaceInBank, prefs);
 	}
 
 	@Override

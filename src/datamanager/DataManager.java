@@ -2,12 +2,12 @@ package datamanager;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 
-import compiler.SegmentReference;
 import constants.RomConstants;
+import rom.Blocks;
+import util.RomUtils;
 
 public class DataManager
 {
@@ -17,108 +17,54 @@ public class DataManager
 	// Priority, object
 	private SortedMap<Byte, List<MoveableBlock>> allocsToProcess;
 	
-	// BlockId, Block
-	// This can be used for determining references of one block in another and ensures
-	// each ID is unique
-	private Map<String, BlockAllocData> blocksById;
-	
-	// SegmentId, Segment Reference
-	private Map<String, SegmentReference> segmentRefsById;
-	
-	public void writeData(
+	public void assignBlockLocations(
 			byte[] bytesToPlaceIn,
-			List<FixedBlock> replacementBlocks, 
-			List<MoveableBlock> blocksToPlace)
+			Blocks blocks)
 	{
-		// Assign Ids (I.e. processes idsToText)
-		// TODO: should this be done here or before this?
-		// I'm thinking before this - i.e. finalize (fill in placeholders) then write
-		// But maybe as a first step - gather all the blocks and ids, link them all,
-		// then allocate and write. Perhaps the linking is done external to here though?
-		// Probably should be
+		// Determine what space we have free
+		determineAllFreeSpace(bytesToPlaceIn);
 		
-
-
-		// TODO: copy as many times as needed, evaluate placeholders in labels/ids, create 
-		// list of all strings to segments, replace all instruction placeholders and link, 
-		// then allocate/pack then write
-		
-		determineDataLocations(bytesToPlaceIn, replacementBlocks, blocksToPlace);
-		
-		// At this point all Ids and addresses should be known
-
-		// Write each replacement block
-		// This needs to be done after the movable blocks
-		for (FixedBlock block : replacementBlocks)
-		{
-			block.writeBytes(bytesToPlaceIn);
-		}
-		
-		for (MoveableBlock block : blocksToPlace)
-		{
-			block.writeBytes(bytesToPlaceIn);
-		}
-	}
+		// Take into account the fixed blocks
+		reserveFixedBlocksSpaces(blocks);
 	
-	private void addBlockById(BlockAllocData block)
-	{
-		// See if it already had an entry that is not this instance of the block
-		BlockAllocData existing = blocksById.put(block.getId(), block);
-		if (existing != null && existing != block)
-		{
-			throw new IllegalArgumentException("Duplicate block ID detected! There must be only " +
-					"one allocation block per data block");
-		}
-
-		// Add the references for its segments
-		for (Entry<String, SegmentReference> idSegRef : block.getSegmentReferencesById().entrySet())
-		{
-			if (segmentRefsById.put(idSegRef.getKey(), idSegRef.getValue()) != null)
-			{
-				throw new IllegalArgumentException("Duplicate segment ID detected: " + idSegRef.getKey());
-			}
-		}
+		// Allocate space for the constrained blocks then the unconstrained ones
+		makeAllocations(blocks);
 	}
 	
 	private void addBlockToAllocate(MoveableBlock block)
-	{
-		addBlockById(block);
-		
+	{		
 		// Add it to the map of ones to allocate
 		DataManagerUtils.addToPriorityMap(allocsToProcess, block);
 	}
 	
-	private void determineDataLocations(
-			byte[] bytesToPlaceIn,
-			List<FixedBlock> replacementBlocks, 
-			List<MoveableBlock> blocksToPlace
-	)
+	private void reserveFixedBlocksSpaces(Blocks blocks)
 	{
-		freeSpace.clear();
-		allocsToProcess.clear();	
-		blocksById.clear();
-		segmentRefsById.clear();
-
-		// First add all the blocks to  we don't have ID conflicts
-		for (FixedBlock block : replacementBlocks)
+		for (FixedBlock block : blocks.getAllFixedBlocks())
 		{
-			addBlockById(block);
+			removeFixedSpace(block);
 		}
+	}
+	
+	private void removeFixedSpace(FixedBlock block)
+	{
+		int address = block.getFixedAddress();
+		AllocatableBank bank = freeSpace.get(RomUtils.determineBank(address));
 		
-		for (MoveableBlock block : blocksToPlace)
+		// If its null, there is no free space so we don't have to worry about taking it away
+		if (bank != null)
+		{
+			bank.removeAddressSpace(new AddressRange(address, address + block.size()));
+		}
+	}
+	
+	private void makeAllocations(Blocks blocks)
+	{		
+		allocsToProcess.clear();
+		for (MoveableBlock block : blocks.getAllBlocksToAllocate())
 		{
 			addBlockToAllocate(block);
 		}
 		
-		// Determine what space we have free
-		determineAllFreeSpace(bytesToPlaceIn);
-	
-		// Allocate space for the constrained blocks then the unconstrained ones
-		makeAllocations();
-	}
-	
-	private void makeAllocations()
-	{		
 		// Go through each block in priority order that still needs to be allocated and try to place it
 		while (!allocsToProcess.isEmpty())
 		{

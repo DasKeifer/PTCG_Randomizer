@@ -13,16 +13,31 @@ public abstract class MoveableBlock extends BlockAllocData
 	private byte priority;
 	protected TreeMap<Byte, BankRange> allowableBankPreferences;
 	
-	protected MoveableBlock(byte priority, DataBlock toPlaceInBank)
+	protected MoveableBlock(byte priority, DataBlock toPlaceInBank, BankPreference... prefs)
 	{
 		super(toPlaceInBank);
 		
 		shrunkMoved = false;
 		this.priority = priority;
 		allowableBankPreferences = new TreeMap<>();
+		
+		for (BankPreference pref : prefs)
+		{
+			addAllowableBankRange(pref);
+		}
+	}
+
+	public void addAllowableBankRange(BankPreference bankPref)
+	{
+		addAllowableBankRange(bankPref.priority, bankPref);
 	}
 	
-	protected void addAllowableBankRange(byte priority, byte startBank, byte stopBank)
+	public void addAllowableBankRange(byte priority, BankRange bankRange)
+	{
+		allowableBankPreferences.put(priority, bankRange);
+	}
+	
+	public void addAllowableBankRange(byte priority, byte startBank, byte stopBank)
 	{
 		if (startBank > stopBank)
 		{
@@ -35,11 +50,6 @@ public abstract class MoveableBlock extends BlockAllocData
 	public void setAssignedAddress(int address) 
 	{
 		dataBlock.setAssignedAddress(address);
-	}
-
-	public int getAddress() 
-	{
-		return dataBlock.getAssignedAddress();
 	}
 	
 	void setShrunkOrMoved(boolean isShrunkOrMoved)
@@ -87,10 +97,5 @@ public abstract class MoveableBlock extends BlockAllocData
 	public byte getPriority()
 	{
 		return priority;
-	}
-	
-	public int writeBytes(byte[] bytes)
-	{
-		return dataBlock.writeBytes(bytes);
 	}
 }

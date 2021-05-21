@@ -124,4 +124,13 @@ public class Cards<T extends Card>
 	{
 		return cardSet.size();
 	}
+	
+	public void finalizeDataForAllocating(Texts texts, Blocks blocks)
+	{
+		for (Card card : toList())
+		{
+			card.finalizeDataForAllocating(texts, blocks);
+		}
+		
+	}
 }

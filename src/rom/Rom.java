@@ -14,6 +14,7 @@ public class Rom
 	// Make public - we will be modifying these
 	public Cards<Card> allCards;
 	public Texts idsToText;
+	public Blocks blocks;
 	
 	// TODO: extract to separate class
 	// TODO: Maybe make a smart class that will hold onto the data and only assign it as saving based on total space avail and what not
@@ -44,6 +45,7 @@ public class Rom
 	{
 		allCards = new Cards<>();
 		idsToText = new Texts();
+		blocks = new Blocks();
 		
 		readRom(romFile);
 	}
@@ -59,26 +61,31 @@ public class Rom
 	
 	public void writeRom(File romFile) throws IOException
 	{
-		// Clear the old text to make space for the new text and 
-		// create the manager to control distributing free space
+		// TODO merge with ROM?
+		
+		// Clear the old text from the bytes - the manager will
+		// take care of allocating the space as needed
+		// TODO: clear unused move commands/effects as well?
 		RomIO.clearAllText(rawBytes);
 		
-		// TODO: clear unused move commands/effects as well
+		// TODO: Need to handle tweak blocks somehow
 		
-		DataManager spaceManager = new DataManager(rawBytes);
+		// Finalize all the data to prepare for writing
+		// TODO: Change to generateBlocks or something like that?
+		RomIO.finalizeDataForAllocating(allCards, idsToText, blocks);
 		
-		// Finalize and gather card text
-		// TODO: include the data segments to write too?
-		RomIO.finalizeAndConvertTextToIds(allCards, idsToText);
+		// Now assign locations for the data
+		DataManager manager = new DataManager();
+		manager.assignBlockLocations(rawBytes, blocks);
+			
+			// Now save the cards - TODO: move to blocks eventually
+			RomIO.writeAllCards(rawBytes, allCards);
+			
 
-		// Save the new data starting with the text so we can ensure it gets
-		// the space in memory it needs
-		RomIO.writeTextAndIdMap(rawBytes, spaceManager, idsToText);
+		// Now actually write to the bytes
+		blocks.writeData(rawBytes);
 		
-		// Now save the cards
-		RomIO.writeAllCards(rawBytes, spaceManager, allCards);
-		
-		// Write it to the file
+		// Write the bytes to the file
 		RomIO.writeRaw(rawBytes, romFile);
 	}
 	

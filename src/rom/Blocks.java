@@ -1,0 +1,81 @@
+package rom;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import compiler.SegmentReference;
+import datamanager.BlockAllocData;
+import datamanager.FixedBlock;
+import datamanager.MoveableBlock;
+
+public class Blocks 
+{
+	// BlockId, Block
+	// This can be used for determining references of one block in another and ensures
+	// each ID is unique
+	private Map<String, BlockAllocData> blocksById;
+	List<FixedBlock> replacementBlocks;
+	List<MoveableBlock> blocksToPlace;
+	
+	// SegmentId, Segment Reference - mainly for linking
+	private Map<String, SegmentReference> segmentRefsById;
+	
+	public void addFixedBlock(FixedBlock block)
+	{
+		addBlockById(block);
+		replacementBlocks.add(block);
+	}
+	
+	public void addMoveableBlock(MoveableBlock block)
+	{
+		addBlockById(block);
+		blocksToPlace.add(block);
+	}
+	
+	private void addBlockById(BlockAllocData block)
+	{
+		// See if it already had an entry that is not this instance of the block
+		BlockAllocData existing = blocksById.put(block.getId(), block);
+		if (existing != null && existing != block)
+		{
+			throw new IllegalArgumentException("Duplicate block ID detected! There must be only " +
+					"one allocation block per data block");
+		}
+
+		// Add the references for its segments
+		for (Entry<String, SegmentReference> idSegRef : block.getSegmentReferencesById().entrySet())
+		{
+			if (segmentRefsById.put(idSegRef.getKey(), idSegRef.getValue()) != null)
+			{
+				throw new IllegalArgumentException("Duplicate segment ID detected: " + idSegRef.getKey());
+			}
+		}
+	}
+	
+	public void linkBlocks(Texts romTexts)
+	{
+		for (BlockAllocData block : blocksById.values())
+		{
+			block.linkData(romTexts, segmentRefsById);
+		}
+	}
+	
+	public List<FixedBlock> getAllFixedBlocks()
+	{
+		return replacementBlocks;
+	}
+	
+	public List<MoveableBlock> getAllBlocksToAllocate()
+	{
+		return blocksToPlace;
+	}
+	
+	public void writeData(byte[] bytes)
+	{
+		for (BlockAllocData block : blocksById.values())
+		{
+			block.writeData(bytes);
+		}
+	}
+}

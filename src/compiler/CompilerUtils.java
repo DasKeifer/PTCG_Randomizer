@@ -44,6 +44,11 @@ public class CompilerUtils
 		return null;
 	}
 	
+	public static String formSubsegmentName(String subsegment, String rootSegmentName)
+	{
+		return rootSegmentName + "." + subsegment;
+	}
+	
 	private static String getSubsegmentName(String segmentName, String line)
 	{
 		return segmentName + line.trim();

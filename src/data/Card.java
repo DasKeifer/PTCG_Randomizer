@@ -6,6 +6,7 @@ import constants.CardDataConstants.CardRarity;
 import constants.CardDataConstants.CardSet;
 import constants.CardDataConstants.CardType;
 import data.romtexts.PokeName;
+import rom.Blocks;
 import rom.Cards;
 import rom.Texts;
 import util.ByteUtils;
@@ -78,7 +79,7 @@ public abstract class Card
 	}
 	
 	public abstract int readAndConvertIds(byte[] cardBytes, int startIndex, Texts idsToText);
-	public abstract void finalizeAndConvertTextToIds(Texts idToText);
+	public abstract void finalizeDataForAllocating(Texts texts, Blocks blocks);
 	public abstract int writeData(byte[] cardBytes, int startIndex);
 
 	public String toString()
@@ -111,9 +112,9 @@ public abstract class Card
 		return index;
 	}
 	
-	protected void commonFinalizeAndConvertTextToIds(Texts idsToText)
+	protected void commonFinalizeDataForAllocating(Texts texts)
 	{
-		name.finalizeAndAddTexts(idsToText);
+		name.finalizeAndAddTexts(texts);
 	}
 	
 	protected int commonWriteData(byte[] cardBytes, int startIndex) 

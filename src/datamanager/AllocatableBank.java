@@ -51,6 +51,24 @@ public class AllocatableBank
 		}
 		spaces.add(space);
 	}
+
+	public void removeAddressSpace(AddressRange range) 
+	{
+		for (int spaceIdx = 0; spaceIdx < spaces.size(); spaceIdx++)
+		{
+			AllocatableSpace space = spaces.get(spaceIdx);
+			AddressRange otherSplit = space.removeOverlap(range);
+			
+			if (space.isEmpty())
+			{
+				spaces.remove(spaceIdx--);
+			}
+			else if (otherSplit != null)
+			{
+				spaces.add(spaceIdx++, new AllocatableSpace(otherSplit));
+			}
+		}
+	}
 	
 	public int getLargestSpace()
 	{

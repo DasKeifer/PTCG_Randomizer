@@ -6,19 +6,9 @@ import compiler.DataBlock;
 
 public class FloatingBlock extends MoveableBlock
 {
-	protected FloatingBlock(byte priority, DataBlock toPlaceInBank)
+	public FloatingBlock(byte priority, DataBlock toPlaceInBank, BankPreference... prefs)
 	{
-		super(priority, toPlaceInBank);
-	}
-	
-	protected void addAllowableBank(byte priority, byte bank)
-	{
-		addAllowableBank(priority, bank);
-	}
-	
-	protected void addAllowableBankRange(byte priority, byte bankStart, byte bankStopExclusive)
-	{
-		addAllowableBankRange(priority, bankStart, bankStopExclusive);
+		super(priority, toPlaceInBank, prefs);
 	}
 
 	@Override

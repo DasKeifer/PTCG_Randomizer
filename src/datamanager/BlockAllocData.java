@@ -4,6 +4,7 @@ import java.util.Map;
 
 import compiler.DataBlock;
 import compiler.SegmentReference;
+import rom.Texts;
 
 public abstract class BlockAllocData
 {
@@ -22,5 +23,15 @@ public abstract class BlockAllocData
 	public Map<String, SegmentReference> getSegmentReferencesById()
 	{
 		return dataBlock.getSegmentReferencesById();
+	}
+	
+	public void linkData(Texts romTexts, Map<String, SegmentReference> segRefsById)
+	{
+		dataBlock.linkData(romTexts, segRefsById);
+	}
+
+	public void writeData(byte[] bytes)
+	{
+		dataBlock.writeBytes(bytes);
 	}
 }

@@ -3,7 +3,7 @@ package compiler.fixed;
 import java.util.Map;
 
 import compiler.Instruction;
-import compiler.Segment;
+import compiler.SegmentReference;
 import rom.Texts;
 
 public abstract class FixedInstruction extends Instruction
@@ -23,8 +23,8 @@ public abstract class FixedInstruction extends Instruction
 	@Override
 	public void linkData(
 			Texts romTexts,
-			Map<String, Segment> labelToLocalSegment, 
-			Map<String, Segment> labelToSegment
+			Map<String, SegmentReference> labelToLocalSegment, 
+			Map<String, SegmentReference> labelToSegment
 	) 
 	{
 		// Nothing to do since these don't have placeholders

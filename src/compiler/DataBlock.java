@@ -16,6 +16,35 @@ public class DataBlock
 	private int assignedAddress;
 	Map<String, Segment> segments;
 	private String id;
+
+	String rootSegmentName;
+	Segment currSegment;
+	
+	public DataBlock(String startingSegmentName, Instruction... instructions)
+	{
+		assignedAddress = CompilerUtils.UNASSIGNED_ADDRESS;
+		segments = new HashMap<>();
+		id = startingSegmentName.trim();
+		
+		newSegment(startingSegmentName);
+		
+		for (Instruction instruct : instructions)
+		{
+			if (instruct instanceof PlaceholderInstruction)
+			{
+				appendPlaceholderInstruction((PlaceholderInstruction) instruct);
+			}
+			else
+			{
+				appendInstruction(instruct);
+			}
+		}
+	}
+	
+	public DataBlock(String startingSegmentName, byte[] data)
+	{
+		
+	}
 	
 	// Generic, highest level construct for holding just raw data or a series of functions
 	// Represents one block that we want to place contiguously in the ROM
@@ -45,10 +74,7 @@ public class DataBlock
 	private void parseSource(String startingSegmentName, List<String> sourceLines)
 	{
 		segments.clear();
-		
-		String rootSegmentName = startingSegmentName;
-		Segment currSegment = new Segment();
-		segments.put(rootSegmentName, currSegment);
+		newSegment(startingSegmentName);
 		
 		for (String line : sourceLines)
 		{
@@ -83,14 +109,47 @@ public class DataBlock
 				// If its a placeholder, we defer filling it out
 				if (CompilerUtils.isPlaceholderLine(line))
 				{
-					currSegment.appendPlaceholderInstruction(PlaceholderInstruction.create(line, rootSegmentName));
+					appendPlaceholderInstruction(PlaceholderInstruction.create(line, rootSegmentName));
 				}
 				else
 				{
-					currSegment.appendInstruction(CompilerUtils.parseInstruction(line, rootSegmentName));
+					appendInstruction(CompilerUtils.parseInstruction(line, rootSegmentName));
 				}
 			}
 		}
+	}
+	
+	public void newSubSegment(String name)
+	{
+		currSegment = new Segment();
+		
+		// Ensure there was no conflict within the block
+		if (segments.put(CompilerUtils.formSubsegmentName(name, rootSegmentName), currSegment) != null)
+		{
+			throw new IllegalArgumentException("Duplicate segment label was found: " + CompilerUtils.formSubsegmentName(name, rootSegmentName));
+		}
+	}
+	
+	public void newSegment(String name)
+	{
+		rootSegmentName = name;
+		currSegment = new Segment();
+		
+		// Ensure there was no conflict within the block
+		if (segments.put(name, currSegment) != null)
+		{
+			throw new IllegalArgumentException("Duplicate segment label was found: " + rootSegmentName);
+		}
+	}
+	
+	public void appendPlaceholderInstruction(PlaceholderInstruction instruct)
+	{
+		currSegment.appendPlaceholderInstruction(instruct);
+	}
+	
+	public void appendInstruction(Instruction instruct)
+	{
+		currSegment.appendInstruction(instruct);
 	}
 	
 	public void setAssignedAddress(int address)
@@ -164,11 +223,11 @@ public class DataBlock
 		segments = refreshedSegments;
 	}
 	
-	public void evaluateInstructionPlaceholdersAndLinkData(Texts romTexts, Map<String, SegmentReference> segRefsById, Map<String, String> placeholderToArgs)
+	public void linkData(Texts romTexts, Map<String, SegmentReference> segRefsById)
 	{
 		for (Segment seg : segments.values())
 		{
-			seg.evaluatePlaceholdersAndLinkData(romTexts, getSegmentReferencesById(), segRefsById, placeholderToArgs);
+			seg.linkData(romTexts, getSegmentReferencesById(), segRefsById);
 		}
 	}
 		
