@@ -3,6 +3,7 @@ package datamanager;
 import java.util.SortedMap;
 
 import compiler.DataBlock;
+import constants.RomConstants;
 
 public class FloatingBlock extends MoveableBlock
 {
@@ -15,7 +16,7 @@ public class FloatingBlock extends MoveableBlock
 	public SortedMap<Byte, BankRange> getPreferencedAllowableBanks()
 	{
 		SortedMap<Byte, BankRange> toReturn = super.getPreferencedAllowableBanks();
-		toReturn.put(Byte.MAX_VALUE, new BankRange((byte) 0, Byte.MAX_VALUE));
+		toReturn.put(Byte.MAX_VALUE, new BankRange((byte) 0, (byte) (RomConstants.NUMBER_OF_BANKS - 1)));
 		return toReturn;
 	}
 

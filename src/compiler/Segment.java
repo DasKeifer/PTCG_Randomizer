@@ -72,6 +72,10 @@ class Segment extends SegmentReference
 	public int writeBytes(byte[] bytes)
 	{
 		int writeAddress = assignedAddress;
+		if (assignedAddress < 0)
+		{
+			throw new IllegalArgumentException("Attempted to write a segment that does not have an assigned address!");
+		}
 		for (Instruction item : data)
 		{
 			writeAddress += item.writeBytes(bytes, writeAddress);

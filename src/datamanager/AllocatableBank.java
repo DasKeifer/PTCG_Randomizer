@@ -1,6 +1,7 @@
 package datamanager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -14,16 +15,16 @@ public class AllocatableBank
 	List<AllocatableSpace> spaces;
 	TreeMap<Byte, List<MoveableBlock>> allocationsByPriority;
 	
-	int largestSpace;
-	int largestFreeSpace;
+//	int largestSpace;
+//	int largestFreeSpace;
 	
 	public AllocatableBank(byte bank)
 	{
 		this.bank = bank;
 		spaces = new LinkedList<>();
 		allocationsByPriority = new TreeMap<>();
-		largestSpace = 0;
-		largestFreeSpace = 0;
+//		largestSpace = 0;
+//		largestFreeSpace = 0;
 	}
 	
 	public void addSpace(int startAddress, int stopAddress)
@@ -38,17 +39,23 @@ public class AllocatableBank
 	
 	private void addSpace(AllocatableSpace space)
 	{
-		if (!RomUtils.isInBank(space.start, bank) || RomUtils.isInBank(space.stopExclusive, bank))
+		// -1 since the stop is exclusive so it checks the last included byte
+		if (!RomUtils.isInBank(space.start, bank) || !RomUtils.isInBank(space.stopExclusive - 1, bank))
 		{
+			// TODO: more cases where I need to use Arrays.toString
 			throw new IllegalArgumentException("Passed space is not entirely in this bank (" + bank + ")!" +
-					" bank addresses: " + RomUtils.getBankBounds(bank).toString() + " and space addresses: " +
+					" bank addresses: " + Arrays.toString(RomUtils.getBankBounds(bank)) + " and space addresses: " +
 					space.start + ", " + space.stopExclusive);
 		}
 		
-		if (space.size() > largestSpace)
-		{
-			largestSpace = space.size();
-		}
+//		if (space.size() > largestSpace)
+//		{
+//			largestSpace = space.size();
+//		}
+//		if (space.spaceLeft() > largestFreeSpace)
+//		{
+//			largestFreeSpace = space.spaceLeft();
+//		}
 		spaces.add(space);
 	}
 
@@ -72,11 +79,27 @@ public class AllocatableBank
 	
 	public int getLargestSpace()
 	{
+		int largestSpace = 0;
+		for (AllocatableSpace space : spaces)
+		{
+			if (space.size() > largestSpace)
+			{
+				largestSpace = space.size();
+			}
+		}
 		return largestSpace;
 	}
 	
 	public int getLargestFreeSpace()
 	{
+		int largestFreeSpace = 0;
+		for (AllocatableSpace space : spaces)
+		{
+			if (space.spaceLeft() > largestFreeSpace)
+			{
+				largestFreeSpace = space.spaceLeft();
+			}
+		}
 		return largestFreeSpace;
 	}
 	
@@ -94,10 +117,14 @@ public class AllocatableBank
 	// Only (potentially) modifies blocks to alloc if true is returned
 	private boolean attemptToAdd(MoveableBlock alloc, boolean attemptToShrinkOthers, List<FloatingBlock> blocksToAlloc)
 	{
-		if (largestFreeSpace < alloc.getCurrentWorstCaseSizeOnBank(bank))
+		if (getLargestFreeSpace() < alloc.getCurrentWorstCaseSizeOnBank(bank))
 		{
 			List<MoveableBlock> shrunkBlocks = new LinkedList<>();
-			if (attemptToShrinkOthers && !shrinkToMakeSpace(alloc.getCurrentWorstCaseSizeOnBank(bank), shrunkBlocks, blocksToAlloc))
+			if (!attemptToShrinkOthers)
+			{
+				return false;
+			}
+			else if (!shrinkToMakeSpace(alloc.getCurrentWorstCaseSizeOnBank(bank), shrunkBlocks, blocksToAlloc))
 			{
 				unshrinkAllTempShrunkAllocs(shrunkBlocks);				
 				return false;
@@ -115,8 +142,7 @@ public class AllocatableBank
 	// Maybe add a priority as an optimization?
 	private boolean reassignAndRefresh()
 	{
-		// Clear the spaces and largest space data
-		largestFreeSpace = 0;
+		// Clear the spaces
 		for (AllocatableSpace space : spaces)
 		{
 			space.clear(true);
@@ -144,17 +170,6 @@ public class AllocatableBank
 				{
 					return false;
 				}
-			}
-		}
-
-		// Now calculate the free space we have
-		int openSpace;
-		for (AllocatableSpace space : spaces)
-		{
-			openSpace = space.spaceLeft();
-			if (openSpace > largestFreeSpace)
-			{
-				largestFreeSpace = openSpace;
 			}
 		}
 		
@@ -243,7 +258,7 @@ public class AllocatableBank
 					{
 						throw new RuntimeException("Failed to assign addresses! This should never happen here (shrinkToMakeSpace)!");
 					}
-					if (largestFreeSpace >= space)
+					if (getLargestFreeSpace() >= space)
 					{			
 						// Add the list prior to returning now that we know
 						// we are successful

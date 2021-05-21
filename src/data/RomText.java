@@ -21,8 +21,10 @@ public class RomText
 	public RomText(int maxCharsPerLine, int preferredLinesPerBlock, int maxLinesPerBlock, int maxBlocks)
 	{
 		this.maxCharsPerLine = maxCharsPerLine;
+		this.preferredLinesPerBlock = preferredLinesPerBlock;
 		this.maxLinesPerBlock = maxLinesPerBlock;
 		this.maxBlocks = maxBlocks;
+		
 		textBlocks = new ArrayList<>();
 		textBlocks.add("");
 		textBlockIds = new ArrayList<>();
@@ -30,6 +32,10 @@ public class RomText
 	
 	public RomText(RomText toCopy)
 	{
+		maxCharsPerLine = toCopy.maxCharsPerLine;
+		preferredLinesPerBlock = toCopy.preferredLinesPerBlock;
+		maxLinesPerBlock = toCopy.maxLinesPerBlock;
+		maxBlocks = toCopy.maxBlocks;
 		textBlocks = new ArrayList<>(toCopy.textBlocks);
 		textBlockIds = new ArrayList<>(toCopy.textBlockIds);
 	}
@@ -145,8 +151,11 @@ public class RomText
 		
 		if (formatted.isEmpty())
 		{
-			System.out.println("Could not nicely fit effect text over line breaks - attempting to " +
+			System.out.println("Could not nicely fit rom text over line breaks - attempting to " +
 					"split words over lines to get it to fit for \"" + text + "\"");
+			
+			// TODO: INFINI LOOP here?
+			
 			
 			// If all else fails, just pack as tight as possible
 			formatted = StringUtils.packFormatText(text,

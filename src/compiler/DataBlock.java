@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import compiler.dynamic.PlaceholderInstruction;
 
 import rom.Texts;
+import util.RomUtils;
 
 public class DataBlock 
 {	
@@ -39,11 +40,6 @@ public class DataBlock
 				appendInstruction(instruct);
 			}
 		}
-	}
-	
-	public DataBlock(String startingSegmentName, byte[] data)
-	{
-		
 	}
 	
 	// Generic, highest level construct for holding just raw data or a series of functions
@@ -155,6 +151,12 @@ public class DataBlock
 	public void setAssignedAddress(int address)
 	{
 		this.assignedAddress = address;
+		assignSegmentAddresses();
+	}
+	
+	private void assignSegmentAddresses()
+	{
+		getWorstCaseSizeOnBank(RomUtils.determineBank(assignedAddress));
 	}
 	
 	public int getAssignedAddress()

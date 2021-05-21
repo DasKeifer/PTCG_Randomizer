@@ -90,7 +90,7 @@ public class Texts
 		// cause issues
 		String nullTextLabel = "";
 		byte[] textTerminator = new byte[] {0};
-		int usedCount = 0;
+		int usedCount = 1; // Because we wrote the null pointer already
 		short textId = 1;
 		for (; usedCount < count(); textId++)
 		{	

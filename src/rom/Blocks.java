@@ -1,5 +1,7 @@
 package rom;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,6 +22,14 @@ public class Blocks
 	
 	// SegmentId, Segment Reference - mainly for linking
 	private Map<String, SegmentReference> segmentRefsById;
+	
+	public Blocks()
+	{
+		blocksById = new HashMap<>();
+		replacementBlocks = new LinkedList<>();
+		blocksToPlace = new LinkedList<>();
+		segmentRefsById = new HashMap<>();
+	}
 	
 	public void addFixedBlock(FixedBlock block)
 	{

@@ -94,5 +94,8 @@ public class Rom
 		rawBytes = toCopy.rawBytes;
 		allCards = toCopy.allCards.copy(Card.class);
 		idsToText = new Texts(toCopy.idsToText);
+		
+		// Don't copy - too complicated for now at least and wouldn't be used anyways
+		blocks = new Blocks();
 	}
 }

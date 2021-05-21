@@ -48,6 +48,7 @@ public class RomConstants
 	public static final int HEADER_LOCATION = 0x134;
 	
 	public static final int BANK_SIZE = 0x4000;
+	public static final byte NUMBER_OF_BANKS = 64;
 
 	// TODO: It would potentially be more stable to read in from a location in the engine than
 	// hardcoded locations in case we ever want to support adding more cards or hacks that add

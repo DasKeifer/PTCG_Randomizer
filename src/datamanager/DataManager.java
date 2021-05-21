@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
+import java.util.TreeMap;
 
 import constants.RomConstants;
 import rom.Blocks;
@@ -11,11 +12,19 @@ import util.RomUtils;
 
 public class DataManager
 {
+	// TODO: make static
+	
 	// Bank, object
 	private SortedMap<Byte, AllocatableBank> freeSpace;
 	
 	// Priority, object
 	private SortedMap<Byte, List<MoveableBlock>> allocsToProcess;
+	
+	public DataManager()
+	{
+		freeSpace = new TreeMap<>();
+		allocsToProcess = new TreeMap<>();
+	}
 	
 	public void assignBlockLocations(
 			byte[] bytesToPlaceIn,
@@ -23,6 +32,11 @@ public class DataManager
 	{
 		// Determine what space we have free
 		determineAllFreeSpace(bytesToPlaceIn);
+		
+		for (Entry<Byte, AllocatableBank> entry : freeSpace.entrySet())
+		{
+			System.out.println("\t" + entry.getKey() + ": " + entry.getValue());
+		}
 		
 		// Take into account the fixed blocks
 		reserveFixedBlocksSpaces(blocks);
@@ -49,12 +63,7 @@ public class DataManager
 	{
 		int address = block.getFixedAddress();
 		AllocatableBank bank = freeSpace.get(RomUtils.determineBank(address));
-		
-		// If its null, there is no free space so we don't have to worry about taking it away
-		if (bank != null)
-		{
-			bank.removeAddressSpace(new AddressRange(address, address + block.size()));
-		}
+		bank.removeAddressSpace(new AddressRange(address, address + block.size()));
 	}
 	
 	private void makeAllocations(Blocks blocks)
