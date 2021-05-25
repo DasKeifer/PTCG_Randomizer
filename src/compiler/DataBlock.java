@@ -203,6 +203,7 @@ public class DataBlock
 			{
 				segItr = segments.values().iterator();
 				worstCaseSize = 0;
+				continue;
 			}
 			
 			worstCaseSize += currSeg.getWorstCaseSizeOnBank(bank);

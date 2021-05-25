@@ -117,6 +117,9 @@ public class Randomizer
 		List<Card> venu = randomizedData.allCards.getCardsWithName("Venusaur").toList();
 		venu.get(1).name.setText("Test-a-saur"); // Quick check to see if we ran and saved successfully
 		
+		List<Card> colorless = randomizedData.allCards.getCardsWithName("Double Colorless Energy").toList();
+		colorless.get(0).name.setText("Double Colorless Energy1234"); // Quick check to see if we ran and saved successfully
+		
 		// Randomize Evolutions (either within current types or completely random)
 		// If randomizing evos and types but keeping lines consistent, completely 
 		// randomize here then sort it out in the types

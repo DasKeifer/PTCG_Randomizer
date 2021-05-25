@@ -27,7 +27,8 @@ public class FixedBlock extends BlockAllocData
 		return dataBlock.getAssignedAddress();
 	}
 	
-	public int writeBytes(byte[] bytes)
+	@Override
+	public void writeData(byte[] bytes)
 	{
 		int lengthWritten = dataBlock.writeBytes(bytes);
 		
@@ -43,8 +44,6 @@ public class FixedBlock extends BlockAllocData
 				ByteUtils.setBytes(bytes, dataBlock.getAssignedAddress() + lengthWritten, replaceLength - lengthWritten, (byte) 0);
 			}
 		}
-		
-		return lengthWritten;
 	}
 
 	public int size() 

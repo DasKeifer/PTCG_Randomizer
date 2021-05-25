@@ -143,7 +143,9 @@ public class CompilerUtils
 		switch (formatAndVal[0])
 		{
 			case "pokename":
-				return new PokeName(formatAndVal[1]);
+				return new CardName(true, formatAndVal[1]); // true == pokename
+			case "cardname":
+				return new CardName(false, formatAndVal[1]); // false == not poke name
 			case "pokedesc":
 				return new PokeDescription(formatAndVal[1]);
 			case "textbox":

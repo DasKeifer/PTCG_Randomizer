@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import constants.CardDataConstants.*;
+import data.romtexts.CardName;
 import data.romtexts.PokeCategory;
-import data.romtexts.PokeName;
 import data.romtexts.PokeDescription;
 import rom.Blocks;
 import rom.Texts;
@@ -19,7 +19,7 @@ public class PokemonCard extends Card
 	
 	byte hp; // TODO: non multiples of 10?
 	EvolutionStage stage;
-	PokeName prevEvoName;
+	CardName prevEvoName;
 	
 	private Move[] moves;
 	
@@ -39,7 +39,7 @@ public class PokemonCard extends Card
 	{
 		super();
 		
-		prevEvoName = new PokeName();
+		prevEvoName = new CardName(true); // Pokename
 		moves = new Move[MAX_NUM_MOVES];
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
@@ -55,7 +55,7 @@ public class PokemonCard extends Card
 		
 		hp = toCopy.hp;
 		stage = toCopy.stage;
-		prevEvoName = new PokeName(toCopy.prevEvoName);
+		prevEvoName = new CardName(toCopy.prevEvoName);
 		moves = new Move[MAX_NUM_MOVES];
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
@@ -72,6 +72,12 @@ public class PokemonCard extends Card
 		weight = toCopy.weight;
 		description = new PokeDescription(toCopy.description);
 		unknownByte2 = toCopy.unknownByte2;
+	}
+	
+	@Override
+	protected CardName createCardName()
+	{
+		return new CardName(true); // a pokename
 	}
 	
 	public PokemonCard copy()

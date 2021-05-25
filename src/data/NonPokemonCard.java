@@ -1,6 +1,8 @@
 package data;
 
+import constants.CardConstants.CardId;
 import constants.RomConstants;
+import data.romtexts.CardName;
 import data.romtexts.EffectDescription;
 import rom.Blocks;
 import rom.Texts;
@@ -35,6 +37,12 @@ public class NonPokemonCard extends Card
 	}
 	
 	@Override
+	protected CardName createCardName()
+	{
+		return new CardName(false); // not a poke name
+	}
+	
+	@Override
 	public int readAndConvertIds(byte[] cardBytes, int startIndex, Texts idToText) 
 	{
 		commonReadAndConvertIds(cardBytes, startIndex, idToText);
@@ -52,6 +60,12 @@ public class NonPokemonCard extends Card
 	@Override
 	public void finalizeDataForAllocating(Texts texts, Blocks blocks)
 	{
+		if (this.id == CardId.DOUBLE_COLORLESS_ENERGY)
+		{
+			
+			int i = 0;
+			
+		}
 		commonFinalizeDataForAllocating(texts);
 		
 		description.finalizeAndAddTexts(texts, name.toString());

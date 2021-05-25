@@ -120,6 +120,7 @@ public class Texts
 			usedCount++;
 		}
 
-		blocks.addFixedBlock(new FixedBlock(RomConstants.TEXT_POINTERS_LOC, textPtrs, (textId - 1) * RomConstants.TEXT_POINTER_SIZE_IN_BYTES));  
+		// Not -1 because we write the 0th id "000000" pointer
+		blocks.addFixedBlock(new FixedBlock(RomConstants.TEXT_POINTERS_LOC, textPtrs, textId * RomConstants.TEXT_POINTER_SIZE_IN_BYTES));  
 	}
 }
