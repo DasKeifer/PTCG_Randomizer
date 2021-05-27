@@ -26,7 +26,7 @@ public class Ldtx extends Instruction
 		final String supportedArgs = "ldtx only supports (RegisterPair, String): ";	
 
 		// Assume we have a RegisterPair first then the string
-		String[] args = arg.split(",", 1);
+		String[] args = arg.split(",", 2);
 		if (args.length != 2)
 		{
 			throw new IllegalArgumentException(supportedArgs + "given: " + args.toString());

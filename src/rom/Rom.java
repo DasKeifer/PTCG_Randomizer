@@ -78,7 +78,7 @@ public class Rom
 		DataManager manager = new DataManager();
 		manager.assignBlockLocations(rawBytes, blocks);
 			
-			// Now save the cards - TODO: move to blocks eventually
+			// Now save the cards - TODO: move to blocks eventually (on future cleanup branch)
 			RomIO.writeAllCards(rawBytes, allCards);
 			
 

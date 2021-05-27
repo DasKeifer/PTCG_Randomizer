@@ -1,5 +1,11 @@
 package data;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import compiler.CompilerUtils;
+import compiler.DataBlock;
 import constants.CardConstants.CardId;
 import constants.DuelConstants.EffectCommandTypes;
 import data.romtexts.OneLineText;
@@ -9,6 +15,33 @@ import util.RomUtils;
 
 public class HardcodedMoves 
 {
+	public static String CARD_NAME_PLACEHOLDER = CompilerUtils.createPlaceholder("cardname");
+	public static String CARD_ID_PLACEHOLDER = CompilerUtils.createPlaceholder("cardid");
+
+	public static String FUNC_GET_TURN_DUELIST_VAR = CompilerUtils.createPlaceholder("GetTurnDuelistVariable");
+	public static String FUNC_GET_TURN_DUELIST_VAR_ADDR = "$160b";
+	
+	public static String FUNC_LOOK_FOR_CARDS_IN_DECK = CompilerUtils.createPlaceholder("LookForCardsInDeck");
+	public static String FUNC_LOOK_FOR_CARDS_IN_DECK_ADDR = "$2c2ec";
+	
+	public static String FUNC_DISPLAY_CARD_LIST = CompilerUtils.createPlaceholder("DisplayCardList");
+	public static String FUNC_DISPLAY_CARD_LIST_BANK1ADDR = "$55f0";
+	
+	public static String FUNC_SET_CARD_LIST_HEADER_TEXT = CompilerUtils.createPlaceholder("SetCardListHeaderText");
+	public static String FUNC_SET_CARD_LIST_HEADER_TEXT_BANK1ADDR = "$5580";
+	
+	public static String CONST_DECK_SIZE = CompilerUtils.createPlaceholder("DECK_SIZE");
+	public static String CONST_DECK_SIZE_VAL = "$3C"; // 60 in hex
+	
+	public static String CONST_CARD_LOCATION_DECK = CompilerUtils.createPlaceholder("CARD_LOCATION_DECK");
+	public static String CONST_CARD_LOCATION_DECK_VAL = "$0";
+
+	public static String CONST_DUELVARS_CARD_LOCATIONS = CompilerUtils.createPlaceholder("DUELVARS_CARD_LOCATIONS");
+	public static String CONST_DUELVARS_CARD_LOCATIONS_VAL = "$0";
+	
+	public static String CONST_SEARCHEFFECT_CARD_ID = CompilerUtils.createPlaceholder("SEARCHEFFECT_CARD_ID");
+	public static String CONST_SEARCHEFFECT_CARD_ID_VAL = "$0";
+	
 	static void replaceAllInByteArray(byte[] array, byte toFind, byte replaceWith)
 	{
 		for (int i = 0; i < array.length; i++)
@@ -59,10 +92,88 @@ public class HardcodedMoves
 				(byte) 0xe0, (byte) 0xa0, (byte) 0xfe, (byte) 0xff, (byte) 0xc8, (byte) 0xcd, (byte) 0x24,
 				(byte) 0x13, (byte) 0x7b, (byte) 0xfe, (byte) 0x23, (byte) 0x20, (byte) 0xf2, (byte) 0xc9
 		};
-		
-		public static void createBaseSnippits()
-		{
+
+
+		public static DataBlock createBaseSnippits() {
+			String[] playerSelectPlaceholderCode = new String[] {
+				"CallForFamilyPS" + CARD_NAME_PLACEHOLDER + ":",
+					"ld a, $ff",
+					"ldh [$ffa0], a",
+					"call $11df", // CreateDeckCardList
+					"ldtx hl, halfTextBox:Choose a " + CARD_NAME_PLACEHOLDER + " from your deck",
+					"ldtx bc, pokename:" + CARD_NAME_PLACEHOLDER,
+					"lb de, " + CONST_SEARCHEFFECT_CARD_ID + ", " + CARD_ID_PLACEHOLDER,
+					"call " + FUNC_LOOK_FOR_CARDS_IN_DECK,
+					"ret c",
+
+				// draw Deck list interface and print text
+					"bank1call $5591",
+					"ldtx hl, halfTextBox:Choose a " + CARD_NAME_PLACEHOLDER,
+					"ldtx de, textbox:<RAMNAME>'s Deck",
+					"bank1call " + FUNC_SET_CARD_LIST_HEADER_TEXT,
+
+				".loop",
+					"bank1call " + FUNC_DISPLAY_CARD_LIST,
+					"jr c, .pressed_b",
+					"call $1324", // GetCardIDFromDeckIndex
+					"ld bc, " + CARD_ID_PLACEHOLDER,
+					"call $3090", // compare DE to BC
+					"jr nz, .play_sfx",
+
+				// Pokemon was selected
+					"ldh a, [$ff98]", 
+					"ldh [$ffa0], a",
+					"or a",
+					"ret", 				// Matches through here
+
+				".play_sfx",
+					// play SFX and loop back
+					"call $3794", // bank 0
+					"jr .loop",
+
+				".pressed_b",
+				// figure if Player can exit the screen without selecting,
+				// that is, if the Deck has no Bellsprout card.
+					"ld a, " + CONST_DUELVARS_CARD_LOCATIONS,
+					"call " + FUNC_GET_TURN_DUELIST_VAR,
+				".loop_b_press",
+					"ld a, [hl]",    								// TODO: Made it all the way to here! Think this is the only one left to parse
+					"cp " + CONST_CARD_LOCATION_DECK,
+					"jr nz, .next",
+					"ld a, l",
+					"call $1324", // GetCardIDFromDeckIndex
+					"ld bc, " + CARD_ID_PLACEHOLDER,
+					"call $3090", // compare DE to BC
+					"jr z, .play_sfx", // found Bellsprout, go back to top loop
+				".next",
+					"inc l",
+					"ld a, l",
+					"cp " + CONST_DECK_SIZE,
+					"jr c, .loop_b_press",
+
+				// no Bellsprout in Deck, can safely exit screen
+					"ld a, $ff",
+					"ldh [$ffa0], a",
+					"or a",
+					"ret"
+			};
 			
+			DataBlock test = new DataBlock(Arrays.asList(playerSelectPlaceholderCode));
+			Map<String, String> placeholders = new HashMap<>();
+			placeholders.put(CARD_NAME_PLACEHOLDER, "Bellsprout");
+			placeholders.put(CARD_ID_PLACEHOLDER, String.format("$%x", CardId.BELLSPROUT.getValue()));
+			placeholders.put(FUNC_GET_TURN_DUELIST_VAR, FUNC_GET_TURN_DUELIST_VAR_ADDR);
+			placeholders.put(FUNC_LOOK_FOR_CARDS_IN_DECK, FUNC_LOOK_FOR_CARDS_IN_DECK_ADDR);
+			placeholders.put(FUNC_DISPLAY_CARD_LIST, FUNC_DISPLAY_CARD_LIST_BANK1ADDR);
+			placeholders.put(FUNC_SET_CARD_LIST_HEADER_TEXT, FUNC_SET_CARD_LIST_HEADER_TEXT_BANK1ADDR);
+			placeholders.put(CONST_DECK_SIZE, CONST_DECK_SIZE_VAL);
+			placeholders.put(CONST_CARD_LOCATION_DECK, CONST_CARD_LOCATION_DECK_VAL);
+			placeholders.put(CONST_DUELVARS_CARD_LOCATIONS, CONST_DUELVARS_CARD_LOCATIONS_VAL);
+			placeholders.put(CONST_SEARCHEFFECT_CARD_ID, CONST_SEARCHEFFECT_CARD_ID_VAL);
+			
+			
+			test.replacePlaceholderIds(placeholders);
+			return test;
 			// I want to call this like
 //				ld (a, FF)
 			
@@ -88,7 +199,7 @@ public class HardcodedMoves
 			
 //				ldtx hl (byte) 0x21, TextPtr((byte) 0x2f, (byte) 0x1), 
 //					
-//				ldbtx de (byte) 0x11, (byte) 0xa9, (byte) 0x0, 
+//				ldtx de (byte) 0x11, (byte) 0xa9, (byte) 0x0, 
 			
 //					Bank1 call ((byte) 0xdf, (byte) 0x80, (byte) 0x55,)
 			
@@ -108,7 +219,7 @@ public class HardcodedMoves
 //				ldh ,a (byte) 0xe0, (byte) 0xa0, 
 			
 //				or a (byte) 0xb7, 
-//				ret (byte) 0xc9,
+//				ret (byte) 0xc9,  			// HERE!
 			
 //				call ((byte) 0xcd, (byte) 0x94, (byte) 0x37,)
 			

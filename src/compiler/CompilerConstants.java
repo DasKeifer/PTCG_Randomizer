@@ -12,7 +12,7 @@ public class CompilerConstants
 		E	(0x3), 
 		H	(0x4), 
 		L	(0x5), 
-		HL	(0x6), 
+		BRACKET_HL_BRACKET	(0x6), 
 		A	(0x7), 
 		NONE(0xFF);
 		
@@ -22,7 +22,7 @@ public class CompilerConstants
 		{
 			// stored in upper half of byte with set in the lower half but we treat it as the lower 
 			// half to make things make more sense in this code
-			if (inValue > ByteUtils.MAX_HEX_CHAR_VALUE || inValue < ByteUtils.MIN_HEX_CHAR_VALUE)
+			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
 						+ "Register enum " + inValue);
@@ -50,7 +50,7 @@ public class CompilerConstants
 		{
 			// stored in upper half of byte with set in the lower half but we treat it as the lower 
 			// half to make things make more sense in this code
-			if (inValue > ByteUtils.MAX_HEX_CHAR_VALUE || inValue < ByteUtils.MIN_HEX_CHAR_VALUE)
+			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
 						+ "RegisterPair enum " + inValue);
@@ -78,7 +78,7 @@ public class CompilerConstants
 		{
 			// stored in upper half of byte with set in the lower half but we treat it as the lower 
 			// half to make things make more sense in this code
-			if (inValue > ByteUtils.MAX_HEX_CHAR_VALUE || inValue < ByteUtils.MIN_HEX_CHAR_VALUE)
+			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
 						+ "PushPopRegisterPair enum " + inValue);
@@ -106,7 +106,7 @@ public class CompilerConstants
 		{
 			// stored in upper half of byte with set in the lower half but we treat it as the lower 
 			// half to make things make more sense in this code
-			if (inValue > ByteUtils.MAX_HEX_CHAR_VALUE || inValue < ByteUtils.MIN_HEX_CHAR_VALUE)
+			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
 						+ "InstructionConditions enum " + inValue);

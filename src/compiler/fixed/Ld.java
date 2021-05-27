@@ -1,5 +1,7 @@
 package compiler.fixed;
 
+import java.util.Arrays;
+
 import compiler.CompilerUtils;
 
 public abstract class Ld extends FixedInstruction
@@ -40,6 +42,7 @@ public abstract class Ld extends FixedInstruction
 		}
 		catch(IllegalArgumentException iae) {}			
 
-		throw new IllegalArgumentException("Ld only supports (Register, Byte), (Register, Register), or (RegisterPair, Short): Given " + args.toString());
+		// TODO: replace more Array to string outputs
+		throw new IllegalArgumentException("Ld only supports (Register, Byte), (Register, Register), or (RegisterPair, Short): Given " + Arrays.toString(args));
 	}
 }

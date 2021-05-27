@@ -40,16 +40,15 @@ public class Ret extends FixedInstruction
 		throw new IllegalArgumentException("Ret only supports ([No Args]) or (InstructionCondition): Given " + args.toString());
 	}
 	
-	public int writeBytes(byte[] bytes, int indexToAddAt)
+	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt)
 	{
 		if (InstructionConditions.NONE == conditions)
 		{
-			bytes[indexToAddAt++] = (byte) 0xC9;
+			bytes[indexToAddAt] = (byte) 0xC9;
 		}
 		else
 		{
-			bytes[indexToAddAt++] = (byte) (0xC0 | (conditions.getValue() << 3));
+			bytes[indexToAddAt] = (byte) (0xC0 | (conditions.getValue() << 3));
 		}
-		return indexToAddAt;
 	}
 }

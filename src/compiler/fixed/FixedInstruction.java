@@ -36,4 +36,13 @@ public abstract class FixedInstruction extends Instruction
 	{
 		return getSize();
 	}
+	
+	@Override
+	public int writeBytes(byte[] bytes, int indexToAddAt)
+	{
+		writeFixedSizeBytes(bytes, indexToAddAt);
+		return size;
+	}
+
+	public abstract void writeFixedSizeBytes(byte[] bytes, int indexToAddAt);
 }

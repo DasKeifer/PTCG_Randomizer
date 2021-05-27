@@ -15,6 +15,7 @@ class Segment extends SegmentReference
 	public Segment()
 	{
 		data = new LinkedList<>();
+		placeholderInstructs = new LinkedList<>();
 	}
 	
 	public void appendInstruction(Instruction instruct)

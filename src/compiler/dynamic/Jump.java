@@ -52,7 +52,12 @@ public class Jump extends JumpCallCommon
 			throw new IllegalArgumentException(supportedArgs + args.toString());
 		}
 
-		return new Jump(CompilerUtils.formSegmentLabelArg(labelToJumpTo, rootSegment), conditions);
+		if (CompilerUtils.isOnlySubsegmentPartOfLabel(labelToJumpTo))
+		{
+			return new Jump(CompilerUtils.formSegmentLabelArg(labelToJumpTo, rootSegment), conditions);
+		}
+		
+		return new Jump(labelToJumpTo, conditions);
 	}
 
 	@Override
@@ -129,9 +134,9 @@ public class Jump extends JumpCallCommon
 			return Integer.MAX_VALUE;
 		}
 		
-		// Plus 2 because its relative to the
-		// end of the jump instruction and we assume JR for this
-		return goToAddr - instAddress + 2;
+		// Minus 2 because its relative to the end of the jump
+		// instruction (i.e. we jump less far) and we assume JR for this
+		return goToAddr - instAddress - 2;
 	}
 
 	@Override

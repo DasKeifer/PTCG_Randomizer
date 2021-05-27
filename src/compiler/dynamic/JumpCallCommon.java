@@ -19,6 +19,7 @@ public abstract class JumpCallCommon extends Instruction
 	private byte conditionedInstruct;
 	private byte farInstuctRstVal;
 	
+	
 	protected JumpCallCommon(String labelToGoTo, InstructionConditions conditions, byte conditionlessInstruct, byte conditionedInstruct, byte farInstuctRstVal)
 	{
 		this.conditions = conditions;
@@ -43,13 +44,36 @@ public abstract class JumpCallCommon extends Instruction
 		this.addressToGoTo = addressToGoTo;
 	}
 	
+	public static boolean useRootSegment(String[] args, boolean isJp)
+	{
+		String callOrJpString = "call/farcall";
+		if (isJp)
+		{
+			callOrJpString = "jr/jp/farjp";
+		}
+		
+		String labelOrAddrToGoTo = args[0];
+		if (args.length == 2)
+		{
+			labelOrAddrToGoTo = args[1];
+		}
+		else if (args.length != 1)
+		{
+			throw new IllegalArgumentException(callOrJpString + " only supports 1 or 2 args: given " + args.toString());
+		}
+		
+		// If its a subsegment it uses the root segment
+		return CompilerUtils.isOnlySubsegmentPartOfLabel(labelOrAddrToGoTo);
+	}
+	
+	
 	public static JumpCallCommon create(String[] args, String rootSegment, boolean isJp)
 	{	
 		final String supportedArgs = " only supports (int gloabalAddressToGoTo), (String labelToGoTo), (InstructionCondition, int gloabalAddressToGoTo) and (InstructionCondition, String labelToGoTo): ";	
-		String callOrJpString = "jp/farjp";
+		String callOrJpString = "call/farcall";
 		if (isJp)
 		{
-			callOrJpString = "call/farcall";
+			callOrJpString = "jp/farjp";
 		}
 		
 		String labelOrAddrToGoTo = args[0];
@@ -88,11 +112,19 @@ public abstract class JumpCallCommon extends Instruction
 		{
 			if (isJp)
 			{
-				return new Jump(CompilerUtils.formSegmentLabelArg(labelOrAddrToGoTo, rootSegment), conditions);
+				if (CompilerUtils.isOnlySubsegmentPartOfLabel(labelOrAddrToGoTo))
+				{	
+					return new Jump(CompilerUtils.formSegmentLabelArg(labelOrAddrToGoTo, rootSegment), conditions);
+				}
+				return new Jump(labelOrAddrToGoTo, conditions);
 			}
 			else
 			{
-				return new Call(CompilerUtils.formSegmentLabelArg(labelOrAddrToGoTo, rootSegment), conditions);
+				if (CompilerUtils.isOnlySubsegmentPartOfLabel(labelOrAddrToGoTo))
+				{	
+					return new Call(CompilerUtils.formSegmentLabelArg(labelOrAddrToGoTo, rootSegment), conditions);
+				}
+				return new Call(labelOrAddrToGoTo, conditions);
 			}
 		}
 	}
@@ -123,18 +155,25 @@ public abstract class JumpCallCommon extends Instruction
 	protected boolean isFarJpCall(byte bank)
 	{
 		int address = getAddressToGoTo();
+		// If its unassinged local we go to, we don't need to go far
 		if (address == CompilerUtils.UNASSIGNED_LOCAL_ADDRESS)
 		{
 			return false;
 		}
 		
-		if (address != CompilerUtils.UNASSIGNED_ADDRESS &&
-				RomUtils.determineBank(address) == bank)
+		// If its assigned a specific address and its in the same bank or its in the home bank
+		if (address != CompilerUtils.UNASSIGNED_ADDRESS && isInBankOrHomeBank(address, bank))
 		{
 			return false;
 		}
 		
 		return true;
+	}
+	
+	protected static boolean isInBankOrHomeBank(int address, byte bank)
+	{
+		byte addrBank = RomUtils.determineBank(address);
+		return addrBank == 0 || addrBank == bank;
 	}
 	
 	protected int getFarJpCallSize()

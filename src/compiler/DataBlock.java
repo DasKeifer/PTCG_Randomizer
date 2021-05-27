@@ -3,6 +3,7 @@ package compiler;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,7 +16,7 @@ import util.RomUtils;
 public class DataBlock 
 {	
 	private int assignedAddress;
-	Map<String, Segment> segments;
+	LinkedHashMap<String, Segment> segments; // linked to keep order
 	private String id;
 
 	String rootSegmentName;
@@ -24,7 +25,7 @@ public class DataBlock
 	public DataBlock(String startingSegmentName, Instruction... instructions)
 	{
 		assignedAddress = CompilerUtils.UNASSIGNED_ADDRESS;
-		segments = new HashMap<>();
+		segments = new LinkedHashMap<>();
 		id = startingSegmentName.trim();
 		
 		newSegment(startingSegmentName);
@@ -48,7 +49,7 @@ public class DataBlock
 	public DataBlock(String startingSegmentName, List<String> sourceLines)
 	{
 		assignedAddress = CompilerUtils.UNASSIGNED_ADDRESS;
-		segments = new HashMap<>();
+		segments = new LinkedHashMap<>();
 		id = startingSegmentName.trim();
 		parseSource(startingSegmentName, sourceLines);
 	}
@@ -56,7 +57,7 @@ public class DataBlock
 	public DataBlock(List<String> sourceLines)
 	{
 		assignedAddress = CompilerUtils.UNASSIGNED_ADDRESS;
-		segments = new HashMap<>();
+		segments = new LinkedHashMap<>();
 
 		List<String> sourceLinesTrimmed = new ArrayList<>(sourceLines);
 		id = CompilerUtils.tryParseSegmentName(sourceLinesTrimmed.remove(0));
@@ -79,7 +80,7 @@ public class DataBlock
 			
 			String segName = CompilerUtils.tryParseSegmentName(line);
 			// If its not null, its a new segment
-			if (line != null)
+			if (segName != null)
 			{
 				rootSegmentName = segName;
 			}
@@ -103,7 +104,7 @@ public class DataBlock
 			else
 			{
 				// If its a placeholder, we defer filling it out
-				if (CompilerUtils.isPlaceholderLine(line))
+				if (CompilerUtils.containsPlaceholder(line) || CompilerUtils.containsImplicitPlaceholder(line, rootSegmentName))
 				{
 					appendPlaceholderInstruction(PlaceholderInstruction.create(line, rootSegmentName));
 				}
@@ -214,10 +215,15 @@ public class DataBlock
 	
 	public void replacePlaceholderIds(Map<String, String> placeholderToArgsForIds)
 	{
-		Map<String, Segment> refreshedSegments = new HashMap<>();
+		// Replace placeholders in Id
+		id = CompilerUtils.replacePlaceholders(id, placeholderToArgsForIds);
+		
+		LinkedHashMap<String, Segment> refreshedSegments = new LinkedHashMap<>();
 		for (Entry<String, Segment> seg : segments.entrySet())
 		{
 			String segId = CompilerUtils.replacePlaceholders(seg.getKey(), placeholderToArgsForIds);
+			seg.getValue().evaluatePlaceholders(placeholderToArgsForIds);
+			
 			if (refreshedSegments.put(segId, seg.getValue()) != null)
 			{
 				throw new IllegalArgumentException("Duplicate segment label was found while replacing placeholders: " + segId);

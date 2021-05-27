@@ -5,7 +5,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
+import compiler.DataBlock;
 import data.Card;
+import data.HardcodedMoves;
+import datamanager.BankPreference;
+import datamanager.FixedBlock;
+import datamanager.FloatingBlock;
+import datamanager.MoveableBlock;
 import rom.Texts;
 import util.Logger;
 import rom.Cards;
@@ -120,6 +126,17 @@ public class Randomizer
 		List<Card> colorless = randomizedData.allCards.getCardsWithName("Double Colorless Energy").toList();
 		colorless.get(0).name.setText("Double Colorless Energy1234"); // Quick check to see if we ran and saved successfully
 		
+		// 2cc50  - 16 bytes - no changes needed - just point to it
+		for (int i = 0x2cc50; i < 0x2ccad; i++)
+		{
+//			if (randomizedData.rawBytes[0xce8a  + i] != -1)
+//			{
+				System.out.println(String.format("0x%x", randomizedData.rawBytes[i]));
+//			}
+		}
+		DataBlock test = HardcodedMoves.CallForFamily.createBaseSnippits();
+		randomizedData.blocks.addFixedBlock(new FixedBlock(0x2cc49, test, 0x2ccad - 0x2cc50));
+		
 		// Randomize Evolutions (either within current types or completely random)
 		// If randomizing evos and types but keeping lines consistent, completely 
 		// randomize here then sort it out in the types
@@ -179,14 +196,14 @@ public class Randomizer
 			}
 		}
 ////			
-//		// 2cc40 - 16 bytes - no changes needed - just point to it
-//		for (int i = 0x1baf8; i < 0x1bafa; i++)
-//		{
-////			if (randomizedData.rawBytes[0xce8a  + i] != -1)
-////			{
-//				System.out.println(String.format("0x%x", randomizedData.rawBytes[i]));
-////			}
-//		}
+		// 2cc50  - 16 bytes - no changes needed - just point to it
+		for (int i = 0x2cc50; i < 0x2ccad; i++)
+		{
+//			if (randomizedData.rawBytes[0xce8a  + i] != -1)
+//			{
+				System.out.println(String.format("0x%x", randomizedData.rawBytes[i]));
+//			}
+		}
 //		
 //		int baseLoc = 0x2cf6d;
 //		randomizedData.rawBytes[baseLoc + 8] = 0x2e;

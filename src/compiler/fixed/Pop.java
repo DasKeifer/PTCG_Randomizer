@@ -31,9 +31,8 @@ public class Pop extends FixedInstruction
 		}
 	}
 	
-	public int writeBytes(byte[] bytes, int indexToAddAt)
+	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt)
 	{
-		bytes[indexToAddAt++] = (byte) (0xC1 | pair.getValue() << 4);
-		return indexToAddAt;
+		bytes[indexToAddAt] = (byte) (0xC1 | pair.getValue() << 4);
 	}
 }

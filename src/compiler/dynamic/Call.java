@@ -30,7 +30,6 @@ public class Call extends JumpCallCommon
 			Map<String, SegmentReference> labelToSegment
 	) 
 	{		
-		// If its calling a label and is not already assigned
 		if (!labelToGoTo.isEmpty() && toGoTo == null)
 		{
 			// No need to check for local ones - they are treated the same

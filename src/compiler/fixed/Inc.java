@@ -31,9 +31,8 @@ public class Inc extends FixedInstruction
 		}
 	}
 	
-	public int writeBytes(byte[] bytes, int indexToAddAt)
+	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt)
 	{
-		bytes[indexToAddAt++] = (byte) (0x04 | reg.getValue() << 3);
-		return indexToAddAt;
+		bytes[indexToAddAt] = (byte) (0x04 | reg.getValue() << 3);
 	}
 }

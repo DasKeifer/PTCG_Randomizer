@@ -31,9 +31,8 @@ public class Or extends FixedInstruction
 	}
 
 	@Override
-	public int writeBytes(byte[] bytes, int indexToWriteAt) 
+	public void writeFixedSizeBytes(byte[] bytes, int indexToWriteAt) 
 	{
-		bytes[indexToWriteAt++] = (byte) (0xB0 | reg.getValue());
-		return indexToWriteAt;
+		bytes[indexToWriteAt] = (byte) (0xB0 | reg.getValue());
 	}
 }

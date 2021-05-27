@@ -30,19 +30,26 @@ public class FixedBlock extends BlockAllocData
 	@Override
 	public void writeData(byte[] bytes)
 	{
-		int lengthWritten = dataBlock.writeBytes(bytes);
-		
+		dataBlock.setAssignedAddress(getFixedAddress()); // TODO: handle more gracefully - linking after assigning addresses...?
 		if (replaceLength >= 0)
 		{
-			if (lengthWritten > replaceLength)
-			{
-				throw new IllegalArgumentException("Data written (" + lengthWritten + ") is larger than allowed size (" + replaceLength + ")");
-			}
-			else if (lengthWritten < replaceLength)
-			{
-				// Write the remainder of the length with no-ops
-				ByteUtils.setBytes(bytes, dataBlock.getAssignedAddress() + lengthWritten, replaceLength - lengthWritten, (byte) 0);
-			}
+			ByteUtils.setBytes(bytes, dataBlock.getAssignedAddress(), replaceLength, (byte) 0xFF);
+		}
+		
+		int lengthWritten = dataBlock.writeBytes(bytes);
+		
+		for (int i = 0x2cc49; i < 0x2ccad; i++)
+		{
+//			if (randomizedData.rawBytes[0xce8a  + i] != -1)
+//			{
+				System.out.println(String.format("0x%x", bytes[i]));
+//			}
+		}
+		
+		// Safety Check
+		if (lengthWritten > replaceLength)
+		{
+			throw new IllegalArgumentException("Data written (" + lengthWritten + ") is larger than allowed size (" + replaceLength + ")");
 		}
 	}
 

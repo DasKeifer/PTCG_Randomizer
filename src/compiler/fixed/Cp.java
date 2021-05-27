@@ -30,10 +30,9 @@ public class Cp extends FixedInstruction
 		}
 	}
 	
-	public int writeBytes(byte[] bytes, int indexToAddAt)
+	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt)
 	{
 		bytes[indexToAddAt++] = (byte) 0xFE;
-		bytes[indexToAddAt++] = value;
-		return indexToAddAt;
+		bytes[indexToAddAt] = value;
 	}
 }

@@ -22,17 +22,18 @@ public class PlaceholderInstruction extends Instruction
 	
 	public static PlaceholderInstruction create(String line, String rootBlockName)
 	{
-		if (CompilerUtils.isPlaceholderLine(line))
+		if (CompilerUtils.containsPlaceholder(line) || CompilerUtils.containsPlaceholder(rootBlockName))
 		{
 			return new PlaceholderInstruction(line, rootBlockName);
 		}
-		throw new IllegalArgumentException("Line does not contain placeholder text!");
+		throw new IllegalArgumentException("Line does not explicitly or implicitly contain placeholder text!");
 	}
 
 	public void evaluatePlaceholdersAndCreateInstruction(Map<String, String> placeholderToArgs)
 	{
 		String lineReplaced = CompilerUtils.replacePlaceholders(line, placeholderToArgs);
-		inst = CompilerUtils.parseInstruction(lineReplaced, rootBlockName);
+		String rootBlockNameReplaced = CompilerUtils.replacePlaceholders(rootBlockName, placeholderToArgs);
+		inst = CompilerUtils.parseInstruction(lineReplaced, rootBlockNameReplaced);
 	}
 
 	@Override

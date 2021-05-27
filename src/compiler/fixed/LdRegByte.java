@@ -15,10 +15,9 @@ public class LdRegByte extends Ld
 	}
 	
 	@Override
-	public int writeBytes(byte[] bytes, int indexToAddAt)
+	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt)
 	{
 		bytes[indexToAddAt++] = (byte) (0x06 | (reg.getValue() << 3));
-		bytes[indexToAddAt++] = value;
-		return indexToAddAt;
+		bytes[indexToAddAt] = value;
 	}
 }

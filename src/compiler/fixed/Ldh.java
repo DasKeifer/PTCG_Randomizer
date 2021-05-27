@@ -1,10 +1,14 @@
 package compiler.fixed;
 
 import compiler.CompilerUtils;
+
+import java.util.Arrays;
+
 import compiler.CompilerConstants.Register;
 
 public class Ldh extends FixedInstruction
 {
+	public static final int SIZE = 2;
 	byte value;
 	boolean isAFirst;
 	
@@ -12,7 +16,7 @@ public class Ldh extends FixedInstruction
 	
 	public Ldh(byte ffAddressSecondByte, boolean isACommaVal) 
 	{
-		super(2); // Size
+		super(SIZE);
 		value = ffAddressSecondByte;
 		isAFirst = isACommaVal;
 	}
@@ -22,7 +26,7 @@ public class Ldh extends FixedInstruction
 		String allowedFormatText = "Ldh only supports (A, [$FF(00 - FF)]) or ([$FF(00 - FF)], A): ";
 		if (args.length != 2)
 		{
-			throw new IllegalArgumentException(allowedFormatText + " Given " + args.toString());
+			throw new IllegalArgumentException(allowedFormatText + " Given " + Arrays.toString(args));
 		}
 
 		// A, val
@@ -30,9 +34,9 @@ public class Ldh extends FixedInstruction
 		try
 		{
 			bracketsRemoved = CompilerUtils.tryParseBracketedArg(args[1]);
-			if (bracketsRemoved == null ||
-					(CompilerUtils.parseRegisterArg(args[0]) == Register.A &&
-					CompilerUtils.parseByteArg(bracketsRemoved) == 0xFF)) // Only reads the first byte of the short
+			if (bracketsRemoved != null &&
+					CompilerUtils.parseRegisterArg(args[0]) == Register.A &&
+					CompilerUtils.parseByteArg(bracketsRemoved) == (byte)0xFF) // This call will only read the first byte of the short
 			{
 				return new Ldh(CompilerUtils.parseSecondByteOfShort(bracketsRemoved), true); // true = A, val
 			}
@@ -43,7 +47,8 @@ public class Ldh extends FixedInstruction
 		try
 		{
 			bracketsRemoved = CompilerUtils.tryParseBracketedArg(args[0]);
-			if (CompilerUtils.parseByteArg(bracketsRemoved) == 0xFF && // Only reads the first byte of the short
+			if (bracketsRemoved != null &&
+					CompilerUtils.parseByteArg(bracketsRemoved) == (byte)0xFF && // This call will only read the first byte of the short
 					CompilerUtils.parseRegisterArg(args[1]) == Register.A)
 			{
 				return new Ldh(CompilerUtils.parseSecondByteOfShort(bracketsRemoved), false); // true = val, A
@@ -51,10 +56,10 @@ public class Ldh extends FixedInstruction
 		}
 		catch (IllegalArgumentException iae) {}
 		
-		throw new IllegalArgumentException(allowedFormatText + " Given " + args.toString());
+		throw new IllegalArgumentException(allowedFormatText + " Given " + Arrays.toString(args));
 	}
 	
-	public int writeBytes(byte[] bytes, int indexToAddAt)
+	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt)
 	{
 		// A, val
 		if (isAFirst)
@@ -66,7 +71,6 @@ public class Ldh extends FixedInstruction
 		{
 			bytes[indexToAddAt++] = (byte) 0xE0;
 		}
-		bytes[indexToAddAt++] = value;
-		return indexToAddAt;
+		bytes[indexToAddAt] = value;
 	}
 }

@@ -31,9 +31,8 @@ public class Dec extends FixedInstruction
 		}
 	}
 	
-	public int writeBytes(byte[] bytes, int indexToAddAt)
+	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt)
 	{
-		bytes[indexToAddAt++] = (byte) (0x05 | reg.getValue() << 3);
-		return indexToAddAt;
+		bytes[indexToAddAt] = (byte) (0x05 | reg.getValue() << 3);
 	}
 }

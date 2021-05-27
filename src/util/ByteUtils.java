@@ -4,7 +4,6 @@ public class ByteUtils
 {	
 	public static final int MAX_BYTE_VALUE = 0xff;
 	public static final int MIN_BYTE_VALUE = 0x00;
-
 	public static final int MAX_HEX_CHAR_VALUE = 0xf;
 	public static final int MIN_HEX_CHAR_VALUE = 0x0;
 	
@@ -162,4 +161,30 @@ public class ByteUtils
 		}
 		return true;
 	}
+
+	public static byte parseByte(String str) 
+	{
+		int val = Integer.parseInt(str, 16); //16 = hex
+		if (val > MAX_BYTE_VALUE || val < MIN_BYTE_VALUE)
+		{
+			throw new NumberFormatException("Failed to parse unsigned hex byte from " + str);
+		}
+		return (byte) val;
+	}
+
+	public static long parseBytes(String str, int numBytes) 
+	{
+		if (numBytes < 0 || numBytes > 7)
+		{
+			throw new IllegalArgumentException("To many bytes passed (" + numBytes + ") must be 0 <= x <= 7");
+		}
+		
+		long val = Long.parseLong(str, 16); //16 = hex
+		if (val > Math.pow(MAX_BYTE_VALUE, numBytes) || val < MIN_BYTE_VALUE)
+		{
+			throw new NumberFormatException("Failed to parse " + numBytes + " unsigned hex bytes from " + str);
+		}
+		return val;
+	}
+
 }

@@ -60,12 +60,6 @@ public class NonPokemonCard extends Card
 	@Override
 	public void finalizeDataForAllocating(Texts texts, Blocks blocks)
 	{
-		if (this.id == CardId.DOUBLE_COLORLESS_ENERGY)
-		{
-			
-			int i = 0;
-			
-		}
 		commonFinalizeDataForAllocating(texts);
 		
 		description.finalizeAndAddTexts(texts, name.toString());

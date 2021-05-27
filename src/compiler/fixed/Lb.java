@@ -38,11 +38,10 @@ public class Lb extends FixedInstruction
 	}
 	
 	@Override
-	public int writeBytes(byte[] bytes, int indexToAddAt)
+	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt)
 	{
 		bytes[indexToAddAt++] = (byte) (0x01 | (pair.getValue() << 4));
 		bytes[indexToAddAt++] = value2;
-		bytes[indexToAddAt++] = value1;
-		return indexToAddAt;
+		bytes[indexToAddAt] = value1;
 	}
 }

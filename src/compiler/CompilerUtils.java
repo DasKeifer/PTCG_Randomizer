@@ -1,6 +1,7 @@
 package compiler;
 
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -9,6 +10,7 @@ import compiler.dynamic.*;
 import compiler.fixed.*;
 import constants.RomConstants;
 import data.romtexts.*;
+import util.ByteUtils;
 
 public class CompilerUtils 
 {
@@ -35,9 +37,14 @@ public class CompilerUtils
 		return line.substring(0, line.indexOf(CompilerUtils.SEGMENT_ENDLINE)).trim();
 	}
 	
+	public static boolean isOnlySubsegmentPartOfLabel(String line)
+	{
+		return line.startsWith(CompilerUtils.SUBSEGMENT_STARTLINE);
+	}
+	
 	public static String tryParseSubsegmentName(String line, String rootSegmentName)
 	{
-		if (line.startsWith(CompilerUtils.SUBSEGMENT_STARTLINE))
+		if (isOnlySubsegmentPartOfLabel(line))
 		{
 			return getSubsegmentName(line, rootSegmentName);
 		}
@@ -49,9 +56,9 @@ public class CompilerUtils
 		return rootSegmentName + "." + subsegment;
 	}
 	
-	private static String getSubsegmentName(String segmentName, String line)
+	private static String getSubsegmentName(String line, String rootSegmentName)
 	{
-		return segmentName + line.trim();
+		return rootSegmentName + line.trim();
 	}
 	
 	public static String tryParseBracketedArg(String arg)
@@ -59,7 +66,8 @@ public class CompilerUtils
 		arg = arg.trim();
 		if (arg.startsWith("[") && arg.endsWith("]"))
 		{
-			return arg.substring(1, arg.length() - 2);
+			// only -1 because the end is exclusive
+			return arg.substring(1, arg.length() - 1);
 		}
 		
 		return null;
@@ -67,22 +75,22 @@ public class CompilerUtils
 	
 	public static byte parseByteArg(String arg)
 	{
-		return Byte.parseByte(extractHexValString(arg, 2));
+		return ByteUtils.parseByte(extractHexValString(arg, 2));
 	}
 
 	public static short parseShortArg(String arg)
 	{
-		return Short.parseShort(extractHexValString(arg, 4));
+		return (short) ByteUtils.parseBytes(extractHexValString(arg, 4), 2);
 	}
 
 	public static byte parseSecondByteOfShort(String arg)
 	{
-		return Byte.parseByte(extractHexValString(arg, 2, 2));
+		return ByteUtils.parseByte(extractHexValString(arg, 2, 2));
 	}
 
 	public static int parseGlobalAddrArg(String arg)
 	{
-		return Short.parseShort(extractHexValString(arg, 6));
+		return (int) ByteUtils.parseBytes(extractHexValString(arg, 6), 3);
 	}
 
 	private static String extractHexValString(String arg, int numChars)
@@ -92,7 +100,7 @@ public class CompilerUtils
 	
 	private static String extractHexValString(String arg, int maxNumChars, int offsetChars)
 	{
-		int valIdx = arg.indexOf(HEX_VAL_MARKER);
+		int valIdx = arg.indexOf(HEX_VAL_MARKER) + 1;
 		if (valIdx < 0)
 		{
 			throw new IllegalArgumentException("Failed to find the " + HEX_VAL_MARKER + 
@@ -107,11 +115,15 @@ public class CompilerUtils
 		}
 		
 		// Get the base string, split on space and return the first in case we overflowed into another arg
-		return arg.substring(valIdx + 1 + offsetChars, endIdx).split(" ", 1)[0];
+		return arg.substring(valIdx + offsetChars, endIdx).split(" ", 2)[0];
 	}
 	
 	public static Register parseRegisterArg(String arg)
 	{
+		if (arg.trim().equalsIgnoreCase("[hl]"))
+		{
+			return Register.BRACKET_HL_BRACKET;
+		}
 		return Register.valueOf(arg.trim().toUpperCase());
 	}
 
@@ -132,7 +144,7 @@ public class CompilerUtils
 	
 	public static OneBlockText parseOneBlockTextArg(String arg)
 	{
-		String[] formatAndVal = arg.trim().split(":", 1);
+		String[] formatAndVal = arg.trim().split(":", 2);
 		if (formatAndVal.length != 2)
 		{
 			throw new IllegalArgumentException("Malformed rom text - does not begin with format info (e.g. 'textbox' or '36,3:'): " + arg);
@@ -140,7 +152,7 @@ public class CompilerUtils
 
 		int maxLines = Integer.MAX_VALUE; // Unbounded by default
 		int charsPerLine = Integer.MAX_VALUE; // Unbounded by default
-		switch (formatAndVal[0])
+		switch (formatAndVal[0].toLowerCase())
 		{
 			case "pokename":
 				return new CardName(true, formatAndVal[1]); // true == pokename
@@ -179,7 +191,7 @@ public class CompilerUtils
 		return trimmed;
 	}
 	
-	public static boolean isPlaceholderLine(String line)
+	public static boolean containsPlaceholder(String line)
 	{
 		if (line.contains(PLACEHOLDER_MARKER))
 		{
@@ -188,26 +200,70 @@ public class CompilerUtils
 		return false;
 	}
 	
+	public static String createPlaceholder(String placeholderId)
+	{
+		return PLACEHOLDER_MARKER + placeholderId + PLACEHOLDER_MARKER;
+	}
+	
 	public static String replacePlaceholders(String line, Map<String, String> placeholderToArgs)
 	{
 		for (Entry<String, String> entry : placeholderToArgs.entrySet())
 		{
-			line.replaceAll(PLACEHOLDER_MARKER + entry.getKey(), entry.getValue());
+			if (!entry.getKey().startsWith(PLACEHOLDER_MARKER) || !entry.getKey().endsWith(PLACEHOLDER_MARKER))
+			{
+				throw new IllegalArgumentException("Non placeholder key passed: " + entry.getKey());
+			}
+			line = line.replace(entry.getKey(), entry.getValue());
 		}
 		return line;
 	}
 	
+	private static String[] splitInstruction(String line)
+	{
+		// Split and trim the array
+		return Arrays.stream(line.split(" ", 2)).map(String::trim).toArray(String[]::new);
+	}
+
+	private static String[] splitArgs(String[] keyArgs)
+	{
+		if (keyArgs.length > 1)
+		{
+			// Split and trim the array
+			return Arrays.stream(keyArgs[1].split(",")).map(String::trim).toArray(String[]::new);
+		}
+		return new String[0];
+	}
+	
+	public static boolean containsImplicitPlaceholder(String line, String rootSegment)
+	{
+		if (!containsPlaceholder(rootSegment))
+		{
+			return false;
+		}
+		
+		String[] keyArgs = splitInstruction(line);
+		String[] args = splitArgs(keyArgs);
+		
+		// Any instruction that takes the root segment may have a hidden placeholder
+		switch (keyArgs[0])
+		{
+			case "jr":
+			case "jp":
+			case "farjump":
+				return JumpCallCommon.useRootSegment(args, true);
+			case "call":
+			case "farcall":
+				return JumpCallCommon.useRootSegment(args, false);
+			default:
+				return false;
+		}
+	}
+	
 	public static Instruction parseInstruction(String line, String rootSegment)
 	{		
-		// Split the keyword off
-		String[] keyArgs = line.split(" ", 1);
-		
-		// Split the args apart
-		String[] args = new String[0];
-		if (keyArgs.length >= 1)
-		{
-			args = keyArgs[1].split(",");
-		}
+		// Split the keyword off and then the args apart
+		String[] keyArgs = splitInstruction(line);
+		String[] args = splitArgs(keyArgs);
 		
 		switch (keyArgs[0])
 		{
@@ -241,7 +297,9 @@ public class CompilerUtils
 			case "farcall":
 				return JumpCallCommon.create(args, rootSegment, false); // false == call
 			case "ret":
-				return Ret.create(args);		
+				return Ret.create(args);
+			case "bank1call":
+				return BankCall1.create(args);
 				
 			// Misc
 			case "dec":
