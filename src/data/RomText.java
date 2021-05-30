@@ -3,7 +3,7 @@ package data;
 import java.util.ArrayList;
 import java.util.List;
 
-import constants.RomConstants;
+import constants.CharMapConstants;
 import rom.Texts;
 import util.ByteUtils;
 import util.StringUtils;
@@ -283,7 +283,7 @@ public class RomText
 	{		
 		if (!text.isEmpty())
 		{
-			return reserveSpaceForSpecialChars(removeEnglishCharTypeChars(text));
+			return reserveSpaceForSpecialChars(removeHalfwidthTextPrefix(text));
 		}
 		return "";
 	}
@@ -300,7 +300,7 @@ public class RomText
 	{
 		if (!text.isEmpty())
 		{
-			return removeReserveSpaceForSpecialChars(addEnglishCharsTypeCharIfNeeded(text));
+			return removeReserveSpaceForSpecialChars(addHalfwidthTextPrefixIfNeeded(text));
 		}
 		return "";
 	}
@@ -313,18 +313,18 @@ public class RomText
 		}
 	}
 			
-	private static String addEnglishCharsTypeCharIfNeeded(String text)
+	private static String addHalfwidthTextPrefixIfNeeded(String text)
 	{
-		if (!text.startsWith("" + RomConstants.ENLGISH_TEXT_CHAR))
+		if (!text.startsWith("" + CharMapConstants.HALFWIDTH_TEXT_PREFIX_CHAR))
 		{
-			return RomConstants.ENLGISH_TEXT_CHAR + text;
+			return CharMapConstants.HALFWIDTH_TEXT_PREFIX_CHAR + text;
 		}
 		return text;
 	}
 	
-	private static String removeEnglishCharTypeChars(String text)
+	private static String removeHalfwidthTextPrefix(String text)
 	{
-		if (text.startsWith("" + RomConstants.ENLGISH_TEXT_CHAR))
+		if (text.startsWith("" + CharMapConstants.HALFWIDTH_TEXT_PREFIX_CHAR))
 		{
 			return text.substring(1);
 		}
@@ -338,11 +338,12 @@ public class RomText
 		// that means it displays as two spaces but if its an odd char, it displays as one space. To 
 		// keep the  formatting generic, we add the extra space in for all energies to assume the 
 		// "worst" case
-		for (String specialChars : RomConstants.SPECIAL_SYMBOLS)
+		// TODO: Could probably be slighlty smarter about this
+		for (CharMapConstants.SpecialSymbol specialSym : CharMapConstants.SpecialSymbol.values())
 		{
 			// First remove in case this is called more than once or something
-			text = text.replaceAll(specialChars + SPECIAL_SYM_RESERVE_SPACE_CHAR, specialChars);
-			text = text.replaceAll(specialChars, specialChars + SPECIAL_SYM_RESERVE_SPACE_CHAR);
+			text = text.replaceAll(specialSym.getString() + SPECIAL_SYM_RESERVE_SPACE_CHAR, specialSym.getString());
+			text = text.replaceAll(specialSym.getString(), specialSym.getString() + SPECIAL_SYM_RESERVE_SPACE_CHAR);
 		}
 		return text;
 	}
@@ -354,9 +355,9 @@ public class RomText
 		// that means it displays as two spaces but if its an odd char, it displays as one space. To 
 		// keep the  formatting generic, we add the extra space in for all energies to assume the 
 		// "worst" case
-		for (String specialChars : RomConstants.SPECIAL_SYMBOLS)
+		for (CharMapConstants.SpecialSymbol specialSym : CharMapConstants.SpecialSymbol.values())
 		{
-			text = text.replaceAll(specialChars + SPECIAL_SYM_RESERVE_SPACE_CHAR, specialChars);
+			text = text.replaceAll(specialSym.getString() + SPECIAL_SYM_RESERVE_SPACE_CHAR, specialSym.getString());
 		}
 		return text;
 	}

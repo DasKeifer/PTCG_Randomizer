@@ -1,6 +1,5 @@
 package data;
 
-import constants.CardConstants.CardId;
 import constants.RomConstants;
 import data.romtexts.CardName;
 import data.romtexts.EffectDescription;
@@ -66,7 +65,7 @@ public class NonPokemonCard extends Card
 	}
 	
 	@Override
-	public int writeData(byte[] cardBytes, int startIndex) 
+	public int writeData(byte[] cardBytes, int startIndex, Blocks blocks) 
 	{
 		int index = commonWriteData(cardBytes, startIndex);
 		

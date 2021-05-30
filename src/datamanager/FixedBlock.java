@@ -38,14 +38,6 @@ public class FixedBlock extends BlockAllocData
 		
 		int lengthWritten = dataBlock.writeBytes(bytes);
 		
-		for (int i = 0x2cc49; i < 0x2ccad; i++)
-		{
-//			if (randomizedData.rawBytes[0xce8a  + i] != -1)
-//			{
-				System.out.println(String.format("0x%x", bytes[i]));
-//			}
-		}
-		
 		// Safety Check
 		if (lengthWritten > replaceLength)
 		{

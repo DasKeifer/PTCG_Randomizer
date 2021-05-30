@@ -6,6 +6,8 @@ import rom.Texts;
 
 public abstract class Instruction
 {		
+	public void extractTexts(Texts texts) {} // TODO: fix Most do nothing
+	
 	public abstract void linkData(
 			Texts romTexts,
 			Map<String, SegmentReference> labelToLocalSegment, 
@@ -13,6 +15,7 @@ public abstract class Instruction
 	);
 	
 	public abstract int getWorstCaseSizeOnBank(byte bank, int instructionOffset);
+
 	
 	// Return size written or something else?
 	public abstract int writeBytes(byte[] bytes, int addressToWriteAt);

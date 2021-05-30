@@ -15,7 +15,8 @@ public abstract class Ld extends FixedInstruction
 	{
 		if (args.length != 2)
 		{
-			throw new IllegalArgumentException("Ld only supports (Register, Byte), (Register, Register), or (RegisterPair, Short): Given " + args.toString());
+			throw new IllegalArgumentException("Ld only supports (Register, Byte), (Register, Register), (RegisterPair, Short),"
+					+ ", (a, [hli or hld]), or ([hli or hld], a): Given " + args.toString());
 		}
 		
 		try
@@ -40,7 +41,13 @@ public abstract class Ld extends FixedInstruction
 					CompilerUtils.parseRegisterPairArg(args[0]),
 					CompilerUtils.parseShortArg(args[1]));
 		}
-		catch(IllegalArgumentException iae) {}			
+		catch(IllegalArgumentException iae) {}		
+
+		try
+		{
+			return LdAHLIncDec.create(args);
+		}
+		catch(IllegalArgumentException iae) {}		
 
 		// TODO: replace more Array to string outputs
 		throw new IllegalArgumentException("Ld only supports (Register, Byte), (Register, Register), or (RegisterPair, Short): Given " + Arrays.toString(args));

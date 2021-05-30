@@ -25,6 +25,11 @@ public abstract class BlockAllocData
 		return dataBlock.getSegmentReferencesById();
 	}
 	
+	public void extractTexts(Texts texts)
+	{
+		dataBlock.extractTexts(texts);
+	}
+	
 	public void linkData(Texts romTexts, Map<String, SegmentReference> segRefsById)
 	{
 		dataBlock.linkData(romTexts, segRefsById);

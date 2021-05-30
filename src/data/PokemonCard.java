@@ -271,12 +271,12 @@ public class PokemonCard extends Card
 		sortMoves();
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
-			moves[moveIndex].finalizeDataForAllocating(texts, blocks, name.toString());
+			moves[moveIndex].finalizeDataForAllocating(texts, blocks, name.toString(), id);
 		}
 	}
 
 	@Override
-	public int writeData(byte[] cardBytes, int startIndex) 
+	public int writeData(byte[] cardBytes, int startIndex, Blocks blocks) 
 	{
 		int index = commonWriteData(cardBytes, startIndex);
 		
@@ -287,7 +287,7 @@ public class PokemonCard extends Card
 
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
-			index = moves[moveIndex].writeData(cardBytes, index);
+			index = moves[moveIndex].writeData(cardBytes, index, blocks);
 		}
 		
 		cardBytes[index++] = retreatCost;

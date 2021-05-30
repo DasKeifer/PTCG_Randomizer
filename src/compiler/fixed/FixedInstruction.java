@@ -10,6 +10,8 @@ public abstract class FixedInstruction extends Instruction
 {
 	private int size;
 	
+	// TODO: Changed to fixed length and create a static instruction that has fixed length and no text stuff
+	
 	protected FixedInstruction(int size) 
 	{
 		this.size = size;

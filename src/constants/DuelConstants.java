@@ -4,7 +4,6 @@ import util.ByteUtils;
 
 public class DuelConstants 
 {
-
 	public enum EffectCommandTypes
 	{
 		// effect command constants (TryExecuteEffectCommandFunction)

@@ -6,12 +6,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import constants.RomConstants;
+import constants.CardConstants.CardId;
 import constants.CardDataConstants.*;
 import data.romtexts.EffectDescription;
 import data.romtexts.MoveName;
 import rom.Blocks;
 import rom.Texts;
 import util.ByteUtils;
+import util.RomUtils;
 
 public class Move
 {
@@ -25,6 +27,7 @@ public class Move
 	public byte damage; // TODO: non multiple of 10?
 	public MoveCategory category;
 	short effectPtr;
+	MoveEffect customEffect;
 	Set<MoveEffect1> effect1;
 	Set<MoveEffect2> effect2;
 	Set<MoveEffect3> effect3;
@@ -37,6 +40,7 @@ public class Move
 		name = new MoveName();
 		description = new EffectDescription();
 		category = MoveCategory.DAMAGE_NORMAL;
+		customEffect = null;
 		effect1 = new HashSet<>();
 		effect2 = new HashSet<>();
 		effect3 = new HashSet<>();
@@ -50,6 +54,7 @@ public class Move
 		damage = toCopy.damage;
 		category = toCopy.category;
 		effectPtr = toCopy.effectPtr;
+		customEffect = toCopy.customEffect;
 		effect1 = new HashSet<>(toCopy.effect1);
 		effect2 = new HashSet<>(toCopy.effect2);
 		effect3 = new HashSet<>(toCopy.effect3);
@@ -270,14 +275,20 @@ public class Move
 		
 		return index;
 	}
-	
-	public void finalizeDataForAllocating(Texts texts, Blocks blocks, String cardName)
+
+	public void finalizeDataForAllocating(Texts texts, Blocks blocks, String cardName, CardId cardId)
 	{
 		name.finalizeAndAddTexts(texts);
 		description.finalizeAndAddTexts(texts, cardName);
+
+		if (name.toString().compareToIgnoreCase("call for family") == 0)
+		{
+			customEffect = HardcodedMoves.CallForFamily.createMoveEffect(cardName, cardId);
+			customEffect.convertAndAddBlocks(blocks);
+		}
 	}
 
-	public int writeData(byte[] moveBytes, int startIndex) 
+	public int writeData(byte[] moveBytes, int startIndex, Blocks blocks) 
 	{
 		int index = startIndex;
 		
@@ -297,11 +308,10 @@ public class Move
 		moveBytes[index++] = category.getValue();
 		
 		// TODO come back to this
-//		if (name.toString().compareToIgnoreCase("call for family") == 0)
-//		{
-//			effectPtr = RomUtils.convertToInBankOffset(
-//					HardcodedMoves.CallForFamily.writeEffectToMemory(moveBytes, cardName, cardId));
-//		}
+		if (customEffect != null)
+		{
+			effectPtr = RomUtils.convertToLoadedBankOffset(customEffect.getAssignedAddress());
+		}
 		ByteUtils.writeAsShort(effectPtr, moveBytes, index);
 		
 		index += 2;

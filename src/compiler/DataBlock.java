@@ -231,6 +231,14 @@ public class DataBlock
 		}
 		segments = refreshedSegments;
 	}
+
+	public void extractTexts(Texts texts) 
+	{
+		for (Segment seg : segments.values())
+		{
+			seg.extractTexts(texts);
+		}
+	}
 	
 	public void linkData(Texts romTexts, Map<String, SegmentReference> segRefsById)
 	{

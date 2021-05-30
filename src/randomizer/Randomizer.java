@@ -5,13 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-import compiler.DataBlock;
 import data.Card;
-import data.HardcodedMoves;
-import datamanager.BankPreference;
-import datamanager.FixedBlock;
-import datamanager.FloatingBlock;
-import datamanager.MoveableBlock;
 import rom.Texts;
 import util.Logger;
 import rom.Cards;
@@ -107,12 +101,6 @@ public class Randomizer
 		// get and store the base seed as the next one to use
 		int nextSeed = settings.getSeedValue();
 		
-//		for (Move m : romData.allCards.getPokemonCards().getAllMoves())
-//		{
-//			if (m.isPokePower())
-//				System.out.println(m.name.getText() + " " + m.category + " " + m.getDamageString() + " " + m.description.getText());
-//		}
-		
 		// Make a copy of the data to modify and return
 		Rom randomizedData = new Rom(romData);
 		
@@ -125,17 +113,17 @@ public class Randomizer
 		
 		List<Card> colorless = randomizedData.allCards.getCardsWithName("Double Colorless Energy").toList();
 		colorless.get(0).name.setText("Double Colorless Energy1234"); // Quick check to see if we ran and saved successfully
-		
-		// 2cc50  - 16 bytes - no changes needed - just point to it
-		for (int i = 0x2cc50; i < 0x2ccad; i++)
-		{
-//			if (randomizedData.rawBytes[0xce8a  + i] != -1)
-//			{
-				System.out.println(String.format("0x%x", randomizedData.rawBytes[i]));
+//		
+//		// 2cc50  - 16 bytes - no changes needed - just point to it
+//		for (int i = 0x2ccad; i < 0x2ccc2; i++)
+//		{
+////			if (randomizedData.rawBytes[0xce8a  + i] != -1)
+////			{
+//				System.out.println(String.format("0x%x", randomizedData.rawBytes[i]));
 //			}
-		}
-		DataBlock test = HardcodedMoves.CallForFamily.createBaseSnippits();
-		randomizedData.blocks.addFixedBlock(new FixedBlock(0x2cc49, test, 0x2ccad - 0x2cc50));
+//		}
+//		DataBlock test = HardcodedMoves.CallForFamily.createBaseSnippits();
+//		randomizedData.blocks.addFixedBlock(new FixedBlock(0x2ccaa, test, 0x2ccc2 - 0x2ccaa));
 		
 		// Randomize Evolutions (either within current types or completely random)
 		// If randomizing evos and types but keeping lines consistent, completely 
@@ -195,15 +183,7 @@ public class Randomizer
 				randomizedData.rawBytes[0x1e4d4 + i] = 0;
 			}
 		}
-////			
-		// 2cc50  - 16 bytes - no changes needed - just point to it
-		for (int i = 0x2cc50; i < 0x2ccad; i++)
-		{
-//			if (randomizedData.rawBytes[0xce8a  + i] != -1)
-//			{
-				System.out.println(String.format("0x%x", randomizedData.rawBytes[i]));
-//			}
-		}
+		
 //		
 //		int baseLoc = 0x2cf6d;
 //		randomizedData.rawBytes[baseLoc + 8] = 0x2e;

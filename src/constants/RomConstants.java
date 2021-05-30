@@ -14,7 +14,9 @@ public class RomConstants
 	public static final int TOTAL_NUM_ENERGY_CARDS = 7;
 	public static final int TOTAL_NUM_TRAINER_CARDS = 34;
 	public static final int TOTAL_NUM_CARDS = TOTAL_NUM_POKEMON_CARDS + TOTAL_NUM_ENERGY_CARDS + TOTAL_NUM_TRAINER_CARDS;
-	
+
+	public static final int EFFECT_FUNCTION_POINTER_OFFSET = 0x28000; // TODO: find out
+
 	// Text info
 	public static final int MAX_CHARS_POKE_NAME = 20; // not including starting char. For reasons poke names have to be shorter
 	public static final int MAX_CHARS_CARD_NAME = 28; // not including starting char
@@ -30,20 +32,6 @@ public class RomConstants
 	public static final int MAX_LINES_PER_BLOCK_EFFECT_DESC = 7;
 	public static final int MAX_BLOCKS_EFFECT_DESC = 2;
 	
-	// Text type chars and other special text
-	public static final char ENLGISH_TEXT_CHAR = 0x06;
-	public static final char SPECIAL_SYMBOL_START_CHAR = 0x05;
-	public static final String ENERGY_CHARS_FIRE      = SPECIAL_SYMBOL_START_CHAR + "" + (char)0x01;
-	public static final String ENERGY_CHARS_GRASS     = SPECIAL_SYMBOL_START_CHAR + "" + (char)0x02;
-	public static final String ENERGY_CHARS_LIGHTNING = SPECIAL_SYMBOL_START_CHAR + "" + (char)0x03;
-	public static final String ENERGY_CHARS_WATER     = SPECIAL_SYMBOL_START_CHAR + "" + (char)0x04;
-	public static final String ENERGY_CHARS_FIGHTING  = SPECIAL_SYMBOL_START_CHAR + "" + (char)0x05;
-	public static final String ENERGY_CHARS_PSYCHIC   = SPECIAL_SYMBOL_START_CHAR + "" + (char)0x06;
-	public static final String ENERGY_CHARS_COLORLESS = SPECIAL_SYMBOL_START_CHAR + "" + (char)0x07;
-	public static final String[] SPECIAL_SYMBOLS = {ENERGY_CHARS_FIRE, ENERGY_CHARS_GRASS,
-			ENERGY_CHARS_LIGHTNING, ENERGY_CHARS_WATER, ENERGY_CHARS_FIGHTING,
-			ENERGY_CHARS_PSYCHIC, ENERGY_CHARS_COLORLESS
-	};
 	
 	//Locations
 	public static final int HEADER_LOCATION = 0x134;
@@ -127,5 +115,4 @@ public class RomConstants
 		 0x30, 0x31, 0x03, 0x1B, 0x05, 0x03, 0x01, 0x33, 
 		 0x00, 0x34, 0x26, (byte) 0xA6
 	};
-	
 }

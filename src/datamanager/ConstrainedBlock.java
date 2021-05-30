@@ -46,6 +46,19 @@ public class ConstrainedBlock extends MoveableBlock
 		
 		return super.getSegmentReferencesById();
 	}
+
+	@Override
+	public void extractTexts(Texts texts)
+	{
+		if (isShrunkOrMoved())
+		{
+			shrunkLocalBlock.extractTexts(texts);
+		}
+		else
+		{		
+			super.extractTexts(texts);
+		}
+	}
 	
 	@Override
 	public void linkData(Texts romTexts, Map<String, SegmentReference> segRefsById)

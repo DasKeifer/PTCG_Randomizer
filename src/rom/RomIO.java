@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 
+import constants.CharMapConstants;
 import constants.RomConstants;
 import data.Card;
 import util.ByteUtils;
@@ -109,10 +110,14 @@ public class RomIO
 	
 	static void finalizeDataForAllocating(Cards<Card> cards, Texts texts, Blocks blocks)
 	{
+		
 		// Finalize the card data, texts and blocks
 		cards.finalizeDataForAllocating(texts, blocks);
 		
-		// TODO convert cards to blocks?
+		// TODO convert cards to blocks? Then the later probably would make more sense
+		
+		// TODO: temp - trying to get texts working - shove into texts function and rename appropriately
+		blocks.extractTexts(texts);
 		
 		// Convert the text to blocks
 		texts.convertAndAddBlocks(blocks);
@@ -121,7 +126,7 @@ public class RomIO
 		blocks.linkBlocks(texts);
 	}
 	
-	static void writeAllCards(byte[] bytes, Cards<Card> cards)
+	static void writeAllCards(byte[] bytes, Cards<Card> cards, Blocks blocks)
 	{		
 		// First write the 0 index "null" card
 		int ptrIndex = RomConstants.CARD_POINTERS_LOC - RomConstants.CARD_POINTER_SIZE_IN_BYTES;
@@ -142,7 +147,7 @@ public class RomIO
 			ptrIndex += RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 			
 			// Write the card
-			cardIndex = card.writeData(bytes, cardIndex);
+			cardIndex = card.writeData(bytes, cardIndex, blocks);
 		}
 
 		// Write the null pointer at the end of the cards pointers

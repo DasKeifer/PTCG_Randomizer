@@ -50,7 +50,7 @@ public class Blocks
 		if (existing != null && existing != block)
 		{
 			throw new IllegalArgumentException("Duplicate block ID detected! There must be only " +
-					"one allocation block per data block");
+					"one allocation block per data block: " + block.getId());
 		}
 
 		// Add the references for its segments
@@ -60,6 +60,14 @@ public class Blocks
 			{
 				throw new IllegalArgumentException("Duplicate segment ID detected: " + idSegRef.getKey());
 			}
+		}
+	}
+
+	public void extractTexts(Texts texts) 
+	{
+		for (BlockAllocData block : blocksById.values())
+		{
+			block.extractTexts(texts);
 		}
 	}
 	

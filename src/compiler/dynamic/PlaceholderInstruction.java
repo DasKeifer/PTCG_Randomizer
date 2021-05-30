@@ -35,6 +35,12 @@ public class PlaceholderInstruction extends Instruction
 		String rootBlockNameReplaced = CompilerUtils.replacePlaceholders(rootBlockName, placeholderToArgs);
 		inst = CompilerUtils.parseInstruction(lineReplaced, rootBlockNameReplaced);
 	}
+	
+	@Override
+	public void extractTexts(Texts texts)
+	{
+		inst.extractTexts(texts);
+	}
 
 	@Override
 	public void linkData(

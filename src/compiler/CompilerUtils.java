@@ -101,7 +101,7 @@ public class CompilerUtils
 	private static String extractHexValString(String arg, int maxNumChars, int offsetChars)
 	{
 		int valIdx = arg.indexOf(HEX_VAL_MARKER) + 1;
-		if (valIdx < 0)
+		if (valIdx <= 0)
 		{
 			throw new IllegalArgumentException("Failed to find the " + HEX_VAL_MARKER + 
 					" hex value marker: " + arg);
@@ -125,6 +125,20 @@ public class CompilerUtils
 			return Register.BRACKET_HL_BRACKET;
 		}
 		return Register.valueOf(arg.trim().toUpperCase());
+	}
+	
+	public static boolean parseHLIncDecArg(String arg)
+	{
+		if (arg.trim().equalsIgnoreCase("[hli]"))
+		{
+			return true;
+		}
+		else if (arg.trim().equalsIgnoreCase("[hld]"))
+		{
+			return false;
+		}
+		
+		throw new IllegalArgumentException("Passed arg is not [hli] or [hld]: " + arg);
 	}
 
 	public static RegisterPair parseRegisterPairArg(String arg)

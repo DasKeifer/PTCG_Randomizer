@@ -15,6 +15,8 @@ public class Ldtx extends Instruction
 	RegisterPair pair;
 	OneBlockText text;
 	
+	// TODO: move to fixed
+	
 	public Ldtx(RegisterPair pair, OneBlockText text)
 	{
 		this.pair = pair;
@@ -41,6 +43,12 @@ public class Ldtx extends Instruction
 			throw new IllegalArgumentException(supportedArgs + iae.getMessage());
 		}
 	}
+	
+	@Override
+	public void extractTexts(Texts texts)
+	{
+		text.finalizeAndAddTexts(texts);
+	}
 
 	@Override
 	public void linkData(
@@ -48,7 +56,7 @@ public class Ldtx extends Instruction
 			Map<String, SegmentReference> labelToLocalSegment,
 			Map<String, SegmentReference> labelToSegment) 
 	{
-		text.finalizeAndAddTexts(idToText);
+		// Nothing to do here - move to fixed?
 	}
 
 	@Override

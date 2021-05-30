@@ -50,11 +50,23 @@ class Segment extends SegmentReference
 		return true;
 	}
 	
+	// TODO: Change to replacePlacholders - multiple locations
 	public void evaluatePlaceholders(Map<String, String> placeholderToArgs)
 	{
 		for (PlaceholderInstruction instruct : placeholderInstructs)
 		{
 			instruct.evaluatePlaceholdersAndCreateInstruction(placeholderToArgs);
+		}
+	}
+
+	// Done at a separate time than placeholders in case we want to incrementally replace 
+	// placholders prior to extracting texts or linking
+	// TODO: rename since we aren't just extracting
+	public void extractTexts(Texts texts) 
+	{
+		for (Instruction item : data)
+		{
+			item.extractTexts(texts);
 		}
 	}
 	
