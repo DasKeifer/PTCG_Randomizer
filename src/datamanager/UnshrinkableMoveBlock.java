@@ -13,13 +13,13 @@ public class UnshrinkableMoveBlock extends MoveableBlock
 	@Override
 	public boolean canBeShrunkOrMoved() 
 	{
-		return false;
+		return true;
 	}
 	
 	@Override
 	public boolean movesNotShrinks() 
 	{
-		return false; // Does neither but default to shrink since that would at least leave it in the bank
+		return true;
 	}
 
 	@Override

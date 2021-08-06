@@ -266,7 +266,7 @@ public class HardcodedEffects
 					"ldh a, [$ff98]", 
 					"ldh [$ffa0], a",
 					"or a",
-					"ret", 				// Matches through here
+					"ret",
 
 				".play_sfx",
 					// play SFX and loop back
@@ -344,10 +344,10 @@ public class HardcodedEffects
 			aiSelect.replacePlaceholderIds(placeholders);
 
 			effect = new CardEffect(effectName + toFindBasicOf.name.toString(), (byte) 3);
-			effect.addEffectCommand(EffectCommandTypes.RequireSelection, playerSelect);
-			effect.addEffectCommand(EffectCommandTypes.AiSelection, aiSelect);
 			effect.addEffectCommand(EffectCommandTypes.InitialEffect1, RomUtils.convertToLoadedBankOffset(INITIAL_EFFECT_ADDRESS));
 			effect.addEffectCommand(EffectCommandTypes.AfterDamage, RomUtils.convertToLoadedBankOffset(PUT_IN_PLAY_AREA_EFFECT_ADDRESS));
+			effect.addEffectCommand(EffectCommandTypes.RequireSelection, playerSelect);
+			effect.addEffectCommand(EffectCommandTypes.AiSelection, aiSelect);
 			
 			HardcodedEffects.getInstance().addCardNameUniqueEffect(effectName, toFindBasicOf.name.toString(), effect);
 			return effect;

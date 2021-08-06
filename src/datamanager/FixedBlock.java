@@ -22,6 +22,8 @@ public class FixedBlock extends BlockAllocData
 		replaceWith.setAssignedAddress(startAddress);
 		this.replaceLength = replaceLength;
 	}
+	
+	// TODO: add a way to get the end of the fixed block to skip the nops
 
 	public int getFixedAddress() 
 	{
@@ -38,6 +40,14 @@ public class FixedBlock extends BlockAllocData
 		}
 		
 		int lengthWritten = dataBlock.writeBytes(bytes);
+		
+//		if (dataBlock.getId().contains("MoreEffectBanksTweak")) 
+//		{
+//			for (int i = getFixedAddress(); i < getFixedAddress() + replaceLength; i++)
+//			{
+//				System.out.println(String.format("0x%x - 0x%x", i, bytes[i]));
+//			}
+//		}
 		
 		// Safety Check
 		if (lengthWritten > replaceLength)

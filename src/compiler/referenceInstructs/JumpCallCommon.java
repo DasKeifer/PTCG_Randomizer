@@ -1,4 +1,4 @@
-package compiler.dynamicInstructs;
+package compiler.referenceInstructs;
 
 
 import compiler.CompilerConstants.InstructionConditions;
@@ -249,11 +249,11 @@ public abstract class JumpCallCommon extends Instruction
 		bytes[indexToAddAt] = (byte) (0xC7 | farInstuctRstVal); 
 		
 		byte bank = RomUtils.determineBank(callAddress);
-		short localAddress = RomUtils.convertToLoadedBankOffset(bank, callAddress);
+		short loadedAddress = RomUtils.convertToLoadedBankOffset(bank, callAddress);
 		
 		// Now write the rest of the address
 		bytes[indexToAddAt + 1] = bank;
-		ByteUtils.writeAsShort(localAddress, bytes, indexToAddAt + 2);
+		ByteUtils.writeAsShort(loadedAddress, bytes, indexToAddAt + 2);
 		return 4;
 	}
 	

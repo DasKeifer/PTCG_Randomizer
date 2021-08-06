@@ -3,15 +3,15 @@ package data;
 import java.util.EnumMap;
 import java.util.Map.Entry;
 
-import javax.swing.text.Segment;
-
 import compiler.CompilerUtils;
 import compiler.DataBlock;
-import compiler.dynamicInstructs.BlockAddress;
-import compiler.dynamicInstructs.RawBytes;
+import compiler.referenceInstructs.BlockBankLoadedAddress;
+import compiler.referenceInstructs.BlockGlobalAddress;
+import compiler.referenceInstructs.RawBytes;
 import datamanager.BankPreference;
 import datamanager.FixedBlock;
 import datamanager.UnconstrainedMoveBlock;
+import datamanager.UnshrinkableMoveBlock;
 import constants.DuelConstants.EffectCommandTypes;
 import rom.Blocks;
 import util.ByteUtils;
@@ -62,8 +62,8 @@ public class CardEffect
 		ld a, BANK("Effect Functions")		(2 bytes)
 		ld [wEffectFunctionsBank], a 		(3 bytes)
 		*/
-//		DataBlock removeSeg = new DataBlock("MoreEffectBanksTweak_removeSeg", "nop $4");
-//		blocks.addFixedBlock(new FixedBlock(0x300d, removeSeg, 5));
+		DataBlock removeSeg = new DataBlock("MoreEffectBanksTweak_removeSeg", "nop $4");
+		blocks.addFixedBlock(new FixedBlock(0x300d, removeSeg, 5));
 		
 
 		/* replace
@@ -73,38 +73,34 @@ public class CardEffect
 		 inc hl
 		 with our custom logic that handles other banks
 		 */		
+		final String checkCommandLoopFunction = "$3012";
 		final String foundCommandFunction = "$301d";
 		final String wEffectFunctionsBank = "$ce22";
 		DataBlock logicSeg = new DataBlock("MoreEffectBanksTweak_logicSeg", 
 				"cp c",
-				"jp z, " + foundCommandFunction,
-				//"jr z, .default_bank",
-//				"sub a, $80",
-//				"cp c",
-//				"jr z, .other_bank",
+				"jr z, .default_bank",
+				"sub a, $80",
+				"cp c",
+				"jr z, .other_bank",
 				"inc hl",
 				"inc hl",
-//				"jp $3012"
+				// Normally we would jump back to where we cut from but that just immediately
+				// jumps to the check command loop so we save some ops and just jump there
+				// directly
+				"jp " + checkCommandLoopFunction,
 				
-				
-				
-				// TODO: HERE! This isn't working right... should be 1b but is 19 instead
-				
-				
-				"jp MoreEffectBanksTweak_jumpToLogicSeg." + DataBlock.END_OF_DATA_BLOCK_SUBSEG_LABEL //jump back to where we cut from
-//				
-//			".default_bank",
-//				"ld a, $b",
-//				"jr .loadBank",
-//
-//			".other_bank",
-//				"ld a, [hl]",
-//				"inc hl",
-//				"jr .loadBank",
-//
-//			".loadBank",
-//				"ld ["+ wEffectFunctionsBank + "], a",
-//				"jp " + foundCommandFunction
+			".default_bank",
+				"ld a, $b",
+				"jr .loadBank",
+
+			".other_bank",
+				"ld a, [hl]",
+				"inc hl",
+				// flow through to loadbank
+
+			".loadBank",
+				"ld ["+ wEffectFunctionsBank + "], a",
+				"jp " + foundCommandFunction
 		);
 		blocks.addMoveableBlock(new UnconstrainedMoveBlock((byte) 0, logicSeg, 
 				new BankPreference((byte) 0, (byte)0x0, (byte)0x1), //Try to fit it in home to avoid bankswaps
@@ -156,21 +152,21 @@ public class CardEffect
 				}
 				else // Otherwise we need to figure out where to put it
 				{
-					// TODO: Make a new class for this that will compress as possible
+					// TODO: Make a new class for this that will compress as possible?					
 					
 					// Signal its a 3 byte pointer while preserving the value
 					effectCommand.appendInstruction(new RawBytes((byte)(effect.getKey().getValue() + MULTIBANK_EFFECT_OFFSET)));
 					// Add the 3 byte pointer
-					effectCommand.appendInstruction(new BlockAddress(effect.getValue().block.getId(), 3, 0));
+					effectCommand.appendInstruction(new BlockBankLoadedAddress(effect.getValue().block.getId(), true)); // True = include bank
 					// Add the moveable block
 					blocks.addMoveableBlock(new UnconstrainedMoveBlock(priority, effect.getValue().block, 
 							new BankPreference((byte) 1, (byte)0xb, (byte)0xc),
-							new BankPreference((byte) 2, (byte)0xc, (byte)0xd))); // TODO: Probably additional preferred spaces we can place this
+							new BankPreference((byte) 2, (byte)0xa, (byte)0xb))); // TODO: Probably additional preferred spaces we can place this
 				}
 			}
 			// Append a null at the end so we know its finished
 			effectCommand.appendInstruction(new RawBytes((byte) 0));
-			blocks.addMoveableBlock(new UnconstrainedMoveBlock(priority, effectCommand, new BankPreference((byte) 1, (byte)6, (byte)7))); // TODO: figure out where these can effectively live	
+			blocks.addMoveableBlock(new UnshrinkableMoveBlock(priority, effectCommand, new BankPreference((byte) 1, (byte)6, (byte)7))); // TODO: figure out where these can effectively live	
 		}
 	}
 	

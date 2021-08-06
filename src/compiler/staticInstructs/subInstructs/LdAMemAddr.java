@@ -16,7 +16,7 @@ public class LdAMemAddr extends Ld
 	
 	public LdAMemAddr(short addr, boolean isAFirst)
 	{
-		super(1); // size
+		super(SIZE); // size
 		this.addr = addr;
 		this.isAFirst = isAFirst;
 	}

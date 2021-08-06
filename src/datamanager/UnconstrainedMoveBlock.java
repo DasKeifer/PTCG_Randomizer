@@ -15,6 +15,7 @@ public class UnconstrainedMoveBlock extends MoveableBlock
 	@Override
 	public SortedMap<Byte, BankRange> getPreferencedAllowableBanks()
 	{
+		// TODO: be consistent with priority - low is high?
 		SortedMap<Byte, BankRange> toReturn = super.getPreferencedAllowableBanks();
 		toReturn.put(Byte.MAX_VALUE, new BankRange((byte) 0, (byte) (RomConstants.NUMBER_OF_BANKS - 1)));
 		return toReturn;

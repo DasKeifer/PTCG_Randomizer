@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import compiler.DataBlock;
-import compiler.dynamicInstructs.BlockAddress;
-import compiler.dynamicInstructs.RawBytes;
+import compiler.referenceInstructs.BlockGlobalAddress;
+import compiler.referenceInstructs.RawBytes;
 import constants.RomConstants;
 import datamanager.BankPreference;
 import datamanager.FixedBlock;
@@ -83,7 +83,7 @@ public class Texts
 	public void convertAndAddBlocks(Blocks blocks)
 	{
 		// Write a null pointer to start because thats how it was in the original rom
-		DataBlock textPtrs = new DataBlock("internal_textPointers", new BlockAddress(0, RomConstants.TEXT_POINTER_SIZE_IN_BYTES, 0));
+		DataBlock textPtrs = new DataBlock("internal_textPointers", new RawBytes((byte) 0, (byte) 0, (byte) 0));
 		
 		// Create the rest of the text blocks and pointers
 		// We intentionally do it like this to ensure there are no gaps which would otherwise
@@ -105,14 +105,14 @@ public class Texts
 					blocks.addMoveableBlock(new UnconstrainedMoveBlock((byte) 2, nullText, new BankPreference((byte)1, (byte)0xd, (byte)0x1c)));
 				}
 				
-				textPtrs.appendInstruction(new BlockAddress(nullTextLabel, RomConstants.TEXT_POINTER_SIZE_IN_BYTES, RomConstants.TEXT_POINTER_OFFSET));
+				textPtrs.appendInstruction(new BlockGlobalAddress(nullTextLabel, RomConstants.TEXT_POINTER_OFFSET));
 				continue;
 			}
 
 			// Otherwise we have the key - add the text
 			String textLabel = "internal_romText" + textId;
 			byte[] stringBytes = getAtId(textId).getBytes();
-			textPtrs.appendInstruction(new BlockAddress(textLabel, RomConstants.TEXT_POINTER_SIZE_IN_BYTES, RomConstants.TEXT_POINTER_OFFSET));
+			textPtrs.appendInstruction(new BlockGlobalAddress(textLabel, RomConstants.TEXT_POINTER_OFFSET));
 			
 			// Create the data block from the string bytes and add the trailing null and then add the block for it
 			DataBlock text = new DataBlock(textLabel, new RawBytes(stringBytes, textTerminator));

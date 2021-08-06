@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import compiler.dynamicInstructs.PlaceholderInstruction;
+import compiler.referenceInstructs.PlaceholderInstruction;
 import rom.Texts;
 import util.RomUtils;
 
@@ -273,7 +273,7 @@ public class DataBlock
 	public static boolean debug;
 	public int writeBytes(byte[] bytes)
 	{
-		debug = id.contains("MoreEffectBanksTweak");
+		debug = id.contains("CallFor");
 		if (debug) 
 		{
 			System.out.println("Segment - " + id);

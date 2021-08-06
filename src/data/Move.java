@@ -281,22 +281,22 @@ public class Move
 	{
 		name.finalizeAndAddTexts(texts);
 
-//		if (name.toString().compareToIgnoreCase("call for family") == 0)
-//		{
-//			Cards<Card> basics = cards.getBasicEvolutionOfCard(hostCard);
-//			if (basics.count() <= 0)
-//			{
-//				throw new IllegalArgumentException("Failed to find basic card for " + hostCard.name.toString());
-//			}
-//			
-//			customEffect = HardcodedEffects.CallForFamily.createMoveEffect(cards, basics);
-//			customEffect.convertAndAddBlocks(blocks);
-//			description.finalizeAndAddTexts(texts, basics.toList().get(0).name.toString());
-//		}
-//		else
-//		{
+		if (name.toString().compareToIgnoreCase("call for family") == 0)
+		{
+			Cards<Card> basics = cards.getBasicEvolutionOfCard(hostCard);
+			if (basics.count() <= 0)
+			{
+				throw new IllegalArgumentException("Failed to find basic card for " + hostCard.name.toString());
+			}
+			
+			customEffect = HardcodedEffects.CallForFamily.createMoveEffect(cards, basics);
+			customEffect.convertAndAddBlocks(blocks);
+			description.finalizeAndAddTexts(texts, basics.toList().get(0).name.toString());
+		}
+		else
+		{
 			description.finalizeAndAddTexts(texts, hostCard.name.toString());
-//		}
+		}
 	}
 
 	public int writeData(byte[] moveBytes, int startIndex, Blocks blocks) 

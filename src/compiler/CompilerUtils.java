@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import compiler.CompilerConstants.*;
-import compiler.dynamicInstructs.*;
+import compiler.referenceInstructs.*;
 import compiler.staticInstructs.*;
 import constants.RomConstants;
 import data.romtexts.*;

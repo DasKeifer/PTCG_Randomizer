@@ -1,4 +1,4 @@
-package compiler.dynamicInstructs;
+package compiler.referenceInstructs;
 
 
 import java.util.Arrays;

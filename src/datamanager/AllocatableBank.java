@@ -191,7 +191,7 @@ public class AllocatableBank
 			else
 			{
 				// Last added will be the highest priority
-				priorityValue = shrunkenAllocs.get(shrunkenAllocs.size()).getPriority();
+				priorityValue = shrunkenAllocs.get(shrunkenAllocs.size() - 1).getPriority();
 			}
 		}
 		
@@ -244,7 +244,7 @@ public class AllocatableBank
 					// Get the remote block that will need to be allocated
 					if (alloc.getRemoteBlock() != null)
 					{
-						blocksToAllocate.add(alloc.getRemoteBlock());
+						runningToAlloc.add(alloc.getRemoteBlock());
 						
 						// If it moves, we need to remove it from this block too
 						if (alloc.movesNotShrinks())

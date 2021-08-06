@@ -9,3 +9,5 @@ Seed 42, randomize args: false, pokes, numMovesPerPokemon (in rom), true, 1
 8. Convergent evolutions
 9. Leek slap? Does this work with other pokes?
 10. Sword dance/focus energy
+
+11. Doubleless energy text too long on one line

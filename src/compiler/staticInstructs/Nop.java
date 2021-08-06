@@ -2,10 +2,10 @@ package compiler.staticInstructs;
 
 import compiler.CompilerUtils;
 import compiler.StaticInstruction;
-import compiler.dynamicInstructs.Jump;
-import compiler.dynamicInstructs.JumpCallCommon;
 import compiler.CompilerConstants.InstructionConditions;
 import compiler.CompilerConstants.Register;
+import compiler.referenceInstructs.Jump;
+import compiler.referenceInstructs.JumpCallCommon;
 
 public class Nop extends StaticInstruction
 {
@@ -58,7 +58,9 @@ public class Nop extends StaticInstruction
 		// takes 3 cycles to jump so 4 or greater its more efficient to jump
 		if (size > 3)
 		{
-			JumpCallCommon.writeJr(bytes, indexToAddAt, InstructionConditions.NONE, (byte) (size - 2));
+			// -2 because its relative to the end of the JR command and +1 because we want the command
+			// after this block
+			JumpCallCommon.writeJr(bytes, indexToAddAt, InstructionConditions.NONE, (byte) (size - 1));
 		}
 	}
 }

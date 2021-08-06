@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import compiler.dynamicInstructs.PlaceholderInstruction;
+import compiler.referenceInstructs.PlaceholderInstruction;
 import rom.Texts;
 
 class Segment extends SegmentReference

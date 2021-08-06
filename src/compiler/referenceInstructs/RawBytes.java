@@ -1,4 +1,4 @@
-package compiler.dynamicInstructs;
+package compiler.referenceInstructs;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -12,6 +12,7 @@ import util.ByteUtils;
 
 public class RawBytes extends Instruction
 {
+	// TODO: Move to static
 	int size;
 	List<byte[]> allBytes;
 	
