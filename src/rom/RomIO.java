@@ -6,9 +6,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import constants.CharMapConstants;
 import constants.RomConstants;
 import data.Card;
+import data.hardcodedEffects.HardcodedEffects;
 import util.ByteUtils;
 import util.RomUtils;
 
@@ -110,6 +110,8 @@ public class RomIO
 	
 	static void finalizeDataForAllocating(Cards<Card> cards, Texts texts, Blocks blocks)
 	{
+		// Reset the singleton -- TODO: Needed?
+		HardcodedEffects.reset();
 		
 		// Finalize the card data, texts and blocks
 		cards.finalizeDataForAllocating(texts, blocks);

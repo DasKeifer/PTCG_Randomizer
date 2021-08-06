@@ -29,6 +29,9 @@ public class MoveSetRandomizer {
 	private Logger logger;
 	private final Cards<PokemonCard> pokeToGetAttacksFrom;
 	
+	// TODO: Add logic to prevent the same move from being on the same pokemon card
+	// TODO: add logic to allow some moves to only appear once per evo line (or once per pokemon in evo line) (e.g. call for family)
+	
 	public MoveSetRandomizer(Rom inRomData, Logger inLogger)
 	{
 		romData = inRomData;

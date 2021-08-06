@@ -6,7 +6,7 @@ import rom.Texts;
 
 public abstract class Instruction
 {		
-	public void extractTexts(Texts texts) {} // TODO: fix Most do nothing
+	public abstract void extractTexts(Texts texts);
 	
 	public abstract void linkData(
 			Texts romTexts,

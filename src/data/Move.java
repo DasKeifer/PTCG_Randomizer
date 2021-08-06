@@ -6,11 +6,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import constants.RomConstants;
-import constants.CardConstants.CardId;
 import constants.CardDataConstants.*;
+import data.hardcodedEffects.HardcodedEffects;
 import data.romtexts.EffectDescription;
 import data.romtexts.MoveName;
 import rom.Blocks;
+import rom.Cards;
 import rom.Texts;
 import util.ByteUtils;
 import util.RomUtils;
@@ -27,7 +28,7 @@ public class Move
 	public byte damage; // TODO: non multiple of 10?
 	public MoveCategory category;
 	short effectPtr;
-	MoveEffect customEffect;
+	CardEffect customEffect;
 	Set<MoveEffect1> effect1;
 	Set<MoveEffect2> effect2;
 	Set<MoveEffect3> effect3;
@@ -276,16 +277,26 @@ public class Move
 		return index;
 	}
 
-	public void finalizeDataForAllocating(Texts texts, Blocks blocks, String cardName, CardId cardId)
+	public void finalizeDataForAllocating(Cards<Card> cards, Texts texts, Blocks blocks, PokemonCard hostCard)
 	{
 		name.finalizeAndAddTexts(texts);
-		description.finalizeAndAddTexts(texts, cardName);
 
-		if (name.toString().compareToIgnoreCase("call for family") == 0)
-		{
-			customEffect = HardcodedMoves.CallForFamily.createMoveEffect(cardName, cardId);
-			customEffect.convertAndAddBlocks(blocks);
-		}
+//		if (name.toString().compareToIgnoreCase("call for family") == 0)
+//		{
+//			Cards<Card> basics = cards.getBasicEvolutionOfCard(hostCard);
+//			if (basics.count() <= 0)
+//			{
+//				throw new IllegalArgumentException("Failed to find basic card for " + hostCard.name.toString());
+//			}
+//			
+//			customEffect = HardcodedEffects.CallForFamily.createMoveEffect(cards, basics);
+//			customEffect.convertAndAddBlocks(blocks);
+//			description.finalizeAndAddTexts(texts, basics.toList().get(0).name.toString());
+//		}
+//		else
+//		{
+			description.finalizeAndAddTexts(texts, hostCard.name.toString());
+//		}
 	}
 
 	public int writeData(byte[] moveBytes, int startIndex, Blocks blocks) 

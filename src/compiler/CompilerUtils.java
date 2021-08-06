@@ -6,8 +6,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import compiler.CompilerConstants.*;
-import compiler.dynamic.*;
-import compiler.fixed.*;
+import compiler.dynamicInstructs.*;
+import compiler.staticInstructs.*;
 import constants.RomConstants;
 import data.romtexts.*;
 import util.ByteUtils;
@@ -42,7 +42,7 @@ public class CompilerUtils
 		return line.startsWith(CompilerUtils.SUBSEGMENT_STARTLINE);
 	}
 	
-	public static String tryParseSubsegmentName(String line, String rootSegmentName)
+	public static String tryParseFullSubsegmentName(String line, String rootSegmentName)
 	{
 		if (isOnlySubsegmentPartOfLabel(line))
 		{
@@ -61,7 +61,7 @@ public class CompilerUtils
 		return rootSegmentName + line.trim();
 	}
 	
-	public static String tryParseBracketedArg(String arg)
+	private static String tryParseBracketedArg(String arg)
 	{
 		arg = arg.trim();
 		if (arg.startsWith("[") && arg.endsWith("]"))
@@ -96,6 +96,11 @@ public class CompilerUtils
 	private static String extractHexValString(String arg, int numChars)
 	{
 		return extractHexValString(arg, numChars, 0);
+	}
+
+	public static boolean isHexArg(String arg)
+	{
+		return arg.contains(HEX_VAL_MARKER);
 	}
 	
 	private static String extractHexValString(String arg, int maxNumChars, int offsetChars)
@@ -154,6 +159,16 @@ public class CompilerUtils
 	public static InstructionConditions parseInstructionConditionsArg(String arg)
 	{
 		return InstructionConditions.valueOf(arg.trim().toUpperCase());
+	}
+	
+	public static short parseMemoryAddressArg(String arg)
+	{
+		arg = tryParseBracketedArg(arg);
+		if (arg != null)
+		{
+			return parseShortArg(arg);
+		}
+		throw new IllegalArgumentException("Passed arg is not surrounded in brackets so it is not a valid memory address: " + arg);
 	}
 	
 	public static OneBlockText parseOneBlockTextArg(String arg)
@@ -315,15 +330,21 @@ public class CompilerUtils
 			case "bank1call":
 				return BankCall1.create(args);
 				
-			// Misc
+			// Arithmetic
 			case "dec":
 				return Dec.create(args);
 			case "inc":
 				return Inc.create(args);
+			case "sub":
+				return Sub.create(args);
+				
+			// Misc
 			case "pop":
 				return Pop.create(args);
 			case "push":
 				return Push.create(args);
+			case "nop":
+				return Nop.create(args);
 				
 			// Writing raw data
 				

@@ -78,7 +78,7 @@ public abstract class MoveableBlock extends BlockAllocData
 	}
 	
 	public abstract boolean movesNotShrinks();
-	public abstract FloatingBlock getRemoteBlock();	
+	public abstract UnconstrainedMoveBlock getRemoteBlock();	
 	public abstract int getShrunkWorstCaseSizeOnBank(byte bank);
 	
 	public int getCurrentWorstCaseSizeOnBank(byte bank)

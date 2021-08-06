@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import data.Card;
+import data.CardEffect;
 import datamanager.DataManager;
 
 public class Rom
@@ -69,6 +70,7 @@ public class Rom
 		RomIO.clearAllText(rawBytes);
 		
 		// TODO: Need to handle tweak blocks somehow
+		CardEffect.addTweakToAllowEffectsInMoreBanks(blocks);
 		
 		// Finalize all the data to prepare for writing
 		// TODO: Change to generateBlocks or something like that?

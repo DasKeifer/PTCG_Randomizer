@@ -8,6 +8,8 @@ import constants.CardDataConstants.CardType;
 
 public class Settings 
 {
+	// TODO: Make settings a singleton? Then we don't have to pass them everywhere
+	
 	// TODO: Generation is very stretch - don't worry too much about for now
     public enum RandomizationStrategy 
     {
@@ -137,6 +139,8 @@ public class Settings
 	private boolean movesMatchPokeSpecific;
 	private boolean movesMatchTypeSpecific;
 	
+	private boolean applyMultibankEffectsTweak;
+	
 	
 	public int getSeedValue()
 	{
@@ -215,5 +219,11 @@ public class Settings
 	}
 	public String getSeedString() {
 		return seed;
+	}
+	public boolean applyMultibankEffectsTweak() {
+		return applyMultibankEffectsTweak;
+	}
+	public void setApplyMultibankEffectsTweak(boolean applyMultibankEffectsTweak) {
+		this.applyMultibankEffectsTweak = applyMultibankEffectsTweak;
 	}
 }

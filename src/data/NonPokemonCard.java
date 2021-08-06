@@ -4,6 +4,7 @@ import constants.RomConstants;
 import data.romtexts.CardName;
 import data.romtexts.EffectDescription;
 import rom.Blocks;
+import rom.Cards;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -57,7 +58,7 @@ public class NonPokemonCard extends Card
 	}
 	
 	@Override
-	public void finalizeDataForAllocating(Texts texts, Blocks blocks)
+	public void finalizeDataForAllocating(Cards<Card> cards, Texts texts, Blocks blocks)
 	{
 		commonFinalizeDataForAllocating(texts);
 		

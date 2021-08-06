@@ -15,7 +15,7 @@ public class RomConstants
 	public static final int TOTAL_NUM_TRAINER_CARDS = 34;
 	public static final int TOTAL_NUM_CARDS = TOTAL_NUM_POKEMON_CARDS + TOTAL_NUM_ENERGY_CARDS + TOTAL_NUM_TRAINER_CARDS;
 
-	public static final int EFFECT_FUNCTION_POINTER_OFFSET = 0x28000; // TODO: find out
+	public static final int EFFECT_FUNCTION_POINTER_OFFSET = 0x28000;
 
 	// Text info
 	public static final int MAX_CHARS_POKE_NAME = 20; // not including starting char. For reasons poke names have to be shorter

@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import compiler.dynamic.PlaceholderInstruction;
+import compiler.dynamicInstructs.PlaceholderInstruction;
 import rom.Texts;
 
 class Segment extends SegmentReference
@@ -50,18 +50,16 @@ class Segment extends SegmentReference
 		return true;
 	}
 	
-	// TODO: Change to replacePlacholders - multiple locations
-	public void evaluatePlaceholders(Map<String, String> placeholderToArgs)
+	public void fillPlaceholders(Map<String, String> placeholderToArgs)
 	{
 		for (PlaceholderInstruction instruct : placeholderInstructs)
 		{
-			instruct.evaluatePlaceholdersAndCreateInstruction(placeholderToArgs);
+			instruct.fillPlaceholdersAndCreateInstruction(placeholderToArgs);
 		}
 	}
 
 	// Done at a separate time than placeholders in case we want to incrementally replace 
-	// placholders prior to extracting texts or linking
-	// TODO: rename since we aren't just extracting
+	// placeholders prior to extracting texts or linking
 	public void extractTexts(Texts texts) 
 	{
 		for (Instruction item : data)
@@ -93,6 +91,15 @@ class Segment extends SegmentReference
 		{
 			writeAddress += item.writeBytes(bytes, writeAddress);
 		}
+
+		if (DataBlock.debug)
+		{
+			for (int i = assignedAddress; i < writeAddress; i++)
+			{
+				System.out.println(String.format("0x%x - 0x%x", i, bytes[i]));
+			}
+		}
+		
 		return writeAddress - assignedAddress;
 	}
 }

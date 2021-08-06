@@ -8,6 +8,7 @@ import data.romtexts.CardName;
 import data.romtexts.PokeCategory;
 import data.romtexts.PokeDescription;
 import rom.Blocks;
+import rom.Cards;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -18,8 +19,8 @@ public class PokemonCard extends Card
 	public static final int MAX_NUM_MOVES = 2;
 	
 	byte hp; // TODO: non multiples of 10?
-	EvolutionStage stage;
-	CardName prevEvoName;
+	public EvolutionStage stage; // TODO: Encaspsulate?
+	public CardName prevEvoName; // TODO: Encaspsulate?
 	
 	private Move[] moves;
 	
@@ -260,7 +261,7 @@ public class PokemonCard extends Card
 	}
 	
 	@Override
-	public void finalizeDataForAllocating(Texts texts, Blocks blocks)
+	public void finalizeDataForAllocating(Cards<Card> cards, Texts texts, Blocks blocks)
 	{
 		commonFinalizeDataForAllocating(texts);
 		
@@ -271,7 +272,7 @@ public class PokemonCard extends Card
 		sortMoves();
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
-			moves[moveIndex].finalizeDataForAllocating(texts, blocks, name.toString(), id);
+			moves[moveIndex].finalizeDataForAllocating(cards, texts, blocks, this);
 		}
 	}
 

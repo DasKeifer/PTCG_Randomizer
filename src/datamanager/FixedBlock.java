@@ -2,6 +2,7 @@ package datamanager;
 
 
 import compiler.DataBlock;
+import compiler.staticInstructs.Nop;
 import util.ByteUtils;
 import util.RomUtils;
 
@@ -33,7 +34,7 @@ public class FixedBlock extends BlockAllocData
 		dataBlock.setAssignedAddress(getFixedAddress()); // TODO: handle more gracefully - linking after assigning addresses...?
 		if (replaceLength >= 0)
 		{
-			ByteUtils.setBytes(bytes, dataBlock.getAssignedAddress(), replaceLength, (byte) 0xFF);
+			ByteUtils.setBytes(bytes, dataBlock.getAssignedAddress(), replaceLength, Nop.NOP_VALUE);
 		}
 		
 		int lengthWritten = dataBlock.writeBytes(bytes);

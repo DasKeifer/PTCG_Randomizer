@@ -109,13 +109,13 @@ public class AllocatableBank
 	}
 
 	// Only (potentially) modifies blocks to alloc if true is returned
-	public boolean attemptToAdd(MoveableBlock alloc, List<FloatingBlock> blocksToAlloc)
+	public boolean attemptToAdd(MoveableBlock alloc, List<UnconstrainedMoveBlock> blocksToAlloc)
 	{
 		return attemptToAdd(alloc, true, blocksToAlloc);
 	}
 
 	// Only (potentially) modifies blocks to alloc if true is returned
-	private boolean attemptToAdd(MoveableBlock alloc, boolean attemptToShrinkOthers, List<FloatingBlock> blocksToAlloc)
+	private boolean attemptToAdd(MoveableBlock alloc, boolean attemptToShrinkOthers, List<UnconstrainedMoveBlock> blocksToAlloc)
 	{
 		if (getLargestFreeSpace() < alloc.getCurrentWorstCaseSizeOnBank(bank))
 		{
@@ -180,7 +180,7 @@ public class AllocatableBank
 	{
 		byte priorityValue = -1;
 		List<MoveableBlock> shrunkenAllocs = new LinkedList<>();
-		List<FloatingBlock> toAlloc = new LinkedList<>();
+		List<UnconstrainedMoveBlock> toAlloc = new LinkedList<>();
 		if (shrinkToMakeSpace(space, shrunkenAllocs, toAlloc))
 		{
 			if (shrunkenAllocs.isEmpty())
@@ -220,10 +220,10 @@ public class AllocatableBank
 	}
 
 	// Only (potentially) modifies blocks to alloc if true is returned
-	private boolean shrinkToMakeSpace(int space, List<MoveableBlock> shrunkenAllocsByReversePriority, List<FloatingBlock> blocksToAllocate)
+	private boolean shrinkToMakeSpace(int space, List<MoveableBlock> shrunkenAllocsByReversePriority, List<UnconstrainedMoveBlock> blocksToAllocate)
 	{
 		// Create a separate list so the passed list is only modified if true is returned
-		List<FloatingBlock> runningToAlloc = new LinkedList<>();
+		List<UnconstrainedMoveBlock> runningToAlloc = new LinkedList<>();
 		
 		List<List<MoveableBlock>> allocByPriority = new ArrayList<>(allocationsByPriority.descendingMap().values());
 		ListIterator<MoveableBlock> revIterator;

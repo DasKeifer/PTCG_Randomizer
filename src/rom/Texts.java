@@ -4,12 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import compiler.DataBlock;
-import compiler.dynamic.BlockAddress;
-import compiler.dynamic.RawBytes;
+import compiler.dynamicInstructs.BlockAddress;
+import compiler.dynamicInstructs.RawBytes;
 import constants.RomConstants;
 import datamanager.BankPreference;
 import datamanager.FixedBlock;
-import datamanager.FloatingBlock;
+import datamanager.UnconstrainedMoveBlock;
 
 public class Texts 
 {
@@ -102,7 +102,7 @@ public class Texts
 				{
 					nullTextLabel = "internal_romTextNull";
 					DataBlock nullText = new DataBlock(nullTextLabel, new RawBytes("NULL TEXT".getBytes(), textTerminator));
-					blocks.addMoveableBlock(new FloatingBlock((byte) 2, nullText, new BankPreference((byte)1, (byte)0xd, (byte)0x1c)));
+					blocks.addMoveableBlock(new UnconstrainedMoveBlock((byte) 2, nullText, new BankPreference((byte)1, (byte)0xd, (byte)0x1c)));
 				}
 				
 				textPtrs.appendInstruction(new BlockAddress(nullTextLabel, RomConstants.TEXT_POINTER_SIZE_IN_BYTES, RomConstants.TEXT_POINTER_OFFSET));
@@ -116,7 +116,7 @@ public class Texts
 			
 			// Create the data block from the string bytes and add the trailing null and then add the block for it
 			DataBlock text = new DataBlock(textLabel, new RawBytes(stringBytes, textTerminator));
-			blocks.addMoveableBlock(new FloatingBlock((byte) 2, text, new BankPreference((byte)1, (byte)0xd, (byte)0x1c)));
+			blocks.addMoveableBlock(new UnconstrainedMoveBlock((byte) 2, text, new BankPreference((byte)1, (byte)0xd, (byte)0x1c)));
 			usedCount++;
 		}
 

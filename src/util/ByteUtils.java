@@ -9,7 +9,7 @@ public class ByteUtils
 	
 	public static final int BYTE_UPPER_HEX_CHAR_MASK = 0xf0;
 	public static final int BYTE_LOWER_HEX_CHAR_MASK = 0x0f;
-
+	
 	public static void printBytes(byte[] bytes, int index, int bytesPerNumber, int numberToPrint)
 	{
 		String formatString = "0x%" + bytesPerNumber*2 + "X";
@@ -180,7 +180,7 @@ public class ByteUtils
 		}
 		
 		long val = Long.parseLong(str, 16); //16 = hex
-		if (val > Math.pow(MAX_BYTE_VALUE, numBytes) || val < MIN_BYTE_VALUE)
+		if (val > (Math.pow(MAX_BYTE_VALUE + 1, numBytes) - 1) || val < MIN_BYTE_VALUE)
 		{
 			throw new NumberFormatException("Failed to parse " + numBytes + " unsigned hex bytes from " + str);
 		}

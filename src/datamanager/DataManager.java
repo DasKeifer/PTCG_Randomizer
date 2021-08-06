@@ -99,7 +99,7 @@ public class DataManager
 	private boolean tryAllocate(MoveableBlock data)
 	{
 		// As we go we may find blocks that need to be allocated/reallocated
-		List<FloatingBlock> blocksToAlloc = new LinkedList<>();
+		List<UnconstrainedMoveBlock> blocksToAlloc = new LinkedList<>();
 		
 		// First try to place and get the list of conflicting allocs
 		boolean success = attemptToPlace(data);
@@ -129,7 +129,7 @@ public class DataManager
 		// If we succeeded, add any additional blocks that need to be allocated back in
 		if (success)
 		{
-			for (FloatingBlock block : blocksToAlloc)
+			for (UnconstrainedMoveBlock block : blocksToAlloc)
 			{
 				addBlockToAllocate(block);
 			}
@@ -169,7 +169,7 @@ public class DataManager
 	}
 	
 	// Blocks to Alloc only potentially modified if true is returned (or error if caught)
-	private boolean attemptToShrinkOtherAllocsAndPlace(MoveableBlock data, List<FloatingBlock> blocksToAlloc)
+	private boolean attemptToShrinkOtherAllocsAndPlace(MoveableBlock data, List<UnconstrainedMoveBlock> blocksToAlloc)
 	{		
 		byte bestOptionPriority = 0;
 		AllocatableBank bestOption = null;

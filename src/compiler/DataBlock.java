@@ -1,6 +1,7 @@
 package compiler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -8,25 +9,36 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import compiler.dynamic.PlaceholderInstruction;
-
+import compiler.dynamicInstructs.PlaceholderInstruction;
 import rom.Texts;
 import util.RomUtils;
 
 public class DataBlock 
 {	
+	public static String END_OF_DATA_BLOCK_SUBSEG_LABEL = "__end_of_data_block__";
 	private int assignedAddress;
 	LinkedHashMap<String, Segment> segments; // linked to keep order
 	private String id;
 
 	String rootSegmentName;
 	Segment currSegment;
+	Segment endSegment; // and empty segment so we can refer to with "." + END_OF_BLOCK_LABEL for any datablock
+							// TODO: maybe move to linking logic instead?
+	
+	// Constructor to keep instruction/line less constructors from being ambiguous
+	public DataBlock(String startingSegmentName)
+	{
+		// The instruction version takes is probably less overhead and its more likely to
+		// be aligned with the manner in which it will be used (i.e instructions added later)
+		this (startingSegmentName, new Instruction[0]);
+	}
 	
 	public DataBlock(String startingSegmentName, Instruction... instructions)
 	{
 		assignedAddress = CompilerUtils.UNASSIGNED_ADDRESS;
 		segments = new LinkedHashMap<>();
 		id = startingSegmentName.trim();
+		endSegment = new Segment();
 		
 		newSegment(startingSegmentName);
 		
@@ -41,6 +53,11 @@ public class DataBlock
 				appendInstruction(instruct);
 			}
 		}
+	}
+
+	public DataBlock(String startingSegmentName, String... source)
+	{
+		this (startingSegmentName, Arrays.asList(source));
 	}
 	
 	// Generic, highest level construct for holding just raw data or a series of functions
@@ -71,6 +88,8 @@ public class DataBlock
 	private void parseSource(String startingSegmentName, List<String> sourceLines)
 	{
 		segments.clear();
+		
+		endSegment = new Segment();
 		newSegment(startingSegmentName);
 		
 		for (String line : sourceLines)
@@ -82,26 +101,19 @@ public class DataBlock
 			// If its not null, its a new segment
 			if (segName != null)
 			{
-				rootSegmentName = segName;
+				newSegment(segName);
 			}
 			else // Otherwise see if its a subsegment
 			{
-				segName = CompilerUtils.tryParseSubsegmentName(line, rootSegmentName);
-			}
-			
-			// If we found a new segment, create it and check that its name is unique
-			if (segName != null)
-			{
-				currSegment = new Segment();
-				
-				// Ensure there was no conflict within the block
-				if (segments.put(segName, currSegment) != null)
+				segName = CompilerUtils.tryParseFullSubsegmentName(line, rootSegmentName);
+				if (segName != null)
 				{
-					throw new IllegalArgumentException("Duplicate segment label was found: " + rootSegmentName);
+					newSubSegment(segName);
 				}
 			}
+
 			// If its not a segment, then its a line that will turn into bytes
-			else
+			if (segName == null)
 			{
 				// If its a placeholder, we defer filling it out
 				if (CompilerUtils.containsPlaceholder(line) || CompilerUtils.containsImplicitPlaceholder(line, rootSegmentName))
@@ -116,14 +128,14 @@ public class DataBlock
 		}
 	}
 	
-	public void newSubSegment(String name)
+	public void newSubSegment(String fullSubSegName)
 	{
 		currSegment = new Segment();
 		
 		// Ensure there was no conflict within the block
-		if (segments.put(CompilerUtils.formSubsegmentName(name, rootSegmentName), currSegment) != null)
+		if (segments.put(fullSubSegName, currSegment) != null)
 		{
-			throw new IllegalArgumentException("Duplicate segment label was found: " + CompilerUtils.formSubsegmentName(name, rootSegmentName));
+			throw new IllegalArgumentException("Duplicate segment label was found: " + fullSubSegName);
 		}
 	}
 	
@@ -177,6 +189,9 @@ public class DataBlock
 		{
 			segRefsById.put(idSeg.getKey(), idSeg.getValue());
 		}
+		
+		// Add the end segment marker
+		segRefsById.put(CompilerUtils.formSubsegmentName(END_OF_DATA_BLOCK_SUBSEG_LABEL, id), endSegment);
 		return segRefsById;
 	}
 	
@@ -210,6 +225,9 @@ public class DataBlock
 			worstCaseSize += currSeg.getWorstCaseSizeOnBank(bank);
 		}
 		
+		// And now assign the end segment marker (no size)
+		endSegment.setAssignedAddress(baseAddress + worstCaseSize);
+		
 		return worstCaseSize;
 	}
 	
@@ -222,7 +240,7 @@ public class DataBlock
 		for (Entry<String, Segment> seg : segments.entrySet())
 		{
 			String segId = CompilerUtils.replacePlaceholders(seg.getKey(), placeholderToArgsForIds);
-			seg.getValue().evaluatePlaceholders(placeholderToArgsForIds);
+			seg.getValue().fillPlaceholders(placeholderToArgsForIds);
 			
 			if (refreshedSegments.put(segId, seg.getValue()) != null)
 			{
@@ -238,6 +256,8 @@ public class DataBlock
 		{
 			seg.extractTexts(texts);
 		}
+		
+		// End reference has no code so no text exisist in it
 	}
 	
 	public void linkData(Texts romTexts, Map<String, SegmentReference> segRefsById)
@@ -246,15 +266,27 @@ public class DataBlock
 		{
 			seg.linkData(romTexts, getSegmentReferencesById(), segRefsById);
 		}
+
+		// End reference has no code so no linking needs to be done
 	}
-		
+
+	public static boolean debug;
 	public int writeBytes(byte[] bytes)
 	{
+		debug = id.contains("MoreEffectBanksTweak");
+		if (debug) 
+		{
+			System.out.println("Segment - " + id);
+		}
+		
 		int lastEnd = 0;
 		for (Segment seg : segments.values())
 		{
 			lastEnd = seg.writeBytes(bytes);
 		}
+		
+		// End reference has no code so no writing needs to be done
+		
 		return lastEnd;
 	}
 }

@@ -451,6 +451,8 @@ public class RandomizerApp {
 	        settings.setMovesMatchTypeSpecific(generalRandKeepTypeSpecMovesBox.isSelected());
 	        settings.setMovesRandomNumberOfAttacks(generalRandNumMovesBox.isSelected());
 	        
+	        settings.setApplyMultibankEffectsTweak(true); //TODO
+	        
 	        attacksData.setRandomizationWithinType(moveRandWithinTypeBox.isSelected());
 	        attacksData.setRandomizationStrat(moveRandStrategyGoup.getSelection().getActionCommand());
 	        attacksData.setForceOneDamagingAttack(moveRandForceDamageBox.isSelected());

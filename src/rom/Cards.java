@@ -10,6 +10,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import constants.CardDataConstants.CardType;
+import constants.CardDataConstants.EvolutionStage;
 import data.Card;
 import data.Move;
 import data.NonPokemonCard;
@@ -34,6 +35,26 @@ public class Cards<T extends Card>
 	    return copy;
 	}
 	
+	public Cards<T> recast(Class<? extends T> cardClass) 
+	{
+		Cards<T> recast = new Cards<>();
+	    for(T card: cardSet)
+	    {
+	    	recast.add(cardClass.cast(card));
+	    }
+	    return recast;
+	}
+	
+	public Cards<Card> upcast() 
+	{
+		Cards<Card> asCard = new Cards<>();
+	    for(T card: cardSet)
+	    {
+	    	asCard.add(card);
+	    }
+	    return asCard;
+	}
+	
 	private Cards(List<T> list) 
 	{
 		this();
@@ -44,6 +65,35 @@ public class Cards<T extends Card>
 	{
 		return new Cards<>(cardSet.stream().filter(
 				card -> name.equals(card.name.toString())).collect(Collectors.toList()));
+	}
+	
+	public Cards<Card> getBasicEvolutionOfCard(PokemonCard card)
+	{
+		Cards<Card> basics = new Cards<>();
+		if (card.stage == EvolutionStage.BASIC)
+		{
+			basics.add(card);
+		}
+		else
+		{	
+			while (card.stage != EvolutionStage.BASIC)
+			{
+				basics = getCardsWithName(card.prevEvoName.toString()).upcast();
+				if (basics.count() <= 0)
+				{
+					break;
+				}
+				
+				// If its not a poke, its probably a trainer like mysterious fossil. Assume
+				// this is the "basic" pokemon
+				if (!card.type.isPokemonCard())
+				{
+					break;
+				}
+				card = (PokemonCard) basics.toList().get(0);
+			}
+		}
+		return basics;
 	}
 	
 	public Cards<NonPokemonCard> getEnergyCards()
@@ -125,11 +175,12 @@ public class Cards<T extends Card>
 		return cardSet.size();
 	}
 	
+	// TODO: Maybe move out of here since its a bit awkward here
 	public void finalizeDataForAllocating(Texts texts, Blocks blocks)
 	{
 		for (Card card : toList())
 		{
-			card.finalizeDataForAllocating(texts, blocks);
+			card.finalizeDataForAllocating(this.upcast(), texts, blocks);
 		}
 		
 	}

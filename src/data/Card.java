@@ -81,7 +81,7 @@ public abstract class Card
 	}
 	
 	public abstract int readAndConvertIds(byte[] cardBytes, int startIndex, Texts idsToText);
-	public abstract void finalizeDataForAllocating(Texts texts, Blocks blocks);
+	public abstract void finalizeDataForAllocating(Cards<Card> cards, Texts texts, Blocks blocks);
 	public abstract int writeData(byte[] cardBytes, int startIndex, Blocks blocks);
 
 	public String toString()
