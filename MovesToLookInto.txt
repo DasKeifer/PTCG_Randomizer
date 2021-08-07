@@ -8,6 +8,8 @@ You can call into other banks - see farcall macro. If I find empty space, all I 
 
 Type Specific
 
+//fire spin? Will be hard to separate from pokepower?
+
 Energy Trans POKEMON_POWER -* As often as you like during your turn (before your attack), you may take 1  Energy card attached to 1 of your Pok`mon and attach it to a different one. This power can't be used if  is Asleep, Confused, or Paralyzed.
 Ember DAMAGE_NORMAL 30* Discard 1  Energy card attached to  in order to use this attack.
 Flamethrower DAMAGE_NORMAL 50* Discard 1  Energy card attached to  in order to use this attack.
@@ -35,6 +37,7 @@ Scavenge RESIDUAL -* Discard 1  Energy card attached to  in order to use thi
 Destiny Bond RESIDUAL -* Discard 1  Energy card attached to  in order to use this attack. If a Pok`mon Knocks Out  during your opponent's next turn, Knock Out that Pok`mon.
 Barrier RESIDUAL -* Discard 1  Energy card attached to  in order to use this attack. During your opponent's next turn, prevent all effects of attacks, including damage, done to .
 
+
 Poke Specific
 
 Call for Family RESIDUAL -* Search your deck for a Basic Pok`mon named  or Nidoran$ and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)
@@ -44,21 +47,9 @@ Call for Family RESIDUAL -* Search your deck for a Basic Pok`mon named  and put
 Call for Family RESIDUAL -* Search your deck for a Basic Pok`mon named  and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)
 
 
-To See if randomizable
+Continuous poke powers to investigate - All except maybe peal of thunder are hard coded but could still be replaced/randomized
 
-Swords Dance RESIDUAL -* During your next turn, 's Slash attack's base damage is doubled.
-Focus Energy
-
-
-Continuous poke powers to investigate - can these be randomized or are they hardcoded?
-
-Invisible wall
 peal of thunder
-healing wind
-rain dance
-quick freeze
-energy burn
-
 Toxic Gas POKEMON_POWER -* Ignore all Pok`mon Powers other than Toxic Gases. This power stops working while  is Asleep, Confused, or Paralyzed.
 Clairvoyance POKEMON_POWER -* Your opponent plays with his or her hand face up. This power stops working while  is Asleep, Confused, or Paralyzed.
 Strikes Back POKEMON_POWER -* Whenever your opponent's attack damages  (even if  is Knocked Out), this power does 10 damage to the attacking Pok`mon. (Don't apply Weakness and Resistance.) This power can't be used if  is already Asleep, Confused, or Paralyzed when your opponent attacks.
@@ -69,141 +60,7 @@ Neutralizing Shield POKEMON_POWER -* Prevent all effects of attacks, including d
 Retreat Aid POKEMON_POWER -* As long as  is Benched, pay  less to retreat your Active Pok`mon.
 Thick Skinned POKEMON_POWER -*  can't become Asleep, Confused, Paralyzed, or Poisoned. This power can't be used if  is already Asleep, Confused, or Paralyzed.
 
-.not_null_pointer
-	ldh a, [hBankROM]
-	push af
-	ld a, BANK(EffectCommands)
-	call BankswitchROM
-	; store the bank number of command functions ($b) in wce22
-	ld a, $b
-	ld [wce22], a
-.check_command_loop
-	ld a, [hli]
-	or a
-	jr z, .no_more_commands
-	cp c // Compares the effect pointer value - if we add another value beyond what is defined, we can use that as a trigger
-		// to switch to set a non default bank in wce22
-		// problem is I need to find space in home to make this mod... There is 106 bytes free in home
-	jr z, .matching_command_found
-	; skip function pointer for this command and move to the next one
-	inc hl
-	inc hl
-	jr .check_command_loop
+rain dance, wuick freeze, energy burn, firegiver, invis wall, healing wind
+Thick skinned, toxic gas, clairvoyance, strike back, kabuto armor, prehistoric power, Transparency, Neutralizing sheild, retreat aid, is hardcoded
 
-
-NidoranFCallForFamilyEffectCommands:
-	dbw EFFECTCMDTYPE_INITIAL_EFFECT_1, NidoranFCallForFamily_CheckDeckAndPlayArea		// Same for all
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, NidoranFCallForFamily_PutInPlayAreaEffect			// Same for all
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, NidoranFCallForFamily_PlayerSelectEffect		// Diffs
-	dbw EFFECTCMDTYPE_AI_SELECTION, NidoranFCallForFamily_AISelectEffect				// Almost the same
-
-
-BellsproutCallForFamily_AISelectEffect: ; 2ccad (b:4cad)
-	call CreateDeckCardList
-	ld hl, wDuelTempList
-.loop_deck
-	ld a, [hli]
-	ldh [hTemp_ffa0], a
-	cp $ff
-	ret z ; no Bellsprout
-	call GetCardIDFromDeckIndex
-	ld a, e
-	
-	--------------
-	cp BELLSPROUT
-	jr nz, .loop_deck
-	ret
-	--------------
-	cp NIDORANF
-	jr z, .found
-	cp NIDORANM
-	jr nz, .loop_deck
-.found
-	ret
-	--------------
-; 0x2ccc2
-
-
-
-BellsproutCallForFamily_PlayerSelectEffect: ; 2cc50 (b:4c50)
-	ld a, $ff
-	ldh [hTemp_ffa0], a
-
-	call CreateDeckCardList
-	ldtx hl, ChooseABellsproutFromDeckText 		// ChooseNidoranFromDeckText ; 38a31 (e:4a31) (2)
-	ldtx bc, BellsproutText						// NidoranMNidoranFText 	; 392c9 (e:52c9) (2)
-	lb de, SEARCHEFFECT_CARD_ID, BELLSPROUT 	// lb de, SEARCHEFFECT_NIDORAN, $00
-	call LookForCardsInDeck
-	ret c	
-
-; draw Deck list interface and print text
-	bank1call Func_5591					
-	ldtx hl, ChooseABellsproutText				// ChooseNidoranText ; 38a61 (e:4a61) (2)
-	ldtx de, DuelistDeckText
-	bank1call SetCardListHeaderTex
-
-.loop
-	bank1call DisplayCardList
-	jr c, .pressed_b
-	call GetCardIDFromDeckIndex
-	-----------------------------------
-	ld bc, BELLSPROUT			
-	call CompareDEtoBC
-	jr nz, .play_sfx
-	-----------------------------------
-	ld bc, NIDORANF
-	call CompareDEtoBC
-	jr z, .selected_nidoran
-	ld bc, NIDORANM
-	call CompareDEtoBC
-	jr nz, .loop ; .play_sfx would be more appropriate here
-.selected_nidoran
-	-----------------------------------
-
-; Bellsprout was selected
-	ldh a, [hTempCardIndex_ff98]
-	ldh [hTemp_ffa0], a
-	or a
-	ret
-
-.play_sfx
-	; play SFX and loop back
-	call Func_3794
-	jr .loop
-
-.pressed_b
-; figure if Player can exit the screen without selecting,
-; that is, if the Deck has no Bellsprout card.
-	ld a, DUELVARS_CARD_LOCATIONS
-	call GetTurnDuelistVariable
-.loop_b_press
-	ld a, [hl]
-	cp CARD_LOCATION_DECK
-	jr nz, .next
-	ld a, l
-	call GetCardIDFromDeckIndex
-	-----------------------------------
-	ld bc, BELLSPROUT				
-	call CompareDEtoBC
-	jr z, .play_sfx ; found Bellsprout, go back to top loop
-	-----------------------------------
-	ld bc, NIDORANF
-	call CompareDEtoBC
-	jr z, .play_sfx ; found, go back to top loop
-	ld bc, NIDORANM
-	jr z, .play_sfx ; found, go back to top loop
-	-----------------------------------
-.next
-	inc l
-	ld a, l
-	cp DECK_SIZE
-	jr c, .loop_b_press
-		
-
-; no Bellsprout in Deck, can safely exit screen
-	ld a, $ff
-	ldh [hTemp_ffa0], a
-	or a
-	ret
-; 0x2ccad
-
+Peal of thunder partially?
