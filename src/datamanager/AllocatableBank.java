@@ -1,11 +1,12 @@
 package datamanager;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.TreeMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import util.RomUtils;
 
@@ -13,18 +14,15 @@ public class AllocatableBank
 {
 	byte bank;
 	List<AllocatableSpace> spaces;
-	TreeMap<Byte, List<MoveableBlock>> allocationsByPriority;
-	
-//	int largestSpace;
-//	int largestFreeSpace;
+	// We don't use a set because we modify allocation and its bad practice to
+	// do that for items in a set even if it should not impact the compare function
+	List<Allocation> priortizedAllocations;
 	
 	public AllocatableBank(byte bank)
 	{
 		this.bank = bank;
 		spaces = new LinkedList<>();
-		allocationsByPriority = new TreeMap<>();
-//		largestSpace = 0;
-//		largestFreeSpace = 0;
+		priortizedAllocations = new LinkedList<>();
 	}
 	
 	public void addSpace(int startAddress, int stopAddress)
@@ -47,18 +45,10 @@ public class AllocatableBank
 					" bank addresses: " + Arrays.toString(RomUtils.getBankBounds(bank)) + " and space addresses: " +
 					space.start + ", " + space.stopExclusive);
 		}
-		
-//		if (space.size() > largestSpace)
-//		{
-//			largestSpace = space.size();
-//		}
-//		if (space.spaceLeft() > largestFreeSpace)
-//		{
-//			largestFreeSpace = space.spaceLeft();
-//		}
 		spaces.add(space);
 	}
 
+	// For fixed blocks
 	public void removeAddressSpace(AddressRange range) 
 	{
 		for (int spaceIdx = 0; spaceIdx < spaces.size(); spaceIdx++)
@@ -77,200 +67,266 @@ public class AllocatableBank
 		}
 	}
 	
-	public int getLargestSpace()
-	{
-		int largestSpace = 0;
-		for (AllocatableSpace space : spaces)
-		{
-			if (space.size() > largestSpace)
-			{
-				largestSpace = space.size();
-			}
-		}
-		return largestSpace;
-	}
+//	public int getLargestSpace()
+//	{
+//		int largestSpace = 0;
+//		for (AllocatableSpace space : spaces)
+//		{
+//			if (space.size() > largestSpace)
+//			{
+//				largestSpace = space.size();
+//			}
+//		}
+//		return largestSpace;
+//	}
+//	
+//	public int getLargestFreeSpace()
+//	{
+//		int largestFreeSpace = 0;
+//		for (AllocatableSpace space : spaces)
+//		{
+//			if (space.spaceLeft() > largestFreeSpace)
+//			{
+//				largestFreeSpace = space.spaceLeft();
+//			}
+//		}
+//		return largestFreeSpace;
+//	}
 	
-	public int getLargestFreeSpace()
-	{
-		int largestFreeSpace = 0;
-		for (AllocatableSpace space : spaces)
-		{
-			if (space.spaceLeft() > largestFreeSpace)
-			{
-				largestFreeSpace = space.spaceLeft();
-			}
-		}
-		return largestFreeSpace;
-	}
-	
-	public boolean attemptToAdd(MoveableBlock alloc)
-	{
-		return attemptToAdd(alloc, false, null);
-	}
+//	public boolean attemptToAdd(MoveableBlock alloc)
+//	{
+//		return attemptToAdd(alloc, false, null);
+//	}
+//
+//	// Only (potentially) modifies blocks to alloc if true is returned
+//	public boolean attemptToAdd(MoveableBlock alloc, List<UnconstrainedMoveBlock> blocksToAlloc)
+//	{
+//		return attemptToAdd(alloc, true, blocksToAlloc);
+//	}
 
 	// Only (potentially) modifies blocks to alloc if true is returned
-	public boolean attemptToAdd(MoveableBlock alloc, List<UnconstrainedMoveBlock> blocksToAlloc)
+//	private boolean attemptToAdd(MoveableBlock alloc, boolean attemptToShrinkOthers, List<UnconstrainedMoveBlock> blocksToAlloc)
+//	{
+//		if (getLargestFreeSpace() < alloc.getCurrentWorstCaseSizeOnBank(bank))
+//		{
+//			List<MoveableBlock> shrunkBlocks = new LinkedList<>();
+//			if (!attemptToShrinkOthers)
+//			{
+//				return false;
+//			}
+//			else if (!shrinkToMakeSpace(alloc.getCurrentWorstCaseSizeOnBank(bank), shrunkBlocks, blocksToAlloc))
+//			{
+//				unshrinkAllTempShrunkAllocs(shrunkBlocks);				
+//				return false;
+//			}
+//		}
+//		
+//		DataManagerUtils.addToPriorityMap(allocationsByPriority, alloc);
+//		if (!reassignAndRefresh())
+//		{
+//			throw new RuntimeException("Failed to assign addresses! This should never happen here (attemptToAdd)!");
+//		}
+//		return true;
+//	}
+	public void addToBank(Allocation alloc)
 	{
-		return attemptToAdd(alloc, true, blocksToAlloc);
-	}
+		alloc.setAssignedBank(bank);
+		priortizedAllocations.add(alloc);
+    }
 
-	// Only (potentially) modifies blocks to alloc if true is returned
-	private boolean attemptToAdd(MoveableBlock alloc, boolean attemptToShrinkOthers, List<UnconstrainedMoveBlock> blocksToAlloc)
+	// TODO: Probably can optimize packing into bank space some (i.e. leave most space, leave smallest space)
+	public boolean packAndRemoveExcessAllocs(List<Allocation> allocsThatDontFit)
 	{
-		if (getLargestFreeSpace() < alloc.getCurrentWorstCaseSizeOnBank(bank))
-		{
-			List<MoveableBlock> shrunkBlocks = new LinkedList<>();
-			if (!attemptToShrinkOthers)
-			{
-				return false;
-			}
-			else if (!shrinkToMakeSpace(alloc.getCurrentWorstCaseSizeOnBank(bank), shrunkBlocks, blocksToAlloc))
-			{
-				unshrinkAllTempShrunkAllocs(shrunkBlocks);				
-				return false;
-			}
-		}
-		
-		DataManagerUtils.addToPriorityMap(allocationsByPriority, alloc);
-		if (!reassignAndRefresh())
-		{
-			throw new RuntimeException("Failed to assign addresses! This should never happen here (attemptToAdd)!");
-		}
-		return true;
+		return packAllocs(allocsThatDontFit, true);
 	}
 	
-	// Maybe add a priority as an optimization?
-	private boolean reassignAndRefresh()
+	private boolean packAllocs(List<Allocation> allocsThatDontFit, boolean removeOnesThatDontFit)
 	{
-		// Clear the spaces
+		// Clear the spaces and output var
+		allocsThatDontFit.clear();
 		for (AllocatableSpace space : spaces)
 		{
-			space.clear(true);
+			space.clearAllocsAndAddresses();
 		}
 		
-		// Attempt to place each block
+		// Ensure the allocations are sorted
+		priortizedAllocations.sort(Allocation.PRIORITY_SORTER);
+		
+		// Attempt to place each alloc in the list
+		return packAllocsInCollection(priortizedAllocations.iterator(), allocsThatDontFit, removeOnesThatDontFit);
+	}
+	
+	private boolean packAllocsInCollection(Iterator<Allocation> allocItr, List<Allocation> allocsThatDontFit, boolean removeOnesThatDontFit)
+	{
 		boolean placed;
-		for (List<MoveableBlock> allocWithPriority : allocationsByPriority.values())
+		Allocation alloc;
+		while (allocItr.hasNext())
 		{
 			// For each block, we go through each space and see if there is room until
 			// we either find room or run out of spaces
-			for (MoveableBlock alloc : allocWithPriority)
+			alloc = allocItr.next();
+			placed = false;
+			for (AllocatableSpace space : spaces)
 			{
-				placed = false;
-				for (AllocatableSpace space : spaces)
+				if (space.addAndAssignAddressIfSpaceLeft(alloc))
 				{
-					if (space.addAndAssignAddressIfSpaceLeft(alloc))
-					{
-						placed = true;
-						break;
-					}
-				}
-				
-				if (!placed)
-				{
-					return false;
+					placed = true;
+					break;
 				}
 			}
-		}
-		
-		return true;
-	}
-	
-	public byte canShrinkingToMakeSpace(int space)
-	{
-		byte priorityValue = -1;
-		List<MoveableBlock> shrunkenAllocs = new LinkedList<>();
-		List<UnconstrainedMoveBlock> toAlloc = new LinkedList<>();
-		if (shrinkToMakeSpace(space, shrunkenAllocs, toAlloc))
-		{
-			if (shrunkenAllocs.isEmpty())
-			{
-				// No need to unshrink since none where shrunk
-				return Byte.MAX_VALUE;
-			}
-			else
-			{
-				// Last added will be the highest priority
-				priorityValue = shrunkenAllocs.get(shrunkenAllocs.size() - 1).getPriority();
-			}
-		}
-		
-		// Revert the changes and refresh so we leave in the same state we started
-		unshrinkAllTempShrunkAllocs(shrunkenAllocs);
-		return priorityValue;
-	}
-
-	private void unshrinkAllTempShrunkAllocs(List<MoveableBlock> shrunkenAllocs)
-	{
-		for (MoveableBlock alloc : shrunkenAllocs)
-		{
-			alloc.setShrunkOrMoved(false);
 			
-			// If it was moved, add it back in
-			if (alloc.movesNotShrinks())
+			if (!placed)
 			{
-				DataManagerUtils.addToPriorityMap(allocationsByPriority, alloc);
+				if (removeOnesThatDontFit)
+				{
+					allocItr.remove();
+					alloc.clearBankAndAddress();
+				}
+				allocsThatDontFit.add(alloc);
 			}
 		}
 		
-		if (!reassignAndRefresh())
-		{
-			throw new RuntimeException("Failed to assign addresses! This should never happen here (unshrinkAllTempShrunkAllocs)!");
-		}
+		return allocsThatDontFit.isEmpty();
 	}
 
-	// Only (potentially) modifies blocks to alloc if true is returned
-	private boolean shrinkToMakeSpace(int space, List<MoveableBlock> shrunkenAllocsByReversePriority, List<UnconstrainedMoveBlock> blocksToAllocate)
+	public boolean shrinkToPackAllocs(List<Allocation> newAllocs, List<Allocation> shrunkAllocs)
 	{
-		// Create a separate list so the passed list is only modified if true is returned
-		List<UnconstrainedMoveBlock> runningToAlloc = new LinkedList<>();
-		
-		List<List<MoveableBlock>> allocByPriority = new ArrayList<>(allocationsByPriority.descendingMap().values());
-		ListIterator<MoveableBlock> revIterator;
-		MoveableBlock alloc;
-		
-		for (List<MoveableBlock> allocWithPriority : allocByPriority)
+		// First get the list of allocs that don't fit
+		List<Allocation> excessAllocs = new LinkedList<>();
+		List<Allocation> allocsThatStillDontFit = new LinkedList<>();
+		if (!packAllocs(excessAllocs, false)) // false = don't remove ones that don't fit
 		{
-			revIterator = allocWithPriority.listIterator(allocWithPriority.size());
-			while (revIterator.hasPrevious())
+			// Go through starting with the lowest priority and shrink until we
+			// fit or we don't have anymore that can shrink
+			ListIterator<Allocation> revItr = priortizedAllocations.listIterator(priortizedAllocations.size());
+			Allocation alloc;
+			while (revItr.hasPrevious())
 			{
-				alloc = revIterator.previous();
-				if (alloc.canBeShrunkOrMoved())
+				alloc = revItr.previous();
+				if (alloc.shrinkIfPossible())
 				{
-					// Shrink it and add it to our list
-					alloc.setShrunkOrMoved(true);
-					shrunkenAllocsByReversePriority.add(alloc);
+					// If it shrinks, see if the excess ones fit now
+					shrunkAllocs.add(alloc);
+					packAllocsInCollection(excessAllocs.iterator(), allocsThatStillDontFit, false); // false = don't remove ones that don't fit
 					
-					// Get the remote block that will need to be allocated
-					if (alloc.getRemoteBlock() != null)
+					// If there are fewer that still don't fit, update the excess allocs list and if its empty, we
+					// are done
+					if (excessAllocs.size() != allocsThatStillDontFit.size())
 					{
-						runningToAlloc.add(alloc.getRemoteBlock());
-						
-						// If it moves, we need to remove it from this block too
-						if (alloc.movesNotShrinks())
+						excessAllocs = allocsThatStillDontFit;
+						if (excessAllocs.isEmpty())
 						{
-							revIterator.remove();
+							break;
 						}
+						allocsThatStillDontFit = new LinkedList<>();
 					}
-					
-					// See if we have space now
-					if (!reassignAndRefresh())
+					// Otherwise clear the list
+					else
 					{
-						throw new RuntimeException("Failed to assign addresses! This should never happen here (shrinkToMakeSpace)!");
+						allocsThatStillDontFit.clear();
 					}
-					if (getLargestFreeSpace() >= space)
-					{			
-						// Add the list prior to returning now that we know
-						// we are successful
-						blocksToAllocate.addAll(runningToAlloc);
-						return true;
-					}
-				}				
+				}
 			}
 		}
 		
-		return false;
+		return excessAllocs.isEmpty();
 	}
+//	
+//	public byte canShrinkingToMakeSpace(int space)
+//	{
+//		byte priorityValue = -1;
+//		List<MoveableBlock> shrunkenAllocs = new LinkedList<>();
+//		List<UnconstrainedMoveBlock> toAlloc = new LinkedList<>();
+//		if (shrinkToMakeSpace(space, shrunkenAllocs, toAlloc))
+//		{
+//			if (shrunkenAllocs.isEmpty())
+//			{
+//				// No need to unshrink since none where shrunk
+//				return Byte.MAX_VALUE;
+//			}
+//			else
+//			{
+//				// Last added will be the highest priority
+//				priorityValue = shrunkenAllocs.get(shrunkenAllocs.size() - 1).getPriority();
+//			}
+//		}
+//		
+//		// Revert the changes and refresh so we leave in the same state we started
+//		unshrinkAllTempShrunkAllocs(shrunkenAllocs);
+//		return priorityValue;
+//	}
+//
+//	private void unshrinkAllTempShrunkAllocs(List<MoveableBlock> shrunkenAllocs)
+//	{
+//		for (MoveableBlock alloc : shrunkenAllocs)
+//		{
+//			alloc.setShrunkOrMoved(false);
+//			
+//			// If it was moved, add it back in
+//			if (alloc.movesNotShrinks())
+//			{
+//				DataManagerUtils.addToPriorityMap(allocationsByPriority, alloc);
+//			}
+//		}
+//		
+//		if (!reassignAndRefresh())
+//		{
+//			throw new RuntimeException("Failed to assign addresses! This should never happen here (unshrinkAllTempShrunkAllocs)!");
+//		}
+//	}
+//
+//	// Only (potentially) modifies blocks to alloc if true is returned
+//	private boolean shrinkToMakeSpace(int space, List<MoveableBlock> shrunkenAllocsByReversePriority, List<UnconstrainedMoveBlock> blocksToAllocate)
+//	{
+//		// Create a separate list so the passed list is only modified if true is returned
+//		List<UnconstrainedMoveBlock> runningToAlloc = new LinkedList<>();
+//		
+//		List<List<MoveableBlock>> allocByPriority = new ArrayList<>(allocationsByPriority.descendingMap().values());
+//		ListIterator<MoveableBlock> revIterator;
+//		MoveableBlock alloc;
+//		
+//		for (List<MoveableBlock> allocWithPriority : allocByPriority)
+//		{
+//			revIterator = allocWithPriority.listIterator(allocWithPriority.size());
+//			while (revIterator.hasPrevious())
+//			{
+//				alloc = revIterator.previous();
+//				if (alloc.canBeShrunkOrMoved())
+//				{
+//					// Shrink it and add it to our list
+//					alloc.setShrunkOrMoved(true);
+//					shrunkenAllocsByReversePriority.add(alloc);
+//					
+//					// Get the remote block that will need to be allocated
+//					if (alloc.getRemoteBlock() != null)
+//					{
+//						runningToAlloc.add(alloc.getRemoteBlock());
+//						
+//						// If it moves, we need to remove it from this block too
+//						if (alloc.movesNotShrinks())
+//						{
+//							revIterator.remove();
+//						}
+//					}
+//					
+//					// See if we have space now
+//					if (!reassignAndRefresh())
+//					{
+//						throw new RuntimeException("Failed to assign addresses! This should never happen here (shrinkToMakeSpace)!");
+//					}
+//					if (getLargestFreeSpace() >= space)
+//					{			
+//						// Add the list prior to returning now that we know
+//						// we are successful
+//						blocksToAllocate.addAll(runningToAlloc);
+//						return true;
+//					}
+//				}				
+//			}
+//		}
+//		
+//		return false;
+//	}
 
 	public byte getBank() 
 	{

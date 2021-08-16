@@ -1,15 +1,8 @@
 https://eldred.fr/gb-asm-tutorial/stack.html
 
-TODO: look at effect pointers and where they are in memory - try to find decent sized holes to put new effects in or find how we can reach other spaces
-TODO: See how call works - sometimes it goes back to the home asm others it seems to stay relative...
-Note: all lines are not set number of bytes
-
-You can call into other banks - see farcall macro. If I find empty space, all I have to do is farcall into it. we can probably programatically find free space chunks by looking for 0xff multiple times
-
 Type Specific
 
-//fire spin? Will be hard to separate from pokepower?
-
+//fire spin? Will be hard to separate from pokepower? Not really but will need alternate effect
 Energy Trans POKEMON_POWER -* As often as you like during your turn (before your attack), you may take 1  Energy card attached to 1 of your Pok`mon and attach it to a different one. This power can't be used if  is Asleep, Confused, or Paralyzed.
 Ember DAMAGE_NORMAL 30* Discard 1  Energy card attached to  in order to use this attack.
 Flamethrower DAMAGE_NORMAL 50* Discard 1  Energy card attached to  in order to use this attack.

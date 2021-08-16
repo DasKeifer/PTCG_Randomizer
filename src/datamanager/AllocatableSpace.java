@@ -1,62 +1,52 @@
 package datamanager;
 
+import java.util.LinkedList;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
-import compiler.CompilerUtils;
 import util.RomUtils;
 
 class AllocatableSpace extends AddressRange
 {
-	SortedMap<Byte, List<MoveableBlock>> allocationsByPriority;
+	// Not really necessary but convenient
+	List<Allocation> allocs;
 	int nextStartAddress;
 	
 	public AllocatableSpace(int start, int stopExclusive)
 	{
 		super(start, stopExclusive);
-		allocationsByPriority = new TreeMap<>();
+		allocs = new LinkedList<>();
 		nextStartAddress = start;
 	}
 	
 	public AllocatableSpace(AddressRange range)
 	{
 		super(range);
-		allocationsByPriority = new TreeMap<>();
+		allocs = new LinkedList<>();
 		nextStartAddress = start;
-	}
-
-	public void clear()
-	{
-		clear(false);
 	}
 	
-	public void clear(boolean willStayInBank)
+	public void clearAllocsAndAddresses()
 	{
-		allocationsByPriority.clear();
-		nextStartAddress = start;
-		
-		int unassignAddr = willStayInBank ? CompilerUtils.UNASSIGNED_LOCAL_ADDRESS : CompilerUtils.UNASSIGNED_ADDRESS;
-		for (List<MoveableBlock> allocWithPriority : allocationsByPriority.values())
+		for (Allocation alloc : allocs)
 		{
-			for (MoveableBlock alloc : allocWithPriority)
-			{
-				alloc.setAssignedAddress(unassignAddr);
-			}
+			alloc.clearAddress();
 		}
+		
+		allocs.clear();
+		nextStartAddress = start;
 	}
 	
 	// Any reassigning is handled by the bank clearing and re-adding blocks
-	public boolean addAndAssignAddressIfSpaceLeft(MoveableBlock alloc)
+	public boolean addAndAssignAddressIfSpaceLeft(Allocation alloc)
 	{
-		int blockSizeOnBank = alloc.getCurrentWorstCaseSizeOnBank(RomUtils.determineBank(start)); 
+		int blockSizeOnBank = alloc.data.getCurrentWorstCaseSizeOnBank(RomUtils.determineBank(start)); 
 		if (nextStartAddress + blockSizeOnBank > stopExclusive)
 		{
 			return false;
 		}
 		
-		DataManagerUtils.addToPriorityMap(allocationsByPriority, alloc);
 		alloc.setAssignedAddress(nextStartAddress);
+		allocs.add(alloc);
 		nextStartAddress += blockSizeOnBank;
 		return true;
 	}

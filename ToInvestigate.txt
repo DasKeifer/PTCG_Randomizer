@@ -11,3 +11,4 @@ Seed 42, randomize args: false, pokes, numMovesPerPokemon (in rom), true, 1
 10. Sword dance/focus energy
 
 11. Doubleless energy text too long on one line
+12. Randomizing without reloading doesn' reset seed?

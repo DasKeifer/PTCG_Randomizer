@@ -92,7 +92,6 @@ public class Randomizer
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
 	
 	//public static void main(String[] args) throws IOException //Temp
@@ -105,14 +104,11 @@ public class Randomizer
 		Rom randomizedData = new Rom(romData);
 		
 		// Create sub randomizers. If they need to original data, they can save off a copy
-		// when they are creaeted
+		// when they are created
 		MoveSetRandomizer moveSetRand = new MoveSetRandomizer(randomizedData, logger);
 		
 		List<Card> venu = randomizedData.allCards.getCardsWithName("Venusaur").toList();
 		venu.get(1).name.setText("Test-a-saur"); // Quick check to see if we ran and saved successfully
-		
-		List<Card> colorless = randomizedData.allCards.getCardsWithName("Double Colorless Energy").toList();
-		colorless.get(0).name.setText("Double Colorless Energy1234"); // Quick check to see if we ran and saved successfully
 //		
 //		// 2cc50  - 16 bytes - no changes needed - just point to it
 //		for (int i = 0x2ccad; i < 0x2ccc2; i++)

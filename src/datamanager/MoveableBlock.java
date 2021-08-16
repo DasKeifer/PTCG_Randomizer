@@ -3,23 +3,20 @@ package datamanager;
 
 import compiler.DataBlock;
 
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.Map.Entry;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public abstract class MoveableBlock extends BlockAllocData
 {
-	private boolean shrunkMoved;	
-	private byte priority;
-	protected TreeMap<Byte, BankRange> allowableBankPreferences;
+	private boolean shrunkMoved;
+	private SortedSet<BankPreference> allowableBankPreferences;
 	
 	protected MoveableBlock(byte priority, DataBlock toPlaceInBank, BankPreference... prefs)
 	{
 		super(toPlaceInBank);
 		
 		shrunkMoved = false;
-		this.priority = priority;
-		allowableBankPreferences = new TreeMap<>();
+		allowableBankPreferences = new TreeSet<>(BankPreference.BASIC_SORTER);
 		
 		for (BankPreference pref : prefs)
 		{
@@ -29,12 +26,12 @@ public abstract class MoveableBlock extends BlockAllocData
 
 	public void addAllowableBankRange(BankPreference bankPref)
 	{
-		addAllowableBankRange(bankPref.priority, bankPref);
+		addAllowableBankRange(bankPref.priority, bankPref.start, bankPref.stopExclusive);
 	}
 	
 	public void addAllowableBankRange(byte priority, BankRange bankRange)
 	{
-		allowableBankPreferences.put(priority, bankRange);
+		addAllowableBankRange(priority, bankRange.start, bankRange.stopExclusive);
 	}
 	
 	public void addAllowableBankRange(byte priority, byte startBank, byte stopBank)
@@ -44,9 +41,10 @@ public abstract class MoveableBlock extends BlockAllocData
 			throw new UnsupportedOperationException("Start bank is after the end bank!");
 		}
 		
-		allowableBankPreferences.put(priority, new BankRange(startBank, stopBank));
+		allowableBankPreferences.add(new BankPreference(priority, startBank, stopBank));
 	}
 
+	// TODO: remove
 	public void setAssignedAddress(int address) 
 	{
 		dataBlock.setAssignedAddress(address);
@@ -55,6 +53,16 @@ public abstract class MoveableBlock extends BlockAllocData
 	void setShrunkOrMoved(boolean isShrunkOrMoved)
 	{
 		shrunkMoved = isShrunkOrMoved;
+	}
+
+	boolean shrinkIfPossible()
+	{
+		if (canBeShrunkOrMoved() && !movesNotShrinks() && !isShrunkOrMoved())
+		{
+			setShrunkOrMoved(true);
+			return true;
+		}
+		return false;
 	}
 	
 	boolean isShrunkOrMoved()
@@ -66,13 +74,13 @@ public abstract class MoveableBlock extends BlockAllocData
 	{
 		return !isShrunkOrMoved();
 	}
-		
-	public SortedMap<Byte, BankRange> getPreferencedAllowableBanks()
+	
+	public SortedSet<BankPreference> getAllowableBankPreferences()
 	{
-		SortedMap<Byte, BankRange> copy = new TreeMap<>();
-		for (Entry<Byte, BankRange> entry : allowableBankPreferences.entrySet())
+		SortedSet<BankPreference> copy = new TreeSet<>();
+		for (BankPreference pref : allowableBankPreferences)
 		{
-			copy.put(entry.getKey(), new BankRange(entry.getValue()));
+			copy.add(new BankPreference(pref));
 		}
 		return copy;
 	}
@@ -92,10 +100,5 @@ public abstract class MoveableBlock extends BlockAllocData
 		{
 			return dataBlock.getWorstCaseSizeOnBank(bank);
 		}
-	}
-	
-	public byte getPriority()
-	{
-		return priority;
 	}
 }

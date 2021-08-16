@@ -331,14 +331,7 @@ public class HardcodedEffects
 			placeholders.put(CONST_DECK_SIZE, CONST_DECK_SIZE_VAL);
 			placeholders.put(CONST_CARD_LOCATION_DECK, CONST_CARD_LOCATION_DECK_VAL);
 			placeholders.put(CONST_DUELVARS_CARD_LOCATIONS, CONST_DUELVARS_CARD_LOCATIONS_VAL);
-			placeholders.put(CONST_SEARCHEFFECT_CARD_ID, CONST_SEARCHEFFECT_CARD_ID_VAL);
-			
-//			placeholders.put(FUNC_SEARCH_CARD_IN_DECK_AND_ADD_TO_HAND, FUNC_SEARCH_CARD_IN_DECK_AND_ADD_TO_HAND_ADDR);
-//			placeholders.put(FUNC_ADD_CARD_TO_HAND, FUNC_ADD_CARD_TO_HAND_ADDR);
-//			placeholders.put(FUNC_PUT_HAND_POKEMON_IN_PLAY, FUNC_PUT_HAND_POKEMON_IN_PLAY_ADDR);
-//			placeholders.put(FUNC_IS_PLAYER_TURN, FUNC_IS_PLAYER_TURN_ADDR);
-//			placeholders.put(FUNC_DISPLAY_CARD_DETAILS, FUNC_DISPLAY_CARD_DETAILS_BANK1ADDR);
-		
+			placeholders.put(CONST_SEARCHEFFECT_CARD_ID, CONST_SEARCHEFFECT_CARD_ID_VAL);		
 			
 			playerSelect.replacePlaceholderIds(placeholders);
 			aiSelect.replacePlaceholderIds(placeholders);

@@ -19,7 +19,7 @@ public class RomConstants
 
 	// Text info
 	public static final int MAX_CHARS_POKE_NAME = 20; // not including starting char. For reasons poke names have to be shorter
-	public static final int MAX_CHARS_CARD_NAME = 28; // not including starting char
+	public static final int MAX_CHARS_CARD_NAME = 25; // not including starting char
 	public static final int MAX_CHARS_POKE_CATEGORY = 20; // not including starting char // TODO figure out
 	public static final int MAX_CHARS_MOVE_NAME = 20; // not including starting char // TODO figure out
 	public static final int MAX_CHARS_PER_LINE_CARD = 36; // Not including newline or starting char 
