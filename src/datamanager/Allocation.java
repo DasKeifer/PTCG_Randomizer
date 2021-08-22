@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import compiler.CompilerUtils;
 import util.ByteUtils;
 
 public class Allocation 
@@ -16,13 +17,14 @@ public class Allocation
 	public Byte bank;
 	public int address;
 	public MoveableBlock data;
+	// Include/have easy way to get segment offsets?
 	private SortedSet<BankPreference> unattemptedAllowableBankPreferences;
 
 	public Allocation(MoveableBlock data) 
 	{
 		this.data = data;
-		this.bank = -1;
-		this.address = -1;
+		this.bank = CompilerUtils.UNASSIGNED_BANK;
+		this.address = CompilerUtils.UNASSIGNED_ADDRESS;
 		unattemptedAllowableBankPreferences = new TreeSet<>(BankPreference.BASIC_SORTER);
 	}
 	
@@ -36,7 +38,7 @@ public class Allocation
 		return unattemptedAllowableBankPreferences.isEmpty();
 	}
 	
-	public boolean shrinkIfPossible()
+	public UnconstrainedMoveBlock shrinkIfPossible()
 	{
 		return data.shrinkIfPossible();
 	}
@@ -45,11 +47,23 @@ public class Allocation
 	{
 		if (!isUnattemptedAllowableBanksEmpty())
 		{
-			return null;
+			return -1;
 		}
+		
+		// get the next preference
 		BankPreference pref = new BankPreference(unattemptedAllowableBankPreferences.first());
-		removeUnattemptedBank(pref.start);
-		return pref;
+		byte prefId = pref.start;
+		
+		// Remove it from unattempted and update the preference
+		removeUnattemptedBank(prefId);
+		pref.start++;
+		if (pref.isEmpty())
+		{
+			unattemptedAllowableBankPreferences.remove(pref);
+		}
+		
+		// Return the id
+		return prefId;
 	}
 	
 	private void removeUnattemptedBank(byte bank)
@@ -81,24 +95,27 @@ public class Allocation
 	public void setAssignedBank(byte bank)
 	{
 		this.bank = bank;
-		data.setAssignedAddress(address);
 	}
 
 	public void setAssignedAddress(int address)
 	{
 		this.address = address;
-		data.setAssignedAddress(address); // TODO: remove
+	}
+	
+	public int getCurrentWorstCaseSizeOnBank(byte bankToGetSizeOn)
+	{
+		return data.getCurrentWorstCaseSizeOnBank(address, bankToGetSizeOn);
 	}
 
-	public void clearAddress() 
+	public void setAddressToUnassignedLocal() 
 	{
-		this.address = -1;
+		this.address = CompilerUtils.UNASSIGNED_LOCAL_ADDRESS;
 	}
 
 	public void clearBankAndAddress() 
 	{
-		this.bank = -1;
-		this.address = -1;
+		this.bank = CompilerUtils.UNASSIGNED_BANK;
+		this.address = CompilerUtils.UNASSIGNED_ADDRESS;
 	}
 	
 	private byte getNextUnatemptedAllowableBankPriority()
@@ -115,8 +132,8 @@ public class Allocation
 			if (compareVal == 0)
 			{
 				// TODO: Declare and make sure instructions can handle a -1 bank
-				// Give larger blocks higher priority (TODO: or lower depending on how we want to pack)
-				compareVal = Integer.compare(a1.data.getCurrentWorstCaseSizeOnBank(a1.bank), a2.data.getCurrentWorstCaseSizeOnBank(a2.bank));
+				// Give larger blocks higher priority
+				compareVal = Integer.compare(a1.getCurrentWorstCaseSizeOnBank(a1.bank), a2.getCurrentWorstCaseSizeOnBank(a2.bank));
 			}
 			
 			if (compareVal == 0)
@@ -127,5 +144,11 @@ public class Allocation
 			
 			return compareVal;
 	    }
+	}
+
+	public byte removeAlloc() 
+	{
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

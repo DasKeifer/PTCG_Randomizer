@@ -3,7 +3,7 @@ package datamanager;
 import java.util.Map;
 
 import compiler.DataBlock;
-import compiler.SegmentReference;
+import compiler.Segment;
 import rom.Texts;
 
 public abstract class BlockAllocData
@@ -20,9 +20,9 @@ public abstract class BlockAllocData
 		return dataBlock.getId();
 	}
 	
-	public Map<String, SegmentReference> getSegmentReferencesById()
+	public Map<String, Segment> getSegmentsById()
 	{
-		return dataBlock.getSegmentReferencesById();
+		return dataBlock.getSegmentsById();
 	}
 	
 	public void extractTexts(Texts texts)
@@ -30,13 +30,13 @@ public abstract class BlockAllocData
 		dataBlock.extractTexts(texts);
 	}
 	
-	public void linkData(Texts romTexts, Map<String, SegmentReference> segRefsById)
+	public void linkData(Texts romTexts, Map<String, Segment> segRefsById)
 	{
 		dataBlock.linkData(romTexts, segRefsById);
 	}
 
-	public void writeData(byte[] bytes)
+	public void writeData(byte[] bytes, int assignedAddress)
 	{
-		dataBlock.writeBytes(bytes);
+		dataBlock.writeBytes(bytes, assignedAddress);
 	}
 }

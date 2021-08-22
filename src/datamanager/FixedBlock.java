@@ -9,6 +9,7 @@ import util.RomUtils;
 public class FixedBlock extends BlockAllocData
 {
 	int replaceLength;
+	int address;
 	// The remote block (if needed), should be referred to in the DataBlock so no need to track it here
 	
 	// TODO: Add optional integrity checking surrounding area and replace
@@ -19,7 +20,7 @@ public class FixedBlock extends BlockAllocData
 	public FixedBlock(int startAddress, DataBlock replaceWith, int replaceLength)
 	{
 		super(replaceWith);
-		replaceWith.setAssignedAddress(startAddress);
+		address = startAddress;
 		this.replaceLength = replaceLength;
 	}
 	
@@ -27,19 +28,18 @@ public class FixedBlock extends BlockAllocData
 
 	public int getFixedAddress() 
 	{
-		return dataBlock.getAssignedAddress();
+		return address;
 	}
 	
 	@Override
-	public void writeData(byte[] bytes)
+	public void writeData(byte[] bytes, int assignedAddress)
 	{
-		dataBlock.setAssignedAddress(getFixedAddress()); // TODO: handle more gracefully - linking after assigning addresses...?
 		if (replaceLength >= 0)
 		{
-			ByteUtils.setBytes(bytes, dataBlock.getAssignedAddress(), replaceLength, Nop.NOP_VALUE);
+			ByteUtils.setBytes(bytes, address, replaceLength, Nop.NOP_VALUE);
 		}
 		
-		int lengthWritten = dataBlock.writeBytes(bytes);
+		int lengthWritten = dataBlock.writeBytes(bytes, assignedAddress);
 		
 //		if (dataBlock.getId().contains("MoreEffectBanksTweak")) 
 //		{
@@ -63,6 +63,6 @@ public class FixedBlock extends BlockAllocData
 			return replaceLength;
 		}
 		
-		return dataBlock.getWorstCaseSizeOnBank(RomUtils.determineBank(getFixedAddress()));
+		return dataBlock.getWorstCaseSizeOnBank(address, RomUtils.determineBank(getFixedAddress()));
 	}
 }

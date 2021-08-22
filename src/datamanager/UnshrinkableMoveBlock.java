@@ -29,8 +29,8 @@ public class UnshrinkableMoveBlock extends MoveableBlock
 	}
 
 	@Override
-	public int getShrunkWorstCaseSizeOnBank(byte bank) 
+	public int getShrunkWorstCaseSizeOnBank(int allocAddress, byte bankToGetSizeOn) 
 	{
-		return dataBlock.getWorstCaseSizeOnBank(bank);
+		return dataBlock.getWorstCaseSizeOnBank(allocAddress, bankToGetSizeOn);
 	}
 }

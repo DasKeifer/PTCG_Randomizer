@@ -21,8 +21,8 @@ public abstract class StaticInstruction extends FixedLengthInstruct
 	@Override
 	public void linkData(
 			Texts romTexts,
-			Map<String, SegmentReference> labelToLocalSegment, 
-			Map<String, SegmentReference> labelToSegment
+			Map<String, Segment> labelToLocalSegment, 
+			Map<String, Segment> labelToSegment
 	) 
 	{
 		// Nothing to do here - these are fully static

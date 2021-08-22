@@ -5,7 +5,6 @@ import java.util.Arrays;
 import compiler.CompilerUtils;
 import compiler.CompilerConstants.Register;
 import compiler.staticInstructs.Ld;
-import compiler.staticInstructs.Ldh;
 import util.ByteUtils;
 
 public class LdAMemAddr extends Ld

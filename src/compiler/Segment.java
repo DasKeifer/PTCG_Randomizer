@@ -7,7 +7,7 @@ import java.util.Map;
 import compiler.referenceInstructs.PlaceholderInstruction;
 import rom.Texts;
 
-class Segment extends SegmentReference
+public class Segment
 {
 	List<Instruction> data;
 	List<PlaceholderInstruction> placeholderInstructs;
@@ -29,25 +29,14 @@ class Segment extends SegmentReference
 		placeholderInstructs.add(instruct);
 	}
 	
-	public int getWorstCaseSizeOnBank(byte bank)
+	public int getWorstCaseSizeOnBank(int allocAddress, byte bankToGetSizeOn)
 	{
 		int size = 0;
 		for (Instruction item : data)
 		{
-			size += item.getWorstCaseSizeOnBank(bank, assignedAddress + size);
+			size += item.getWorstCaseSizeOnBank(bankToGetSizeOn, allocAddress + size);
 		}
 		return size;
-	}
-	
-	public boolean setAssignedAddress(int address) 
-	{
-		if (this.assignedAddress == address)
-		{
-			return false;
-		}
-		
-		this.assignedAddress = address;
-		return true;
 	}
 	
 	public void fillPlaceholders(Map<String, String> placeholderToArgs)
@@ -70,8 +59,8 @@ class Segment extends SegmentReference
 	
 	public void linkData(
 			Texts romTexts, 
-			Map<String, SegmentReference> labelToLocalSegment, 
-			Map<String, SegmentReference> labelToSegment
+			Map<String, Segment> labelToLocalSegment, 
+			Map<String, Segment> labelToSegment
 	)
 	{		
 		for (Instruction item : data)
@@ -80,13 +69,9 @@ class Segment extends SegmentReference
 		}
 	}
 	
-	public int writeBytes(byte[] bytes)
+	public int writeBytes(byte[] bytes, int assignedAddress)
 	{
 		int writeAddress = assignedAddress;
-		if (assignedAddress < 0)
-		{
-			throw new IllegalArgumentException("Attempted to write a segment that does not have an assigned address!");
-		}
 		for (Instruction item : data)
 		{
 			writeAddress += item.writeBytes(bytes, writeAddress);

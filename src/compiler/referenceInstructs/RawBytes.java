@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import compiler.Instruction;
-import compiler.SegmentReference;
+import compiler.Segment;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -46,8 +46,8 @@ public class RawBytes extends Instruction
 	@Override
 	public void linkData(
 			Texts romTexts, 
-			Map<String, SegmentReference> labelToLocalSegment,
-			Map<String, SegmentReference> labelToSegment) 
+			Map<String, Segment> labelToLocalSegment,
+			Map<String, Segment> labelToSegment) 
 	{
 		// All hard coded - nothing to do here
 	}

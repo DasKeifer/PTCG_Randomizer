@@ -4,7 +4,7 @@ import java.util.Map;
 
 import compiler.CompilerUtils;
 import compiler.Instruction;
-import compiler.SegmentReference;
+import compiler.Segment;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -12,7 +12,7 @@ public class BlockGlobalAddress extends Instruction
 {
 	final static int SIZE = 3;
 	String labelToGoTo;
-	protected SegmentReference toGoTo;
+	protected Segment toGoTo;
 	int offset;
 	
 	public BlockGlobalAddress(String labelToGoTo, int offset)
@@ -31,8 +31,8 @@ public class BlockGlobalAddress extends Instruction
 	@Override
 	public void linkData(
 			Texts romTexts,
-			Map<String, SegmentReference> labelToLocalSegment, 
-			Map<String, SegmentReference> labelToSegment
+			Map<String, Segment> labelToLocalSegment, 
+			Map<String, Segment> labelToSegment
 	) 
 	{		
 		// No need to check for local ones - they are treated the same

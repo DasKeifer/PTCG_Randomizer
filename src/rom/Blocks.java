@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import compiler.SegmentReference;
+import compiler.Segment;
 import datamanager.BlockAllocData;
 import datamanager.FixedBlock;
 import datamanager.MoveableBlock;
@@ -21,7 +21,7 @@ public class Blocks
 	List<MoveableBlock> blocksToPlace;
 	
 	// SegmentId, Segment Reference - mainly for linking
-	private Map<String, SegmentReference> segmentRefsById;
+	private Map<String, Segment> segmentRefsById;
 	
 	public Blocks()
 	{
@@ -54,7 +54,7 @@ public class Blocks
 		}
 
 		// Add the references for its segments
-		for (Entry<String, SegmentReference> idSegRef : block.getSegmentReferencesById().entrySet())
+		for (Entry<String, Segment> idSegRef : block.getSegmentsById().entrySet())
 		{
 			if (segmentRefsById.put(idSegRef.getKey(), idSegRef.getValue()) != null)
 			{

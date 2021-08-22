@@ -2,7 +2,7 @@ package compiler.referenceInstructs;
 
 
 import compiler.CompilerUtils;
-import compiler.SegmentReference;
+import compiler.Segment;
 import data.romtexts.OneBlockText;
 
 import java.util.Arrays;
@@ -53,8 +53,10 @@ public class Ldtx extends FixedLengthInstruct
 	}
 
 	@Override
-	public void linkData(Texts romTexts, Map<String, SegmentReference> labelToLocalSegment,
-			Map<String, SegmentReference> labelToSegment) 
+	public void linkData(
+			Texts romTexts, 
+			Map<String, Segment> labelToLocalSegment,
+			Map<String, Segment> labelToSegment) 
 	{
 		// No linking required - only needs the text
 	}

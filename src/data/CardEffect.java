@@ -169,10 +169,4 @@ public class CardEffect
 			blocks.addMoveableBlock(new UnshrinkableMoveBlock(priority, effectCommand, new BankPreference((byte) 1, (byte)6, (byte)7))); // TODO: figure out where these can effectively live	
 		}
 	}
-	
-	// TODO temp
-	public int getAssignedAddress()
-	{
-		return effectCommand.getAssignedAddress();
-	}
 }

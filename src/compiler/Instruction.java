@@ -10,8 +10,8 @@ public abstract class Instruction
 	
 	public abstract void linkData(
 			Texts romTexts,
-			Map<String, SegmentReference> labelToLocalSegment, 
-			Map<String, SegmentReference> labelToSegment
+			Map<String, Segment> labelToLocalSegment, 
+			Map<String, Segment> labelToSegment
 	);
 	
 	public abstract int getWorstCaseSizeOnBank(byte bank, int instructionOffset);

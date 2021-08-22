@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 import compiler.CompilerUtils;
 import compiler.Instruction;
-import compiler.SegmentReference;
+import compiler.Segment;
 import util.ByteUtils;
 import util.RomUtils;
 
@@ -16,7 +16,7 @@ public abstract class JumpCallCommon extends Instruction
 {
 	InstructionConditions conditions;
 	String labelToGoTo;
-	protected SegmentReference toGoTo;
+	protected Segment toGoTo;
 	int addressToGoTo;
 	
 	private byte conditionlessInstruct;

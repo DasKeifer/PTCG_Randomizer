@@ -318,7 +318,7 @@ public class Move
 		moveBytes[index++] = damage;
 		moveBytes[index++] = category.getValue();
 		
-		// TODO come back to this
+		// TODO come back to this - needs to be done as part of linking
 		if (customEffect != null)
 		{
 			effectPtr = RomUtils.convertToLoadedBankOffset(customEffect.getAssignedAddress());

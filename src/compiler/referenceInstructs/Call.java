@@ -3,7 +3,7 @@ package compiler.referenceInstructs;
 
 import java.util.Map;
 
-import compiler.SegmentReference;
+import compiler.Segment;
 import compiler.CompilerConstants.InstructionConditions;
 import rom.Texts;
 
@@ -26,8 +26,8 @@ public class Call extends JumpCallCommon
 	@Override
 	public void linkData(
 			Texts romTexts,
-			Map<String, SegmentReference> labelToLocalSegment, 
-			Map<String, SegmentReference> labelToSegment
+			Map<String, Segment> labelToLocalSegment, 
+			Map<String, Segment> labelToSegment
 	) 
 	{		
 		if (!labelToGoTo.isEmpty() && toGoTo == null)

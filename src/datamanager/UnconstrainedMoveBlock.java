@@ -1,6 +1,6 @@
 package datamanager;
 
-import java.util.SortedMap;
+import java.util.SortedSet;
 
 import compiler.DataBlock;
 import constants.RomConstants;
@@ -13,11 +13,11 @@ public class UnconstrainedMoveBlock extends MoveableBlock
 	}
 
 	@Override
-	public SortedMap<Byte, BankRange> getPreferencedAllowableBanks()
+	public SortedSet<BankPreference> getAllowableBankPreferences()
 	{
 		// TODO: be consistent with priority - low is high?
-		SortedMap<Byte, BankRange> toReturn = super.getPreferencedAllowableBanks();
-		toReturn.put(Byte.MAX_VALUE, new BankRange((byte) 0, (byte) (RomConstants.NUMBER_OF_BANKS - 1)));
+		SortedSet<BankPreference> toReturn = super.getAllowableBankPreferences();
+		toReturn.add(new BankPreference((byte) 127, (byte) 0, (byte) (RomConstants.NUMBER_OF_BANKS - 1)));
 		return toReturn;
 	}
 
@@ -29,7 +29,7 @@ public class UnconstrainedMoveBlock extends MoveableBlock
 	}
 
 	@Override
-	public int getShrunkWorstCaseSizeOnBank(byte bank) 
+	public int getShrunkWorstCaseSizeOnBank(int allocAddress, byte bankToGetSizeOn) 
 	{
 		return 0;
 	}

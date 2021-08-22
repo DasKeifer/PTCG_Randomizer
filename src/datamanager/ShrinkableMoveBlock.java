@@ -3,7 +3,7 @@ package datamanager;
 import java.util.Map;
 
 import compiler.DataBlock;
-import compiler.SegmentReference;
+import compiler.Segment;
 import rom.Texts;
 
 public class ShrinkableMoveBlock extends MoveableBlock
@@ -19,9 +19,9 @@ public class ShrinkableMoveBlock extends MoveableBlock
 	}
 
 	@Override
-	public int getShrunkWorstCaseSizeOnBank(byte bank) 
+	public int getShrunkWorstCaseSizeOnBank(int allocAddress, byte bankToGetSizeOn)
 	{
-		return shrunkLocalBlock.getWorstCaseSizeOnBank(bank);
+		return shrunkLocalBlock.getWorstCaseSizeOnBank(allocAddress, bankToGetSizeOn);
 	}
 
 	@Override
@@ -37,14 +37,14 @@ public class ShrinkableMoveBlock extends MoveableBlock
 	}
 
 	@Override
-	public Map<String, SegmentReference> getSegmentReferencesById() 
+	public Map<String, Segment> getSegmentsById() 
 	{
 		if (isShrunkOrMoved())
 		{
-			return shrunkLocalBlock.getSegmentReferencesById();
+			return shrunkLocalBlock.getSegmentsById();
 		}
 		
-		return super.getSegmentReferencesById();
+		return super.getSegmentsById();
 	}
 
 	@Override
@@ -61,7 +61,7 @@ public class ShrinkableMoveBlock extends MoveableBlock
 	}
 	
 	@Override
-	public void linkData(Texts romTexts, Map<String, SegmentReference> segRefsById)
+	public void linkData(Texts romTexts, Map<String, Segment> segRefsById)
 	{
 		if (isShrunkOrMoved())
 		{
@@ -74,15 +74,15 @@ public class ShrinkableMoveBlock extends MoveableBlock
 	}
 
 	@Override
-	public void writeData(byte[] bytes)
+	public void writeData(byte[] bytes, int assignedAddress)
 	{
 		if (isShrunkOrMoved())
 		{
-			shrunkLocalBlock.writeBytes(bytes);
+			shrunkLocalBlock.writeBytes(bytes, assignedAddress);
 		}
 		else
 		{
-			super.writeData(bytes);
+			super.writeData(bytes, assignedAddress);
 		}
 	}
 }

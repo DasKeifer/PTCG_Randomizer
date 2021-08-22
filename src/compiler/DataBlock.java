@@ -16,7 +16,6 @@ import util.RomUtils;
 public class DataBlock 
 {	
 	public static String END_OF_DATA_BLOCK_SUBSEG_LABEL = "__end_of_data_block__";
-	private int assignedAddress;
 	LinkedHashMap<String, Segment> segments; // linked to keep order
 	private String id;
 
@@ -35,7 +34,6 @@ public class DataBlock
 	
 	public DataBlock(String startingSegmentName, Instruction... instructions)
 	{
-		assignedAddress = CompilerUtils.UNASSIGNED_ADDRESS;
 		segments = new LinkedHashMap<>();
 		id = startingSegmentName.trim();
 		endSegment = new Segment();
@@ -65,7 +63,6 @@ public class DataBlock
 	// I.e. replace Code Snippet
 	public DataBlock(String startingSegmentName, List<String> sourceLines)
 	{
-		assignedAddress = CompilerUtils.UNASSIGNED_ADDRESS;
 		segments = new LinkedHashMap<>();
 		id = startingSegmentName.trim();
 		parseSource(startingSegmentName, sourceLines);
@@ -73,7 +70,6 @@ public class DataBlock
 	
 	public DataBlock(List<String> sourceLines)
 	{
-		assignedAddress = CompilerUtils.UNASSIGNED_ADDRESS;
 		segments = new LinkedHashMap<>();
 
 		List<String> sourceLinesTrimmed = new ArrayList<>(sourceLines);
@@ -161,30 +157,14 @@ public class DataBlock
 		currSegment.appendInstruction(instruct);
 	}
 	
-	public void setAssignedAddress(int address)
-	{
-		this.assignedAddress = address;
-		assignSegmentAddresses();
-	}
-	
-	private void assignSegmentAddresses()
-	{
-		getWorstCaseSizeOnBank(RomUtils.determineBank(assignedAddress));
-	}
-	
-	public int getAssignedAddress()
-	{
-		return assignedAddress;
-	}
-	
 	public String getId()
 	{
 		return id;
 	}
 	
-	public Map<String, SegmentReference> getSegmentReferencesById()
+	public Map<String, Segment> getSegmentsById()
 	{
-		Map<String, SegmentReference> segRefsById = new HashMap<>();
+		Map<String, Segment> segRefsById = new HashMap<>();
 		for (Entry<String, Segment> idSeg : segments.entrySet())
 		{
 			segRefsById.put(idSeg.getKey(), idSeg.getValue());
@@ -195,13 +175,14 @@ public class DataBlock
 		return segRefsById;
 	}
 	
-	public int getWorstCaseSizeOnBank(byte bank)
+	public int getWorstCaseSizeOnBank(int allocAddress, byte bankToGetSizeOn)
 	{
 		// Because some instructions like JR can change in size based on the other
 		// code lengths, we need to do this somewhat iteratively in case the size
 		// does change
 		short worstCaseSize = 0;
-		int baseAddress = assignedAddress;
+		int baseAddress = allocAddress;
+		// TODO: Local address needed?
 		if (baseAddress == CompilerUtils.UNASSIGNED_ADDRESS || baseAddress == CompilerUtils.UNASSIGNED_LOCAL_ADDRESS)
 		{
 			baseAddress = 0;
@@ -222,11 +203,8 @@ public class DataBlock
 				continue;
 			}
 			
-			worstCaseSize += currSeg.getWorstCaseSizeOnBank(bank);
+			worstCaseSize += currSeg.getWorstCaseSizeOnBank(allocAddress, bankToGetSizeOn);
 		}
-		
-		// And now assign the end segment marker (no size)
-		endSegment.setAssignedAddress(baseAddress + worstCaseSize);
 		
 		return worstCaseSize;
 	}
@@ -260,18 +238,18 @@ public class DataBlock
 		// End reference has no code so no text exisist in it
 	}
 	
-	public void linkData(Texts romTexts, Map<String, SegmentReference> segRefsById)
+	public void linkData(Texts romTexts, Map<String, Segment> segRefsById)
 	{
 		for (Segment seg : segments.values())
 		{
-			seg.linkData(romTexts, getSegmentReferencesById(), segRefsById);
+			seg.linkData(romTexts, getSegmentsById(), segRefsById);
 		}
 
 		// End reference has no code so no linking needs to be done
 	}
 
 	public static boolean debug;
-	public int writeBytes(byte[] bytes)
+	public int writeBytes(byte[] bytes, int assignedAddress)
 	{
 		debug = id.contains("CallFor");
 		if (debug) 
@@ -279,14 +257,15 @@ public class DataBlock
 			System.out.println("Segment - " + id);
 		}
 		
-		int lastEnd = 0;
+		int lastEndOffset = 0;
 		for (Segment seg : segments.values())
 		{
-			lastEnd = seg.writeBytes(bytes);
+			lastEndOffset += seg.writeBytes(bytes, assignedAddress + lastEndOffset);
 		}
 		
 		// End reference has no code so no writing needs to be done
 		
-		return lastEnd;
+		// TODO: Value used?
+		return lastEndOffset;
 	}
 }

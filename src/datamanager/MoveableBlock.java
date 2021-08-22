@@ -43,26 +43,30 @@ public abstract class MoveableBlock extends BlockAllocData
 		
 		allowableBankPreferences.add(new BankPreference(priority, startBank, stopBank));
 	}
-
-	// TODO: remove
-	public void setAssignedAddress(int address) 
-	{
-		dataBlock.setAssignedAddress(address);
-	}
 	
 	void setShrunkOrMoved(boolean isShrunkOrMoved)
 	{
 		shrunkMoved = isShrunkOrMoved;
 	}
 
-	boolean shrinkIfPossible()
+	public boolean unshrinkIfPossible()
 	{
-		if (canBeShrunkOrMoved() && !movesNotShrinks() && !isShrunkOrMoved())
+		if (!movesNotShrinks() && isShrunkOrMoved())
 		{
 			setShrunkOrMoved(true);
 			return true;
 		}
 		return false;
+	}
+	
+	public UnconstrainedMoveBlock shrinkIfPossible()
+	{
+		if (canBeShrunkOrMoved() && !movesNotShrinks() && !isShrunkOrMoved())
+		{
+			setShrunkOrMoved(true);
+			return getRemoteBlock();
+		}
+		return null;
 	}
 	
 	boolean isShrunkOrMoved()
@@ -87,18 +91,18 @@ public abstract class MoveableBlock extends BlockAllocData
 	
 	public abstract boolean movesNotShrinks();
 	public abstract UnconstrainedMoveBlock getRemoteBlock();	
-	public abstract int getShrunkWorstCaseSizeOnBank(byte bank);
+	public abstract int getShrunkWorstCaseSizeOnBank(int allocAddress, byte bankToGetSizeOn);
 	
-	public int getCurrentWorstCaseSizeOnBank(byte bank)
+	public int getCurrentWorstCaseSizeOnBank(int allocAddress, byte bankToGetSizeOn)
 	{
 		if (shrunkMoved)
 		{			
 			// Otherwise get its shrunk size
-			return getShrunkWorstCaseSizeOnBank(bank);
+			return getShrunkWorstCaseSizeOnBank(allocAddress, bankToGetSizeOn);
 		}
 		else
 		{
-			return dataBlock.getWorstCaseSizeOnBank(bank);
+			return dataBlock.getWorstCaseSizeOnBank(allocAddress, bankToGetSizeOn);
 		}
 	}
 }

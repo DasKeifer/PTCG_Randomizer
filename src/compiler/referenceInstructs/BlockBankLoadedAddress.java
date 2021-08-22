@@ -3,7 +3,7 @@ package compiler.referenceInstructs;
 import java.util.Map;
 
 import compiler.Instruction;
-import compiler.SegmentReference;
+import compiler.Segment;
 import rom.Texts;
 import util.ByteUtils;
 import util.RomUtils;
@@ -11,7 +11,7 @@ import util.RomUtils;
 public class BlockBankLoadedAddress extends Instruction
 {
 	String labelToGoTo;
-	protected SegmentReference toGoTo;
+	protected Segment toGoTo;
 	boolean includeBank;
 	
 	public BlockBankLoadedAddress(String labelToGoTo, boolean includeBank)
@@ -30,8 +30,8 @@ public class BlockBankLoadedAddress extends Instruction
 	@Override
 	public void linkData(
 			Texts romTexts,
-			Map<String, SegmentReference> labelToLocalSegment, 
-			Map<String, SegmentReference> labelToSegment
+			Map<String, Segment> labelToLocalSegment, 
+			Map<String, Segment> labelToSegment
 	) 
 	{		
 		// No need to check for local ones - they are treated the same

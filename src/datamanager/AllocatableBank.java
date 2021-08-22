@@ -4,9 +4,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import util.RomUtils;
 
@@ -128,25 +125,27 @@ public class AllocatableBank
 //		}
 //		return true;
 //	}
+	
 	public void addToBank(Allocation alloc)
 	{
 		alloc.setAssignedBank(bank);
 		priortizedAllocations.add(alloc);
     }
 
-	// TODO: Probably can optimize packing into bank space some (i.e. leave most space, leave smallest space)
 	public boolean packAndRemoveExcessAllocs(List<Allocation> allocsThatDontFit)
 	{
 		return packAllocs(allocsThatDontFit, true);
 	}
-	
+
 	private boolean packAllocs(List<Allocation> allocsThatDontFit, boolean removeOnesThatDontFit)
 	{
 		// Clear the spaces and output var
+		// Clear just the addresses but keep the banks since they still are
+		// here so we can get a better idea of the size
 		allocsThatDontFit.clear();
 		for (AllocatableSpace space : spaces)
 		{
-			space.clearAllocsAndAddresses();
+			space.clearAllocsAndAddressToUnassignedLocal();
 		}
 		
 		// Ensure the allocations are sorted
@@ -155,7 +154,8 @@ public class AllocatableBank
 		// Attempt to place each alloc in the list
 		return packAllocsInCollection(priortizedAllocations.iterator(), allocsThatDontFit, removeOnesThatDontFit);
 	}
-	
+
+	// TODO: Probably can optimize packing into bank space some (i.e. leave most space, leave smallest space)
 	private boolean packAllocsInCollection(Iterator<Allocation> allocItr, List<Allocation> allocsThatDontFit, boolean removeOnesThatDontFit)
 	{
 		boolean placed;
@@ -189,147 +189,45 @@ public class AllocatableBank
 		return allocsThatDontFit.isEmpty();
 	}
 
-	public boolean shrinkToPackAllocs(List<Allocation> newAllocs, List<Allocation> shrunkAllocs)
-	{
-		// First get the list of allocs that don't fit
-		List<Allocation> excessAllocs = new LinkedList<>();
-		List<Allocation> allocsThatStillDontFit = new LinkedList<>();
-		if (!packAllocs(excessAllocs, false)) // false = don't remove ones that don't fit
-		{
-			// Go through starting with the lowest priority and shrink until we
-			// fit or we don't have anymore that can shrink
-			ListIterator<Allocation> revItr = priortizedAllocations.listIterator(priortizedAllocations.size());
-			Allocation alloc;
-			while (revItr.hasPrevious())
-			{
-				alloc = revItr.previous();
-				if (alloc.shrinkIfPossible())
-				{
-					// If it shrinks, see if the excess ones fit now
-					shrunkAllocs.add(alloc);
-					packAllocsInCollection(excessAllocs.iterator(), allocsThatStillDontFit, false); // false = don't remove ones that don't fit
-					
-					// If there are fewer that still don't fit, update the excess allocs list and if its empty, we
-					// are done
-					if (excessAllocs.size() != allocsThatStillDontFit.size())
-					{
-						excessAllocs = allocsThatStillDontFit;
-						if (excessAllocs.isEmpty())
-						{
-							break;
-						}
-						allocsThatStillDontFit = new LinkedList<>();
-					}
-					// Otherwise clear the list
-					else
-					{
-						allocsThatStillDontFit.clear();
-					}
-				}
-			}
-		}
-		
-		return excessAllocs.isEmpty();
-	}
-//	
-//	public byte canShrinkingToMakeSpace(int space)
-//	{
-//		byte priorityValue = -1;
-//		List<MoveableBlock> shrunkenAllocs = new LinkedList<>();
-//		List<UnconstrainedMoveBlock> toAlloc = new LinkedList<>();
-//		if (shrinkToMakeSpace(space, shrunkenAllocs, toAlloc))
-//		{
-//			if (shrunkenAllocs.isEmpty())
-//			{
-//				// No need to unshrink since none where shrunk
-//				return Byte.MAX_VALUE;
-//			}
-//			else
-//			{
-//				// Last added will be the highest priority
-//				priorityValue = shrunkenAllocs.get(shrunkenAllocs.size() - 1).getPriority();
-//			}
-//		}
-//		
-//		// Revert the changes and refresh so we leave in the same state we started
-//		unshrinkAllTempShrunkAllocs(shrunkenAllocs);
-//		return priorityValue;
-//	}
-//
-//	private void unshrinkAllTempShrunkAllocs(List<MoveableBlock> shrunkenAllocs)
-//	{
-//		for (MoveableBlock alloc : shrunkenAllocs)
-//		{
-//			alloc.setShrunkOrMoved(false);
-//			
-//			// If it was moved, add it back in
-//			if (alloc.movesNotShrinks())
-//			{
-//				DataManagerUtils.addToPriorityMap(allocationsByPriority, alloc);
-//			}
-//		}
-//		
-//		if (!reassignAndRefresh())
-//		{
-//			throw new RuntimeException("Failed to assign addresses! This should never happen here (unshrinkAllTempShrunkAllocs)!");
-//		}
-//	}
-//
-//	// Only (potentially) modifies blocks to alloc if true is returned
-//	private boolean shrinkToMakeSpace(int space, List<MoveableBlock> shrunkenAllocsByReversePriority, List<UnconstrainedMoveBlock> blocksToAllocate)
-//	{
-//		// Create a separate list so the passed list is only modified if true is returned
-//		List<UnconstrainedMoveBlock> runningToAlloc = new LinkedList<>();
-//		
-//		List<List<MoveableBlock>> allocByPriority = new ArrayList<>(allocationsByPriority.descendingMap().values());
-//		ListIterator<MoveableBlock> revIterator;
-//		MoveableBlock alloc;
-//		
-//		for (List<MoveableBlock> allocWithPriority : allocByPriority)
-//		{
-//			revIterator = allocWithPriority.listIterator(allocWithPriority.size());
-//			while (revIterator.hasPrevious())
-//			{
-//				alloc = revIterator.previous();
-//				if (alloc.canBeShrunkOrMoved())
-//				{
-//					// Shrink it and add it to our list
-//					alloc.setShrunkOrMoved(true);
-//					shrunkenAllocsByReversePriority.add(alloc);
-//					
-//					// Get the remote block that will need to be allocated
-//					if (alloc.getRemoteBlock() != null)
-//					{
-//						runningToAlloc.add(alloc.getRemoteBlock());
-//						
-//						// If it moves, we need to remove it from this block too
-//						if (alloc.movesNotShrinks())
-//						{
-//							revIterator.remove();
-//						}
-//					}
-//					
-//					// See if we have space now
-//					if (!reassignAndRefresh())
-//					{
-//						throw new RuntimeException("Failed to assign addresses! This should never happen here (shrinkToMakeSpace)!");
-//					}
-//					if (getLargestFreeSpace() >= space)
-//					{			
-//						// Add the list prior to returning now that we know
-//						// we are successful
-//						blocksToAllocate.addAll(runningToAlloc);
-//						return true;
-//					}
-//				}				
-//			}
-//		}
-//		
-//		return false;
-//	}
-
 	public byte getBank() 
 	{
 		return bank;
+	}
+	
+	public void clearAllAllocs() 
+	{
+		for (AllocatableSpace space : spaces)
+		{
+			space.clearAllocsAndAddressToUnassignedLocal();
+		}
+		
+		// Now clear the banks
+		for (Allocation alloc : priortizedAllocations)
+		{
+			alloc.clearBankAndAddress();
+		}
+		
+		// Finally clear the list
+		priortizedAllocations.clear();
+	}
+
+	public void unshrinkAsMuchAsPossible(List<Allocation> unshrunkAllocs) 
+	{
+		// For each allocation from highest priority to lowest, see if we can unshrink it
+		List<Allocation> unusedList = new LinkedList<>();
+		for (Allocation alloc : priortizedAllocations)
+		{
+			// If we can unshrink it, do so and then try to pack the allocations
+			if (alloc.data.unshrinkIfPossible())
+			{
+				if (!packAllocs(unusedList, false)) // False = don't remove excess
+				{
+					// If we didn't successfully pack, then we can't unshrink this one
+					// so reshrink it but keep iterating because we might be able to 
+					// fit other ones
+					alloc.data.setShrunkOrMoved(true);
+				}
+			}
+		}
 	}
 }
