@@ -3,6 +3,7 @@ package datamanager;
 
 import compiler.DataBlock;
 
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -91,18 +92,18 @@ public abstract class MoveableBlock extends BlockAllocData
 	
 	public abstract boolean movesNotShrinks();
 	public abstract UnconstrainedMoveBlock getRemoteBlock();	
-	public abstract int getShrunkWorstCaseSizeOnBank(int allocAddress, byte bankToGetSizeOn);
+	public abstract int getShrunkWorstCaseSizeOnBank(byte bankToGetSizeOn, int allocAddress, Map<String, Integer> allocatedIndexes);
 	
-	public int getCurrentWorstCaseSizeOnBank(int allocAddress, byte bankToGetSizeOn)
+	public int getCurrentWorstCaseSizeOnBank(int allocAddress, byte bankToGetSizeOn, Map<String, Integer> allocatedIndexes)
 	{
 		if (shrunkMoved)
 		{			
 			// Otherwise get its shrunk size
-			return getShrunkWorstCaseSizeOnBank(allocAddress, bankToGetSizeOn);
+			return getShrunkWorstCaseSizeOnBank(bankToGetSizeOn, allocAddress, allocatedIndexes);
 		}
 		else
 		{
-			return dataBlock.getWorstCaseSizeOnBank(allocAddress, bankToGetSizeOn);
+			return dataBlock.getWorstCaseSizeOnBank(bankToGetSizeOn, allocAddress, allocatedIndexes);
 		}
 	}
 }

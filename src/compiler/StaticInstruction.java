@@ -19,12 +19,10 @@ public abstract class StaticInstruction extends FixedLengthInstruct
 	}
 	
 	@Override
-	public void linkData(
-			Texts romTexts,
-			Map<String, Segment> labelToLocalSegment, 
-			Map<String, Segment> labelToSegment
-	) 
+	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt, Map<String, Integer> allocatedIndexes)
 	{
-		// Nothing to do here - these are fully static
+		writeStaticBytes(bytes, indexToAddAt);
 	}
+
+	public abstract void writeStaticBytes(byte[] bytes, int indexToAddAt);
 }

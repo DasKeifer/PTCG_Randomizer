@@ -14,7 +14,7 @@ public class CpReg extends Cp
 		this.reg = reg;
 	}
 	
-	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt)
+	public void writeStaticBytes(byte[] bytes, int indexToAddAt)
 	{
 		bytes[indexToAddAt] = (byte) (0xB8 | reg.getValue());
 	}

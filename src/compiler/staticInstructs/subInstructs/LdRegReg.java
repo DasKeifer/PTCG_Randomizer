@@ -16,7 +16,7 @@ public class LdRegReg extends Ld
 	}
 
 	@Override
-	public void writeFixedSizeBytes(byte[] bytes, int indexToWriteAt) 
+	public void writeStaticBytes(byte[] bytes, int indexToWriteAt) 
 	{
 		bytes[indexToWriteAt] = (byte) (0x40 | (to.getValue() << 3) | (from.getValue()));
 	}

@@ -2,23 +2,20 @@ package compiler.referenceInstructs;
 
 import java.util.Map;
 
-import compiler.CompilerUtils;
-import compiler.Instruction;
-import compiler.Segment;
+import compiler.FixedLengthInstruct;
 import rom.Texts;
 import util.ByteUtils;
 
-public class BlockGlobalAddress extends Instruction
+public class BlockGlobalAddress extends FixedLengthInstruct
 {
 	final static int SIZE = 3;
-	String labelToGoTo;
-	protected Segment toGoTo;
+	String addressLabel;
 	int offset;
 	
-	public BlockGlobalAddress(String labelToGoTo, int offset)
+	public BlockGlobalAddress(String addressLabel, int offset)
 	{
-		this.labelToGoTo = labelToGoTo;
-		toGoTo = null;
+		super(SIZE);
+		this.addressLabel = addressLabel;
 		this.offset = offset;
 	}
 
@@ -27,37 +24,22 @@ public class BlockGlobalAddress extends Instruction
 	{
 		// No texts in this instruct
 	}
-	
-	@Override
-	public void linkData(
-			Texts romTexts,
-			Map<String, Segment> labelToLocalSegment, 
-			Map<String, Segment> labelToSegment
-	) 
-	{		
-		// No need to check for local ones - they are treated the same
-		toGoTo = labelToSegment.get(labelToGoTo);
-		if (toGoTo == null)
-		{
-			throw new IllegalArgumentException("Specified label '" + labelToGoTo + "' was not found!");
-		}
-	}
 
 	@Override
-	public int getWorstCaseSizeOnBank(byte bank, int instOffset)
+	public int getWorstCaseSizeOnBank(byte unused1, int unused2, Map<String, Integer> unused3)
 	{
 		return SIZE;
 	}
 	
 	@Override
-	public int writeBytes(byte[] bytes, int addressToWriteAt) 
+	public void writeFixedSizeBytes(byte[] bytes, int addressToWriteAt, Map<String, Integer> allocatedIndexes) 
 	{
-		if (toGoTo == null)
+		Integer globalAddress = allocatedIndexes.get(addressLabel);
+		if (globalAddress == null)
 		{
-			throw new IllegalAccessError("Block Addresss must be linked prior to writting!");
+			throw new IllegalAccessError("TODOOOOO");
 		}
 		
-		ByteUtils.writeLittleEndian(toGoTo.getAssignedAddress() - offset, bytes, addressToWriteAt, SIZE);
-		return SIZE;
+		ByteUtils.writeLittleEndian(globalAddress - offset, bytes, addressToWriteAt, SIZE);
 	}
 }

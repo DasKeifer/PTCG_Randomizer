@@ -11,7 +11,6 @@ import java.util.Map.Entry;
 
 import compiler.referenceInstructs.PlaceholderInstruction;
 import rom.Texts;
-import util.RomUtils;
 
 public class DataBlock 
 {	
@@ -175,35 +174,19 @@ public class DataBlock
 		return segRefsById;
 	}
 	
-	public int getWorstCaseSizeOnBank(int allocAddress, byte bankToGetSizeOn)
+	public int getWorstCaseSizeOnBank(byte bankToGetSizeOn, int allocAddress, Map<String, Integer> allocatedIndexes)
 	{
 		// Because some instructions like JR can change in size based on the other
 		// code lengths, we need to do this somewhat iteratively in case the size
 		// does change
 		short worstCaseSize = 0;
-		int baseAddress = allocAddress;
-		// TODO: Local address needed?
-		if (baseAddress == CompilerUtils.UNASSIGNED_ADDRESS || baseAddress == CompilerUtils.UNASSIGNED_LOCAL_ADDRESS)
-		{
-			baseAddress = 0;
-		}
 		
 		Iterator<Segment> segItr = segments.values().iterator();
 		Segment currSeg;
 		while (segItr.hasNext())
 		{
 			currSeg = segItr.next();
-			
-			// If its a new segment offset, that means something shrunk earlier on so
-			// we need to start over in case it impacted other segments
-			if (currSeg.setAssignedAddress(baseAddress + worstCaseSize))
-			{
-				segItr = segments.values().iterator();
-				worstCaseSize = 0;
-				continue;
-			}
-			
-			worstCaseSize += currSeg.getWorstCaseSizeOnBank(allocAddress, bankToGetSizeOn);
+			worstCaseSize += currSeg.getWorstCaseSizeOnBank(bankToGetSizeOn, allocAddress, allocatedIndexes);
 		}
 		
 		return worstCaseSize;
@@ -237,19 +220,9 @@ public class DataBlock
 		
 		// End reference has no code so no text exisist in it
 	}
-	
-	public void linkData(Texts romTexts, Map<String, Segment> segRefsById)
-	{
-		for (Segment seg : segments.values())
-		{
-			seg.linkData(romTexts, getSegmentsById(), segRefsById);
-		}
-
-		// End reference has no code so no linking needs to be done
-	}
 
 	public static boolean debug;
-	public int writeBytes(byte[] bytes, int assignedAddress)
+	public int writeBytes(byte[] bytes, int assignedAddress, Map<String, Integer> allocatedIndexes)
 	{
 		debug = id.contains("CallFor");
 		if (debug) 
@@ -260,7 +233,7 @@ public class DataBlock
 		int lastEndOffset = 0;
 		for (Segment seg : segments.values())
 		{
-			lastEndOffset += seg.writeBytes(bytes, assignedAddress + lastEndOffset);
+			lastEndOffset += seg.writeBytes(bytes, assignedAddress + lastEndOffset, allocatedIndexes);
 		}
 		
 		// End reference has no code so no writing needs to be done

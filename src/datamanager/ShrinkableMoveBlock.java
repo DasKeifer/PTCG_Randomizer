@@ -19,9 +19,10 @@ public class ShrinkableMoveBlock extends MoveableBlock
 	}
 
 	@Override
-	public int getShrunkWorstCaseSizeOnBank(int allocAddress, byte bankToGetSizeOn)
+	public int getShrunkWorstCaseSizeOnBank(byte bankToGetSizeOn, int allocAddress, Map<String, Integer> allocatedIndexes)
 	{
-		return shrunkLocalBlock.getWorstCaseSizeOnBank(allocAddress, bankToGetSizeOn);
+		// TODO: Combine alloc addresses into one arg?
+		return shrunkLocalBlock.getWorstCaseSizeOnBank(bankToGetSizeOn, allocAddress, allocatedIndexes);
 	}
 
 	@Override
@@ -59,30 +60,17 @@ public class ShrinkableMoveBlock extends MoveableBlock
 			super.extractTexts(texts);
 		}
 	}
-	
-	@Override
-	public void linkData(Texts romTexts, Map<String, Segment> segRefsById)
-	{
-		if (isShrunkOrMoved())
-		{
-			shrunkLocalBlock.linkData(romTexts, segRefsById);
-		}
-		else
-		{		
-			super.linkData(romTexts, segRefsById);
-		}
-	}
 
 	@Override
-	public void writeData(byte[] bytes, int assignedAddress)
+	public void writeData(byte[] bytes, int assignedAddress, Map<String, Integer> allocatedIndexes)
 	{
 		if (isShrunkOrMoved())
 		{
-			shrunkLocalBlock.writeBytes(bytes, assignedAddress);
+			shrunkLocalBlock.writeBytes(bytes, assignedAddress, allocatedIndexes);
 		}
 		else
 		{
-			super.writeData(bytes, assignedAddress);
+			super.writeData(bytes, assignedAddress, allocatedIndexes);
 		}
 	}
 }

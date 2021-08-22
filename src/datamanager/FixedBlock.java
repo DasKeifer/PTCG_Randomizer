@@ -1,6 +1,8 @@
 package datamanager;
 
 
+import java.util.Map;
+
 import compiler.DataBlock;
 import compiler.staticInstructs.Nop;
 import util.ByteUtils;
@@ -32,14 +34,14 @@ public class FixedBlock extends BlockAllocData
 	}
 	
 	@Override
-	public void writeData(byte[] bytes, int assignedAddress)
+	public void writeData(byte[] bytes, int assignedAddress, Map<String, Integer> allocatedIndexes)
 	{
 		if (replaceLength >= 0)
 		{
 			ByteUtils.setBytes(bytes, address, replaceLength, Nop.NOP_VALUE);
 		}
 		
-		int lengthWritten = dataBlock.writeBytes(bytes, assignedAddress);
+		int lengthWritten = dataBlock.writeBytes(bytes, assignedAddress, allocatedIndexes);
 		
 //		if (dataBlock.getId().contains("MoreEffectBanksTweak")) 
 //		{
@@ -56,13 +58,14 @@ public class FixedBlock extends BlockAllocData
 		}
 	}
 
-	public int size() 
+	// TODO: Make into  a class so we can better handle not finding an alloc?
+	public int size(Map<String, Integer> allocatedIndexes) 
 	{
 		if (replaceLength >= 0)
 		{
 			return replaceLength;
 		}
 		
-		return dataBlock.getWorstCaseSizeOnBank(address, RomUtils.determineBank(getFixedAddress()));
+		return dataBlock.getWorstCaseSizeOnBank(RomUtils.determineBank(getFixedAddress()), address, allocatedIndexes);
 	}
 }

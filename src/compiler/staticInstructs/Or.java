@@ -32,7 +32,7 @@ public class Or extends StaticInstruction
 	}
 
 	@Override
-	public void writeFixedSizeBytes(byte[] bytes, int indexToWriteAt) 
+	public void writeStaticBytes(byte[] bytes, int indexToWriteAt) 
 	{
 		bytes[indexToWriteAt] = (byte) (0xB0 | reg.getValue());
 	}

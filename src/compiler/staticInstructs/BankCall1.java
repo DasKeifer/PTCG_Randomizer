@@ -33,7 +33,7 @@ public class BankCall1 extends StaticInstruction
 		}
 	}
 	
-	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt)
+	public void writeStaticBytes(byte[] bytes, int indexToAddAt)
 	{
 		// bankcall1 is in RST 18
 		bytes[indexToAddAt++] = (byte) (0xC7 | 0x18); 

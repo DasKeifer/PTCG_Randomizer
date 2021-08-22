@@ -5,7 +5,6 @@ import java.util.Map;
 
 import compiler.CompilerUtils;
 import compiler.Instruction;
-import compiler.Segment;
 import rom.Texts;
 
 public class PlaceholderInstruction extends Instruction
@@ -43,32 +42,22 @@ public class PlaceholderInstruction extends Instruction
 	}
 
 	@Override
-	public void linkData(
-			Texts romTexts, 
-			Map<String, Segment> labelToLocalSegment, 
-			Map<String, Segment> labelToSegment
-	)
-	{
-		inst.linkData(romTexts, labelToLocalSegment, labelToSegment);
-	}
-
-	@Override
-	public int getWorstCaseSizeOnBank(byte bank, int instructionOffset) 
+	public int getWorstCaseSizeOnBank(byte bank, int instructionOffset, Map<String, Integer> allocatedIndexes) 
 	{
 		if (inst == null)
 		{
 			return 3; // Just a typical instruction size. Shouldn't be used really
 		}
-		return inst.getWorstCaseSizeOnBank(bank, instructionOffset);
+		return inst.getWorstCaseSizeOnBank(bank, instructionOffset, allocatedIndexes);
 	}
 
 	@Override
-	public int writeBytes(byte[] bytes, int addressToWriteAt) 
+	public int writeBytes(byte[] bytes, int addressToWriteAt, Map<String, Integer> allocatedIndexes) 
 	{
 		if (inst == null)
 		{
 			throw new IllegalArgumentException("Cannot write placeholder instructions! Must replace all values in it");
 		}
-		return inst.writeBytes(bytes, addressToWriteAt);
+		return inst.writeBytes(bytes, addressToWriteAt, allocatedIndexes);
 	}
 }

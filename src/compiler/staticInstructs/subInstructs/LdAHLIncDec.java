@@ -50,7 +50,7 @@ public class LdAHLIncDec extends Ld
 	}
 	
 	@Override
-	public void writeFixedSizeBytes(byte[] bytes, int indexToWriteAt) 
+	public void writeStaticBytes(byte[] bytes, int indexToWriteAt) 
 	{
 		byte val = 0x2;
 		if (loadToA)

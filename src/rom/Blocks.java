@@ -71,14 +71,6 @@ public class Blocks
 		}
 	}
 	
-	public void linkBlocks(Texts romTexts)
-	{
-		for (BlockAllocData block : blocksById.values())
-		{
-			block.linkData(romTexts, segmentRefsById);
-		}
-	}
-	
 	public List<FixedBlock> getAllFixedBlocks()
 	{
 		return replacementBlocks;
@@ -89,7 +81,7 @@ public class Blocks
 		return blocksToPlace;
 	}
 	
-	public void writeData(byte[] bytes)
+	public void writeData(byte[] bytes, Map<String, Integer> allocatedIndexes)
 	{
 		for (BlockAllocData block : blocksById.values())
 		{

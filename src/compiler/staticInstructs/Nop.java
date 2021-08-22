@@ -3,8 +3,6 @@ package compiler.staticInstructs;
 import compiler.CompilerUtils;
 import compiler.StaticInstruction;
 import compiler.CompilerConstants.InstructionConditions;
-import compiler.CompilerConstants.Register;
-import compiler.referenceInstructs.Jump;
 import compiler.referenceInstructs.JumpCallCommon;
 
 public class Nop extends StaticInstruction
@@ -46,7 +44,7 @@ public class Nop extends StaticInstruction
 		}
 	}
 	
-	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt)
+	public void writeStaticBytes(byte[] bytes, int indexToAddAt)
 	{
 		int size = getSize();	
 		// Write the Nops regardless of size

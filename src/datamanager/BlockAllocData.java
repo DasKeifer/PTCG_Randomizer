@@ -29,14 +29,9 @@ public abstract class BlockAllocData
 	{
 		dataBlock.extractTexts(texts);
 	}
-	
-	public void linkData(Texts romTexts, Map<String, Segment> segRefsById)
-	{
-		dataBlock.linkData(romTexts, segRefsById);
-	}
 
-	public void writeData(byte[] bytes, int assignedAddress)
+	public void writeData(byte[] bytes, int assignedAddress, Map<String, Integer> allocatedIndexes)
 	{
-		dataBlock.writeBytes(bytes, assignedAddress);
+		dataBlock.writeBytes(bytes, assignedAddress, allocatedIndexes);
 	}
 }

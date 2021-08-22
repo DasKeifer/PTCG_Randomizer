@@ -4,11 +4,13 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import compiler.CompilerUtils;
 import util.ByteUtils;
+
 
 public class Allocation 
 {
@@ -102,9 +104,9 @@ public class Allocation
 		this.address = address;
 	}
 	
-	public int getCurrentWorstCaseSizeOnBank(byte bankToGetSizeOn)
+	public int getCurrentWorstCaseSizeOnBank(byte bankToGetSizeOn, Map<String, Integer> allocatedIndexes)
 	{
-		return data.getCurrentWorstCaseSizeOnBank(address, bankToGetSizeOn);
+		return data.getCurrentWorstCaseSizeOnBank(address, bankToGetSizeOn, allocatedIndexes);
 	}
 
 	public void setAddressToUnassignedLocal() 

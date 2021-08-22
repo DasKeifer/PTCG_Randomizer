@@ -13,7 +13,7 @@ public class IncReg extends Inc
 		this.reg = reg;
 	}
 	
-	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt)
+	public void writeStaticBytes(byte[] bytes, int indexToAddAt)
 	{
 		bytes[indexToAddAt] = (byte) (0x04 | reg.getValue() << 3);
 	}

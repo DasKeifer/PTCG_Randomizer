@@ -39,7 +39,7 @@ public class Lb extends StaticInstruction
 	}
 	
 	@Override
-	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt)
+	public void writeStaticBytes(byte[] bytes, int indexToAddAt)
 	{
 		bytes[indexToAddAt++] = (byte) (0x01 | (pair.getValue() << 4));
 		bytes[indexToAddAt++] = value2;

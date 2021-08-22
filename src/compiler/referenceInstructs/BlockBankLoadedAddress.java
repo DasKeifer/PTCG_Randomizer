@@ -2,22 +2,22 @@ package compiler.referenceInstructs;
 
 import java.util.Map;
 
-import compiler.Instruction;
-import compiler.Segment;
+import compiler.FixedLengthInstruct;
 import rom.Texts;
 import util.ByteUtils;
 import util.RomUtils;
 
-public class BlockBankLoadedAddress extends Instruction
+
+public class BlockBankLoadedAddress extends FixedLengthInstruct
 {
-	String labelToGoTo;
-	protected Segment toGoTo;
+	String addressLabel;
 	boolean includeBank;
 	
-	public BlockBankLoadedAddress(String labelToGoTo, boolean includeBank)
+	public BlockBankLoadedAddress(String addressLabel, boolean includeBank)
 	{
-		this.labelToGoTo = labelToGoTo;
-		toGoTo = null;
+		// Size depends on if the bank is included or not
+		super(includeBank ? 3 : 2);
+		this.addressLabel = addressLabel;
 		this.includeBank = includeBank;
 	}
 
@@ -28,45 +28,21 @@ public class BlockBankLoadedAddress extends Instruction
 	}
 	
 	@Override
-	public void linkData(
-			Texts romTexts,
-			Map<String, Segment> labelToLocalSegment, 
-			Map<String, Segment> labelToSegment
-	) 
-	{		
-		// No need to check for local ones - they are treated the same
-		toGoTo = labelToSegment.get(labelToGoTo);
-		if (toGoTo == null)
-		{
-			throw new IllegalArgumentException("Specified label '" + labelToGoTo + "' was not found!");
-		}
-	}
-
-	@Override
-	public int getWorstCaseSizeOnBank(byte bank, int instOffset)
+	public void writeFixedSizeBytes(byte[] bytes, int addressToWriteAt, Map<String, Integer> allocatedIndexes) 
 	{
-		return includeBank ? 3 : 2;
-	}
-	
-	@Override
-	public int writeBytes(byte[] bytes, int addressToWriteAt) 
-	{
-		if (toGoTo == null)
+		Integer globalAddress = allocatedIndexes.get(addressLabel);
+		if (globalAddress == null)
 		{
-			throw new IllegalAccessError("Block Addresss must be linked prior to writting!");
+			throw new IllegalAccessError("TODOOOOO");
 		}
-
-		int globalAddress = toGoTo.getAssignedAddress();
+		
 		byte bank = RomUtils.determineBank(globalAddress);
 		short loadedAddress = RomUtils.convertToLoadedBankOffset(bank, globalAddress);
 		
-		int size = 2;
 		if (includeBank)
 		{
 			bytes[addressToWriteAt++] = bank;
-			size++;
 		}
 		ByteUtils.writeAsShort(loadedAddress, bytes, addressToWriteAt);
-		return size;
 	}
 }

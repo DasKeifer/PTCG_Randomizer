@@ -1,4 +1,7 @@
 package compiler;
+
+import java.util.Map;
+
 public abstract class FixedLengthInstruct extends Instruction
 {
 	private int size;
@@ -14,17 +17,17 @@ public abstract class FixedLengthInstruct extends Instruction
 	}
 
 	@Override
-	public int getWorstCaseSizeOnBank(byte bank, int instructionOffset)
+	public int getWorstCaseSizeOnBank(byte bank, int instructionOffset, Map<String, Integer> allocatedIndexes)
 	{
 		return getSize();
 	}
 	
 	@Override
-	public int writeBytes(byte[] bytes, int indexToAddAt)
+	public int writeBytes(byte[] bytes, int indexToAddAt, Map<String, Integer> allocatedIndexes)
 	{
-		writeFixedSizeBytes(bytes, indexToAddAt);
+		writeFixedSizeBytes(bytes, indexToAddAt, allocatedIndexes);
 		return size;
 	}
 
-	public abstract void writeFixedSizeBytes(byte[] bytes, int indexToAddAt);
+	public abstract void writeFixedSizeBytes(byte[] bytes, int indexToAddAt, Map<String, Integer> allocatedIndexes);
 }

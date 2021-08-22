@@ -1,5 +1,6 @@
 package datamanager;
 
+import java.util.Map;
 import java.util.SortedSet;
 
 import compiler.DataBlock;
@@ -29,7 +30,7 @@ public class UnconstrainedMoveBlock extends MoveableBlock
 	}
 
 	@Override
-	public int getShrunkWorstCaseSizeOnBank(int allocAddress, byte bankToGetSizeOn) 
+	public int getShrunkWorstCaseSizeOnBank(byte unused1, int unused2, Map<String, Integer> unused3) 
 	{
 		return 0;
 	}

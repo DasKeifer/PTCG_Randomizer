@@ -41,7 +41,7 @@ public class Ret extends StaticInstruction
 		throw new IllegalArgumentException("Ret only supports ([No Args]) or (InstructionCondition): Given " + args.toString());
 	}
 	
-	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt)
+	public void writeStaticBytes(byte[] bytes, int indexToAddAt)
 	{
 		if (InstructionConditions.NONE == conditions)
 		{

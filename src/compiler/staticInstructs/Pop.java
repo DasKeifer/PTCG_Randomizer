@@ -32,7 +32,7 @@ public class Pop extends StaticInstruction
 		}
 	}
 	
-	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt)
+	public void writeStaticBytes(byte[] bytes, int indexToAddAt)
 	{
 		bytes[indexToAddAt] = (byte) (0xC1 | pair.getValue() << 4);
 	}

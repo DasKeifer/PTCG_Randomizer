@@ -5,9 +5,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 import compiler.CompilerUtils;
-import compiler.Segment;
 import compiler.CompilerConstants.InstructionConditions;
-import rom.Texts;
 
 public class Jump extends JumpCallCommon
 {
@@ -71,38 +69,13 @@ public class Jump extends JumpCallCommon
 	}
 
 	@Override
-	public void linkData(
-			Texts romTexts,
-			Map<String, Segment> labelToLocalSegment, 
-			Map<String, Segment> labelToSegment
-	) 
-	{
-		if (!labelToGoTo.isEmpty() && toGoTo == null)
-		{
-			toGoTo = labelToLocalSegment.get(labelToGoTo);
-			if (toGoTo != null)
-			{
-				isLocalLabel = true;
-			}
-			else
-			{
-				isLocalLabel = false;
-				toGoTo = labelToSegment.get(labelToGoTo);
-			}
-			if (toGoTo == null)
-			{
-				throw new IllegalArgumentException("Specified label '" + labelToGoTo + "' was not found!");
-			}
-		}
-	}
-
-	@Override
-	public int getWorstCaseSizeOnBank(byte bank, int instOffset)
+	public int getWorstCaseSizeOnBank(byte bank, int instOffset, Map<String, Integer> allocatedIndexes)
 	{
 		// Is it a JR or a JP?
 		if (isLocalLabel)
 		{
-			if (canJr(instOffset))
+			int addressToGoTo = getAddressToGoTo(allocatedIndexes);
+			if (canJr(instOffset, addressToGoTo))
 			{
 				return 2;
 			}
@@ -111,14 +84,14 @@ public class Jump extends JumpCallCommon
 		// Is it a JP or a farjump? Use the parent class implementation
 		else
 		{
-			return super.getWorstCaseSizeOnBank(bank, instOffset);
+			return super.getWorstCaseSizeOnBank(bank, instOffset, allocatedIndexes);
 		}
 	}
 	
-	private boolean canJr(int instAddress)
+	private boolean canJr(int instAddress, int addressToGoTo)
 	{
 		// If its not local or we don't have a link yet, we can't JR
-		if (!isLocalLabel || toGoTo == null)
+		if (!isLocalLabel || addressToGoTo == CompilerUtils.UNASSIGNED_ADDRESS)
 		{
 			return false;
 		}
@@ -127,7 +100,7 @@ public class Jump extends JumpCallCommon
 		// JR or JP
 		
 		// See how far we need to jump. 
-		int diff = getJrValue(instAddress);
+		int diff = getJrValue(instAddress, addressToGoTo);
 		if (diff > 127 || diff < -128)
 		{
 			return false;
@@ -136,40 +109,40 @@ public class Jump extends JumpCallCommon
 		return true;
 	}
 	
-	private int getJrValue(int instAddress)
+	private int getJrValue(int instAddress, int addressToGoTo)
 	{
-		int goToAddr = toGoTo.getAssignedAddress();
-		if (goToAddr == CompilerUtils.UNASSIGNED_ADDRESS || goToAddr == CompilerUtils.UNASSIGNED_LOCAL_ADDRESS)
+		if (addressToGoTo == CompilerUtils.UNASSIGNED_ADDRESS || addressToGoTo == CompilerUtils.UNASSIGNED_LOCAL_ADDRESS)
 		{
 			return Integer.MAX_VALUE;
 		}
 		
 		// Minus 2 because its relative to the end of the jump
 		// instruction (i.e. we jump less far) and we assume JR for this
-		return goToAddr - instAddress - 2;
+		return addressToGoTo - instAddress - 2;
 	}
 
 	@Override
-	public int writeBytes(byte[] bytes, int addressToWriteAt) 
+	public int writeBytes(byte[] bytes, int addressToWriteAt, Map<String, Integer> allocatedIndexes) 
 	{		
+		int addressToGoTo = getAddressToGoTo(allocatedIndexes);
 		if (isLocalLabel)
 		{
 			// See if we want to JR
-			if (canJr(addressToWriteAt))
+			if (canJr(addressToWriteAt, addressToGoTo))
 			{
-				return writeJr(bytes, addressToWriteAt, (byte) getJrValue(addressToWriteAt));
+				return writeJr(bytes, addressToWriteAt, (byte) getJrValue(addressToWriteAt, addressToGoTo));
 			}
 			// Otherwise its a normal jump
 			else
 			{
-				return writeJpCall(bytes, addressToWriteAt);
+				return writeJpCall(bytes, addressToWriteAt, addressToGoTo);
 			}
 		}
 		// If its not a local label, just do the parent - don't worry about trying
 		// to do JR between blocks
 		else
 		{
-			return super.writeBytes(bytes, addressToWriteAt);
+			return super.writeBytes(bytes, addressToWriteAt, allocatedIndexes);
 		}
 	}
 }

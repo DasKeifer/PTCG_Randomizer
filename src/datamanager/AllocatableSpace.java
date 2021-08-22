@@ -2,6 +2,7 @@ package datamanager;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import util.RomUtils;
 
@@ -37,9 +38,9 @@ class AllocatableSpace extends AddressRange
 	}
 	
 	// Any reassigning is handled by the bank clearing and re-adding blocks
-	public boolean addAndAssignAddressIfSpaceLeft(Allocation alloc)
+	public boolean addAndAssignAddressIfSpaceLeft(Allocation alloc, Map<String, Integer> bankAllocAddresses)
 	{
-		int blockSizeOnBank = alloc.getCurrentWorstCaseSizeOnBank(RomUtils.determineBank(start)); 
+		int blockSizeOnBank = alloc.getCurrentWorstCaseSizeOnBank(RomUtils.determineBank(start), bankAllocAddresses); 
 		if (nextStartAddress + blockSizeOnBank > stopExclusive)
 		{
 			return false;

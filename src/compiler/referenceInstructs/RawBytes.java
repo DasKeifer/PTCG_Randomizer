@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import compiler.Instruction;
-import compiler.Segment;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -44,22 +43,13 @@ public class RawBytes extends Instruction
 	}
 	
 	@Override
-	public void linkData(
-			Texts romTexts, 
-			Map<String, Segment> labelToLocalSegment,
-			Map<String, Segment> labelToSegment) 
-	{
-		// All hard coded - nothing to do here
-	}
-
-	@Override
-	public int getWorstCaseSizeOnBank(byte bank, int instructionOffset)
+	public int getWorstCaseSizeOnBank(byte unused1, int unused2, Map<String, Integer> unused3)
 	{
 		return size;
 	}
 
 	@Override
-	public int writeBytes(byte[] outBytes, int addressToWriteAt) 
+	public int writeBytes(byte[] outBytes, int addressToWriteAt, Map<String, Integer> unused) 
 	{
 		for (byte[] set : allBytes)
 		{

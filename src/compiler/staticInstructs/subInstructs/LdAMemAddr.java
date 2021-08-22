@@ -55,7 +55,7 @@ public class LdAMemAddr extends Ld
 	
 	// TODO: Make naming consistent - sometime write at sometime add at
 	@Override
-	public void writeFixedSizeBytes(byte[] bytes, int indexToWriteAt) 
+	public void writeStaticBytes(byte[] bytes, int indexToWriteAt) 
 	{
 		// A, val
 		if (isAFirst)

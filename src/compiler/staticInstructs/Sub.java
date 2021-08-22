@@ -5,10 +5,6 @@ import java.util.Arrays;
 import compiler.CompilerUtils;
 import compiler.StaticInstruction;
 import compiler.CompilerConstants.Register;
-import compiler.staticInstructs.subInstructs.LdAHLIncDec;
-import compiler.staticInstructs.subInstructs.LdPairShort;
-import compiler.staticInstructs.subInstructs.LdRegByte;
-import compiler.staticInstructs.subInstructs.LdRegReg;
 import compiler.staticInstructs.subInstructs.SubByte;
 import compiler.staticInstructs.subInstructs.SubReg;
 

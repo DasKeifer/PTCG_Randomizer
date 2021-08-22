@@ -2,7 +2,6 @@ package compiler.referenceInstructs;
 
 
 import compiler.CompilerUtils;
-import compiler.Segment;
 import data.romtexts.OneBlockText;
 
 import java.util.Arrays;
@@ -53,16 +52,7 @@ public class Ldtx extends FixedLengthInstruct
 	}
 
 	@Override
-	public void linkData(
-			Texts romTexts, 
-			Map<String, Segment> labelToLocalSegment,
-			Map<String, Segment> labelToSegment) 
-	{
-		// No linking required - only needs the text
-	}
-
-	@Override
-	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt) 
+	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt, Map<String, Integer> unused) 
 	{
 		// Write the instruction value then the text id
 		bytes[indexToAddAt] = (byte) (0x01 | (pair.getValue() << 4));

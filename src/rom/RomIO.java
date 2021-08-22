@@ -123,9 +123,6 @@ public class RomIO
 		
 		// Convert the text to blocks
 		texts.convertAndAddBlocks(blocks);
-		
-		// Link the blocks
-		blocks.linkBlocks(texts);
 	}
 	
 	static void writeAllCards(byte[] bytes, Cards<Card> cards, Blocks blocks)

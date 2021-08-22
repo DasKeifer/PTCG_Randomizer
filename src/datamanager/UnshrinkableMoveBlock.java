@@ -1,6 +1,8 @@
 package datamanager;
 
 
+import java.util.Map;
+
 import compiler.DataBlock;
 
 public class UnshrinkableMoveBlock extends MoveableBlock
@@ -29,8 +31,8 @@ public class UnshrinkableMoveBlock extends MoveableBlock
 	}
 
 	@Override
-	public int getShrunkWorstCaseSizeOnBank(int allocAddress, byte bankToGetSizeOn) 
+	public int getShrunkWorstCaseSizeOnBank(byte bankToGetSizeOn, int allocAddress, Map<String, Integer> allocatedIndexes) 
 	{
-		return dataBlock.getWorstCaseSizeOnBank(allocAddress, bankToGetSizeOn);
+		return dataBlock.getWorstCaseSizeOnBank(bankToGetSizeOn, allocAddress, allocatedIndexes);
 	}
 }

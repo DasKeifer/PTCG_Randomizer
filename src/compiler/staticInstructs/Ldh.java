@@ -2,7 +2,6 @@ package compiler.staticInstructs;
 
 import compiler.CompilerUtils;
 import compiler.StaticInstruction;
-import util.ByteUtils;
 
 import java.util.Arrays;
 
@@ -69,7 +68,7 @@ public class Ldh extends StaticInstruction
 		throw new IllegalArgumentException(allowedFormatText + " Given " + Arrays.toString(args));
 	}
 	
-	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt)
+	public void writeStaticBytes(byte[] bytes, int indexToAddAt)
 	{
 		// A, val
 		if (isAFirst)

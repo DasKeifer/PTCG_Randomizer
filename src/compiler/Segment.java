@@ -29,12 +29,12 @@ public class Segment
 		placeholderInstructs.add(instruct);
 	}
 	
-	public int getWorstCaseSizeOnBank(int allocAddress, byte bankToGetSizeOn)
+	public int getWorstCaseSizeOnBank(byte bankToGetSizeOn, int allocAddress, Map<String, Integer> allocatedIndexes)
 	{
 		int size = 0;
 		for (Instruction item : data)
 		{
-			size += item.getWorstCaseSizeOnBank(bankToGetSizeOn, allocAddress + size);
+			size += item.getWorstCaseSizeOnBank(bankToGetSizeOn, allocAddress + size, allocatedIndexes);
 		}
 		return size;
 	}
@@ -57,24 +57,12 @@ public class Segment
 		}
 	}
 	
-	public void linkData(
-			Texts romTexts, 
-			Map<String, Segment> labelToLocalSegment, 
-			Map<String, Segment> labelToSegment
-	)
-	{		
-		for (Instruction item : data)
-		{
-			item.linkData(romTexts, labelToLocalSegment, labelToSegment);
-		}
-	}
-	
-	public int writeBytes(byte[] bytes, int assignedAddress)
+	public int writeBytes(byte[] bytes, int assignedAddress, Map<String, Integer> allocatedIndexes)
 	{
 		int writeAddress = assignedAddress;
 		for (Instruction item : data)
 		{
-			writeAddress += item.writeBytes(bytes, writeAddress);
+			writeAddress += item.writeBytes(bytes, writeAddress, allocatedIndexes);
 		}
 
 		if (DataBlock.debug)

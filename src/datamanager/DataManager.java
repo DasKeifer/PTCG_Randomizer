@@ -22,6 +22,7 @@ public class DataManager
 	
 	// Bank, object
 	private SortedMap<Byte, AllocatableBank> freeSpace;
+	private HashMap<String, Integer> allocIndexes;
 	
 	public DataManager()
 	{
@@ -35,7 +36,7 @@ public class DataManager
 	// if there are no more banks, then shrink and repeat
 	// if it does not shrink, then start over and see if others can shrink
 	
-	public void assignBlockLocations(
+	public Map<String, Integer> assignBlockLocations(
 			byte[] bytesToPlaceIn,
 			Blocks blocks)
 	{
@@ -51,7 +52,12 @@ public class DataManager
 		reserveFixedBlocksSpaces(blocks);
 	
 		// Allocate space for the constrained blocks then the unconstrained ones
-		makeAllocations(blocks.getAllBlocksToAllocate());
+		if (makeAllocations(blocks.getAllBlocksToAllocate()))
+		{
+			return new HashMap<>(allocIndexes);
+		}
+		
+		return null;
 	}
 	
 	private void reserveFixedBlocksSpaces(Blocks blocks)
@@ -72,6 +78,8 @@ public class DataManager
 	private boolean makeAllocations(List<MoveableBlock> toAllocate)
 	{		
 		// Create the allocations
+		boolean success = true;
+		
 		List<Allocation> allocs = new LinkedList<Allocation>();
 		for (MoveableBlock block : toAllocate)
 		{
@@ -81,10 +89,10 @@ public class DataManager
 		if (!tryToPlaceAllocs(allocs, true)) // true = Try shrinking excess
 		{
 			clearAndResetAllAllocs(allocs);
-			return shrinkAllToPlace(allocs);
+			success = shrinkAllToPlace(allocs);
 		}
 		
-		return true;
+		return success;
 	}
 		
 	private boolean tryToPlaceAllocs(List<Allocation> toAlloc, boolean tryShrinkingExcess)
