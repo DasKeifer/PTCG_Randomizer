@@ -3,9 +3,9 @@ package compiler.referenceInstructs;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import compiler.Instruction;
+import datamanager.AllocatedIndexes;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -43,13 +43,13 @@ public class RawBytes extends Instruction
 	}
 	
 	@Override
-	public int getWorstCaseSizeOnBank(byte unused1, int unused2, Map<String, Integer> unused3)
+	public int getWorstCaseSizeOnBank(byte unused1, int unused2, AllocatedIndexes unused3)
 	{
 		return size;
 	}
 
 	@Override
-	public int writeBytes(byte[] outBytes, int addressToWriteAt, Map<String, Integer> unused) 
+	public int writeBytes(byte[] outBytes, int addressToWriteAt, AllocatedIndexes unused) 
 	{
 		for (byte[] set : allBytes)
 		{

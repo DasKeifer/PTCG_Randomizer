@@ -1,8 +1,7 @@
 package compiler;
 
 
-import java.util.Map;
-
+import datamanager.AllocatedIndexes;
 import rom.Texts;
 
 public abstract class StaticInstruction extends FixedLengthInstruct
@@ -19,7 +18,7 @@ public abstract class StaticInstruction extends FixedLengthInstruct
 	}
 	
 	@Override
-	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt, Map<String, Integer> allocatedIndexes)
+	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt, AllocatedIndexes allocatedIndexes)
 	{
 		writeStaticBytes(bytes, indexToAddAt);
 	}

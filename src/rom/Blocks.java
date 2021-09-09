@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import compiler.Segment;
+import datamanager.AllocatedIndexes;
 import datamanager.BlockAllocData;
 import datamanager.FixedBlock;
 import datamanager.MoveableBlock;
@@ -81,10 +82,11 @@ public class Blocks
 		return blocksToPlace;
 	}
 	
-	public void writeData(byte[] bytes, Map<String, Integer> allocatedIndexes)
+	public void writeData(byte[] bytes, AllocatedIndexes allocatedIndexes)
 	{
 		for (BlockAllocData block : blocksById.values())
 		{
+			// TODO: Push write index down? perhaps to the segment level?
 			block.writeData(bytes);
 		}
 	}

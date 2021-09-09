@@ -6,7 +6,6 @@ import java.util.Map.Entry;
 import compiler.CompilerUtils;
 import compiler.DataBlock;
 import compiler.referenceInstructs.BlockBankLoadedAddress;
-import compiler.referenceInstructs.BlockGlobalAddress;
 import compiler.referenceInstructs.RawBytes;
 import datamanager.BankPreference;
 import datamanager.FixedBlock;

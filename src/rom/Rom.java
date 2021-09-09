@@ -83,7 +83,6 @@ public class Rom
 		// Now save the cards - TODO: move to blocks eventually (on future cleanup branch)
 		RomIO.writeAllCards(rawBytes, allCards, blocks);
 			
-
 		// Now actually write to the bytes
 		blocks.writeData(rawBytes);
 		

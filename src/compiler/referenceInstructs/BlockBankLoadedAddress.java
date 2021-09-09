@@ -1,8 +1,8 @@
 package compiler.referenceInstructs;
 
-import java.util.Map;
 
 import compiler.FixedLengthInstruct;
+import datamanager.AllocatedIndexes;
 import rom.Texts;
 import util.ByteUtils;
 import util.RomUtils;
@@ -28,7 +28,7 @@ public class BlockBankLoadedAddress extends FixedLengthInstruct
 	}
 	
 	@Override
-	public void writeFixedSizeBytes(byte[] bytes, int addressToWriteAt, Map<String, Integer> allocatedIndexes) 
+	public void writeFixedSizeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
 	{
 		Integer globalAddress = allocatedIndexes.get(addressLabel);
 		if (globalAddress == null)

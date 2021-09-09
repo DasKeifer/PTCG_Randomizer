@@ -1,6 +1,7 @@
 package compiler;
 
-import java.util.Map;
+
+import datamanager.AllocatedIndexes;
 
 public abstract class FixedLengthInstruct extends Instruction
 {
@@ -17,17 +18,17 @@ public abstract class FixedLengthInstruct extends Instruction
 	}
 
 	@Override
-	public int getWorstCaseSizeOnBank(byte bank, int instructionOffset, Map<String, Integer> allocatedIndexes)
+	public int getWorstCaseSizeOnBank(byte bank, int instructionOffset, AllocatedIndexes allocatedIndexes)
 	{
 		return getSize();
 	}
 	
 	@Override
-	public int writeBytes(byte[] bytes, int indexToAddAt, Map<String, Integer> allocatedIndexes)
+	public int writeBytes(byte[] bytes, int indexToAddAt, AllocatedIndexes allocatedIndexes)
 	{
 		writeFixedSizeBytes(bytes, indexToAddAt, allocatedIndexes);
 		return size;
 	}
 
-	public abstract void writeFixedSizeBytes(byte[] bytes, int indexToAddAt, Map<String, Integer> allocatedIndexes);
+	public abstract void writeFixedSizeBytes(byte[] bytes, int indexToAddAt, AllocatedIndexes allocatedIndexes);
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import compiler.referenceInstructs.PlaceholderInstruction;
+import datamanager.AllocatedIndexes;
 import rom.Texts;
 
 public class Segment
@@ -29,12 +30,12 @@ public class Segment
 		placeholderInstructs.add(instruct);
 	}
 	
-	public int getWorstCaseSizeOnBank(byte bankToGetSizeOn, int allocAddress, Map<String, Integer> allocatedIndexes)
+	public int getWorstCaseSizeOnBank(int segmentAddress, byte bankToGetSizeOn, AllocatedIndexes allocatedIndexes)
 	{
 		int size = 0;
 		for (Instruction item : data)
 		{
-			size += item.getWorstCaseSizeOnBank(bankToGetSizeOn, allocAddress + size, allocatedIndexes);
+			size += item.getWorstCaseSizeOnBank(bankToGetSizeOn, segmentAddress + size, allocatedIndexes);
 		}
 		return size;
 	}
@@ -57,7 +58,7 @@ public class Segment
 		}
 	}
 	
-	public int writeBytes(byte[] bytes, int assignedAddress, Map<String, Integer> allocatedIndexes)
+	public int writeBytes(byte[] bytes, int assignedAddress, AllocatedIndexes allocatedIndexes)
 	{
 		int writeAddress = assignedAddress;
 		for (Instruction item : data)

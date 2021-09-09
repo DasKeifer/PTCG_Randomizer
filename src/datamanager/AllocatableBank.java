@@ -132,12 +132,12 @@ public class AllocatableBank
 		priortizedAllocations.add(alloc);
     }
 
-	public boolean packAndRemoveExcessAllocs(List<Allocation> allocsThatDontFit)
+	public boolean packAndRemoveExcessAllocs(List<Allocation> allocsThatDontFit, AllocatedIndexes allocIndexes)
 	{
-		return packAllocs(allocsThatDontFit, true);
+		return packAllocs(allocsThatDontFit, allocIndexes, true);
 	}
 
-	private boolean packAllocs(List<Allocation> allocsThatDontFit, boolean removeOnesThatDontFit)
+	private boolean packAllocs(List<Allocation> allocsThatDontFit, AllocatedIndexes allocIndexes, boolean removeOnesThatDontFit)
 	{
 		// Clear the spaces and output var
 		// Clear just the addresses but keep the banks since they still are
@@ -152,11 +152,11 @@ public class AllocatableBank
 		priortizedAllocations.sort(Allocation.PRIORITY_SORTER);
 		
 		// Attempt to place each alloc in the list
-		return packAllocsInCollection(priortizedAllocations.iterator(), allocsThatDontFit, removeOnesThatDontFit);
+		return packAllocsInCollection(priortizedAllocations.iterator(), allocIndexes, allocsThatDontFit, removeOnesThatDontFit);
 	}
 
 	// TODO: Probably can optimize packing into bank space some (i.e. leave most space, leave smallest space)
-	private boolean packAllocsInCollection(Iterator<Allocation> allocItr, List<Allocation> allocsThatDontFit, boolean removeOnesThatDontFit)
+	private boolean packAllocsInCollection(Iterator<Allocation> allocItr, AllocatedIndexes allocIndexes, List<Allocation> allocsThatDontFit, boolean removeOnesThatDontFit)
 	{
 		boolean placed;
 		Allocation alloc;
@@ -168,7 +168,7 @@ public class AllocatableBank
 			placed = false;
 			for (AllocatableSpace space : spaces)
 			{
-				if (space.addAndAssignAddressIfSpaceLeft(alloc))
+				if (space.addAndAssignAddressIfSpaceLeft(alloc, allocIndexes))
 				{
 					placed = true;
 					break;
@@ -211,7 +211,7 @@ public class AllocatableBank
 		priortizedAllocations.clear();
 	}
 
-	public void unshrinkAsMuchAsPossible(List<Allocation> unshrunkAllocs) 
+	public void unshrinkAsMuchAsPossible(List<Allocation> unshrunkAllocs, AllocatedIndexes allocIndexes) 
 	{
 		// For each allocation from highest priority to lowest, see if we can unshrink it
 		List<Allocation> unusedList = new LinkedList<>();
@@ -220,7 +220,7 @@ public class AllocatableBank
 			// If we can unshrink it, do so and then try to pack the allocations
 			if (alloc.data.unshrinkIfPossible())
 			{
-				if (!packAllocs(unusedList, false)) // False = don't remove excess
+				if (!packAllocs(unusedList, allocIndexes, false)) // False = don't remove excess
 				{
 					// If we didn't successfully pack, then we can't unshrink this one
 					// so reshrink it but keep iterating because we might be able to 

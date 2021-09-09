@@ -2,9 +2,9 @@ package compiler.referenceInstructs;
 
 
 import java.util.Arrays;
-import java.util.Map;
 
 import compiler.CompilerUtils;
+import datamanager.AllocatedIndexes;
 import compiler.CompilerConstants.InstructionConditions;
 
 public class Jump extends JumpCallCommon
@@ -69,8 +69,9 @@ public class Jump extends JumpCallCommon
 	}
 
 	@Override
-	public int getWorstCaseSizeOnBank(byte bank, int instOffset, Map<String, Integer> allocatedIndexes)
+	public int getWorstCaseSizeOnBank(byte bank, int instOffset, AllocatedIndexes allocatedIndexes)
 	{
+		// TODO: Need to make sure this handles unassigned values
 		// Is it a JR or a JP?
 		if (isLocalLabel)
 		{
@@ -122,7 +123,7 @@ public class Jump extends JumpCallCommon
 	}
 
 	@Override
-	public int writeBytes(byte[] bytes, int addressToWriteAt, Map<String, Integer> allocatedIndexes) 
+	public int writeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
 	{		
 		int addressToGoTo = getAddressToGoTo(allocatedIndexes);
 		if (isLocalLabel)

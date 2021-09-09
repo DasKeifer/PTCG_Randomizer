@@ -5,10 +5,10 @@ import compiler.CompilerConstants.InstructionConditions;
 import rom.Texts;
 
 import java.util.Arrays;
-import java.util.Map;
 
 import compiler.CompilerUtils;
 import compiler.Instruction;
+import datamanager.AllocatedIndexes;
 import util.ByteUtils;
 import util.RomUtils;
 
@@ -130,7 +130,7 @@ public abstract class JumpCallCommon extends Instruction
 		}
 	}
 	
-	protected int getAddressToGoTo(Map<String, Integer> allocatedIndexes)
+	protected int getAddressToGoTo(AllocatedIndexes allocatedIndexes)
 	{
 		Integer address = addressToGoTo;
 		if (addressToGoTo == CompilerUtils.UNASSIGNED_ADDRESS)
@@ -151,7 +151,7 @@ public abstract class JumpCallCommon extends Instruction
 	}
 	
 	@Override
-	public int getWorstCaseSizeOnBank(byte bank, int instOffset, Map<String, Integer> allocatedIndexes)
+	public int getWorstCaseSizeOnBank(byte bank, int instOffset, AllocatedIndexes allocatedIndexes)
 	{
 		if (isFarJpCall(bank, getAddressToGoTo(allocatedIndexes)))
 		{
@@ -197,7 +197,7 @@ public abstract class JumpCallCommon extends Instruction
 	}
 	
 	@Override
-	public int writeBytes(byte[] bytes, int addressToWriteAt, Map<String, Integer> allocatedIndexes) 
+	public int writeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
 	{
 		int writeIdx = addressToWriteAt;
 		int toGoToAddress = getAddressToGoTo(allocatedIndexes);

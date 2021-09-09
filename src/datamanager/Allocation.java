@@ -4,7 +4,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -16,7 +15,7 @@ public class Allocation
 {
 	public static final Comparator<Allocation> PRIORITY_SORTER = new PrioritySorter();
 	
-	public Byte bank;
+	public byte bank;
 	public int address;
 	public MoveableBlock data;
 	// Include/have easy way to get segment offsets?
@@ -28,6 +27,12 @@ public class Allocation
 		this.bank = CompilerUtils.UNASSIGNED_BANK;
 		this.address = CompilerUtils.UNASSIGNED_ADDRESS;
 		unattemptedAllowableBankPreferences = new TreeSet<>(BankPreference.BASIC_SORTER);
+	}
+
+	public byte removeAlloc() 
+	{
+		// TODO Auto-generated method stub
+		return 0;
 	}
 	
 	public void resetBankPreferences()
@@ -103,10 +108,15 @@ public class Allocation
 	{
 		this.address = address;
 	}
-	
-	public int getCurrentWorstCaseSizeOnBank(byte bankToGetSizeOn, Map<String, Integer> allocatedIndexes)
+
+	public int getWorstCaseSize() 
 	{
-		return data.getCurrentWorstCaseSizeOnBank(address, bankToGetSizeOn, allocatedIndexes);
+		return data.getCurrentWorstCaseSizeOnBank((byte) CompilerUtils.UNASSIGNED_BANK, null);
+	}
+	
+	public int getCurrentWorstCaseSizeOnBank(byte bankToGetSizeOn, AllocatedIndexes allocatedIndexes)
+	{
+		return data.getCurrentWorstCaseSizeOnBank(bankToGetSizeOn, allocatedIndexes);
 	}
 
 	public void setAddressToUnassignedLocal() 
@@ -135,7 +145,7 @@ public class Allocation
 			{
 				// TODO: Declare and make sure instructions can handle a -1 bank
 				// Give larger blocks higher priority
-				compareVal = Integer.compare(a1.getCurrentWorstCaseSizeOnBank(a1.bank), a2.getCurrentWorstCaseSizeOnBank(a2.bank));
+				compareVal = Integer.compare(a1.getWorstCaseSize(), a2.getWorstCaseSize());
 			}
 			
 			if (compareVal == 0)
@@ -146,11 +156,5 @@ public class Allocation
 			
 			return compareVal;
 	    }
-	}
-
-	public byte removeAlloc() 
-	{
-		// TODO Auto-generated method stub
-		return 0;
 	}
 }

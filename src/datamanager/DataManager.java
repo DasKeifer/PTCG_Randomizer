@@ -22,7 +22,7 @@ public class DataManager
 	
 	// Bank, object
 	private SortedMap<Byte, AllocatableBank> freeSpace;
-	private HashMap<String, Integer> allocIndexes;
+	private AllocatedIndexes allocIndexes;
 	
 	public DataManager()
 	{
@@ -36,7 +36,10 @@ public class DataManager
 	// if there are no more banks, then shrink and repeat
 	// if it does not shrink, then start over and see if others can shrink
 	
-	public Map<String, Integer> assignBlockLocations(
+	// Go through and allocate all assuming worse case size. Go back and then assign addresses based on actual size. Don't try to
+	// expand - it might throw other things off
+	
+	public AllocatedIndexes assignBlockLocations(
 			byte[] bytesToPlaceIn,
 			Blocks blocks)
 	{
@@ -54,7 +57,7 @@ public class DataManager
 		// Allocate space for the constrained blocks then the unconstrained ones
 		if (makeAllocations(blocks.getAllBlocksToAllocate()))
 		{
-			return new HashMap<>(allocIndexes);
+			return new AllocatedIndexes(allocIndexes);
 		}
 		
 		return null;
@@ -72,6 +75,9 @@ public class DataManager
 	{
 		int address = block.getFixedAddress();
 		AllocatableBank bank = freeSpace.get(RomUtils.determineBank(address));
+		// TODO: We need to think this over some... We have to reserve the space prior
+		// to allocating the others but can't know how big it is until we do...
+		// Perhaps include with the other allocs? Or just assume worst case?
 		bank.removeAddressSpace(new AddressRange(address, address + block.size()));
 	}
 	
@@ -102,7 +108,6 @@ public class DataManager
 		{
 			Set<Byte> banksTouched = new HashSet<>();
 			tryAddAllocsToNextUnattemptedBank(toAlloc, banksTouched, unsuccessfulAllocs);
-			tryRecursivelyToPlaceAllocsRecursor(banksTouched, unsuccessfulAllocs);
 		}
 		
 		if (!unsuccessfulAllocs.isEmpty() && tryShrinkingExcess)
@@ -112,29 +117,7 @@ public class DataManager
 		
 		return unsuccessfulAllocs.isEmpty();
 	}
-	
-	private void tryRecursivelyToPlaceAllocsRecursor(Set<Byte> banksToCheck, List<Allocation> unsuccessfulAllocs)
-	{
-		// Go through each bank and see what doesn't fit
-		List<Allocation> allocsThatDontFit = new LinkedList<>();
-		
-		// Should always be clear
-		for (byte bank : banksToCheck)
-		{
-			freeSpace.get(bank).packAndRemoveExcessAllocs(allocsThatDontFit);
-		}
-		
-		// Recursion end case - all either fit or ran out of banks to be fit in
-		if (allocsThatDontFit.isEmpty())
-		{
-			return;
-		}
-		
-		banksToCheck.clear();
-		tryAddAllocsToNextUnattemptedBank(allocsThatDontFit, banksToCheck, unsuccessfulAllocs);
-		tryRecursivelyToPlaceAllocsRecursor(banksToCheck, unsuccessfulAllocs);
-	}
-	
+
 	private void tryAddAllocsToNextUnattemptedBank(List<Allocation> toAlloc, Set<Byte> banksTouched, List<Allocation> unsuccessfulAllocs)
 	{
 		for (Allocation alloc : toAlloc)
@@ -156,6 +139,29 @@ public class DataManager
 				banksTouched.add(bank.getBank());
 			}
 		}
+		
+		tryRecursivelyToPlaceAllocsRecursor(banksTouched, unsuccessfulAllocs);
+	}
+	
+	private void tryRecursivelyToPlaceAllocsRecursor(Set<Byte> banksToCheck, List<Allocation> unsuccessfulAllocs)
+	{
+		// Go through each bank and see what doesn't fit
+		List<Allocation> allocsThatDontFit = new LinkedList<>();
+		
+		// Should always be clear
+		for (byte bank : banksToCheck)
+		{
+			freeSpace.get(bank).packAndRemoveExcessAllocs(allocsThatDontFit, allocIndexes);
+		}
+		
+		// Recursion end case - all either fit or ran out of banks to be fit in
+		if (allocsThatDontFit.isEmpty())
+		{
+			return;
+		}
+		
+		banksToCheck.clear();
+		tryAddAllocsToNextUnattemptedBank(allocsThatDontFit, banksToCheck, unsuccessfulAllocs);
 	}
 		
 	private boolean shrinkAndPlaceRemaining(List<Allocation> remainingAllocs)
@@ -248,7 +254,7 @@ public class DataManager
 		{
 			// Get the bank and try to unshrink allocations and return which ones were shrunk
 			bank = freeSpace.get(bankId);
-			bank.unshrinkAsMuchAsPossible(unshrunkAllocs);
+			bank.unshrinkAsMuchAsPossible(unshrunkAllocs, allocIndexes);
 			
 			// For each allocation that was unshrunk, get the remote block and remove it
 			// and possibly add its former bank to the list of banks to retouch

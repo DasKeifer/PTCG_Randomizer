@@ -1,8 +1,8 @@
 package compiler.referenceInstructs;
 
-import java.util.Map;
 
 import compiler.FixedLengthInstruct;
+import datamanager.AllocatedIndexes;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -26,13 +26,13 @@ public class BlockGlobalAddress extends FixedLengthInstruct
 	}
 
 	@Override
-	public int getWorstCaseSizeOnBank(byte unused1, int unused2, Map<String, Integer> unused3)
+	public int getWorstCaseSizeOnBank(byte unused1, int unused2, AllocatedIndexes unused3)
 	{
 		return SIZE;
 	}
 	
 	@Override
-	public void writeFixedSizeBytes(byte[] bytes, int addressToWriteAt, Map<String, Integer> allocatedIndexes) 
+	public void writeFixedSizeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
 	{
 		Integer globalAddress = allocatedIndexes.get(addressLabel);
 		if (globalAddress == null)

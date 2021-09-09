@@ -3,13 +3,13 @@ package compiler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import compiler.referenceInstructs.PlaceholderInstruction;
+import datamanager.AllocatedIndexes;
 import rom.Texts;
 
 public class DataBlock 
@@ -174,19 +174,18 @@ public class DataBlock
 		return segRefsById;
 	}
 	
-	public int getWorstCaseSizeOnBank(byte bankToGetSizeOn, int allocAddress, Map<String, Integer> allocatedIndexes)
+	public int getWorstCaseSizeOnBank(byte bankToGetSizeOn, AllocatedIndexes allocatedIndexes)
 	{
 		// Because some instructions like JR can change in size based on the other
 		// code lengths, we need to do this somewhat iteratively in case the size
 		// does change
 		short worstCaseSize = 0;
 		
-		Iterator<Segment> segItr = segments.values().iterator();
-		Segment currSeg;
-		while (segItr.hasNext())
+		int segAddress;
+		for (Entry<String, Segment> entry : segments.entrySet())
 		{
-			currSeg = segItr.next();
-			worstCaseSize += currSeg.getWorstCaseSizeOnBank(bankToGetSizeOn, allocAddress, allocatedIndexes);
+			segAddress = allocatedIndexes.getTry(entry.getKey());
+			worstCaseSize += entry.getValue().getWorstCaseSizeOnBank(segAddress, bankToGetSizeOn, allocatedIndexes);
 		}
 		
 		return worstCaseSize;
@@ -222,7 +221,7 @@ public class DataBlock
 	}
 
 	public static boolean debug;
-	public int writeBytes(byte[] bytes, int assignedAddress, Map<String, Integer> allocatedIndexes)
+	public int writeBytes(byte[] bytes, int assignedAddress, AllocatedIndexes allocatedIndexes)
 	{
 		debug = id.contains("CallFor");
 		if (debug) 

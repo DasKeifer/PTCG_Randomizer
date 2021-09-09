@@ -30,7 +30,7 @@ public abstract class BlockAllocData
 		dataBlock.extractTexts(texts);
 	}
 
-	public void writeData(byte[] bytes, int assignedAddress, Map<String, Integer> allocatedIndexes)
+	public void writeData(byte[] bytes, int assignedAddress, AllocatedIndexes allocatedIndexes)
 	{
 		dataBlock.writeBytes(bytes, assignedAddress, allocatedIndexes);
 	}

@@ -5,6 +5,7 @@ import java.util.Map;
 
 import compiler.CompilerUtils;
 import compiler.Instruction;
+import datamanager.AllocatedIndexes;
 import rom.Texts;
 
 public class PlaceholderInstruction extends Instruction
@@ -42,7 +43,7 @@ public class PlaceholderInstruction extends Instruction
 	}
 
 	@Override
-	public int getWorstCaseSizeOnBank(byte bank, int instructionOffset, Map<String, Integer> allocatedIndexes) 
+	public int getWorstCaseSizeOnBank(byte bank, int instructionOffset, AllocatedIndexes allocatedIndexes) 
 	{
 		if (inst == null)
 		{
@@ -52,7 +53,7 @@ public class PlaceholderInstruction extends Instruction
 	}
 
 	@Override
-	public int writeBytes(byte[] bytes, int addressToWriteAt, Map<String, Integer> allocatedIndexes) 
+	public int writeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
 	{
 		if (inst == null)
 		{

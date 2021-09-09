@@ -3,9 +3,9 @@ package compiler.referenceInstructs;
 
 import compiler.CompilerUtils;
 import data.romtexts.OneBlockText;
+import datamanager.AllocatedIndexes;
 
 import java.util.Arrays;
-import java.util.Map;
 
 import compiler.FixedLengthInstruct;
 import compiler.CompilerConstants.RegisterPair;
@@ -52,7 +52,7 @@ public class Ldtx extends FixedLengthInstruct
 	}
 
 	@Override
-	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt, Map<String, Integer> unused) 
+	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt, AllocatedIndexes unused) 
 	{
 		// Write the instruction value then the text id
 		bytes[indexToAddAt] = (byte) (0x01 | (pair.getValue() << 4));
