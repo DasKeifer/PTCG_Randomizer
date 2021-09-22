@@ -1,15 +1,9 @@
 package datamanager;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import constants.RomConstants;
 import rom.Blocks;
@@ -39,7 +33,7 @@ public class DataManager
 	// Go through and allocate all assuming worse case size. Go back and then assign addresses based on actual size. Don't try to
 	// expand - it might throw other things off
 	
-	public AllocatedIndexes assignBlockLocations(
+	public AllocatedIndexes allocateBlocks(
 			byte[] bytesToPlaceIn,
 			Blocks blocks)
 	{
@@ -51,236 +45,130 @@ public class DataManager
 //			System.out.println("\t" + entry.getKey() + ": " + entry.getValue());
 //		}
 		
-		// Take into account the fixed blocks
-		reserveFixedBlocksSpaces(blocks);
+		// Assign fixed blocks first so the moveable ones can reference them
+		allocateFixedBlocks(blocks);
 	
 		// Allocate space for the constrained blocks then the unconstrained ones
-		if (makeAllocations(blocks.getAllBlocksToAllocate()))
+		if (recursivlyTryToAssignBanks(blocks.getAllBlocksToAllocate()))
 		{
+			// If we were successful, assign the addresses for each item and then return
+			// a copy of the data
+			assignAddressesInBanks();
 			return new AllocatedIndexes(allocIndexes);
 		}
 		
 		return null;
 	}
 	
-	private void reserveFixedBlocksSpaces(Blocks blocks)
+	private void allocateFixedBlocks(Blocks blocks)
 	{
+		// First add them to the allocated indexes. This allows for some optimization of sizes.
+		// Also add their segments so we can refer to those
 		for (FixedBlock block : blocks.getAllFixedBlocks())
 		{
-			removeFixedSpace(block);
+			int address = block.getFixedAddress();
+			byte bank = RomUtils.determineBank(address);
+			allocIndexes.put(block.getId(), new BankAddress(bank, RomUtils.convertToBankOffset(address)));
+			
+			// Add the segments too!
+			for (String id : block.getSegmentsById().keySet())
+			{
+				allocIndexes.addSetBank(id, bank);
+			}
 		}
-	}
-	
-	private void removeFixedSpace(FixedBlock block)
-	{
-		int address = block.getFixedAddress();
-		AllocatableBank bank = freeSpace.get(RomUtils.determineBank(address));
-		// TODO: We need to think this over some... We have to reserve the space prior
-		// to allocating the others but can't know how big it is until we do...
-		// Perhaps include with the other allocs? Or just assume worst case?
-		bank.removeAddressSpace(new AddressRange(address, address + block.size()));
-	}
-	
-	private boolean makeAllocations(List<MoveableBlock> toAllocate)
-	{		
-		// Create the allocations
-		boolean success = true;
 		
-		List<Allocation> allocs = new LinkedList<Allocation>();
-		for (MoveableBlock block : toAllocate)
+		// Then add them to the bank now that we can know their worst case size taking into
+		// account where other fixed blocks live
+		for (FixedBlock block : blocks.getAllFixedBlocks())
 		{
-			allocs.add(new Allocation(block));
+			freeSpace.get(RomUtils.determineBank(block.getFixedAddress())).addFixedBlock(block, allocIndexes);
 		}
-
-		if (!tryToPlaceAllocs(allocs, true)) // true = Try shrinking excess
-		{
-			clearAndResetAllAllocs(allocs);
-			success = shrinkAllToPlace(allocs);
-		}
-		
-		return success;
-	}
-		
-	private boolean tryToPlaceAllocs(List<Allocation> toAlloc, boolean tryShrinkingExcess)
-	{
-		List<Allocation> unsuccessfulAllocs = new LinkedList<Allocation>();
-		if (!toAlloc.isEmpty())
-		{
-			Set<Byte> banksTouched = new HashSet<>();
-			tryAddAllocsToNextUnattemptedBank(toAlloc, banksTouched, unsuccessfulAllocs);
-		}
-		
-		if (!unsuccessfulAllocs.isEmpty() && tryShrinkingExcess)
-		{
-			return shrinkAndPlaceRemaining(unsuccessfulAllocs);
-		}
-		
-		return unsuccessfulAllocs.isEmpty();
 	}
 
-	private void tryAddAllocsToNextUnattemptedBank(List<Allocation> toAlloc, Set<Byte> banksTouched, List<Allocation> unsuccessfulAllocs)
+	private boolean recursivlyTryToAssignBanks(List<MoveableBlock> toAlloc)
 	{
-		for (Allocation alloc : toAlloc)
+		// Assign each alloc to its next preferred/allowable bank
+		if (!assignAllocationsToTheirNextBank(toAlloc))
 		{
-			// Ran out of banks to try - add it to the list of failed allocs 
+			return false;
+		}
+		
+		// Go through and remove any allocations that don't fit in the banks as
+		// they are currently assigned
+		List<MoveableBlock> allocsThatDontFit = new LinkedList<>();
+		removeExcessAllocsFromBanks(allocsThatDontFit);
+		
+		// If all allocs fit, we are done
+		if (allocsThatDontFit.isEmpty())
+		{
+			return true;
+		}
+		
+		// Otherwise recurse again and see if the ones that didn't fit will fit in
+		// their next bank (if they have one)
+		return recursivlyTryToAssignBanks(allocsThatDontFit);
+	}
+	
+	private boolean assignAllocationsToTheirNextBank(List<MoveableBlock> toAlloc)
+	{
+		for (MoveableBlock alloc : toAlloc)
+		{
+			// Ran out of banks to try! Failed to allocate a block
 			if (alloc.isUnattemptedAllowableBanksEmpty())
 			{
-				unsuccessfulAllocs.add(alloc);
+				return false;
 			}
 			else
 			{
 				AllocatableBank bank = freeSpace.get(alloc.popNextUnattemptedAllowableBank());
 				if (bank == null)
 				{
-					// Error! - ran out of preferences
+					// Error! - ran out of preferences - shouldn't happen with above check
 					// TODO:
+					return false;
 				}
-				bank.addToBank(alloc);
-				banksTouched.add(bank.getBank());
+				bank.addMoveableBlockAndSetBank(alloc, allocIndexes);
 			}
 		}
-		
-		tryRecursivelyToPlaceAllocsRecursor(banksTouched, unsuccessfulAllocs);
-	}
-	
-	private void tryRecursivelyToPlaceAllocsRecursor(Set<Byte> banksToCheck, List<Allocation> unsuccessfulAllocs)
-	{
-		// Go through each bank and see what doesn't fit
-		List<Allocation> allocsThatDontFit = new LinkedList<>();
-		
-		// Should always be clear
-		for (byte bank : banksToCheck)
-		{
-			freeSpace.get(bank).packAndRemoveExcessAllocs(allocsThatDontFit, allocIndexes);
-		}
-		
-		// Recursion end case - all either fit or ran out of banks to be fit in
-		if (allocsThatDontFit.isEmpty())
-		{
-			return;
-		}
-		
-		banksToCheck.clear();
-		tryAddAllocsToNextUnattemptedBank(allocsThatDontFit, banksToCheck, unsuccessfulAllocs);
-	}
-		
-	private boolean shrinkAndPlaceRemaining(List<Allocation> remainingAllocs)
-	{
-		// Shrink any that can and remove them from the remaining allocs
-		List<Allocation> shrunkAllocs = new LinkedList<>();
-		Iterator<Allocation> allocItr = remainingAllocs.iterator();
-		Allocation alloc;
-		while (allocItr.hasNext())
-		{
-			alloc = allocItr.next();
-			if (alloc.data.canBeShrunkOrMoved() && !alloc.data.movesNotShrinks())
-			{
-				alloc.resetBankPreferences();
-				alloc.data.setShrunkOrMoved(true);
-				allocItr.remove();
-			}
-		}
-
-		// Now try to recursively add them. Note that remaining allocs will preserve the ones that couldn't shrink
-		// False = don't try to shrink - we already did. Passing true and not guarding this would cause infinite loop!
-		if (!shrunkAllocs.isEmpty())
-		{
-			return tryToPlaceAllocs(shrunkAllocs, false);
-		}
-		
-		// Didn't shrink anything so there will be no change
-		return false;
-	}
-	
-	private void clearAndResetAllAllocs(List<Allocation> toAllocate)
-	{
-		// Clear the banks
-		for (AllocatableBank bank : freeSpace.values())
-		{
-			bank.clearAllAllocs();
-		}
-		
-		// Reset the alloc preferences
-		// Address and bank cleared by above loop
-		for (Allocation alloc : toAllocate)
-		{
-			alloc.resetBankPreferences();
-		}
-	}
-	
-	private boolean shrinkAllToPlace(List<Allocation> toAllocate)
-	{
-		// Shrink all allocations and add the shrunk ones
-		List<Allocation> withRemoteAllocs = new LinkedList<>();
-		Map<String, Allocation> dependencies = new HashMap<>();
-		Allocation remoteAlloc;
-		for (Allocation alloc : toAllocate)
-		{
-			withRemoteAllocs.add(alloc);
-			UnconstrainedMoveBlock remoteBlock = alloc.shrinkIfPossible();
-			if (remoteBlock != null)
-			{
-				remoteAlloc = new Allocation(remoteBlock);
-				dependencies.put(alloc.data.getId(), remoteAlloc);
-				withRemoteAllocs.add(remoteAlloc);
-			}
-		}
-		
-		// Now go through and allocate them. If they still don't fit, then there is nothing 
-		// further we can do
-		if (!tryToPlaceAllocs(toAllocate, false)) // False = don't try and shrink - everything already shrunk
-		{
-			return false;
-		}
-
-		// If they do fit, go through and try to unshrink as much as possible
-		unshrinkAsMuchAsPossible(dependencies);
 		
 		return true;
 	}
 	
-	private void unshrinkAsMuchAsPossible(Map<String, Allocation> dependencies)
-	{
-		unshrinkAsMuchAsPossibleRecursor(dependencies, freeSpace.keySet());
+	private void removeExcessAllocsFromBanks(List<MoveableBlock> allocsThatDontFit)
+	{		
+		removeExcessAllocsFromBanksRecursor(allocsThatDontFit);
 	}
 
-	private void unshrinkAsMuchAsPossibleRecursor(Map<String, Allocation> dependencies, Set<Byte> banksToTry)
-	{
-		Set<Byte> banksToRecheck = new TreeSet<>();
-		List<Allocation> unshrunkAllocs = new LinkedList<>();
-		AllocatableBank bank;
-		Allocation remoteAlloc;
-		for (byte bankId : banksToTry)
+	private boolean removeExcessAllocsFromBanksRecursor(List<MoveableBlock> allocsThatDontFit)
+	{	
+		// We have to track this separately from the list since the list passed in may
+		// not be empty
+		boolean foundAllocThatDoesntFit = false;
+		
+		// For each bank, pack and remove any excess
+		for (AllocatableBank bank : freeSpace.values())
 		{
-			// Get the bank and try to unshrink allocations and return which ones were shrunk
-			bank = freeSpace.get(bankId);
-			bank.unshrinkAsMuchAsPossible(unshrunkAllocs, allocIndexes);
-			
-			// For each allocation that was unshrunk, get the remote block and remove it
-			// and possibly add its former bank to the list of banks to retouch
-			for (Allocation alloc : unshrunkAllocs)
-			{
-				remoteAlloc = dependencies.get(alloc.data.getId());
-				if (remoteAlloc != null)
-				{
-					// Remove the remote block/alloc
-					byte removeFrom = remoteAlloc.removeAlloc();
-					
-					// If we are not checking the bank this pass or if the bank it was
-					// removed from is less than this one, it will need another pass. 
-					// Otherwise we will hit it when we come to it
-					if (!banksToTry.contains(removeFrom) || removeFrom < bankId)
-					{
-						banksToRecheck.add(removeFrom);
-					}
-				}
-			}
+			foundAllocThatDoesntFit = bank.checkForAndRemoveExcessAllocs(allocsThatDontFit, allocIndexes) 
+					|| foundAllocThatDoesntFit;
 		}
 		
-		// If we have more banks to check, iterate
-		if (!banksToRecheck.isEmpty())
+		// If we went through all banks and didn't find any that no longer fit, then we
+		// have found all of them
+		if (!foundAllocThatDoesntFit)
 		{
-			unshrinkAsMuchAsPossibleRecursor(dependencies, banksToRecheck);
+			return foundAllocThatDoesntFit;
+		}
+		
+		// Otherwise recurse again
+		return removeExcessAllocsFromBanksRecursor(allocsThatDontFit);
+	}
+	
+	private void assignAddressesInBanks()
+	{
+		// For each bank, assign actual addresses
+		for (AllocatableBank bank : freeSpace.values())
+		{
+			bank.assignAddresses(allocIndexes);
 		}
 	}
 	

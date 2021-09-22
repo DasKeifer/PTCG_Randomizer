@@ -21,23 +21,4 @@ public class UnconstrainedMoveBlock extends MoveableBlock
 		toReturn.add(new BankPreference((byte) 127, (byte) 0, (byte) (RomConstants.NUMBER_OF_BANKS - 1)));
 		return toReturn;
 	}
-
-	@Override
-	public boolean movesNotShrinks() 
-	{
-		// This moves
-		return true;
-	}
-
-	@Override
-	public int getShrunkWorstCaseSizeOnBank(byte unused1, AllocatedIndexes unused2) 
-	{
-		return 0;
-	}
-
-	@Override
-	public UnconstrainedMoveBlock getRemoteBlock() 
-	{
-		return this;
-	}
 }

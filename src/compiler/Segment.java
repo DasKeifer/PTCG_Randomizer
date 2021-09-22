@@ -6,6 +6,7 @@ import java.util.Map;
 
 import compiler.referenceInstructs.PlaceholderInstruction;
 import datamanager.AllocatedIndexes;
+import datamanager.BankAddress;
 import rom.Texts;
 
 public class Segment
@@ -30,14 +31,14 @@ public class Segment
 		placeholderInstructs.add(instruct);
 	}
 	
-	public int getWorstCaseSizeOnBank(int segmentAddress, byte bankToGetSizeOn, AllocatedIndexes allocatedIndexes)
+	public int getWorstCaseSize(BankAddress segmentAddress, AllocatedIndexes allocatedIndexes)
 	{
-		int size = 0;
+		BankAddress instructAddr = new BankAddress(segmentAddress);
 		for (Instruction item : data)
 		{
-			size += item.getWorstCaseSizeOnBank(bankToGetSizeOn, segmentAddress + size, allocatedIndexes);
+			instructAddr.addressInBank += item.getWorstCaseSize(instructAddr, allocatedIndexes);
 		}
-		return size;
+		return instructAddr.addressInBank - segmentAddress.addressInBank;
 	}
 	
 	public void fillPlaceholders(Map<String, String> placeholderToArgs)

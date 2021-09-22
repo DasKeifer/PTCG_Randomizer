@@ -1,11 +1,8 @@
 package datamanager;
 
-
 import java.util.HashMap;
 
-import compiler.CompilerUtils;
-
-public class AllocatedIndexes extends HashMap<String, Integer>
+public class AllocatedIndexes extends HashMap<String, BankAddress>
 {
 	private static final long serialVersionUID = 42L;
 
@@ -15,19 +12,36 @@ public class AllocatedIndexes extends HashMap<String, Integer>
 	{
 		super(allocIndexes);
 	}
+	
+	public void addSetBank(String key, byte bank)
+	{
+		if (containsKey(key))
+		{
+			get(key).bank = bank;
+		}
+		else
+		{
+			put(key, new BankAddress(bank, BankAddress.UNASSIGNED_ADDRESS));
+		}
+	}
 
-	public int getThrow(String segmentId)
+	public BankAddress getThrow(String segmentId)
 	{
 		return get(segmentId);
 	}
 	
-	public int getTry(String segmentId)
+	public BankAddress getTry(String segmentId)
 	{
-		Integer val = get(segmentId);
+		BankAddress val = get(segmentId);
 		if (val == null)
 		{
-			return CompilerUtils.UNASSIGNED_ADDRESS;
+			return BankAddress.UNASSIGNED;
 		}
 		return val;
+	}
+
+	public void setAddressInBank(String segmentId, short addressInBank) 
+	{
+		getThrow(segmentId).addressInBank = addressInBank;
 	}
 }

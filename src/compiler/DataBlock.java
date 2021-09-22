@@ -10,7 +10,9 @@ import java.util.Map.Entry;
 
 import compiler.referenceInstructs.PlaceholderInstruction;
 import datamanager.AllocatedIndexes;
+import datamanager.BankAddress;
 import rom.Texts;
+import util.RomUtils;
 
 public class DataBlock 
 {	
@@ -174,18 +176,15 @@ public class DataBlock
 		return segRefsById;
 	}
 	
-	public int getWorstCaseSizeOnBank(byte bankToGetSizeOn, AllocatedIndexes allocatedIndexes)
+	public int getWorstCaseSize(AllocatedIndexes allocatedIndexes)
 	{
-		// Because some instructions like JR can change in size based on the other
-		// code lengths, we need to do this somewhat iteratively in case the size
-		// does change
-		short worstCaseSize = 0;
+		int worstCaseSize = 0;
 		
-		int segAddress;
+		BankAddress segAddress;
 		for (Entry<String, Segment> entry : segments.entrySet())
 		{
 			segAddress = allocatedIndexes.getTry(entry.getKey());
-			worstCaseSize += entry.getValue().getWorstCaseSizeOnBank(segAddress, bankToGetSizeOn, allocatedIndexes);
+			worstCaseSize += entry.getValue().getWorstCaseSize(segAddress, allocatedIndexes);
 		}
 		
 		return worstCaseSize;
@@ -221,7 +220,7 @@ public class DataBlock
 	}
 
 	public static boolean debug;
-	public int writeBytes(byte[] bytes, int assignedAddress, AllocatedIndexes allocatedIndexes)
+	public void writeBytes(byte[] bytes, AllocatedIndexes allocatedIndexes)
 	{
 		debug = id.contains("CallFor");
 		if (debug) 
@@ -229,15 +228,12 @@ public class DataBlock
 			System.out.println("Segment - " + id);
 		}
 		
-		int lastEndOffset = 0;
-		for (Segment seg : segments.values())
+		for (Entry<String, Segment> segEntry : segments.entrySet())
 		{
-			lastEndOffset += seg.writeBytes(bytes, assignedAddress + lastEndOffset, allocatedIndexes);
+			BankAddress segAddress = allocatedIndexes.getThrow(segEntry.getKey());
+			segEntry.getValue().writeBytes(bytes, RomUtils.convertToGlobalAddress(segAddress.bank, segAddress.addressInBank), allocatedIndexes);
 		}
 		
 		// End reference has no code so no writing needs to be done
-		
-		// TODO: Value used?
-		return lastEndOffset;
 	}
 }

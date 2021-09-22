@@ -8,9 +8,9 @@ import compiler.DataBlock;
 import compiler.referenceInstructs.BlockBankLoadedAddress;
 import compiler.referenceInstructs.RawBytes;
 import datamanager.BankPreference;
-import datamanager.FixedBlock;
+import datamanager.MoveableBlock;
+import datamanager.ReplacementBlock;
 import datamanager.UnconstrainedMoveBlock;
-import datamanager.UnshrinkableMoveBlock;
 import constants.DuelConstants.EffectCommandTypes;
 import rom.Blocks;
 import util.ByteUtils;
@@ -53,18 +53,19 @@ public class CardEffect
 	{
 		// Check matching command function starts at 0x2ffe 
 		
-		//DataBlock replacement = new DataBlock("MoreEffectBanksTweak", "jp DetermineEffectBank");
-		// We replace 4 to break evenly over the code and this way we can use a farjump if needed
-		//blocks.addFixedBlock(new FixedBlock(0x2ffe + 0x12, replacement, 4)); // TODO: find address
+		// DataBlock replacement = new DataBlock("MoreEffectBanksTweak", "jp DetermineEffectBank");
+		// We replace 5 to break evenly over the code and this way we can use a farjump if needed
+		// blocks.addFixedBlock(new FixedBlock(0x2ffe + 0x12, replacement, 5)); // TODO: find address
 		
 		/* Skip over 
 		ld a, BANK("Effect Functions")		(2 bytes)
 		ld [wEffectFunctionsBank], a 		(3 bytes)
+		* We add an empty block because the replacement block will handle placing in nops for us to 
+		* get it to the correct size
 		*/
-		DataBlock removeSeg = new DataBlock("MoreEffectBanksTweak_removeSeg", "nop $4");
-		blocks.addFixedBlock(new FixedBlock(0x300d, removeSeg, 5));
+		DataBlock removeSeg = new DataBlock("MoreEffectBanksTweak_removeSeg");
+		blocks.addFixedBlock(new ReplacementBlock(0x300d, removeSeg, 5));
 		
-
 		/* replace
 		 cp c
 		 jr z, .matching_command_found
@@ -105,8 +106,10 @@ public class CardEffect
 				new BankPreference((byte) 0, (byte)0x0, (byte)0x1), //Try to fit it in home to avoid bankswaps
 				new BankPreference((byte) 1, (byte)0xb, (byte)0xd)));
 
+		// Create the block to jump to our new logic and make sure it fits nicely into
+		// the existing instructions
 		DataBlock callLogicSeg = new DataBlock("MoreEffectBanksTweak_jumpToLogicSeg", "jp " + logicSeg.getId());
-		blocks.addFixedBlock(new FixedBlock(0x3016, callLogicSeg, 5));
+		blocks.addFixedBlock(new ReplacementBlock(0x3016, callLogicSeg, 5));
 		
 //		DataBlock remote = new DataBlock("DetermineEffectBank",
 //				"ld a, [hli]", // Load the first byte of the the effect pointer
@@ -165,7 +168,7 @@ public class CardEffect
 			}
 			// Append a null at the end so we know its finished
 			effectCommand.appendInstruction(new RawBytes((byte) 0));
-			blocks.addMoveableBlock(new UnshrinkableMoveBlock(priority, effectCommand, new BankPreference((byte) 1, (byte)6, (byte)7))); // TODO: figure out where these can effectively live	
+			blocks.addMoveableBlock(new MoveableBlock(priority, effectCommand, new BankPreference((byte) 1, (byte)6, (byte)7))); // TODO: figure out where these can effectively live	
 		}
 	}
 }

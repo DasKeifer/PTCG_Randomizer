@@ -8,7 +8,7 @@ import compiler.referenceInstructs.BlockGlobalAddress;
 import compiler.referenceInstructs.RawBytes;
 import constants.RomConstants;
 import datamanager.BankPreference;
-import datamanager.FixedBlock;
+import datamanager.ReplacementBlock;
 import datamanager.UnconstrainedMoveBlock;
 
 public class Texts 
@@ -121,6 +121,6 @@ public class Texts
 		}
 
 		// Not -1 because we write the 0th id "000000" pointer
-		blocks.addFixedBlock(new FixedBlock(RomConstants.TEXT_POINTERS_LOC, textPtrs, textId * RomConstants.TEXT_POINTER_SIZE_IN_BYTES));  
+		blocks.addFixedBlock(new ReplacementBlock(RomConstants.TEXT_POINTERS_LOC, textPtrs, textId * RomConstants.TEXT_POINTER_SIZE_IN_BYTES));  
 	}
 }

@@ -3,8 +3,10 @@ package compiler.referenceInstructs;
 
 import compiler.FixedLengthInstruct;
 import datamanager.AllocatedIndexes;
+import datamanager.BankAddress;
 import rom.Texts;
 import util.ByteUtils;
+import util.RomUtils;
 
 public class BlockGlobalAddress extends FixedLengthInstruct
 {
@@ -26,7 +28,7 @@ public class BlockGlobalAddress extends FixedLengthInstruct
 	}
 
 	@Override
-	public int getWorstCaseSizeOnBank(byte unused1, int unused2, AllocatedIndexes unused3)
+	public int getWorstCaseSize(BankAddress unused1, AllocatedIndexes unused2)
 	{
 		return SIZE;
 	}
@@ -34,12 +36,12 @@ public class BlockGlobalAddress extends FixedLengthInstruct
 	@Override
 	public void writeFixedSizeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
 	{
-		Integer globalAddress = allocatedIndexes.get(addressLabel);
-		if (globalAddress == null)
+		BankAddress address = allocatedIndexes.getTry(addressLabel);
+		if (address == BankAddress.UNASSIGNED)
 		{
-			throw new IllegalAccessError("TODOOOOO");
+			throw new IllegalAccessError("TODO!");
 		}
 		
-		ByteUtils.writeLittleEndian(globalAddress - offset, bytes, addressToWriteAt, SIZE);
+		ByteUtils.writeLittleEndian(RomUtils.convertToGlobalAddress(address.bank, address.addressInBank) - offset, bytes, addressToWriteAt, SIZE);
 	}
 }

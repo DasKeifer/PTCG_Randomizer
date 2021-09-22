@@ -3,6 +3,7 @@ package compiler.referenceInstructs;
 
 import compiler.FixedLengthInstruct;
 import datamanager.AllocatedIndexes;
+import datamanager.BankAddress;
 import rom.Texts;
 import util.ByteUtils;
 import util.RomUtils;
@@ -30,19 +31,16 @@ public class BlockBankLoadedAddress extends FixedLengthInstruct
 	@Override
 	public void writeFixedSizeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
 	{
-		Integer globalAddress = allocatedIndexes.get(addressLabel);
-		if (globalAddress == null)
+		BankAddress address = allocatedIndexes.get(addressLabel);
+		if (address == BankAddress.UNASSIGNED)
 		{
-			throw new IllegalAccessError("TODOOOOO");
+			throw new IllegalAccessError("TODO!");
 		}
-		
-		byte bank = RomUtils.determineBank(globalAddress);
-		short loadedAddress = RomUtils.convertToLoadedBankOffset(bank, globalAddress);
 		
 		if (includeBank)
 		{
-			bytes[addressToWriteAt++] = bank;
+			bytes[addressToWriteAt++] = address.bank;
 		}
-		ByteUtils.writeAsShort(loadedAddress, bytes, addressToWriteAt);
+		ByteUtils.writeAsShort(RomUtils.convertFromBankOffsetToLoadedOffset(address.bank, address.addressInBank), bytes, addressToWriteAt);
 	}
 }

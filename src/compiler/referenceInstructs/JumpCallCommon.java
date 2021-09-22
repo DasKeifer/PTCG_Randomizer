@@ -9,6 +9,7 @@ import java.util.Arrays;
 import compiler.CompilerUtils;
 import compiler.Instruction;
 import datamanager.AllocatedIndexes;
+import datamanager.BankAddress;
 import util.ByteUtils;
 import util.RomUtils;
 
@@ -16,7 +17,7 @@ public abstract class JumpCallCommon extends Instruction
 {
 	InstructionConditions conditions;
 	String labelToGoTo;
-	int addressToGoTo;
+	BankAddress addressToGoTo;
 	
 	private byte conditionlessInstruct;
 	private byte conditionedInstruct;
@@ -31,7 +32,7 @@ public abstract class JumpCallCommon extends Instruction
 		this.conditionedInstruct = conditionedInstruct;
 		this.farInstuctRstVal = farInstuctRstVal;
 		
-		addressToGoTo = CompilerUtils.UNASSIGNED_ADDRESS;
+		addressToGoTo = BankAddress.UNASSIGNED;
 	}
 	
 	protected JumpCallCommon(int addressToGoTo, InstructionConditions conditions, byte conditionlessInstruct, byte conditionedInstruct, byte farInstuctRstVal)
@@ -42,7 +43,7 @@ public abstract class JumpCallCommon extends Instruction
 		this.conditionedInstruct = conditionedInstruct;
 		this.farInstuctRstVal = farInstuctRstVal;
 		
-		this.addressToGoTo = addressToGoTo;
+		this.addressToGoTo = new BankAddress(addressToGoTo);
 	}
 	
 	public static boolean useRootSegment(String[] args, boolean isJp)
@@ -130,14 +131,15 @@ public abstract class JumpCallCommon extends Instruction
 		}
 	}
 	
-	protected int getAddressToGoTo(AllocatedIndexes allocatedIndexes)
+	protected BankAddress getAddressToGoTo(AllocatedIndexes allocatedIndexes)
 	{
-		Integer address = addressToGoTo;
-		if (addressToGoTo == CompilerUtils.UNASSIGNED_ADDRESS)
+		BankAddress address = addressToGoTo;
+		if (address == BankAddress.UNASSIGNED)
 		{
-			address = allocatedIndexes.get(labelToGoTo);
-			if (labelToGoTo == null)
+			address = allocatedIndexes.getTry(labelToGoTo);
+			if (address == BankAddress.UNASSIGNED)
 			{
+				// Has to be linked first - Should we require this?
 				throw new IllegalAccessError("TODOOOOO");
 			}
 		}
@@ -151,9 +153,9 @@ public abstract class JumpCallCommon extends Instruction
 	}
 	
 	@Override
-	public int getWorstCaseSizeOnBank(byte bank, int instOffset, AllocatedIndexes allocatedIndexes)
+	public int getWorstCaseSize(BankAddress instructAddress, AllocatedIndexes allocatedIndexes)
 	{
-		if (isFarJpCall(bank, getAddressToGoTo(allocatedIndexes)))
+		if (isFarJpCall(instructAddress, getAddressToGoTo(allocatedIndexes)))
 		{
 			// If its not assigned, assume the worst
 			return getFarJpCallSize();
@@ -163,16 +165,16 @@ public abstract class JumpCallCommon extends Instruction
 		return 3;
 	}
 	
-	protected boolean isFarJpCall(byte bank, int addressToGoTo)
+	protected boolean isFarJpCall(BankAddress instructAddress, BankAddress toGoTo)
 	{
-		// If its unassinged local we go to, we don't need to go far
-		if (addressToGoTo == CompilerUtils.UNASSIGNED_LOCAL_ADDRESS)
+		// If either bank is unassigned, assume the worst
+		if (instructAddress.bank == BankAddress.UNASSIGNED_BANK || toGoTo.bank == BankAddress.UNASSIGNED_BANK)
 		{
-			return false;
+			return true;
 		}
 		
 		// If its assigned a specific address and its in the same bank or its in the home bank
-		if (addressToGoTo != CompilerUtils.UNASSIGNED_ADDRESS && isInBankOrHomeBank(addressToGoTo, bank))
+		if (isInBankOrHomeBank(addressToGoTo.bank, instructAddress.bank))
 		{
 			return false;
 		}
@@ -180,10 +182,9 @@ public abstract class JumpCallCommon extends Instruction
 		return true;
 	}
 	
-	protected static boolean isInBankOrHomeBank(int address, byte bank)
+	protected static boolean isInBankOrHomeBank(byte instructBank, byte toGoToBank)
 	{
-		byte addrBank = RomUtils.determineBank(address);
-		return addrBank == 0 || addrBank == bank;
+		return toGoToBank == 0 || toGoToBank == instructBank;
 	}
 	
 	protected int getFarJpCallSize()
@@ -200,9 +201,9 @@ public abstract class JumpCallCommon extends Instruction
 	public int writeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
 	{
 		int writeIdx = addressToWriteAt;
-		int toGoToAddress = getAddressToGoTo(allocatedIndexes);
+		BankAddress toGoToAddress = getAddressToGoTo(allocatedIndexes);
 		
-		if (isFarJpCall(RomUtils.determineBank(writeIdx), toGoToAddress))
+		if (isFarJpCall(new BankAddress(addressToWriteAt), toGoToAddress))
 		{			
 			// To do a conditional far jp/call we need to do a JR before it
 			if (conditions != InstructionConditions.NONE)
@@ -220,7 +221,7 @@ public abstract class JumpCallCommon extends Instruction
 		}
 	}
 	
-	protected int writeJpCall(byte[] bytes, int indexToAddAt, int addressToGoTo)
+	protected int writeJpCall(byte[] bytes, int indexToAddAt, BankAddress addressToGoTo)
 	{		
 		// always call
 		if (InstructionConditions.NONE == conditions)
@@ -234,23 +235,20 @@ public abstract class JumpCallCommon extends Instruction
 		}
 		
 		// Now write the local address
-		ByteUtils.writeAsShort(RomUtils.convertToLoadedBankOffset(addressToGoTo), bytes, indexToAddAt + 1);
+		ByteUtils.writeAsShort(RomUtils.convertFromBankOffsetToLoadedOffset(addressToGoTo.bank, addressToGoTo.addressInBank), bytes, indexToAddAt + 1);
 		return 3;
 	}
 
-	protected int writeFarJpCall(byte[] bytes, int indexToAddAt, int addressToGoTo)
+	protected int writeFarJpCall(byte[] bytes, int indexToAddAt, BankAddress addressToGoTo)
 	{		
 		// This is an "RST" call (id 0xC7). These are special calls loaded into the ROM at the beginning. For
 		// this ROM, RST5 (id 0x28) jumps to the "FarCall" function in the home.asm which handles
 		// doing the call to any location in the ROM
 		bytes[indexToAddAt] = (byte) (0xC7 | farInstuctRstVal); 
 		
-		byte bank = RomUtils.determineBank(addressToGoTo);
-		short loadedAddress = RomUtils.convertToLoadedBankOffset(bank, addressToGoTo);
-		
 		// Now write the rest of the address
-		bytes[indexToAddAt + 1] = bank;
-		ByteUtils.writeAsShort(loadedAddress, bytes, indexToAddAt + 2);
+		bytes[indexToAddAt + 1] = addressToGoTo.bank;
+		ByteUtils.writeAsShort(RomUtils.convertFromBankOffsetToLoadedOffset(addressToGoTo.bank, addressToGoTo.addressInBank), bytes, indexToAddAt + 2);
 		return 4;
 	}
 	

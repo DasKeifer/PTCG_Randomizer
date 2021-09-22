@@ -2,20 +2,26 @@ package datamanager;
 
 
 import compiler.DataBlock;
+import util.ByteUtils;
 
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public abstract class MoveableBlock extends BlockAllocData
+public class MoveableBlock extends BlockAllocData
 {
-	private boolean shrunkMoved;
-	private SortedSet<BankPreference> allowableBankPreferences;
+	public static final Comparator<MoveableBlock> PRIORITY_SORTER = new PrioritySorter();
 	
-	protected MoveableBlock(byte priority, DataBlock toPlaceInBank, BankPreference... prefs)
+	private SortedSet<BankPreference> allowableBankPreferences;
+	private SortedSet<BankPreference> unattemptedAllowableBankPreferences;
+	
+	public MoveableBlock(byte priority, DataBlock toPlaceInBank, BankPreference... prefs)
 	{
 		super(toPlaceInBank);
 		
-		shrunkMoved = false;
 		allowableBankPreferences = new TreeSet<>(BankPreference.BASIC_SORTER);
 		
 		for (BankPreference pref : prefs)
@@ -44,41 +50,6 @@ public abstract class MoveableBlock extends BlockAllocData
 		allowableBankPreferences.add(new BankPreference(priority, startBank, stopBank));
 	}
 	
-	void setShrunkOrMoved(boolean isShrunkOrMoved)
-	{
-		shrunkMoved = isShrunkOrMoved;
-	}
-
-	public boolean unshrinkIfPossible()
-	{
-		if (!movesNotShrinks() && isShrunkOrMoved())
-		{
-			setShrunkOrMoved(true);
-			return true;
-		}
-		return false;
-	}
-	
-	public UnconstrainedMoveBlock shrinkIfPossible()
-	{
-		if (canBeShrunkOrMoved() && !movesNotShrinks() && !isShrunkOrMoved())
-		{
-			setShrunkOrMoved(true);
-			return getRemoteBlock();
-		}
-		return null;
-	}
-	
-	boolean isShrunkOrMoved()
-	{
-		return shrunkMoved;
-	}
-	
-	boolean canBeShrunkOrMoved()
-	{
-		return !isShrunkOrMoved();
-	}
-	
 	public SortedSet<BankPreference> getAllowableBankPreferences()
 	{
 		SortedSet<BankPreference> copy = new TreeSet<>();
@@ -89,20 +60,100 @@ public abstract class MoveableBlock extends BlockAllocData
 		return copy;
 	}
 	
-	public abstract boolean movesNotShrinks();
-	public abstract UnconstrainedMoveBlock getRemoteBlock();	
-	public abstract int getShrunkWorstCaseSizeOnBank(byte bankToGetSizeOn, AllocatedIndexes allocatedIndexes);
-	
-	public int getCurrentWorstCaseSizeOnBank(byte bankToGetSizeOn, AllocatedIndexes allocatedIndexes)
+	public int getCurrentWorstCaseSize(AllocatedIndexes allocatedIndexes)
 	{
-		if (shrunkMoved)
-		{			
-			// Otherwise get its shrunk size
-			return getShrunkWorstCaseSizeOnBank(bankToGetSizeOn, allocatedIndexes);
-		}
-		else
+		return dataBlock.getWorstCaseSize(allocatedIndexes);
+	}
+	
+	// Package
+	void resetBankPreferences()
+	{
+		unattemptedAllowableBankPreferences = getAllowableBankPreferences();
+	}
+	
+	// Package
+	boolean isUnattemptedAllowableBanksEmpty()
+	{
+		return unattemptedAllowableBankPreferences.isEmpty();
+	}
+	
+	// Package
+	byte popNextUnattemptedAllowableBank()
+	{
+		if (!isUnattemptedAllowableBanksEmpty())
 		{
-			return dataBlock.getWorstCaseSizeOnBank(bankToGetSizeOn, allocatedIndexes);
+			return -1;
 		}
+		
+		// get the next preference
+		BankPreference pref = new BankPreference(unattemptedAllowableBankPreferences.first());
+		byte prefId = pref.start;
+		
+		// Remove it from unattempted and update the preference
+		removeUnattemptedBank(prefId);
+		pref.start++;
+		if (pref.isEmpty())
+		{
+			unattemptedAllowableBankPreferences.remove(pref);
+		}
+		
+		// Return the id
+		return prefId;
+	}
+	
+	// Package
+	byte getNextUnatemptedAllowableBankPriority()
+	{
+		return unattemptedAllowableBankPreferences.first().priority;
+	}
+	
+	private void removeUnattemptedBank(byte bank)
+	{
+		List<BankPreference> modified = new LinkedList<BankPreference>();
+		Iterator<BankPreference> iter = unattemptedAllowableBankPreferences.iterator();
+		BankPreference currPref;
+		while (iter.hasNext())
+		{
+			currPref = iter.next();
+			if (currPref.contains(bank))
+			{
+				// We always start with the first one in the range so that makes things easier since we don't have to worry about splitting banks
+				iter.remove();
+				currPref.start = bank;
+				if (!currPref.isEmpty())
+				{
+					modified.add(currPref);
+				}
+			}
+		}
+		
+		for (BankPreference pref : modified)
+		{
+			unattemptedAllowableBankPreferences.add(pref);
+		}
+	}
+	
+	public static class PrioritySorter implements Comparator<MoveableBlock>
+	{
+		public int compare(MoveableBlock a1, MoveableBlock a2)
+	    {   
+			int compareVal = ByteUtils.unsignedCompareBytes(a1.getNextUnatemptedAllowableBankPriority(), a2.getNextUnatemptedAllowableBankPriority());
+			
+			if (compareVal == 0)
+			{
+				// Give larger blocks higher priority - We have to do it agnostic to where things are
+				// allocated but that is okay as this does not need to be 100% accurate
+				final AllocatedIndexes emptyAllocs = new AllocatedIndexes();
+				compareVal = Integer.compare(a1.getCurrentWorstCaseSize(emptyAllocs), a2.getCurrentWorstCaseSize(emptyAllocs));
+			}
+			
+			if (compareVal == 0)
+			{
+				// if all else fails, use the unique block ID so things like sets will recognize these are not the same object
+				compareVal = a1.getId().compareTo(a2.getId());
+			}
+			
+			return compareVal;
+	    }
 	}
 }

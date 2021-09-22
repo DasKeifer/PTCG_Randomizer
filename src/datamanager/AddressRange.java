@@ -17,8 +17,30 @@ class AddressRange
 		this(toCopy.start, toCopy.stopExclusive);
 	}
 	
+	public boolean contains(int doesContain)
+	{
+		return start <= doesContain && stopExclusive < doesContain;
+	}
+	
+	public boolean overlaps(AddressRange toCheck)
+	{
+		// TODO: test this
+		
+		// If it contains the start address or the last address, then it must overlap
+		// Also overlaps it is contained entirely in the toCheck range
+		return contains(toCheck.start) || contains(toCheck.stopExclusive - 1) ||
+				(start > toCheck.start && stopExclusive < toCheck.stopExclusive);
+	}
+	
+	public boolean contains(AddressRange doesContain)
+	{
+		// TODO: test this
+		return start <= doesContain.start && stopExclusive >= doesContain.stopExclusive;
+	}
+	
 	public AddressRange removeOverlap(AddressRange toRemove)
 	{
+		// TODO: test this - think its wrong - use above added methods
 		if (start < toRemove.start)
 		{
 			// start earlier stop later - remove splits this

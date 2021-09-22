@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import data.Card;
 import data.CardEffect;
+import datamanager.AllocatedIndexes;
 import datamanager.DataManager;
 
 public class Rom
@@ -78,13 +79,13 @@ public class Rom
 		
 		// Now assign locations for the data
 		DataManager manager = new DataManager();
-		manager.assignBlockLocations(rawBytes, blocks);
+		AllocatedIndexes allocs = manager.allocateBlocks(rawBytes, blocks);
 			
 		// Now save the cards - TODO: move to blocks eventually (on future cleanup branch)
 		RomIO.writeAllCards(rawBytes, allCards, blocks);
 			
 		// Now actually write to the bytes
-		blocks.writeData(rawBytes);
+		blocks.writeData(rawBytes, allocs);
 		
 		// Write the bytes to the file
 		RomIO.writeRaw(rawBytes, romFile);

@@ -6,6 +6,7 @@ import java.util.Map;
 import compiler.CompilerUtils;
 import compiler.Instruction;
 import datamanager.AllocatedIndexes;
+import datamanager.BankAddress;
 import rom.Texts;
 
 public class PlaceholderInstruction extends Instruction
@@ -43,13 +44,13 @@ public class PlaceholderInstruction extends Instruction
 	}
 
 	@Override
-	public int getWorstCaseSizeOnBank(byte bank, int instructionOffset, AllocatedIndexes allocatedIndexes) 
+	public int getWorstCaseSize(BankAddress instructionAddress, AllocatedIndexes allocatedIndexes) 
 	{
 		if (inst == null)
 		{
 			return 3; // Just a typical instruction size. Shouldn't be used really
 		}
-		return inst.getWorstCaseSizeOnBank(bank, instructionOffset, allocatedIndexes);
+		return inst.getWorstCaseSize(instructionAddress, allocatedIndexes);
 	}
 
 	@Override

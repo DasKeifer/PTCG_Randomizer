@@ -8,11 +8,22 @@ public class RomUtils
 	{
 		return (byte) (address / RomConstants.BANK_SIZE);
 	}
+
+	public static short convertToBankOffset(int globalAddress) 
+	{
+		byte bank = determineBank(globalAddress);
+		return convertToBankOffset(bank, globalAddress);
+	}
 	
 	public static short convertToLoadedBankOffset(int globalAddress)
 	{
 		byte bank = determineBank(globalAddress);
 		return convertToLoadedBankOffset(bank, globalAddress);
+	}
+	
+	public static short convertToBankOffset(byte bank, int globalAddress) 
+	{
+		return (short) (globalAddress - bank * RomConstants.BANK_SIZE);
 	}
 	
 	public static short convertToLoadedBankOffset(byte bank, int globalAddress)
@@ -24,7 +35,7 @@ public class RomUtils
 		}
 		
 		// Otherwise adjust it appropriately to be in the second bank
-		return (short) (globalAddress - (bank - 1) * RomConstants.BANK_SIZE);
+		return (short) (convertToBankOffset(bank, globalAddress) + RomConstants.BANK_SIZE);
 	}
 	
 	public static int getEndOfBankAddressIsIn(int address)
@@ -40,5 +51,30 @@ public class RomUtils
 	public static boolean isInBank(int address, byte bank)
 	{
 		return determineBank(address) == bank;
+	}
+
+	public static int convertToGlobalAddress(byte bank, short addressInBank)
+	{
+		return bank * RomConstants.BANK_SIZE + addressInBank;
+	}
+
+	public static int convertToGlobalAddressFromLoadedBankOffset(byte bank, short loadedBankAddress)
+	{
+		// Bank 0 & 1 are a bit special cases - no adjustment needed
+		if (bank == 0 || bank == 1)
+		{
+			return loadedBankAddress;
+		}
+		return (bank - 1) * RomConstants.BANK_SIZE + loadedBankAddress;
+	}
+
+	public static short convertFromBankOffsetToLoadedOffset(byte bank, short addressInBank)
+	{
+		// Bank 0 is a bit special cases - no adjustment needed
+		if (bank == 0)
+		{
+			return addressInBank;
+		}
+		return (short) (addressInBank + RomConstants.BANK_SIZE);
 	}
 }

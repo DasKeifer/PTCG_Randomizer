@@ -6,6 +6,7 @@ import compiler.DataBlock;
 import compiler.Segment;
 import rom.Texts;
 
+// TODO: remove? Unneeded layer?
 public abstract class BlockAllocData
 {
 	protected DataBlock dataBlock;
@@ -30,8 +31,8 @@ public abstract class BlockAllocData
 		dataBlock.extractTexts(texts);
 	}
 
-	public void writeData(byte[] bytes, int assignedAddress, AllocatedIndexes allocatedIndexes)
+	public void writeData(byte[] bytes, AllocatedIndexes allocatedIndexes)
 	{
-		dataBlock.writeBytes(bytes, assignedAddress, allocatedIndexes);
+		dataBlock.writeBytes(bytes, allocatedIndexes);
 	}
 }

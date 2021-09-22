@@ -2,6 +2,7 @@ package compiler;
 
 
 import datamanager.AllocatedIndexes;
+import datamanager.BankAddress;
 
 public abstract class FixedLengthInstruct extends Instruction
 {
@@ -18,7 +19,7 @@ public abstract class FixedLengthInstruct extends Instruction
 	}
 
 	@Override
-	public int getWorstCaseSizeOnBank(byte bank, int instructionOffset, AllocatedIndexes allocatedIndexes)
+	public int getWorstCaseSize(BankAddress unused1, AllocatedIndexes unused2)
 	{
 		return getSize();
 	}

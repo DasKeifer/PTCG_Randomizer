@@ -6,6 +6,7 @@ import java.util.List;
 
 import compiler.Instruction;
 import datamanager.AllocatedIndexes;
+import datamanager.BankAddress;
 import rom.Texts;
 import util.ByteUtils;
 
@@ -43,7 +44,7 @@ public class RawBytes extends Instruction
 	}
 	
 	@Override
-	public int getWorstCaseSizeOnBank(byte unused1, int unused2, AllocatedIndexes unused3)
+	public int getWorstCaseSize(BankAddress unused1, AllocatedIndexes unused2)
 	{
 		return size;
 	}

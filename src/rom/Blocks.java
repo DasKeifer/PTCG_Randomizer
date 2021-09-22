@@ -86,8 +86,7 @@ public class Blocks
 	{
 		for (BlockAllocData block : blocksById.values())
 		{
-			// TODO: Push write index down? perhaps to the segment level?
-			block.writeData(bytes);
+			block.writeData(bytes, allocatedIndexes);
 		}
 	}
 }

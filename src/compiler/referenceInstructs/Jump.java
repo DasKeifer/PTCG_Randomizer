@@ -5,6 +5,8 @@ import java.util.Arrays;
 
 import compiler.CompilerUtils;
 import datamanager.AllocatedIndexes;
+import datamanager.BankAddress;
+import util.RomUtils;
 import compiler.CompilerConstants.InstructionConditions;
 
 public class Jump extends JumpCallCommon
@@ -69,14 +71,15 @@ public class Jump extends JumpCallCommon
 	}
 
 	@Override
-	public int getWorstCaseSizeOnBank(byte bank, int instOffset, AllocatedIndexes allocatedIndexes)
+	public int getWorstCaseSize(BankAddress instructAddress, AllocatedIndexes allocatedIndexes)
 	{
 		// TODO: Need to make sure this handles unassigned values
 		// Is it a JR or a JP?
 		if (isLocalLabel)
 		{
-			int addressToGoTo = getAddressToGoTo(allocatedIndexes);
-			if (canJr(instOffset, addressToGoTo))
+			BankAddress addressToGoTo = getAddressToGoTo(allocatedIndexes);
+			if (canJr(RomUtils.convertToGlobalAddress(instructAddress.bank, instructAddress.addressInBank), 
+					RomUtils.convertToGlobalAddress(addressToGoTo.bank, addressToGoTo.addressInBank)))
 			{
 				return 2;
 			}
@@ -85,7 +88,7 @@ public class Jump extends JumpCallCommon
 		// Is it a JP or a farjump? Use the parent class implementation
 		else
 		{
-			return super.getWorstCaseSizeOnBank(bank, instOffset, allocatedIndexes);
+			return super.getWorstCaseSize(instructAddress, allocatedIndexes);
 		}
 	}
 	
@@ -125,13 +128,14 @@ public class Jump extends JumpCallCommon
 	@Override
 	public int writeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
 	{		
-		int addressToGoTo = getAddressToGoTo(allocatedIndexes);
+		BankAddress addressToGoTo = getAddressToGoTo(allocatedIndexes);
 		if (isLocalLabel)
 		{
 			// See if we want to JR
-			if (canJr(addressToWriteAt, addressToGoTo))
+			int globalToGoToAddress = RomUtils.convertToGlobalAddress(addressToGoTo.bank, addressToGoTo.addressInBank);
+			if (canJr(addressToWriteAt, globalToGoToAddress))
 			{
-				return writeJr(bytes, addressToWriteAt, (byte) getJrValue(addressToWriteAt, addressToGoTo));
+				return writeJr(bytes, addressToWriteAt, (byte) getJrValue(addressToWriteAt, globalToGoToAddress));
 			}
 			// Otherwise its a normal jump
 			else
