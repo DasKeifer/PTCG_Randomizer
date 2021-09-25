@@ -10,11 +10,11 @@ import constants.CardDataConstants.*;
 import data.hardcodedEffects.HardcodedEffects;
 import data.romtexts.EffectDescription;
 import data.romtexts.MoveName;
+import datamanager.AllocatedIndexes;
 import rom.Blocks;
 import rom.Cards;
 import rom.Texts;
 import util.ByteUtils;
-import util.RomUtils;
 
 public class Move
 {
@@ -27,8 +27,7 @@ public class Move
 	public EffectDescription description;
 	public byte damage; // TODO: non multiple of 10?
 	public MoveCategory category;
-	short effectPtr;
-	CardEffect customEffect;
+	CardEffect effect;
 	Set<MoveEffect1> effect1;
 	Set<MoveEffect2> effect2;
 	Set<MoveEffect3> effect3;
@@ -41,7 +40,7 @@ public class Move
 		name = new MoveName();
 		description = new EffectDescription();
 		category = MoveCategory.DAMAGE_NORMAL;
-		customEffect = null;
+		effect = UnchangedCardEffect.NONE;
 		effect1 = new HashSet<>();
 		effect2 = new HashSet<>();
 		effect3 = new HashSet<>();
@@ -54,8 +53,7 @@ public class Move
 		description = new EffectDescription(toCopy.description);
 		damage = toCopy.damage;
 		category = toCopy.category;
-		effectPtr = toCopy.effectPtr;
-		customEffect = toCopy.customEffect;
+		effect = toCopy.effect.copy();
 		effect1 = new HashSet<>(toCopy.effect1);
 		effect2 = new HashSet<>(toCopy.effect2);
 		effect3 = new HashSet<>(toCopy.effect3);
@@ -79,10 +77,10 @@ public class Move
 				compareVal = m1.getEnergyCostString(true, "").compareTo(m2.getEnergyCostString(true, ""));
 			}
 			
-			if (compareVal == 0)
-			{
-				compareVal = m2.effectPtr - m1.effectPtr;
-			}
+//			if (compareVal == 0)
+//			{
+//				return m1.compare(m2);
+//			}
 			
 			return compareVal;
 	    }
@@ -173,8 +171,9 @@ public class Move
 		builder.append(damage);
 		builder.append("\nDescription: ");
 		builder.append(description.toString());
-		builder.append("\nEffectPtr: ");
-		builder.append(effectPtr);
+		// todo
+//		builder.append("\nEffectPtr: ");
+//		builder.append(effectPtr);
 		builder.append("\nEffectFlags: ");
 		builder.append(effect1);
 		builder.append(", ");
@@ -266,7 +265,7 @@ public class Move
 		
 		damage = moveBytes[index++];
 		category = MoveCategory.readFromByte(moveBytes[index++]);
-		effectPtr = ByteUtils.readAsShort(moveBytes, index);
+		effect = new UnchangedCardEffect(ByteUtils.readAsShort(moveBytes, index));
 		index += 2;
 		effect1 = MoveEffect1.readFromByte(moveBytes[index++]);
 		effect2 = MoveEffect2.readFromByte(moveBytes[index++]);
@@ -289,8 +288,9 @@ public class Move
 				throw new IllegalArgumentException("Failed to find basic card for " + hostCard.name.toString());
 			}
 			
-			customEffect = HardcodedEffects.CallForFamily.createMoveEffect(cards, basics);
-			customEffect.convertAndAddBlocks(blocks);
+			CustomCardEffect custEffect = HardcodedEffects.CallForFamily.createMoveEffect(cards, basics);
+			custEffect.convertAndAddBlocks(blocks);
+			effect = custEffect;
 			description.finalizeAndAddTexts(texts, basics.toList().get(0).name.toString());
 		}
 		else
@@ -299,7 +299,7 @@ public class Move
 		}
 	}
 
-	public int writeData(byte[] moveBytes, int startIndex, Blocks blocks) 
+	public int writeData(byte[] moveBytes, int startIndex, AllocatedIndexes allocIndexes) 
 	{
 		int index = startIndex;
 		
@@ -318,14 +318,9 @@ public class Move
 		moveBytes[index++] = damage;
 		moveBytes[index++] = category.getValue();
 		
-		// TODO come back to this - needs to be done as part of linking
-		if (customEffect != null)
-		{
-			effectPtr = RomUtils.convertToLoadedBankOffset(customEffect.getAssignedAddress());
-		}
-		ByteUtils.writeAsShort(effectPtr, moveBytes, index);
-		
+		effect.writeEffectPointer(moveBytes, index, allocIndexes);
 		index += 2;
+		
 		moveBytes[index++] = MoveEffect1.storeAsByte(effect1);
 		moveBytes[index++] = MoveEffect2.storeAsByte(effect2);
 		moveBytes[index++] = MoveEffect3.storeAsByte(effect3);

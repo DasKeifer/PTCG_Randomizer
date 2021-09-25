@@ -7,7 +7,6 @@ import java.util.TreeMap;
 
 import constants.RomConstants;
 import rom.Blocks;
-import util.RomUtils;
 
 public class DataManager
 {
@@ -16,7 +15,7 @@ public class DataManager
 	
 	// Bank, object
 	private SortedMap<Byte, AllocatableBank> freeSpace;
-	private AllocatedIndexes allocIndexes;
+	private AllocatedIndexes allocIndexes = new AllocatedIndexes();
 	
 	public DataManager()
 	{
@@ -49,7 +48,7 @@ public class DataManager
 		allocateFixedBlocks(blocks);
 	
 		// Allocate space for the constrained blocks then the unconstrained ones
-		if (recursivlyTryToAssignBanks(blocks.getAllBlocksToAllocate()))
+		if (tryToAssignBanks(blocks.getAllBlocksToAllocate()))
 		{
 			// If we were successful, assign the addresses for each item and then return
 			// a copy of the data
@@ -62,31 +61,36 @@ public class DataManager
 	
 	private void allocateFixedBlocks(Blocks blocks)
 	{
-		// First add them to the allocated indexes. This allows for some optimization of sizes.
-		// Also add their segments so we can refer to those
+		// First assign them to their banks. This allows some optimization of sizes some
 		for (FixedBlock block : blocks.getAllFixedBlocks())
 		{
-			int address = block.getFixedAddress();
-			byte bank = RomUtils.determineBank(address);
-			allocIndexes.put(block.getId(), new BankAddress(bank, RomUtils.convertToBankOffset(address)));
-			
-			// Add the segments too!
-			for (String id : block.getSegmentsById().keySet())
-			{
-				allocIndexes.addSetBank(id, bank);
-			}
+			BankAddress address = block.getFixedAddress();
+			DataManagerUtils.assignBlockAndSegmentBanks(block, address.bank, allocIndexes);
 		}
 		
-		// Then add them to the bank now that we can know their worst case size taking into
-		// account where other fixed blocks live
+		// Now go through and assign preliminary addresses and add them to the banks
 		for (FixedBlock block : blocks.getAllFixedBlocks())
 		{
-			freeSpace.get(RomUtils.determineBank(block.getFixedAddress())).addFixedBlock(block, allocIndexes);
+			BankAddress address = block.getFixedAddress();
+			DataManagerUtils.assignBlockAndSegmentBankAddresses(block, address, allocIndexes);
+			freeSpace.get(block.getFixedAddress().bank).addFixedBlock(block, allocIndexes);
 		}
 	}
-
-	private boolean recursivlyTryToAssignBanks(List<MoveableBlock> toAlloc)
+	
+	private boolean tryToAssignBanks(List<MoveableBlock> toAlloc)
 	{
+		// Set/Reset each of the blocks working copy of the preferences
+		for (MoveableBlock block : toAlloc)
+		{
+			block.resetBankPreferences();
+		}
+		
+		// Then recursively try to pack them
+		return tryToAssignBanksRecursor(toAlloc);
+	}
+
+	private boolean tryToAssignBanksRecursor(List<MoveableBlock> toAlloc)
+	{		
 		// Assign each alloc to its next preferred/allowable bank
 		if (!assignAllocationsToTheirNextBank(toAlloc))
 		{
@@ -106,7 +110,7 @@ public class DataManager
 		
 		// Otherwise recurse again and see if the ones that didn't fit will fit in
 		// their next bank (if they have one)
-		return recursivlyTryToAssignBanks(allocsThatDontFit);
+		return tryToAssignBanksRecursor(allocsThatDontFit);
 	}
 	
 	private boolean assignAllocationsToTheirNextBank(List<MoveableBlock> toAlloc)
@@ -127,7 +131,8 @@ public class DataManager
 					// TODO:
 					return false;
 				}
-				bank.addMoveableBlockAndSetBank(alloc, allocIndexes);
+				bank.addMoveableBlock(alloc);
+				DataManagerUtils.assignBlockAndSegmentBanks(alloc, bank.bank, allocIndexes);
 			}
 		}
 		
@@ -146,10 +151,12 @@ public class DataManager
 		boolean foundAllocThatDoesntFit = false;
 		
 		// For each bank, pack and remove any excess
+		List<MoveableBlock> bankAllocsThatDontFit = new LinkedList<>();
 		for (AllocatableBank bank : freeSpace.values())
 		{
-			foundAllocThatDoesntFit = bank.checkForAndRemoveExcessAllocs(allocsThatDontFit, allocIndexes) 
+			foundAllocThatDoesntFit = bank.checkForAndRemoveExcessAllocs(bankAllocsThatDontFit, allocIndexes) 
 					|| foundAllocThatDoesntFit;
+			allocsThatDontFit.addAll(bankAllocsThatDontFit);
 		}
 		
 		// If we went through all banks and didn't find any that no longer fit, then we

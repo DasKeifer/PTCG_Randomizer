@@ -22,6 +22,12 @@ class AddressRange
 		return start <= doesContain && stopExclusive < doesContain;
 	}
 	
+	public boolean contains(AddressRange doesContain)
+	{
+		// TODO: test this
+		return start <= doesContain.start && stopExclusive >= doesContain.stopExclusive;
+	}
+	
 	public boolean overlaps(AddressRange toCheck)
 	{
 		// TODO: test this
@@ -30,12 +36,6 @@ class AddressRange
 		// Also overlaps it is contained entirely in the toCheck range
 		return contains(toCheck.start) || contains(toCheck.stopExclusive - 1) ||
 				(start > toCheck.start && stopExclusive < toCheck.stopExclusive);
-	}
-	
-	public boolean contains(AddressRange doesContain)
-	{
-		// TODO: test this
-		return start <= doesContain.start && stopExclusive >= doesContain.stopExclusive;
 	}
 	
 	public AddressRange removeOverlap(AddressRange toRemove)

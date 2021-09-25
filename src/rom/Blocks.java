@@ -79,7 +79,16 @@ public class Blocks
 	
 	public List<MoveableBlock> getAllBlocksToAllocate()
 	{
-		return blocksToPlace;
+		List<MoveableBlock> temp = new LinkedList<>();
+		for (BlockAllocData block : blocksById.values())
+		{
+			if (block instanceof MoveableBlock)
+			{
+				temp.add((MoveableBlock) block);
+			}
+		}
+		return temp;
+		//return blocksToPlace;
 	}
 	
 	public void writeData(byte[] bytes, AllocatedIndexes allocatedIndexes)

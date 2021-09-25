@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import constants.RomConstants;
 import data.Card;
 import data.hardcodedEffects.HardcodedEffects;
+import datamanager.AllocatedIndexes;
 import util.ByteUtils;
 import util.RomUtils;
 
@@ -125,7 +126,7 @@ public class RomIO
 		texts.convertAndAddBlocks(blocks);
 	}
 	
-	static void writeAllCards(byte[] bytes, Cards<Card> cards, Blocks blocks)
+	static void writeAllCards(byte[] bytes, Cards<Card> cards, AllocatedIndexes allocations)
 	{		
 		// First write the 0 index "null" card
 		int ptrIndex = RomConstants.CARD_POINTERS_LOC - RomConstants.CARD_POINTER_SIZE_IN_BYTES;
@@ -146,7 +147,7 @@ public class RomIO
 			ptrIndex += RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 			
 			// Write the card
-			cardIndex = card.writeData(bytes, cardIndex, blocks);
+			cardIndex = card.writeData(bytes, cardIndex, allocations);
 		}
 
 		// Write the null pointer at the end of the cards pointers

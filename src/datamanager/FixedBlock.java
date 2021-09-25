@@ -2,33 +2,30 @@ package datamanager;
 
 
 import compiler.DataBlock;
-import util.RomUtils;
 
 public class FixedBlock extends BlockAllocData
 {
-	private int address;
+	private BankAddress address;
 	// The remote block (if needed), should be referred to in the DataBlock so no need to track it here
 	
 	public FixedBlock(int fixedStartAddress, DataBlock data)
 	{
 		super(data);
-		address = fixedStartAddress;
+		address = new BankAddress(fixedStartAddress);
 	}
 
-	// TODO change to new type?
-	public int getFixedAddress() 
+	public BankAddress getFixedAddress() 
 	{
-		return address;
+		return new BankAddress(address);
 	}
 	
 	@Override
 	public void writeData(byte[] bytes, AllocatedIndexes allocatedIndexes)
 	{	
 		BankAddress bankAddress = allocatedIndexes.getThrow(getId());
-		int globalAddress = RomUtils.convertToGlobalAddress(bankAddress.bank, bankAddress.addressInBank);
-		if (globalAddress != address)
+		if (!bankAddress.equals(address))
 		{
-			throw new IllegalArgumentException("Passed address for FixedBlock (" + globalAddress + ") does" +
+			throw new IllegalArgumentException("Passed address for FixedBlock (" + bankAddress + ") does" +
 					"not match the fixed address (" + address + ")!"); 
 		}
 		dataBlock.writeBytes(bytes, allocatedIndexes);

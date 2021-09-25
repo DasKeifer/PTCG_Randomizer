@@ -71,13 +71,13 @@ public class Jump extends JumpCallCommon
 	}
 
 	@Override
-	public int getWorstCaseSize(BankAddress instructAddress, AllocatedIndexes allocatedIndexes)
+	public int getWorstCaseSize(BankAddress instructAddress, AllocatedIndexes allocatedIndexes, AllocatedIndexes tempIndexes)
 	{
 		// TODO: Need to make sure this handles unassigned values
 		// Is it a JR or a JP?
 		if (isLocalLabel)
 		{
-			BankAddress addressToGoTo = getAddressToGoTo(allocatedIndexes);
+			BankAddress addressToGoTo = getAddressToGoTo(allocatedIndexes, tempIndexes);
 			if (canJr(RomUtils.convertToGlobalAddress(instructAddress.bank, instructAddress.addressInBank), 
 					RomUtils.convertToGlobalAddress(addressToGoTo.bank, addressToGoTo.addressInBank)))
 			{
@@ -88,7 +88,7 @@ public class Jump extends JumpCallCommon
 		// Is it a JP or a farjump? Use the parent class implementation
 		else
 		{
-			return super.getWorstCaseSize(instructAddress, allocatedIndexes);
+			return super.getWorstCaseSize(instructAddress, allocatedIndexes, tempIndexes);
 		}
 	}
 	
@@ -128,7 +128,12 @@ public class Jump extends JumpCallCommon
 	@Override
 	public int writeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
 	{		
-		BankAddress addressToGoTo = getAddressToGoTo(allocatedIndexes);
+		BankAddress addressToGoTo = getAddressToGoTo(allocatedIndexes, null);
+		if (!addressToGoTo.isFullAddress())
+		{
+			throw new IllegalAccessError("TODO");
+		}
+		
 		if (isLocalLabel)
 		{
 			// See if we want to JR

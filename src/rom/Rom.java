@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import data.Card;
-import data.CardEffect;
+import data.CustomCardEffect;
 import datamanager.AllocatedIndexes;
 import datamanager.DataManager;
 
@@ -71,7 +71,7 @@ public class Rom
 		RomIO.clearAllText(rawBytes);
 		
 		// TODO: Need to handle tweak blocks somehow
-		CardEffect.addTweakToAllowEffectsInMoreBanks(blocks);
+		CustomCardEffect.addTweakToAllowEffectsInMoreBanks(blocks);
 		
 		// Finalize all the data to prepare for writing
 		// TODO: Change to generateBlocks or something like that?
@@ -82,7 +82,7 @@ public class Rom
 		AllocatedIndexes allocs = manager.allocateBlocks(rawBytes, blocks);
 			
 		// Now save the cards - TODO: move to blocks eventually (on future cleanup branch)
-		RomIO.writeAllCards(rawBytes, allCards, blocks);
+		RomIO.writeAllCards(rawBytes, allCards, allocs);
 			
 		// Now actually write to the bytes
 		blocks.writeData(rawBytes, allocs);

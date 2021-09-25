@@ -44,13 +44,13 @@ public class PlaceholderInstruction extends Instruction
 	}
 
 	@Override
-	public int getWorstCaseSize(BankAddress instructionAddress, AllocatedIndexes allocatedIndexes) 
+	public int getWorstCaseSize(BankAddress instructionAddress, AllocatedIndexes allocatedIndexes, AllocatedIndexes tempIndexes) 
 	{
 		if (inst == null)
 		{
 			return 3; // Just a typical instruction size. Shouldn't be used really
 		}
-		return inst.getWorstCaseSize(instructionAddress, allocatedIndexes);
+		return inst.getWorstCaseSize(instructionAddress, allocatedIndexes, tempIndexes);
 	}
 
 	@Override

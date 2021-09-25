@@ -131,16 +131,24 @@ public abstract class JumpCallCommon extends Instruction
 		}
 	}
 	
-	protected BankAddress getAddressToGoTo(AllocatedIndexes allocatedIndexes)
+	protected BankAddress getAddressToGoTo(AllocatedIndexes allocatedIndexes, AllocatedIndexes tempIndexes)
 	{
 		BankAddress address = addressToGoTo;
 		if (address == BankAddress.UNASSIGNED)
 		{
-			address = allocatedIndexes.getTry(labelToGoTo);
+			// Try and get it from the temp indexes first
+			if (tempIndexes != null)
+			{
+				address = tempIndexes.getTry(labelToGoTo);
+			}
+			
 			if (address == BankAddress.UNASSIGNED)
 			{
-				// Has to be linked first - Should we require this?
-				throw new IllegalAccessError("TODOOOOO");
+				address = allocatedIndexes.getTry(labelToGoTo);
+				if (address == BankAddress.UNASSIGNED)
+				{
+					return BankAddress.UNASSIGNED;
+				}
 			}
 		}
 		return address;
@@ -153,9 +161,9 @@ public abstract class JumpCallCommon extends Instruction
 	}
 	
 	@Override
-	public int getWorstCaseSize(BankAddress instructAddress, AllocatedIndexes allocatedIndexes)
+	public int getWorstCaseSize(BankAddress instructAddress, AllocatedIndexes allocatedIndexes, AllocatedIndexes tempIndexes)
 	{
-		if (isFarJpCall(instructAddress, getAddressToGoTo(allocatedIndexes)))
+		if (isFarJpCall(instructAddress, getAddressToGoTo(allocatedIndexes, tempIndexes)))
 		{
 			// If its not assigned, assume the worst
 			return getFarJpCallSize();
@@ -201,7 +209,11 @@ public abstract class JumpCallCommon extends Instruction
 	public int writeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
 	{
 		int writeIdx = addressToWriteAt;
-		BankAddress toGoToAddress = getAddressToGoTo(allocatedIndexes);
+		BankAddress toGoToAddress = getAddressToGoTo(allocatedIndexes, null);
+		if (!toGoToAddress.isFullAddress())
+		{
+			throw new IllegalAccessError("TODO");
+		}
 		
 		if (isFarJpCall(new BankAddress(addressToWriteAt), toGoToAddress))
 		{			

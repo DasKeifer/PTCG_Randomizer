@@ -27,7 +27,12 @@ public class AllocatedIndexes extends HashMap<String, BankAddress>
 
 	public BankAddress getThrow(String segmentId)
 	{
-		return get(segmentId);
+		BankAddress val = get(segmentId);
+		if (val == null)
+		{
+			throw new IllegalArgumentException("TODO");
+		}
+		return val;
 	}
 	
 	public BankAddress getTry(String segmentId)

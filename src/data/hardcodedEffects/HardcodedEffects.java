@@ -9,7 +9,7 @@ import constants.CardDataConstants.EnergyType;
 import constants.CharMapConstants;
 import constants.DuelConstants.EffectCommandTypes;
 import data.Card;
-import data.CardEffect;
+import data.CustomCardEffect;
 import rom.Cards;
 import util.RomUtils;
 
@@ -26,11 +26,11 @@ public class HardcodedEffects
 	private static HardcodedEffects singleton = new HardcodedEffects();
 	
 	// Effect name, card name, effect
-	public Map<String, Map<String, CardEffect>> cardNameUniqueEffects;
+	public Map<String, Map<String, CustomCardEffect>> cardNameUniqueEffects;
 	// Effect name, energy type, effect
-	public Map<String, Map<EnergyType, CardEffect>> energyTypeUniqueEffects;
+	public Map<String, Map<EnergyType, CustomCardEffect>> energyTypeUniqueEffects;
 	// Effect name, effect
-	public Map<String, CardEffect> globallyUniqueEffects;
+	public Map<String, CustomCardEffect> globallyUniqueEffects;
 	
 	private HardcodedEffects()
 	{
@@ -49,9 +49,9 @@ public class HardcodedEffects
 		return singleton;
 	}
 	
-	public CardEffect tryGetCardNameUniqueEffect(String effectName, String cardName)
+	public CustomCardEffect tryGetCardNameUniqueEffect(String effectName, String cardName)
 	{
-		Map<String, CardEffect> effectMap = cardNameUniqueEffects.get(effectName);
+		Map<String, CustomCardEffect> effectMap = cardNameUniqueEffects.get(effectName);
 		if (effectMap == null)
 		{
 			return null;
@@ -60,9 +60,9 @@ public class HardcodedEffects
 		return effectMap.get(cardName);
 	}
 	
-	public void addCardNameUniqueEffect(String effectName, String cardName, CardEffect effect)
+	public void addCardNameUniqueEffect(String effectName, String cardName, CustomCardEffect effect)
 	{
-		Map<String, CardEffect> effectMap = cardNameUniqueEffects.get(effectName);
+		Map<String, CustomCardEffect> effectMap = cardNameUniqueEffects.get(effectName);
 		if (effectMap == null)
 		{
 			effectMap = new HashMap<>();
@@ -204,7 +204,7 @@ public class HardcodedEffects
 		};
 
 		// Basics may not always be pokemon cards - take mysterious fossil for example
-		public static CardEffect createMoveEffect(Cards<Card> cards, Cards<Card> basics) 
+		public static CustomCardEffect createMoveEffect(Cards<Card> cards, Cards<Card> basics) 
 		{
 			// Just assume the first one for now. This probably won't work well for things like
 			// pikachu where there are versions of them
@@ -232,7 +232,7 @@ public class HardcodedEffects
 			// For now assume only one id
 			Card toFindBasicOf = basics.toList().get(0);
 			
-			CardEffect effect = HardcodedEffects.getInstance().tryGetCardNameUniqueEffect(effectName, toFindBasicOf.name.toString());
+			CustomCardEffect effect = HardcodedEffects.getInstance().tryGetCardNameUniqueEffect(effectName, toFindBasicOf.name.toString());
 			if (effect != null)
 			{
 				return effect;
@@ -336,7 +336,7 @@ public class HardcodedEffects
 			playerSelect.replacePlaceholderIds(placeholders);
 			aiSelect.replacePlaceholderIds(placeholders);
 
-			effect = new CardEffect(effectName + toFindBasicOf.name.toString(), (byte) 3);
+			effect = new CustomCardEffect(effectName + toFindBasicOf.name.toString(), (byte) 3);
 			effect.addEffectCommand(EffectCommandTypes.InitialEffect1, RomUtils.convertToLoadedBankOffset(INITIAL_EFFECT_ADDRESS));
 			effect.addEffectCommand(EffectCommandTypes.AfterDamage, RomUtils.convertToLoadedBankOffset(PUT_IN_PLAY_AREA_EFFECT_ADDRESS));
 			effect.addEffectCommand(EffectCommandTypes.RequireSelection, playerSelect);

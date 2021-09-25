@@ -29,10 +29,42 @@ public class BankAddress
 		bank = toCopy.bank;
 		addressInBank = toCopy.addressInBank;
 	}
-
+	
 	public BankAddress(int globalAddress) 
 	{
 		bank = RomUtils.determineBank(globalAddress);
 		addressInBank = RomUtils.convertToBankOffset(globalAddress);
 	}
+
+	public void setToCopyOf(BankAddress toCopy) 
+	{
+		bank = toCopy.bank;
+		addressInBank = toCopy.addressInBank;
+	}
+	
+    @Override
+    public boolean equals(Object o) {
+ 
+        // If the object is compared with itself then return true 
+        if (o == this) {
+            return true;
+        }
+ 
+        // Check if it is an instance of BankAddress
+        if (!(o instanceof BankAddress)) 
+        {
+            return false;
+        }
+        
+        // Compare the data and return accordingly
+        BankAddress ba = (BankAddress) o;
+        return Byte.compare(bank, ba.bank) == 0 && Short.compare(addressInBank, ba.addressInBank) == 0;
+    }
+
+	public boolean isFullAddress() 
+	{
+		return bank != UNASSIGNED_BANK && addressInBank != UNASSIGNED_ADDRESS;
+	}
+
+	// TODO: tostring
 }

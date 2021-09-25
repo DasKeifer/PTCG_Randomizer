@@ -165,7 +165,7 @@ public class DataBlock
 	
 	public Map<String, Segment> getSegmentsById()
 	{
-		Map<String, Segment> segRefsById = new HashMap<>();
+		Map<String, Segment> segRefsById = new LinkedHashMap<>();
 		for (Entry<String, Segment> idSeg : segments.entrySet())
 		{
 			segRefsById.put(idSeg.getKey(), idSeg.getValue());
@@ -178,16 +178,108 @@ public class DataBlock
 	
 	public int getWorstCaseSize(AllocatedIndexes allocatedIndexes)
 	{
-		int worstCaseSize = 0;
-		
-		BankAddress segAddress;
-		for (Entry<String, Segment> entry : segments.entrySet())
+		BankAddress blockAddress = allocatedIndexes.getTry(getId());
+		return getSizeAndSegmentsRelativeAddresses(blockAddress, allocatedIndexes, null); // null = don't care about the relative address of segments
+	}
+	
+	public AllocatedIndexes getSegmentsRelativeAddresses(BankAddress blockAddress, AllocatedIndexes allocatedIndexes)
+	{
+		AllocatedIndexes relAddresses = new AllocatedIndexes();
+		getSizeAndSegmentsRelativeAddresses(blockAddress, allocatedIndexes, relAddresses);
+		return relAddresses;
+	}
+	
+	private int getSizeAndSegmentsRelativeAddresses(BankAddress blockAddress, AllocatedIndexes allocatedIndexes, AllocatedIndexes relAddresses)
+	{
+		if (relAddresses == null)
 		{
-			segAddress = allocatedIndexes.getTry(entry.getKey());
-			worstCaseSize += entry.getValue().getWorstCaseSize(segAddress, allocatedIndexes);
+			relAddresses = new AllocatedIndexes();
+		}
+		else
+		{
+			relAddresses.clear();
 		}
 		
-		return worstCaseSize;
+		// If we have none or one segment, its super easy...
+		// Note we shouldn't ever have none but it doesn't hurt to catch this case in the chance
+		// that this changes later
+		// Empty because segments doesn't include the end segment
+		if (segments.isEmpty())
+		{
+			return 0;
+		}
+		
+		// Otherwise we need more complex logic
+		// Get the starting point of the addresses
+		Map<String, Segment> segmentsWithEndPlaceholder = getSegmentsById();
+		getSegRelAddressesStartingPoint(segmentsWithEndPlaceholder, blockAddress, allocatedIndexes, relAddresses);
+
+		// Now do more passes until we have a stable length for all the segments
+		boolean stable = false;
+		BankAddress foundAddress;
+		BankAddress relAddress = new BankAddress(blockAddress.bank, (short) 0);
+		while (!stable)
+		{
+			// Assume we are good until proven otherwise
+			stable = true;
+			
+			// Reset the start relative address for this pass
+			relAddress = new BankAddress(blockAddress.bank, (short) 0);
+			for (Entry<String, Segment> segEntry : segmentsWithEndPlaceholder.entrySet())
+			{
+				// Check if the rel address is the address already in record
+				foundAddress = relAddresses.getThrow(segEntry.getKey());
+				
+				// If it doesn't we aren't stable yet and we need to update the stored
+				// address
+				if (!foundAddress.equals(relAddress))
+				{
+					stable = false;
+					foundAddress.setToCopyOf(relAddress);
+				}
+						
+				// Now determine the overall block size so far/where the next segments rel address would be
+				relAddress.addressInBank += segEntry.getValue().getWorstCaseSize(relAddress, allocatedIndexes, relAddresses);
+			}
+		}
+		
+		// The size will be stored in the relAddress since it was added at the end to get the final value
+		return relAddress.addressInBank;
+	}
+	
+	private AllocatedIndexes getSegRelAddressesStartingPoint(
+			Map<String, Segment> segmentsWithEndPlaceholder, 
+			BankAddress blockAddress, 
+			AllocatedIndexes allocatedIndexes, 
+			AllocatedIndexes startingPoint
+	)
+	{
+		BankAddress allocAddress = allocatedIndexes.getTry(segmentsWithEndPlaceholder.entrySet().iterator().next().getKey());
+		if (allocAddress.isFullAddress())
+		{
+			// This means some allocation has already been done. Leverage that for a starting
+			// point
+			for (Entry<String, Segment> segEntry : segmentsWithEndPlaceholder.entrySet())
+			{
+				startingPoint.put(segEntry.getKey(), 
+						new BankAddress(blockAddress.bank, 
+								(short) (allocatedIndexes.getThrow(segEntry.getKey()).addressInBank - blockAddress.addressInBank)
+				));
+			}
+		}
+		else
+		{			
+			BankAddress nextSegRelAddress = new BankAddress(blockAddress.bank, (short) 0);
+			for (Entry<String, Segment> segEntry : segmentsWithEndPlaceholder.entrySet())
+			{
+				startingPoint.put(segEntry.getKey(), new BankAddress(nextSegRelAddress));
+				nextSegRelAddress = new BankAddress(nextSegRelAddress.bank, 
+						(short) (nextSegRelAddress.addressInBank + segEntry.getValue().getWorstCaseSize(nextSegRelAddress, allocatedIndexes, startingPoint))
+				);
+			}
+		}
+		
+		return startingPoint;
 	}
 	
 	public void replacePlaceholderIds(Map<String, String> placeholderToArgsForIds)
@@ -196,6 +288,8 @@ public class DataBlock
 		id = CompilerUtils.replacePlaceholders(id, placeholderToArgsForIds);
 		
 		LinkedHashMap<String, Segment> refreshedSegments = new LinkedHashMap<>();
+		// Use segments because we know we don't need to replace anything in the
+		// end segment placeholder
 		for (Entry<String, Segment> seg : segments.entrySet())
 		{
 			String segId = CompilerUtils.replacePlaceholders(seg.getKey(), placeholderToArgsForIds);
@@ -211,6 +305,8 @@ public class DataBlock
 
 	public void extractTexts(Texts texts) 
 	{
+		// Use segments because we know we don't need to extract anything in the
+		// end segment placeholder
 		for (Segment seg : segments.values())
 		{
 			seg.extractTexts(texts);
@@ -227,7 +323,8 @@ public class DataBlock
 		{
 			System.out.println("Segment - " + id);
 		}
-		
+
+		// Don't need to write anything for the end of the segment
 		for (Entry<String, Segment> segEntry : segments.entrySet())
 		{
 			BankAddress segAddress = allocatedIndexes.getThrow(segEntry.getKey());

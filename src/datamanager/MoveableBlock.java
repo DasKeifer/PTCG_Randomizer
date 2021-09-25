@@ -52,7 +52,7 @@ public class MoveableBlock extends BlockAllocData
 	
 	public SortedSet<BankPreference> getAllowableBankPreferences()
 	{
-		SortedSet<BankPreference> copy = new TreeSet<>();
+		SortedSet<BankPreference> copy = new TreeSet<>(BankPreference.BASIC_SORTER);
 		for (BankPreference pref : allowableBankPreferences)
 		{
 			copy.add(new BankPreference(pref));
@@ -80,7 +80,7 @@ public class MoveableBlock extends BlockAllocData
 	// Package
 	byte popNextUnattemptedAllowableBank()
 	{
-		if (!isUnattemptedAllowableBanksEmpty())
+		if (isUnattemptedAllowableBanksEmpty())
 		{
 			return -1;
 		}
@@ -91,7 +91,6 @@ public class MoveableBlock extends BlockAllocData
 		
 		// Remove it from unattempted and update the preference
 		removeUnattemptedBank(prefId);
-		pref.start++;
 		if (pref.isEmpty())
 		{
 			unattemptedAllowableBankPreferences.remove(pref);
@@ -104,6 +103,10 @@ public class MoveableBlock extends BlockAllocData
 	// Package
 	byte getNextUnatemptedAllowableBankPriority()
 	{
+		if (unattemptedAllowableBankPreferences.isEmpty())
+		{
+			return Byte.MAX_VALUE;
+		}
 		return unattemptedAllowableBankPreferences.first().priority;
 	}
 	
@@ -119,7 +122,7 @@ public class MoveableBlock extends BlockAllocData
 			{
 				// We always start with the first one in the range so that makes things easier since we don't have to worry about splitting banks
 				iter.remove();
-				currPref.start = bank;
+				currPref.start = (byte) (bank + 1);
 				if (!currPref.isEmpty())
 				{
 					modified.add(currPref);

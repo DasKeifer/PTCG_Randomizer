@@ -31,12 +31,12 @@ public class Segment
 		placeholderInstructs.add(instruct);
 	}
 	
-	public int getWorstCaseSize(BankAddress segmentAddress, AllocatedIndexes allocatedIndexes)
+	public int getWorstCaseSize(BankAddress segmentAddress, AllocatedIndexes allocatedIndexes, AllocatedIndexes tempIndexes)
 	{
 		BankAddress instructAddr = new BankAddress(segmentAddress);
 		for (Instruction item : data)
 		{
-			instructAddr.addressInBank += item.getWorstCaseSize(instructAddr, allocatedIndexes);
+			instructAddr.addressInBank += item.getWorstCaseSize(instructAddr, allocatedIndexes, tempIndexes);
 		}
 		return instructAddr.addressInBank - segmentAddress.addressInBank;
 	}

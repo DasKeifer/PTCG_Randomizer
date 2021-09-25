@@ -19,7 +19,7 @@ public abstract class FixedLengthInstruct extends Instruction
 	}
 
 	@Override
-	public int getWorstCaseSize(BankAddress unused1, AllocatedIndexes unused2)
+	public int getWorstCaseSize(BankAddress unused1, AllocatedIndexes unused2, AllocatedIndexes unused3)
 	{
 		return getSize();
 	}

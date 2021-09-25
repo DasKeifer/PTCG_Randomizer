@@ -9,6 +9,8 @@ public class ReplacementBlock extends FixedBlock
 {
 	int replaceLength;
 	
+	// TODO: Internally pad datablock with nops as part of preparing for alloc? That would make sense to me
+	
 	// TODO: Add optional integrity checking surrounding area and replace
 	// TODO: only allow fixed length data blocks to not have a replace length
 	
