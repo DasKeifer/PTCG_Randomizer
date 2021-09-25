@@ -23,6 +23,7 @@ public class ReplacementBlock extends FixedBlock
 	}
 	
 	// TODO: add a way to get the end of the fixed block to skip the nops?
+	boolean debug = false;
 	@Override
 	public void writeData(byte[] bytes, AllocatedIndexes allocatedIndexes)
 	{
@@ -40,6 +41,16 @@ public class ReplacementBlock extends FixedBlock
 		ByteUtils.setBytes(bytes, globalAddress, replaceLength, Nop.NOP_VALUE);
 		
 		super.writeData(bytes, allocatedIndexes);
-		
+
+//		debug = getId().contains("MoreEffect");
+		if (debug)
+		{
+			System.out.println("HCE - " + getId());
+			int address = RomUtils.convertToGlobalAddress(getFixedAddress().bank, getFixedAddress().addressInBank);
+			for (int i = address; i < address + replaceLength; i++)
+			{
+				System.out.println(String.format("0x%x - 0x%x", i, bytes[i]));
+			}
+		}
 	}
 }

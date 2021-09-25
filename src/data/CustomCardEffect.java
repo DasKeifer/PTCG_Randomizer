@@ -8,6 +8,7 @@ import compiler.DataBlock;
 import compiler.referenceInstructs.BlockBankLoadedAddress;
 import compiler.referenceInstructs.RawBytes;
 import datamanager.AllocatedIndexes;
+import datamanager.BankAddress;
 import datamanager.BankPreference;
 import datamanager.MoveableBlock;
 import datamanager.ReplacementBlock;
@@ -15,6 +16,7 @@ import datamanager.UnconstrainedMoveBlock;
 import constants.DuelConstants.EffectCommandTypes;
 import rom.Blocks;
 import util.ByteUtils;
+import util.RomUtils;
 
 public class CustomCardEffect extends CardEffect
 {
@@ -71,7 +73,7 @@ public class CustomCardEffect extends CardEffect
 		* We add an empty block because the replacement block will handle placing in nops for us to 
 		* get it to the correct size
 		*/
-		DataBlock removeSeg = new DataBlock("MoreEffectBanksTweak_removeSeg");
+		DataBlock removeSeg = new DataBlock("MoreEffectBanksTweak_removeSeg", "nop $5"); // TODO: Add as auto optimization for fixed blocks
 		blocks.addFixedBlock(new ReplacementBlock(0x300d, removeSeg, 5));
 		
 		/* replace
@@ -88,8 +90,16 @@ public class CustomCardEffect extends CardEffect
 				"cp c",
 				"jr z, .default_bank",
 				"sub a, $80",
+				"push af", // Store the flags
 				"cp c",
 				"jr z, .other_bank",
+				// If the subtract carried, then it was not one off our custom command
+				// pointers, so we skip passed one of the inc hl. Otherwise it was
+				// one of the custom pointers so we need to increment 3 times
+				"pop af", // Get the flags back and see if it was a carry
+				"jr c, .inc_hl_twice",	
+				"inc hl",
+			".inc_hl_twice",
 				"inc hl",
 				"inc hl",
 				// Normally we would jump back to where we cut from but that just immediately
@@ -102,6 +112,7 @@ public class CustomCardEffect extends CardEffect
 				"jr .loadBank",
 
 			".other_bank",
+				"pop af", // pop extra push of stack to support our longer pointers
 				"ld a, [hl]",
 				"inc hl",
 				// flow through to loadbank
@@ -182,6 +193,7 @@ public class CustomCardEffect extends CardEffect
 	@Override
 	public void writeEffectPointer(byte[] moveBytes, int startIndex, AllocatedIndexes allocIndexes)
 	{
-		ByteUtils.writeAsShort(allocIndexes.getThrow(effectCommand.getId()).addressInBank, moveBytes, startIndex);
+		BankAddress pointerAddress = allocIndexes.getThrow(effectCommand.getId());
+		ByteUtils.writeAsShort(RomUtils.convertFromBankOffsetToLoadedOffset(pointerAddress.bank, pointerAddress.addressInBank), moveBytes, startIndex);
 	}
 }

@@ -173,7 +173,7 @@ public abstract class JumpCallCommon extends Instruction
 		return 3;
 	}
 	
-	protected boolean isFarJpCall(BankAddress instructAddress, BankAddress toGoTo)
+	protected static boolean isFarJpCall(BankAddress instructAddress, BankAddress toGoTo)
 	{
 		// If either bank is unassigned, assume the worst
 		if (instructAddress.bank == BankAddress.UNASSIGNED_BANK || toGoTo.bank == BankAddress.UNASSIGNED_BANK)
@@ -182,7 +182,7 @@ public abstract class JumpCallCommon extends Instruction
 		}
 		
 		// If its assigned a specific address and its in the same bank or its in the home bank
-		if (isInBankOrHomeBank(addressToGoTo.bank, instructAddress.bank))
+		if (isInBankOrHomeBank(instructAddress.bank, toGoTo.bank))
 		{
 			return false;
 		}

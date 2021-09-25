@@ -80,6 +80,7 @@ public class Texts
 		return (short) textMap.size();
 	}
 	
+	boolean debug = false;
 	public void convertAndAddBlocks(Blocks blocks)
 	{
 		// Write a null pointer to start because thats how it was in the original rom
@@ -113,6 +114,12 @@ public class Texts
 			String textLabel = "internal_romText" + textId;
 			byte[] stringBytes = getAtId(textId).getBytes();
 			textPtrs.appendInstruction(new BlockGlobalAddress(textLabel, RomConstants.TEXT_POINTER_OFFSET));
+			
+			debug = getAtId(textId).toLowerCase().contains("abra");
+			if (debug)
+			{
+				System.out.println(String.format("RomText - 0x%x - ", textId) + getAtId(textId));
+			}
 			
 			// Create the data block from the string bytes and add the trailing null and then add the block for it
 			DataBlock text = new DataBlock(textLabel, new RawBytes(stringBytes, textTerminator));

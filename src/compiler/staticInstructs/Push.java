@@ -2,14 +2,14 @@ package compiler.staticInstructs;
 
 import compiler.CompilerUtils;
 import compiler.StaticInstruction;
-import compiler.CompilerConstants.RegisterPair;
+import compiler.CompilerConstants.PushPopRegisterPair;
 
 public class Push extends StaticInstruction
 {
 	public static final int SIZE = 1;
-	RegisterPair pair;
+	PushPopRegisterPair pair;
 
-	public Push(RegisterPair pair)
+	public Push(PushPopRegisterPair pair)
 	{
 		super(SIZE); // Size
 		this.pair = pair;
@@ -19,16 +19,16 @@ public class Push extends StaticInstruction
 	{		
 		if (args.length != 1)
 		{
-			throw new IllegalArgumentException("Push only supports (RegisterPair): Given " + args.toString());
+			throw new IllegalArgumentException("Push only supports (PushPopRegisterPair): Given " + args.toString());
 		}
 		
 		try
 		{
-			return new Push(CompilerUtils.parseRegisterPairArg(args[0]));
+			return new Push(CompilerUtils.parsePushPopRegisterPairArg(args[0]));
 		}
 		catch (IllegalArgumentException iae)
 		{
-			throw new IllegalArgumentException("Push only supports (RegisterPair): " + iae.getMessage());
+			throw new IllegalArgumentException("Push only supports (PushPopRegisterPair): " + iae.getMessage());
 		}
 	}
 	

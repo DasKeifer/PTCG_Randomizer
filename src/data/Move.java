@@ -299,6 +299,7 @@ public class Move
 		}
 	}
 
+	boolean debug = false;
 	public int writeData(byte[] moveBytes, int startIndex, AllocatedIndexes allocIndexes) 
 	{
 		int index = startIndex;
@@ -318,7 +319,13 @@ public class Move
 		moveBytes[index++] = damage;
 		moveBytes[index++] = category.getValue();
 		
+		
 		effect.writeEffectPointer(moveBytes, index, allocIndexes);
+		debug = name.contains("Call for");
+		if (debug)
+		{
+			System.out.println("Move - " + name + " - " + description + " - EffectPtr - " + String.format("0x%x%x", moveBytes[index], moveBytes[index+1]));
+		}
 		index += 2;
 		
 		moveBytes[index++] = MoveEffect1.storeAsByte(effect1);

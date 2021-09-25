@@ -6,7 +6,6 @@ import java.util.Arrays;
 import compiler.CompilerUtils;
 import datamanager.AllocatedIndexes;
 import datamanager.BankAddress;
-import util.RomUtils;
 import compiler.CompilerConstants.InstructionConditions;
 
 public class Jump extends JumpCallCommon
@@ -15,18 +14,14 @@ public class Jump extends JumpCallCommon
 	private static final byte CONDITIONED_INSTRUCT = (byte) 0xC2;
 	private static final byte FAR_INSTRUCT_RST_VAL = 0x30;
 	
-	protected boolean isLocalLabel;
-	
 	public Jump(String labelToGoTo, InstructionConditions conditions) 
 	{
 		super(labelToGoTo, conditions, CONDITIONLESS_INSTRUCT, CONDITIONED_INSTRUCT, FAR_INSTRUCT_RST_VAL);
-		isLocalLabel = false;
 	}
 	
 	public Jump(int addressToGoTo, InstructionConditions conditions) 
 	{
 		super(addressToGoTo, conditions, CONDITIONLESS_INSTRUCT, CONDITIONED_INSTRUCT, FAR_INSTRUCT_RST_VAL);
-		isLocalLabel = false;
 	}
 	
 	public static Jump createJr(String[] args, String rootSegment)
@@ -74,28 +69,21 @@ public class Jump extends JumpCallCommon
 	public int getWorstCaseSize(BankAddress instructAddress, AllocatedIndexes allocatedIndexes, AllocatedIndexes tempIndexes)
 	{
 		// TODO: Need to make sure this handles unassigned values
-		// Is it a JR or a JP?
-		if (isLocalLabel)
+		// If its a JR reutn that size. Otherwise use the default sizing for local, non JR or
+		// a far jump
+		BankAddress addressToGoTo = getAddressToGoTo(allocatedIndexes, tempIndexes);
+		if (canJr(instructAddress, addressToGoTo))
 		{
-			BankAddress addressToGoTo = getAddressToGoTo(allocatedIndexes, tempIndexes);
-			if (canJr(RomUtils.convertToGlobalAddress(instructAddress.bank, instructAddress.addressInBank), 
-					RomUtils.convertToGlobalAddress(addressToGoTo.bank, addressToGoTo.addressInBank)))
-			{
-				return 2;
-			}
-			return 3;
+			return 2;
 		}
-		// Is it a JP or a farjump? Use the parent class implementation
-		else
-		{
-			return super.getWorstCaseSize(instructAddress, allocatedIndexes, tempIndexes);
-		}
+		
+		return super.getWorstCaseSize(instructAddress, allocatedIndexes, tempIndexes);
 	}
 	
-	private boolean canJr(int instAddress, int addressToGoTo)
+	private static boolean canJr(BankAddress instAddress, BankAddress addressToGoTo)
 	{
-		// If its not local or we don't have a link yet, we can't JR
-		if (!isLocalLabel || addressToGoTo == CompilerUtils.UNASSIGNED_ADDRESS)
+		// If we don't have full addresses we can't tell if we can jump or not
+		if (!instAddress.isFullAddress() || !addressToGoTo.isFullAddress())
 		{
 			return false;
 		}
@@ -113,43 +101,34 @@ public class Jump extends JumpCallCommon
 		return true;
 	}
 	
-	private int getJrValue(int instAddress, int addressToGoTo)
+	private static int getJrValue(BankAddress instAddress, BankAddress addressToGoTo)
 	{
-		if (addressToGoTo == CompilerUtils.UNASSIGNED_ADDRESS || addressToGoTo == CompilerUtils.UNASSIGNED_LOCAL_ADDRESS)
+		if (instAddress.bank != addressToGoTo.bank)
 		{
 			return Integer.MAX_VALUE;
 		}
 		
 		// Minus 2 because its relative to the end of the jump
 		// instruction (i.e. we jump less far) and we assume JR for this
-		return addressToGoTo - instAddress - 2;
+		return addressToGoTo.addressInBank - instAddress.addressInBank - 2;
 	}
 
 	@Override
 	public int writeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
 	{		
+		BankAddress bankAddressToWriteAt = new BankAddress(addressToWriteAt);
 		BankAddress addressToGoTo = getAddressToGoTo(allocatedIndexes, null);
 		if (!addressToGoTo.isFullAddress())
 		{
 			throw new IllegalAccessError("TODO");
 		}
 		
-		if (isLocalLabel)
+		// See if we want to JR
+		if (canJr(bankAddressToWriteAt, addressToGoTo))
 		{
-			// See if we want to JR
-			int globalToGoToAddress = RomUtils.convertToGlobalAddress(addressToGoTo.bank, addressToGoTo.addressInBank);
-			if (canJr(addressToWriteAt, globalToGoToAddress))
-			{
-				return writeJr(bytes, addressToWriteAt, (byte) getJrValue(addressToWriteAt, globalToGoToAddress));
-			}
-			// Otherwise its a normal jump
-			else
-			{
-				return writeJpCall(bytes, addressToWriteAt, addressToGoTo);
-			}
+			return writeJr(bytes, addressToWriteAt, (byte) getJrValue(bankAddressToWriteAt, addressToGoTo));
 		}
-		// If its not a local label, just do the parent - don't worry about trying
-		// to do JR between blocks
+		// Otherwise its a normal jump or farjump
 		else
 		{
 			return super.writeBytes(bytes, addressToWriteAt, allocatedIndexes);
