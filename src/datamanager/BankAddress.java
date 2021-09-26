@@ -2,6 +2,7 @@ package datamanager;
 
 import util.RomUtils;
 
+// TODO: move?
 public class BankAddress 
 {
 	public static final byte UNASSIGNED_BANK = -1;
@@ -66,5 +67,9 @@ public class BankAddress
 		return bank != UNASSIGNED_BANK && addressInBank != UNASSIGNED_ADDRESS;
 	}
 
-	// TODO: tostring
+	@Override
+	public String toString()
+	{
+		return String.format("0x%x:%4x", bank, addressInBank);
+	}
 }

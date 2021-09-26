@@ -68,8 +68,7 @@ public class Jump extends JumpCallCommon
 	@Override
 	public int getWorstCaseSize(BankAddress instructAddress, AllocatedIndexes allocatedIndexes, AllocatedIndexes tempIndexes)
 	{
-		// TODO: Need to make sure this handles unassigned values
-		// If its a JR reutn that size. Otherwise use the default sizing for local, non JR or
+		// If its a JR return that size. Otherwise use the default sizing for local, non JR or
 		// a far jump
 		BankAddress addressToGoTo = getAddressToGoTo(allocatedIndexes, tempIndexes);
 		if (canJr(instructAddress, addressToGoTo))
@@ -120,7 +119,11 @@ public class Jump extends JumpCallCommon
 		BankAddress addressToGoTo = getAddressToGoTo(allocatedIndexes, null);
 		if (!addressToGoTo.isFullAddress())
 		{
-			throw new IllegalAccessError("TODO");
+			if (labelToGoTo != null)
+			{
+				throw new IllegalAccessError("Jump tried to write address for " + labelToGoTo + " but it is not fully assigned: " + addressToGoTo.toString());
+			}
+			throw new IllegalAccessError("Jump tried to write specific address but it is not fully assigned: " + addressToGoTo.toString());
 		}
 		
 		// See if we want to JR

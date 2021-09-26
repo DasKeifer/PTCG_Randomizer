@@ -2,6 +2,7 @@ package datamanager;
 
 import java.util.HashMap;
 
+// TODO rename
 public class AllocatedIndexes extends HashMap<String, BankAddress>
 {
 	private static final long serialVersionUID = 42L;
@@ -30,7 +31,7 @@ public class AllocatedIndexes extends HashMap<String, BankAddress>
 		BankAddress val = get(segmentId);
 		if (val == null)
 		{
-			throw new IllegalArgumentException("TODO");
+			throw new IllegalArgumentException("AllocatedIndexes.getThrow failed to find BankAddress at " + segmentId);
 		}
 		return val;
 	}

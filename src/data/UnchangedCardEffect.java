@@ -25,4 +25,10 @@ public class UnchangedCardEffect extends CardEffect
 	{
 		ByteUtils.writeAsShort(pointer, moveBytes, startIndex);
 	}
+
+	@Override
+	public String toString() 
+	{
+		return String.format("0x%x", pointer);
+	}
 }

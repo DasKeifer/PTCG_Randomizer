@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 import compiler.CompilerUtils;
 import compiler.DataBlock;
 import compiler.referenceInstructs.BlockBankLoadedAddress;
-import compiler.referenceInstructs.RawBytes;
+import compiler.staticInstructs.RawBytes;
 import datamanager.AllocatedIndexes;
 import datamanager.BankAddress;
 import datamanager.BankPreference;
@@ -59,14 +59,10 @@ public class CustomCardEffect extends CardEffect
 		return null;
 	}
 	
+	// TODO: Add tweak to allow for effect commands in banks other than 6?
+	
 	public static void addTweakToAllowEffectsInMoreBanks(Blocks blocks)
 	{
-		// Check matching command function starts at 0x2ffe 
-		
-		// DataBlock replacement = new DataBlock("MoreEffectBanksTweak", "jp DetermineEffectBank");
-		// We replace 5 to break evenly over the code and this way we can use a farjump if needed
-		// blocks.addFixedBlock(new FixedBlock(0x2ffe + 0x12, replacement, 5)); // TODO: find address
-		
 		/* Skip over 
 		ld a, BANK("Effect Functions")		(2 bytes)
 		ld [wEffectFunctionsBank], a 		(3 bytes)
@@ -129,20 +125,6 @@ public class CustomCardEffect extends CardEffect
 		// the existing instructions
 		DataBlock callLogicSeg = new DataBlock("MoreEffectBanksTweak_jumpToLogicSeg", "jp " + logicSeg.getId());
 		blocks.addFixedBlock(new ReplacementBlock(0x3016, callLogicSeg, 5));
-		
-//		DataBlock remote = new DataBlock("DetermineEffectBank",
-//				"ld a, [hli]", // Load the first byte of the the effect pointer
-//				"sub a, $80", // subtract 0x80 from it to determine if its our custom pointer logic or default logic
-//				"jr nc, .bank_in_a", // if we didn't carry, its our special logic and with how we set it up, a is already the right bank
-//				"ld a, $b", // If we did carry, it was the default logic so we load bank b in
-//			".bank_in_a",
-//				"ld [wce22], a", // load the bank into the var which is used later when searching for effect functions
-//				// Jump back to where we cut from
-//				"jp " + CompilerUtils.formSubsegmentName(DataBlock.END_OF_DATA_BLOCK_SUBSEG_LABEL, "DetermineEffectBank") 
-//				);
-//		// Highly prefer this to be local to avoid bank switching overhead but we can tolerate it
-//		// so we make it unconstrained
-//		blocks.addMoveableBlock(new UnconstrainedMoveBlock((byte) 0, remote, new BankPreference((byte) 0, (byte) 0, (byte) 1)));
 	}
 	
 	public void addEffectCommand(EffectCommandTypes type, DataBlock function)
@@ -186,7 +168,7 @@ public class CustomCardEffect extends CardEffect
 			}
 			// Append a null at the end so we know its finished
 			effectCommand.appendInstruction(new RawBytes((byte) 0));
-			blocks.addMoveableBlock(new MoveableBlock(priority, effectCommand, new BankPreference((byte) 1, (byte)6, (byte)7))); // TODO: figure out where these can effectively live	
+			blocks.addMoveableBlock(new MoveableBlock(priority, effectCommand, new BankPreference((byte) 1, (byte)6, (byte)7)));
 		}
 	}
 
@@ -195,5 +177,11 @@ public class CustomCardEffect extends CardEffect
 	{
 		BankAddress pointerAddress = allocIndexes.getThrow(effectCommand.getId());
 		ByteUtils.writeAsShort(RomUtils.convertFromBankOffsetToLoadedOffset(pointerAddress.bank, pointerAddress.addressInBank), moveBytes, startIndex);
+	}
+
+	@Override
+	public String toString() 
+	{
+		return effectCommand.getId();
 	}
 }

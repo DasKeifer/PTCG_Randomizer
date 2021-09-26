@@ -210,9 +210,13 @@ public abstract class JumpCallCommon extends Instruction
 	{
 		int writeIdx = addressToWriteAt;
 		BankAddress toGoToAddress = getAddressToGoTo(allocatedIndexes, null);
-		if (!toGoToAddress.isFullAddress())
+		if (!addressToGoTo.isFullAddress())
 		{
-			throw new IllegalAccessError("TODO");
+			if (labelToGoTo != null)
+			{
+				throw new IllegalAccessError("JumpCallCommon tried to write address for " + labelToGoTo + " but it is not fully assigned: " + addressToGoTo.toString());
+			}
+			throw new IllegalAccessError("JumpCallCommon tried to write specific address but it is not fully assigned: " + addressToGoTo.toString());
 		}
 		
 		if (isFarJpCall(new BankAddress(addressToWriteAt), toGoToAddress))

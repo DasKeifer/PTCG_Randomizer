@@ -77,10 +77,10 @@ public class Move
 				compareVal = m1.getEnergyCostString(true, "").compareTo(m2.getEnergyCostString(true, ""));
 			}
 			
-//			if (compareVal == 0)
-//			{
-//				return m1.compare(m2);
-//			}
+			if (compareVal == 0)
+			{
+				return m1.effect.toString().compareTo(m2.effect.toString());
+			}
 			
 			return compareVal;
 	    }
@@ -171,9 +171,8 @@ public class Move
 		builder.append(damage);
 		builder.append("\nDescription: ");
 		builder.append(description.toString());
-		// todo
-//		builder.append("\nEffectPtr: ");
-//		builder.append(effectPtr);
+		builder.append("\nEffectPtr: ");
+		builder.append(effect.toString());
 		builder.append("\nEffectFlags: ");
 		builder.append(effect1);
 		builder.append(", ");

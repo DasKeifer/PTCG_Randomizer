@@ -152,10 +152,7 @@ public class RomText
 		if (formatted.isEmpty())
 		{
 			System.out.println("Could not nicely fit rom text over line breaks - attempting to " +
-					"split words over lines to get it to fit for \"" + text + "\"");
-			
-			// TODO: INFINI LOOP here?
-			
+					"split words over lines to get it to fit for \"" + text + "\"");			
 			
 			// If all else fails, just pack as tight as possible
 			formatted = StringUtils.packFormatText(text,
@@ -338,7 +335,7 @@ public class RomText
 		// that means it displays as two spaces but if its an odd char, it displays as one space. To 
 		// keep the  formatting generic, we add the extra space in for all energies to assume the 
 		// "worst" case
-		// TODO: Could probably be slighlty smarter about this
+		// TODO: Could probably be slightly smarter about this
 		for (CharMapConstants.SpecialSymbol specialSym : CharMapConstants.SpecialSymbol.values())
 		{
 			// First remove in case this is called more than once or something

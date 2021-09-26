@@ -32,9 +32,9 @@ public class BlockBankLoadedAddress extends FixedLengthInstruct
 	public void writeFixedSizeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
 	{
 		BankAddress address = allocatedIndexes.get(addressLabel);
-		if (address == BankAddress.UNASSIGNED)
+		if (!address.isFullAddress())
 		{
-			throw new IllegalAccessError("TODO!");
+			throw new IllegalAccessError("BlockBankLoaded Address tried to write address for " + addressLabel + " but it is not fully assigned: " + address.toString());
 		}
 		
 		if (includeBank)

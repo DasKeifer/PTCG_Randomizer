@@ -28,7 +28,7 @@ public class BankRange
 		return stopExclusive == start;
 	}
 	
-	// TODO: only works for "postive" ranges
+	// TODO: only works for "postive" ranges?
 	public boolean contains(byte bank)
 	{
 		if (start <= bank && stopExclusive > bank)

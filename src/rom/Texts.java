@@ -5,7 +5,7 @@ import java.util.Map;
 
 import compiler.DataBlock;
 import compiler.referenceInstructs.BlockGlobalAddress;
-import compiler.referenceInstructs.RawBytes;
+import compiler.staticInstructs.RawBytes;
 import constants.RomConstants;
 import datamanager.BankPreference;
 import datamanager.ReplacementBlock;

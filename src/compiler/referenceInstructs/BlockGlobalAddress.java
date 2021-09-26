@@ -37,9 +37,9 @@ public class BlockGlobalAddress extends FixedLengthInstruct
 	public void writeFixedSizeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
 	{
 		BankAddress address = allocatedIndexes.getTry(addressLabel);
-		if (address == BankAddress.UNASSIGNED)
+		if (!address.isFullAddress())
 		{
-			throw new IllegalAccessError("TODO!");
+			throw new IllegalAccessError("BlockGlobalAddress tried to write address for " + addressLabel + " but it is not fully assigned: " + address.toString());
 		}
 		
 		ByteUtils.writeLittleEndian(RomUtils.convertToGlobalAddress(address.bank, address.addressInBank) - offset, bytes, addressToWriteAt, SIZE);

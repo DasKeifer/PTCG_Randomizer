@@ -124,7 +124,9 @@ public class AllocatableBank
 			// abort
 			if (!containedInSpace)
 			{
-				throw new RuntimeException("TODO!");
+				throw new RuntimeException(String.format("There was not space from 0x%x to 0x%x in bank 0x%x for FixedBlock %s - "
+						+ "only ReplacementBlocks do not need free space in the bank", block.getFixedAddress().addressInBank, 
+						block.getFixedAddress().addressInBank + block.getWorstCaseSize(allocIndexes), bank, block.getId()));
 			}
 			
 			// If we have a new range to add, do so
@@ -243,22 +245,6 @@ public class AllocatableBank
 		for (MoveableBlock block : priortizedAllocations)
 		{
 			placed = false;
-			
-			// TODO: need to also include segments in here... Also need to do this for fixed blocks.
-			// Need to decide how optimized I want to be with JRs
-			// Idea: Go through and add address to allocIndexes. Then go through again and check length
-			// Against what was done. If changed, redo and keep going until stable. This will catch
-			// the JRs shortening things
-			//
-			// Consider moving function to data block to assign addresses? Inside the block, store
-			// worst case relative sizes first time getting the length. Then when getting the block size, 
-			// temporarily add them using the worst case relative sizes, adjusting them forward as blocks
-			// are found that are shorter. If there is an actual address, then adjust relative to the
-			// address. Otherwise, still adjust relative to the address (-1)? Repeat passing through
-			// checking size until stable. Perhaps use a more negative number so its clear that the
-			// addresses are invalid/temporary ones? Also do checks when writing to ensure valid
-			// addresses for everything? Or do a pass after allocation?
-			
 			allocSize = block.dataBlock.getWorstCaseSize(allocIndexes);
 			for (AddressRange space : spacesLeft)
 			{

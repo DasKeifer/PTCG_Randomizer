@@ -22,7 +22,6 @@ public class DataBlock
 	String rootSegmentName;
 	Segment currSegment;
 	Segment endSegment; // and empty segment so we can refer to with "." + END_OF_BLOCK_LABEL for any datablock
-							// TODO: maybe move to linking logic instead?
 	
 	// Constructor to keep instruction/line less constructors from being ambiguous
 	public DataBlock(String startingSegmentName)
@@ -81,6 +80,11 @@ public class DataBlock
 		parseSource(id, sourceLinesTrimmed);
 	}
 	
+	public DataBlock(DataBlock dataBlock) 
+	{
+		// TODO Auto-generated constructor stub
+	}
+
 	private void parseSource(String startingSegmentName, List<String> sourceLines)
 	{
 		segments.clear();

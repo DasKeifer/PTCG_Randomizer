@@ -21,7 +21,7 @@ public abstract class Card
 	public static final Comparator<Card> ID_SORTER = new IdSorter();
 	public static final Comparator<Card> ROM_SORTER = new RomSorter();
 	
-	// TODO encapsulate these or make public
+	// TODO encapsulate these or make public?
 	public CardType type;
 	public CardName name;
 	short gfx; // Card art
