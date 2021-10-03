@@ -1,6 +1,7 @@
 package datamanager;
 
-import compiler.DataBlock;
+import java.util.List;
+
 import compiler.staticInstructs.Nop;
 import util.ByteUtils;
 import util.RomUtils;
@@ -16,22 +17,49 @@ public class ReplacementBlock extends FixedBlock
 	
 	// For write overs with unpredictable sizes including "minimal jumps" for extending/slicing existing code
 	// Auto fill with nop (0x00) after
-	public ReplacementBlock(int startAddress, DataBlock replaceWith, int replaceLength)
+	public ReplacementBlock(String startingSegmentName, int fixedStartAddress)
 	{
-		super(startAddress, replaceWith);
+		super(startingSegmentName, fixedStartAddress);
+		setCommonData(-1);
+	}
+	
+	public ReplacementBlock(String startingSegmentName, int fixedStartAddress, int replaceLength)
+	{
+		super(startingSegmentName, fixedStartAddress);
+		setCommonData(replaceLength);
+	}
+	
+	public ReplacementBlock(List<String> sourceLines, int fixedStartAddress, int replaceLength)
+	{
+		super(sourceLines, fixedStartAddress);
+		setCommonData(replaceLength);
+	}
+	
+	private void setCommonData(int replaceLength)
+	{
 		this.replaceLength = replaceLength;
+	}
+	
+	public void setReplaceLength(int length)
+	{
+		replaceLength = length;
 	}
 	
 	// TODO: add a way to get the end of the fixed block to skip the nops?
 	boolean debug = false;
 	@Override
-	public void writeData(byte[] bytes, AllocatedIndexes allocatedIndexes)
+	public void writeBytes(byte[] bytes, AllocatedIndexes allocatedIndexes)
 	{
+		if (replaceLength <= 0)
+		{
+			throw new IllegalArgumentException("ReplacementBlock replaceLength is invalid (" + replaceLength + ") - it must be greater than 0");
+		}
+		
 		// Preliminary safety check. Need to handle non-continuous write detection
 		// TODO: More Safety Check?
-		if (dataBlock.getWorstCaseSize(allocatedIndexes) > replaceLength)
+		if (getWorstCaseSize(allocatedIndexes) > replaceLength)
 		{
-			throw new IllegalArgumentException("Data size (" + dataBlock.getWorstCaseSize(allocatedIndexes) + ") is larger than allowed size (" + replaceLength + ")");
+			throw new IllegalArgumentException("Data size (" + getWorstCaseSize(allocatedIndexes) + ") is larger than allowed size (" + replaceLength + ")");
 		}
 			
 		BankAddress bankAddress = allocatedIndexes.getThrow(getId());
@@ -40,7 +68,7 @@ public class ReplacementBlock extends FixedBlock
 		// TODO: Optimize? Write all extra bytes instead? Think this current way was leftover from previous approach
 		ByteUtils.setBytes(bytes, globalAddress, replaceLength, Nop.NOP_VALUE);
 		
-		super.writeData(bytes, allocatedIndexes);
+		super.writeBytes(bytes, allocatedIndexes);
 
 //		debug = getId().contains("MoreEffect");
 		if (debug)

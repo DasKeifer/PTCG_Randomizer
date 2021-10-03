@@ -4,6 +4,7 @@ package datamanager;
 import compiler.DataBlock;
 import util.ByteUtils;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -11,19 +12,67 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class MoveableBlock extends BlockAllocData
+public class MoveableBlock extends DataBlock
 {
 	public static final Comparator<MoveableBlock> PRIORITY_SORTER = new PrioritySorter();
 	
 	private SortedSet<BankPreference> allowableBankPreferences;
 	private SortedSet<BankPreference> unattemptedAllowableBankPreferences;
-	
-	public MoveableBlock(byte priority, DataBlock toPlaceInBank, BankPreference... prefs)
+
+	protected MoveableBlock(String startingSegmentName)
 	{
-		super(toPlaceInBank);
-		
+		this(startingSegmentName, new ArrayList<>());
+	}
+	
+	public MoveableBlock(String startingSegmentName, byte priority, byte startBank, byte stopBank)
+	{
+		this(startingSegmentName);
+		addAllowableBankRange(priority, startBank, stopBank);
+	}
+	
+	public MoveableBlock(String startingSegmentName, BankPreference pref)
+	{
+		this(startingSegmentName, prefAsList(pref));
+	}
+	
+	public MoveableBlock(String startingSegmentName, List<BankPreference> prefs)
+	{
+		super(startingSegmentName);
+		setCommonData(prefs);
+	}
+	
+	protected MoveableBlock(List<String> sourceLines)
+	{
+		this(sourceLines, new ArrayList<>());
+	}
+	
+	public MoveableBlock(List<String> sourceLines, byte priority, byte startBank, byte stopBank)
+	{
+		this(sourceLines);
+		addAllowableBankRange(priority, startBank, stopBank);
+	}
+	
+	public MoveableBlock(List<String> sourceLines, BankPreference pref)
+	{
+		this(sourceLines, prefAsList(pref));
+	}
+	
+	public MoveableBlock(List<String> sourceLines, List<BankPreference> prefs)
+	{
+		super(sourceLines);
+		setCommonData(prefs);
+	}
+	
+	private static ArrayList<BankPreference> prefAsList(BankPreference pref)
+	{
+		ArrayList<BankPreference> prefAsList = new ArrayList<>();
+		prefAsList.add(pref);
+		return prefAsList;
+	}
+	
+	private void setCommonData(List<BankPreference> prefs)
+	{		
 		allowableBankPreferences = new TreeSet<>(BankPreference.BASIC_SORTER);
-		
 		for (BankPreference pref : prefs)
 		{
 			addAllowableBankRange(pref);
@@ -58,11 +107,6 @@ public class MoveableBlock extends BlockAllocData
 			copy.add(new BankPreference(pref));
 		}
 		return copy;
-	}
-	
-	public int getCurrentWorstCaseSize(AllocatedIndexes allocatedIndexes)
-	{
-		return dataBlock.getWorstCaseSize(allocatedIndexes);
 	}
 	
 	// Package
@@ -147,7 +191,7 @@ public class MoveableBlock extends BlockAllocData
 				// Give larger blocks higher priority - We have to do it agnostic to where things are
 				// allocated but that is okay as this does not need to be 100% accurate
 				final AllocatedIndexes emptyAllocs = new AllocatedIndexes();
-				compareVal = Integer.compare(a1.getCurrentWorstCaseSize(emptyAllocs), a2.getCurrentWorstCaseSize(emptyAllocs));
+				compareVal = Integer.compare(a1.getWorstCaseSize(emptyAllocs), a2.getWorstCaseSize(emptyAllocs));
 			}
 			
 			if (compareVal == 0)

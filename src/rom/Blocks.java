@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import compiler.DataBlock;
 import compiler.Segment;
 import datamanager.AllocatedIndexes;
-import datamanager.BlockAllocData;
 import datamanager.FixedBlock;
 import datamanager.MoveableBlock;
 
@@ -17,7 +17,7 @@ public class Blocks
 	// BlockId, Block
 	// This can be used for determining references of one block in another and ensures
 	// each ID is unique
-	private Map<String, BlockAllocData> blocksById;
+	private Map<String, DataBlock> blocksById;
 	List<FixedBlock> replacementBlocks;
 	List<MoveableBlock> blocksToPlace;
 	
@@ -44,10 +44,10 @@ public class Blocks
 		blocksToPlace.add(block);
 	}
 	
-	private void addBlockById(BlockAllocData block)
+	private void addBlockById(DataBlock block)
 	{
 		// See if it already had an entry that is not this instance of the block
-		BlockAllocData existing = blocksById.put(block.getId(), block);
+		DataBlock existing = blocksById.put(block.getId(), block);
 		if (existing != null && existing != block)
 		{
 			throw new IllegalArgumentException("Duplicate block ID detected! There must be only " +
@@ -66,7 +66,7 @@ public class Blocks
 
 	public void extractTexts(Texts texts) 
 	{
-		for (BlockAllocData block : blocksById.values())
+		for (DataBlock block : blocksById.values())
 		{
 			block.extractTexts(texts);
 		}
@@ -80,7 +80,7 @@ public class Blocks
 	public List<MoveableBlock> getAllBlocksToAllocate()
 	{
 		List<MoveableBlock> temp = new LinkedList<>();
-		for (BlockAllocData block : blocksById.values())
+		for (DataBlock block : blocksById.values())
 		{
 			if (block instanceof MoveableBlock)
 			{
@@ -93,9 +93,9 @@ public class Blocks
 	
 	public void writeData(byte[] bytes, AllocatedIndexes allocatedIndexes)
 	{
-		for (BlockAllocData block : blocksById.values())
+		for (DataBlock block : blocksById.values())
 		{
-			block.writeData(bytes, allocatedIndexes);
+			block.writeBytes(bytes, allocatedIndexes);
 		}
 	}
 }

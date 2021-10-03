@@ -24,52 +24,56 @@ class AddressRange
 	
 	public boolean contains(AddressRange doesContain)
 	{
-		// TODO: test this
 		return start <= doesContain.start && stopExclusive >= doesContain.stopExclusive;
 	}
 	
 	public boolean overlaps(AddressRange toCheck)
 	{
-		// TODO: test this
-		
 		// If it contains the start address or the last address, then it must overlap
 		// Also overlaps it is contained entirely in the toCheck range
-		return contains(toCheck.start) || contains(toCheck.stopExclusive - 1) ||
-				(start > toCheck.start && stopExclusive < toCheck.stopExclusive);
+		return contains(toCheck.start) || contains(toCheck.stopExclusive - 1) || // -1 on end since its not inclusive
+				toCheck.contains(this);
 	}
 	
 	public AddressRange removeOverlap(AddressRange toRemove)
 	{
-		// TODO: test this - think its wrong - use above added methods
-		if (start < toRemove.start)
+		if (overlaps(toRemove))
 		{
-			// start earlier stop later - remove splits this
-			if (stopExclusive > toRemove.stopExclusive)
+			// If this whole space is overlapped, set this to empty with invalid values
+			if (toRemove.contains(this))
 			{
-				stopExclusive = toRemove.start;
-				return new AddressRange(toRemove.stopExclusive, stopExclusive);
+				start = -1;
+				stopExclusive = -1;
 			}
-			// start earlier, stop in between - partial overlap
-			else if (stopExclusive < toRemove.stopExclusive)
+			// if the space to remove its entirely contained, remove it from this
+			// range by splitting it. We return the latter of the two new ranges
+			if (contains(toRemove))
 			{
-				stopExclusive = toRemove.start;
+				// Split this range up
+				AddressRange newRange = new AddressRange(toRemove.stopExclusive, stopExclusive);
+				stopExclusive = toRemove.start; 
+				return newRange;
 			}
-			// else: start earlier, stop early (or equal to) - no overlap
-		}
-		else if (start < toRemove.stopExclusive)
-		{
-			// start in between, stop in between - completely covered
-			if (stopExclusive < toRemove.stopExclusive)
+			// else shorten this up based on the removed portion
+			else if (contains(toRemove.start))
 			{
-				stopExclusive = start;
+				// If it contains the start, then the end must go past the end of this
+				// one since we already checked for fully containing the time. Just
+				// set the stop the the other's start
+				stopExclusive = toRemove.start; 
 			}
-			// start in between, stop later - partial overlap
-			else
+			// else it contains the stop
+			else 
 			{
+				// If it contains the stop, then the start must be before the start of this
+				// one since we already checked for fully containing the time. Just
+				// set the start the the other's stop
+				// We do -1 since the stop of what to remove is exclusive
 				start = toRemove.stopExclusive;
 			}
 		}
-		// else: start later - no overlap
+		
+		// No additional range added
 		return null;
 	}
 	

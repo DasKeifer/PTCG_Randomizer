@@ -1,16 +1,29 @@
 package datamanager;
 
 
+import java.util.List;
+
 import compiler.DataBlock;
 
-public class FixedBlock extends BlockAllocData
+public class FixedBlock extends DataBlock
 {
 	private BankAddress address;
 	// The remote block (if needed), should be referred to in the DataBlock so no need to track it here
 	
-	public FixedBlock(int fixedStartAddress, DataBlock data)
+	public FixedBlock(String startingSegmentName, int fixedStartAddress)
 	{
-		super(data);
+		super(startingSegmentName);
+		setCommonData(fixedStartAddress);
+	}
+	
+	public FixedBlock(List<String> sourceLines, int fixedStartAddress)
+	{
+		super(sourceLines);
+		setCommonData(fixedStartAddress);
+	}
+	
+	private void setCommonData(int fixedStartAddress)
+	{
 		address = new BankAddress(fixedStartAddress);
 	}
 
@@ -20,7 +33,7 @@ public class FixedBlock extends BlockAllocData
 	}
 	
 	@Override
-	public void writeData(byte[] bytes, AllocatedIndexes allocatedIndexes)
+	public void writeBytes(byte[] bytes, AllocatedIndexes allocatedIndexes)
 	{	
 		BankAddress bankAddress = allocatedIndexes.getThrow(getId());
 		if (!bankAddress.equals(address))
@@ -28,11 +41,6 @@ public class FixedBlock extends BlockAllocData
 			throw new IllegalArgumentException("Passed address for FixedBlock (" + bankAddress + ") does" +
 					"not match the fixed address (" + address + ")!"); 
 		}
-		dataBlock.writeBytes(bytes, allocatedIndexes);
-	}
-
-	public int getWorstCaseSize(AllocatedIndexes allocatedIndexes) 
-	{
-		return dataBlock.getWorstCaseSize(allocatedIndexes);
+		super.writeBytes(bytes, allocatedIndexes);
 	}
 }

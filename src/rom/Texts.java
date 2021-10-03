@@ -3,13 +3,11 @@ package rom;
 import java.util.HashMap;
 import java.util.Map;
 
-import compiler.DataBlock;
 import compiler.referenceInstructs.BlockGlobalAddress;
 import compiler.staticInstructs.RawBytes;
 import constants.RomConstants;
-import datamanager.BankPreference;
+import datamanager.MoveableBlock;
 import datamanager.ReplacementBlock;
-import datamanager.UnconstrainedMoveBlock;
 
 public class Texts 
 {
@@ -84,7 +82,8 @@ public class Texts
 	public void convertAndAddBlocks(Blocks blocks)
 	{
 		// Write a null pointer to start because thats how it was in the original rom
-		DataBlock textPtrs = new DataBlock("internal_textPointers", new RawBytes((byte) 0, (byte) 0, (byte) 0));
+		ReplacementBlock textPtrs = new ReplacementBlock("internal_textPointers", RomConstants.TEXT_POINTERS_LOC);
+		textPtrs.appendInstruction(new RawBytes((byte) 0, (byte) 0, (byte) 0));
 		
 		// Create the rest of the text blocks and pointers
 		// We intentionally do it like this to ensure there are no gaps which would otherwise
@@ -102,8 +101,10 @@ public class Texts
 				if (nullTextLabel.isEmpty())
 				{
 					nullTextLabel = "internal_romTextNull";
-					DataBlock nullText = new DataBlock(nullTextLabel, new RawBytes("NULL TEXT".getBytes(), textTerminator));
-					blocks.addMoveableBlock(new UnconstrainedMoveBlock((byte) 2, nullText, new BankPreference((byte)1, (byte)0xd, (byte)0x1c)));
+					// TODO determine/set actual range - needs to at least be larger than the text pointer offset
+					MoveableBlock nullText = new MoveableBlock(nullTextLabel, (byte)1, (byte)0xd, (byte)0x1c);
+					blocks.addMoveableBlock(nullText);
+					nullText.appendInstruction(new RawBytes("NULL TEXT".getBytes(), textTerminator));
 				}
 				
 				textPtrs.appendInstruction(new BlockGlobalAddress(nullTextLabel, RomConstants.TEXT_POINTER_OFFSET));
@@ -122,12 +123,15 @@ public class Texts
 			}
 			
 			// Create the data block from the string bytes and add the trailing null and then add the block for it
-			DataBlock text = new DataBlock(textLabel, new RawBytes(stringBytes, textTerminator));
-			blocks.addMoveableBlock(new UnconstrainedMoveBlock((byte) 2, text, new BankPreference((byte)1, (byte)0xd, (byte)0x1c)));
+			// TODO determine/set actual range - needs to at least be larger than the text pointer offset
+			MoveableBlock text = new MoveableBlock(textLabel, (byte)1, (byte)0xd, (byte)0x1c);
+			blocks.addMoveableBlock(text);
+			text.appendInstruction(new RawBytes(stringBytes, textTerminator));
 			usedCount++;
 		}
 
 		// Not -1 because we write the 0th id "000000" pointer
-		blocks.addFixedBlock(new ReplacementBlock(RomConstants.TEXT_POINTERS_LOC, textPtrs, textId * RomConstants.TEXT_POINTER_SIZE_IN_BYTES));  
+		// TODO: Make this or something overwrite any partial text that may have been leftover?
+		textPtrs.setReplaceLength(textId * RomConstants.TEXT_POINTER_SIZE_IN_BYTES);  
 	}
 }

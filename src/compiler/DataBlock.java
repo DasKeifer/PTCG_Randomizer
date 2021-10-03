@@ -1,7 +1,6 @@
 package compiler;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,104 +25,66 @@ public class DataBlock
 	// Constructor to keep instruction/line less constructors from being ambiguous
 	public DataBlock(String startingSegmentName)
 	{
-		// The instruction version takes is probably less overhead and its more likely to
-		// be aligned with the manner in which it will be used (i.e instructions added later)
-		this (startingSegmentName, new Instruction[0]);
-	}
-	
-	public DataBlock(String startingSegmentName, Instruction... instructions)
-	{
-		segments = new LinkedHashMap<>();
-		id = startingSegmentName.trim();
-		endSegment = new Segment();
-		
-		newSegment(startingSegmentName);
-		
-		for (Instruction instruct : instructions)
-		{
-			if (instruct instanceof PlaceholderInstruction)
-			{
-				appendPlaceholderInstruction((PlaceholderInstruction) instruct);
-			}
-			else
-			{
-				appendInstruction(instruct);
-			}
-		}
-	}
-
-	public DataBlock(String startingSegmentName, String... source)
-	{
-		this (startingSegmentName, Arrays.asList(source));
-	}
-	
-	// Generic, highest level construct for holding just raw data or a series of functions
-	// Represents one block that we want to place contiguously in the ROM
-	// I.e. replace Code Snippet
-	public DataBlock(String startingSegmentName, List<String> sourceLines)
-	{
-		segments = new LinkedHashMap<>();
-		id = startingSegmentName.trim();
-		parseSource(startingSegmentName, sourceLines);
+		setCommonData(startingSegmentName.trim());
 	}
 	
 	public DataBlock(List<String> sourceLines)
 	{
-		segments = new LinkedHashMap<>();
-
 		List<String> sourceLinesTrimmed = new ArrayList<>(sourceLines);
-		id = CompilerUtils.tryParseSegmentName(sourceLinesTrimmed.remove(0));
+		sourceLinesTrimmed.toArray();
+		String segName = CompilerUtils.tryParseSegmentName(sourceLinesTrimmed.remove(0));
 		if (id == null)
 		{
 			throw new IllegalArgumentException("The first line must be a Segment label (i.e. the segment name followed by a ':'");
 		}
-		parseSource(id, sourceLinesTrimmed);
-	}
-	
-	public DataBlock(DataBlock dataBlock) 
-	{
-		// TODO Auto-generated constructor stub
-	}
+		
+		setCommonData(segName);
 
-	private void parseSource(String startingSegmentName, List<String> sourceLines)
-	{
-		segments.clear();
-		
-		endSegment = new Segment();
-		newSegment(startingSegmentName);
-		
 		for (String line : sourceLines)
 		{
-			// split of the instruction (if there is one)
-			line = line.trim();
-			
-			String segName = CompilerUtils.tryParseSegmentName(line);
-			// If its not null, its a new segment
+			parseLine(line);
+		}
+	}
+	
+	private void setCommonData(String id)
+	{
+		segments = new LinkedHashMap<>();
+		this.id = id;
+		endSegment = new Segment();
+		newSegment(id);
+	}
+	
+	private void parseLine(String line)
+	{
+		// split of the instruction (if there is one)
+		line = line.trim();
+		
+		String segName = CompilerUtils.tryParseSegmentName(line);
+		// If its not null, its a new segment
+		if (segName != null)
+		{
+			newSegment(segName);
+		}
+		else // Otherwise see if its a subsegment
+		{
+			segName = CompilerUtils.tryParseFullSubsegmentName(line, rootSegmentName);
 			if (segName != null)
 			{
-				newSegment(segName);
+				newSubSegment(segName);
 			}
-			else // Otherwise see if its a subsegment
-			{
-				segName = CompilerUtils.tryParseFullSubsegmentName(line, rootSegmentName);
-				if (segName != null)
-				{
-					newSubSegment(segName);
-				}
-			}
+		}
 
-			// If its not a segment, then its a line that will turn into bytes
-			if (segName == null)
+		// If its not a segment, then its a line that will turn into bytes
+		if (segName == null)
+		{
+			// If its a placeholder, we defer filling it out
+			if (CompilerUtils.containsPlaceholder(line) || CompilerUtils.containsImplicitPlaceholder(line, rootSegmentName))
 			{
-				// If its a placeholder, we defer filling it out
-				if (CompilerUtils.containsPlaceholder(line) || CompilerUtils.containsImplicitPlaceholder(line, rootSegmentName))
-				{
-					appendPlaceholderInstruction(PlaceholderInstruction.create(line, rootSegmentName));
-				}
-				else
-				{
-					appendInstruction(CompilerUtils.parseInstruction(line, rootSegmentName));
-				}
+				appendPlaceholderInstruction(PlaceholderInstruction.create(line, rootSegmentName));
+			}
+			else
+			{
+				appendInstruction(CompilerUtils.parseInstruction(line, rootSegmentName));
 			}
 		}
 	}
@@ -149,6 +110,11 @@ public class DataBlock
 		{
 			throw new IllegalArgumentException("Duplicate segment label was found: " + rootSegmentName);
 		}
+	}
+	
+	public void parseAppendInstruction(String instruct)
+	{
+		parseLine(instruct);
 	}
 	
 	public void appendPlaceholderInstruction(PlaceholderInstruction instruct)

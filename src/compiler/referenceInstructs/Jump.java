@@ -14,9 +14,19 @@ public class Jump extends JumpCallCommon
 	private static final byte CONDITIONED_INSTRUCT = (byte) 0xC2;
 	private static final byte FAR_INSTRUCT_RST_VAL = 0x30;
 	
+	public Jump(String labelToGoTo) 
+	{
+		super(labelToGoTo, InstructionConditions.NONE, CONDITIONLESS_INSTRUCT, CONDITIONED_INSTRUCT, FAR_INSTRUCT_RST_VAL);
+	}
+	
 	public Jump(String labelToGoTo, InstructionConditions conditions) 
 	{
 		super(labelToGoTo, conditions, CONDITIONLESS_INSTRUCT, CONDITIONED_INSTRUCT, FAR_INSTRUCT_RST_VAL);
+	}
+	
+	public Jump(int addressToGoTo) 
+	{
+		super(addressToGoTo, InstructionConditions.NONE, CONDITIONLESS_INSTRUCT, CONDITIONED_INSTRUCT, FAR_INSTRUCT_RST_VAL);
 	}
 	
 	public Jump(int addressToGoTo, InstructionConditions conditions) 

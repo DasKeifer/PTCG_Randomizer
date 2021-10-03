@@ -208,7 +208,7 @@ public class AllocatableBank
 				// we either find room or run out of spaces
 				alloc = allocItr.next();
 				placed = false;
-				allocSize = alloc.dataBlock.getWorstCaseSize(allocIndexes);
+				allocSize = alloc.getWorstCaseSize(allocIndexes);
 				for (AddressRange space : spacesLeft)
 				{
 					if (allocSize <= space.size())
@@ -245,7 +245,7 @@ public class AllocatableBank
 		for (MoveableBlock block : priortizedAllocations)
 		{
 			placed = false;
-			allocSize = block.dataBlock.getWorstCaseSize(allocIndexes);
+			allocSize = block.getWorstCaseSize(allocIndexes);
 			for (AddressRange space : spacesLeft)
 			{
 				if (allocSize <= space.size())

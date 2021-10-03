@@ -2,27 +2,29 @@ package datamanager;
 
 import java.util.Map.Entry;
 
+import compiler.DataBlock;
+
 public class DataManagerUtils 
 {
-	public static void assignBlockAndSegmentBanks(BlockAllocData alloc, byte bank, AllocatedIndexes allocIndexes)
+	public static void assignBlockAndSegmentBanks(DataBlock alloc, byte bank, AllocatedIndexes allocIndexes)
 	{			
-		for (String segId : alloc.dataBlock.getSegmentsById().keySet())
+		for (String segId : alloc.getSegmentsById().keySet())
 		{
 			allocIndexes.addSetBank(segId, bank);
 		}
 	}
 
-	public static void removeBlockAndSegmentAddresses(BlockAllocData alloc, AllocatedIndexes allocIndexes)
+	public static void removeBlockAndSegmentAddresses(DataBlock alloc, AllocatedIndexes allocIndexes)
 	{
-		for (String segId : alloc.dataBlock.getSegmentsById().keySet())
+		for (String segId : alloc.getSegmentsById().keySet())
 		{
 			allocIndexes.remove(segId);
 		}
 	}
 	
-	public static void assignBlockAndSegmentBankAddresses(BlockAllocData alloc, BankAddress blockAddress, AllocatedIndexes allocIndexes)
+	public static void assignBlockAndSegmentBankAddresses(DataBlock alloc, BankAddress blockAddress, AllocatedIndexes allocIndexes)
 	{
-		AllocatedIndexes relAddresses = alloc.dataBlock.getSegmentsRelativeAddresses(blockAddress, allocIndexes);
+		AllocatedIndexes relAddresses = alloc.getSegmentsRelativeAddresses(blockAddress, allocIndexes);
 		
 		// For each segment relative address, offset it to the block address and add it to the
 		// allocated indexes
