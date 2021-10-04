@@ -85,7 +85,7 @@ public class Randomizer
 		
 		// TODO: Due to an error, the same data was being written more than once
 		// and when this happened, the text for some cards compoundly got worse.
-		// Need to look into why this is happening
+		// Need to look into why this is happening and if it still is
 		try {
 			randomized.writeRom(romFile);
 		} catch (IOException e) {

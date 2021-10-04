@@ -4,9 +4,9 @@ package compiler.referenceInstructs;
 import java.util.Arrays;
 
 import compiler.CompilerUtils;
-import datamanager.AllocatedIndexes;
-import datamanager.BankAddress;
 import compiler.CompilerConstants.InstructionConditions;
+import romAddressing.AssignedAddresses;
+import romAddressing.BankAddress;
 
 public class Jump extends JumpCallCommon
 {
@@ -76,17 +76,17 @@ public class Jump extends JumpCallCommon
 	}
 
 	@Override
-	public int getWorstCaseSize(BankAddress instructAddress, AllocatedIndexes allocatedIndexes, AllocatedIndexes tempIndexes)
+	public int getWorstCaseSize(BankAddress instructAddress, AssignedAddresses assignedAddresses, AssignedAddresses tempAssigns)
 	{
 		// If its a JR return that size. Otherwise use the default sizing for local, non JR or
 		// a far jump
-		BankAddress addressToGoTo = getAddressToGoTo(allocatedIndexes, tempIndexes);
+		BankAddress addressToGoTo = getAddressToGoTo(assignedAddresses, tempAssigns);
 		if (canJr(instructAddress, addressToGoTo))
 		{
 			return 2;
 		}
 		
-		return super.getWorstCaseSize(instructAddress, allocatedIndexes, tempIndexes);
+		return super.getWorstCaseSize(instructAddress, assignedAddresses, tempAssigns);
 	}
 	
 	private static boolean canJr(BankAddress instAddress, BankAddress addressToGoTo)
@@ -123,10 +123,10 @@ public class Jump extends JumpCallCommon
 	}
 
 	@Override
-	public int writeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
+	public int writeBytes(byte[] bytes, int addressToWriteAt, AssignedAddresses assignedAddresses) 
 	{		
 		BankAddress bankAddressToWriteAt = new BankAddress(addressToWriteAt);
-		BankAddress addressToGoTo = getAddressToGoTo(allocatedIndexes, null);
+		BankAddress addressToGoTo = getAddressToGoTo(assignedAddresses, null);
 		if (!addressToGoTo.isFullAddress())
 		{
 			if (labelToGoTo != null)
@@ -144,7 +144,7 @@ public class Jump extends JumpCallCommon
 		// Otherwise its a normal jump or farjump
 		else
 		{
-			return super.writeBytes(bytes, addressToWriteAt, allocatedIndexes);
+			return super.writeBytes(bytes, addressToWriteAt, assignedAddresses);
 		}
 	}
 }

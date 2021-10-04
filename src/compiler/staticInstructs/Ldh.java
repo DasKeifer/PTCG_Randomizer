@@ -22,14 +22,12 @@ public class Ldh extends StaticInstruction
 		isAFirst = isACommaVal;
 	}
 	
-	// TODO genericise so it can take ld and do more than just FF refs? No keep as separate, more specific function
-	
 	public static Ldh create(String[] args)
 	{		
-		String allowedFormatText = "Ldh only supports (A, [$FF(00 - FF)]) or ([$FF(00 - FF)], A): ";
+		String SUPPORT_STRING = "Ldh only supports (A, [$FF(00 - FF)]) or ([$FF(00 - FF)], A): Given ";
 		if (args.length != 2)
 		{
-			throw new IllegalArgumentException(allowedFormatText + " Given " + Arrays.toString(args));
+			throw new IllegalArgumentException(SUPPORT_STRING + Arrays.toString(args));
 		}
 
 		// A, val
@@ -65,21 +63,21 @@ public class Ldh extends StaticInstruction
 		}
 		catch (IllegalArgumentException iae) {}
 		
-		throw new IllegalArgumentException(allowedFormatText + " Given " + Arrays.toString(args));
+		throw new IllegalArgumentException(SUPPORT_STRING + Arrays.toString(args));
 	}
 	
-	public void writeStaticBytes(byte[] bytes, int indexToAddAt)
+	public void writeStaticBytes(byte[] bytes, int indexToWriteAt)
 	{
 		// A, val
 		if (isAFirst)
 		{
-			bytes[indexToAddAt++] = (byte) 0xF0;
+			bytes[indexToWriteAt++] = (byte) 0xF0;
 		}
 		// val, A
 		else
 		{
-			bytes[indexToAddAt++] = (byte) 0xE0;
+			bytes[indexToWriteAt++] = (byte) 0xE0;
 		}
-		bytes[indexToAddAt] = value;
+		bytes[indexToWriteAt] = value;
 	}
 }

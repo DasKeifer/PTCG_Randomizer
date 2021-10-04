@@ -2,6 +2,9 @@ package datamanager;
 
 
 import compiler.DataBlock;
+import romAddressing.AssignedAddresses;
+import romAddressing.PrioritizedBankRange;
+import romAddressing.BankRange;
 import util.ByteUtils;
 
 import java.util.ArrayList;
@@ -16,8 +19,8 @@ public class MoveableBlock extends DataBlock
 {
 	public static final Comparator<MoveableBlock> PRIORITY_SORTER = new PrioritySorter();
 	
-	private SortedSet<BankPreference> allowableBankPreferences;
-	private SortedSet<BankPreference> unattemptedAllowableBankPreferences;
+	private SortedSet<PrioritizedBankRange> allowableBankPreferences;
+	private SortedSet<PrioritizedBankRange> unattemptedAllowableBankPreferences;
 
 	protected MoveableBlock(String startingSegmentName)
 	{
@@ -30,12 +33,12 @@ public class MoveableBlock extends DataBlock
 		addAllowableBankRange(priority, startBank, stopBank);
 	}
 	
-	public MoveableBlock(String startingSegmentName, BankPreference pref)
+	public MoveableBlock(String startingSegmentName, PrioritizedBankRange pref)
 	{
 		this(startingSegmentName, prefAsList(pref));
 	}
 	
-	public MoveableBlock(String startingSegmentName, List<BankPreference> prefs)
+	public MoveableBlock(String startingSegmentName, List<PrioritizedBankRange> prefs)
 	{
 		super(startingSegmentName);
 		setCommonData(prefs);
@@ -52,59 +55,54 @@ public class MoveableBlock extends DataBlock
 		addAllowableBankRange(priority, startBank, stopBank);
 	}
 	
-	public MoveableBlock(List<String> sourceLines, BankPreference pref)
+	public MoveableBlock(List<String> sourceLines, PrioritizedBankRange pref)
 	{
 		this(sourceLines, prefAsList(pref));
 	}
 	
-	public MoveableBlock(List<String> sourceLines, List<BankPreference> prefs)
+	public MoveableBlock(List<String> sourceLines, List<PrioritizedBankRange> prefs)
 	{
 		super(sourceLines);
 		setCommonData(prefs);
 	}
 	
-	private static ArrayList<BankPreference> prefAsList(BankPreference pref)
+	private static ArrayList<PrioritizedBankRange> prefAsList(PrioritizedBankRange pref)
 	{
-		ArrayList<BankPreference> prefAsList = new ArrayList<>();
+		ArrayList<PrioritizedBankRange> prefAsList = new ArrayList<>();
 		prefAsList.add(pref);
 		return prefAsList;
 	}
 	
-	private void setCommonData(List<BankPreference> prefs)
+	private void setCommonData(List<PrioritizedBankRange> prefs)
 	{		
-		allowableBankPreferences = new TreeSet<>(BankPreference.BASIC_SORTER);
-		for (BankPreference pref : prefs)
+		allowableBankPreferences = new TreeSet<>(PrioritizedBankRange.BASIC_SORTER);
+		for (PrioritizedBankRange pref : prefs)
 		{
 			addAllowableBankRange(pref);
 		}
 	}
 
-	public void addAllowableBankRange(BankPreference bankPref)
+	public void addAllowableBankRange(PrioritizedBankRange bankPref)
 	{
-		addAllowableBankRange(bankPref.priority, bankPref.start, bankPref.stopExclusive);
+		allowableBankPreferences.add(new PrioritizedBankRange(bankPref));
 	}
 	
 	public void addAllowableBankRange(byte priority, BankRange bankRange)
 	{
-		addAllowableBankRange(priority, bankRange.start, bankRange.stopExclusive);
+		allowableBankPreferences.add(new PrioritizedBankRange(priority, bankRange));
 	}
 	
 	public void addAllowableBankRange(byte priority, byte startBank, byte stopBank)
 	{
-		if (startBank > stopBank)
-		{
-			throw new UnsupportedOperationException("Start bank is after the end bank!");
-		}
-		
-		allowableBankPreferences.add(new BankPreference(priority, startBank, stopBank));
+		allowableBankPreferences.add(new PrioritizedBankRange(priority, startBank, stopBank));
 	}
 	
-	public SortedSet<BankPreference> getAllowableBankPreferences()
+	public SortedSet<PrioritizedBankRange> getAllowableBankPreferences()
 	{
-		SortedSet<BankPreference> copy = new TreeSet<>(BankPreference.BASIC_SORTER);
-		for (BankPreference pref : allowableBankPreferences)
+		SortedSet<PrioritizedBankRange> copy = new TreeSet<>(PrioritizedBankRange.BASIC_SORTER);
+		for (PrioritizedBankRange pref : allowableBankPreferences)
 		{
-			copy.add(new BankPreference(pref));
+			copy.add(new PrioritizedBankRange(pref));
 		}
 		return copy;
 	}
@@ -130,8 +128,8 @@ public class MoveableBlock extends DataBlock
 		}
 		
 		// get the next preference
-		BankPreference pref = new BankPreference(unattemptedAllowableBankPreferences.first());
-		byte prefId = pref.start;
+		PrioritizedBankRange pref = new PrioritizedBankRange(unattemptedAllowableBankPreferences.first());
+		byte prefId = pref.getStart();
 		
 		// Remove it from unattempted and update the preference
 		removeUnattemptedBank(prefId);
@@ -151,14 +149,14 @@ public class MoveableBlock extends DataBlock
 		{
 			return Byte.MAX_VALUE;
 		}
-		return unattemptedAllowableBankPreferences.first().priority;
+		return unattemptedAllowableBankPreferences.first().getPriority();
 	}
 	
 	private void removeUnattemptedBank(byte bank)
 	{
-		List<BankPreference> modified = new LinkedList<BankPreference>();
-		Iterator<BankPreference> iter = unattemptedAllowableBankPreferences.iterator();
-		BankPreference currPref;
+		List<PrioritizedBankRange> modified = new LinkedList<PrioritizedBankRange>();
+		Iterator<PrioritizedBankRange> iter = unattemptedAllowableBankPreferences.iterator();
+		PrioritizedBankRange currPref;
 		while (iter.hasNext())
 		{
 			currPref = iter.next();
@@ -166,7 +164,7 @@ public class MoveableBlock extends DataBlock
 			{
 				// We always start with the first one in the range so that makes things easier since we don't have to worry about splitting banks
 				iter.remove();
-				currPref.start = (byte) (bank + 1);
+				currPref.shrink((byte) 1);
 				if (!currPref.isEmpty())
 				{
 					modified.add(currPref);
@@ -174,7 +172,7 @@ public class MoveableBlock extends DataBlock
 			}
 		}
 		
-		for (BankPreference pref : modified)
+		for (PrioritizedBankRange pref : modified)
 		{
 			unattemptedAllowableBankPreferences.add(pref);
 		}
@@ -190,8 +188,8 @@ public class MoveableBlock extends DataBlock
 			{
 				// Give larger blocks higher priority - We have to do it agnostic to where things are
 				// allocated but that is okay as this does not need to be 100% accurate
-				final AllocatedIndexes emptyAllocs = new AllocatedIndexes();
-				compareVal = Integer.compare(a1.getWorstCaseSize(emptyAllocs), a2.getWorstCaseSize(emptyAllocs));
+				final AssignedAddresses emptyAssigns = new AssignedAddresses();
+				compareVal = Integer.compare(a1.getWorstCaseSize(emptyAssigns), a2.getWorstCaseSize(emptyAssigns));
 			}
 			
 			if (compareVal == 0)

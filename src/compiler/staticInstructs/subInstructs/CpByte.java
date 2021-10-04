@@ -13,9 +13,9 @@ public class CpByte extends Cp
 		this.value = value;
 	}
 	
-	public void writeStaticBytes(byte[] bytes, int indexToAddAt)
+	public void writeStaticBytes(byte[] bytes, int indexToWriteAt)
 	{
-		bytes[indexToAddAt++] = (byte) 0xFE;
-		bytes[indexToAddAt] = value;
+		bytes[indexToWriteAt++] = (byte) 0xFE;
+		bytes[indexToWriteAt] = value;
 	}
 }

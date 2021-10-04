@@ -5,9 +5,9 @@ import java.util.Map;
 
 import compiler.CompilerUtils;
 import compiler.Instruction;
-import datamanager.AllocatedIndexes;
-import datamanager.BankAddress;
 import rom.Texts;
+import romAddressing.AssignedAddresses;
+import romAddressing.BankAddress;
 
 public class PlaceholderInstruction extends Instruction
 {
@@ -44,22 +44,22 @@ public class PlaceholderInstruction extends Instruction
 	}
 
 	@Override
-	public int getWorstCaseSize(BankAddress instructionAddress, AllocatedIndexes allocatedIndexes, AllocatedIndexes tempIndexes) 
+	public int getWorstCaseSize(BankAddress instructionAddress, AssignedAddresses assignedAddresses, AssignedAddresses tempAssigns) 
 	{
 		if (inst == null)
 		{
 			return 3; // Just a typical instruction size. Shouldn't be used really
 		}
-		return inst.getWorstCaseSize(instructionAddress, allocatedIndexes, tempIndexes);
+		return inst.getWorstCaseSize(instructionAddress, assignedAddresses, tempAssigns);
 	}
 
 	@Override
-	public int writeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
+	public int writeBytes(byte[] bytes, int addressToWriteAt, AssignedAddresses assignedAddresses) 
 	{
 		if (inst == null)
 		{
 			throw new IllegalArgumentException("Cannot write placeholder instructions! Must replace all values in it");
 		}
-		return inst.writeBytes(bytes, addressToWriteAt, allocatedIndexes);
+		return inst.writeBytes(bytes, addressToWriteAt, assignedAddresses);
 	}
 }

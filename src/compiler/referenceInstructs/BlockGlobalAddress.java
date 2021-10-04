@@ -2,9 +2,9 @@ package compiler.referenceInstructs;
 
 
 import compiler.FixedLengthInstruct;
-import datamanager.AllocatedIndexes;
-import datamanager.BankAddress;
 import rom.Texts;
+import romAddressing.AssignedAddresses;
+import romAddressing.BankAddress;
 import util.ByteUtils;
 import util.RomUtils;
 
@@ -28,15 +28,15 @@ public class BlockGlobalAddress extends FixedLengthInstruct
 	}
 
 	@Override
-	public int getWorstCaseSize(BankAddress unused1, AllocatedIndexes unused2, AllocatedIndexes unused3)
+	public int getWorstCaseSize(BankAddress unused1, AssignedAddresses unused2, AssignedAddresses unused3)
 	{
 		return SIZE;
 	}
 	
 	@Override
-	public void writeFixedSizeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
+	public void writeFixedSizeBytes(byte[] bytes, int addressToWriteAt, AssignedAddresses assignedAddresses) 
 	{
-		BankAddress address = allocatedIndexes.getTry(addressLabel);
+		BankAddress address = assignedAddresses.getTry(addressLabel);
 		if (!address.isFullAddress())
 		{
 			throw new IllegalAccessError("BlockGlobalAddress tried to write address for " + addressLabel + " but it is not fully assigned: " + address.toString());

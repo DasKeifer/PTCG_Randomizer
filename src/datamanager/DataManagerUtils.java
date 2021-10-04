@@ -1,37 +1,37 @@
 package datamanager;
 
-import java.util.Map.Entry;
-
 import compiler.DataBlock;
+import romAddressing.AssignedAddresses;
+import romAddressing.BankAddress;
 
 public class DataManagerUtils 
 {
-	public static void assignBlockAndSegmentBanks(DataBlock alloc, byte bank, AllocatedIndexes allocIndexes)
+	public static void assignBlockAndSegmentBanks(DataBlock alloc, byte bank, AssignedAddresses assignedAddresses)
 	{			
 		for (String segId : alloc.getSegmentsById().keySet())
 		{
-			allocIndexes.addSetBank(segId, bank);
+			assignedAddresses.addSetBank(segId, bank);
 		}
 	}
 
-	public static void removeBlockAndSegmentAddresses(DataBlock alloc, AllocatedIndexes allocIndexes)
+	public static void removeBlockAndSegmentAddresses(DataBlock alloc, AssignedAddresses assignedAddresses)
 	{
 		for (String segId : alloc.getSegmentsById().keySet())
 		{
-			allocIndexes.remove(segId);
+			assignedAddresses.remove(segId);
 		}
 	}
 	
-	public static void assignBlockAndSegmentBankAddresses(DataBlock alloc, BankAddress blockAddress, AllocatedIndexes allocIndexes)
+	public static void assignBlockAndSegmentBankAddresses(DataBlock alloc, BankAddress blockAddress, AssignedAddresses assignedAddresses)
 	{
-		AllocatedIndexes relAddresses = alloc.getSegmentsRelativeAddresses(blockAddress, allocIndexes);
+		AssignedAddresses relAddresses = alloc.getSegmentsRelativeAddresses(blockAddress, assignedAddresses);
 		
 		// For each segment relative address, offset it to the block address and add it to the
 		// allocated indexes
-		for (Entry<String, BankAddress> segEntry : relAddresses.entrySet())
+		for (String segment : alloc.getSegmentIds())
 		{
-			segEntry.getValue().addressInBank += blockAddress.addressInBank;
-			allocIndexes.put(segEntry.getKey(), segEntry.getValue());
+			BankAddress relAddress = relAddresses.getThrow(segment);
+			assignedAddresses.put(segment, relAddress.bank, (short) (relAddress.addressInBank + blockAddress.addressInBank));
 		}
 	}
 	

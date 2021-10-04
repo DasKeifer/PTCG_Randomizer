@@ -13,9 +13,9 @@ public class SubByte extends Sub
 		this.val = val;
 	}
 	
-	public void writeStaticBytes(byte[] bytes, int indexToAddAt)
+	public void writeStaticBytes(byte[] bytes, int indexToWriteAt)
 	{
-		bytes[indexToAddAt++] = (byte) 0xD6;
-		bytes[indexToAddAt] = val;
+		bytes[indexToWriteAt++] = (byte) 0xD6;
+		bytes[indexToWriteAt] = val;
 	}
 }

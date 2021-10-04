@@ -1,6 +1,6 @@
 package data;
 
-import datamanager.AllocatedIndexes;
+import romAddressing.AssignedAddresses;
 import util.ByteUtils;
 
 public class UnchangedCardEffect extends CardEffect
@@ -21,7 +21,7 @@ public class UnchangedCardEffect extends CardEffect
 	}
 
 	@Override
-	public void writeEffectPointer(byte[] moveBytes, int startIndex, AllocatedIndexes allocIndexes) 
+	public void writeEffectPointer(byte[] moveBytes, int startIndex, AssignedAddresses unused) 
 	{
 		ByteUtils.writeAsShort(pointer, moveBytes, startIndex);
 	}

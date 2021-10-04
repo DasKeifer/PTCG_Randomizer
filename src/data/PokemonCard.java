@@ -7,10 +7,10 @@ import constants.CardDataConstants.*;
 import data.romtexts.CardName;
 import data.romtexts.PokeCategory;
 import data.romtexts.PokeDescription;
-import datamanager.AllocatedIndexes;
 import rom.Blocks;
 import rom.Cards;
 import rom.Texts;
+import romAddressing.AssignedAddresses;
 import util.ByteUtils;
 
 public class PokemonCard extends Card 
@@ -278,7 +278,7 @@ public class PokemonCard extends Card
 	}
 
 	@Override
-	public int writeData(byte[] cardBytes, int startIndex, AllocatedIndexes allocatedIndexes) 
+	public int writeData(byte[] cardBytes, int startIndex, AssignedAddresses assignedAddresses) 
 	{
 		int index = commonWriteData(cardBytes, startIndex);
 		
@@ -289,7 +289,7 @@ public class PokemonCard extends Card
 
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
-			index = moves[moveIndex].writeData(cardBytes, index, allocatedIndexes);
+			index = moves[moveIndex].writeData(cardBytes, index, assignedAddresses);
 		}
 		
 		cardBytes[index++] = retreatCost;

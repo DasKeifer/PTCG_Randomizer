@@ -1,5 +1,7 @@
 package compiler.staticInstructs;
 
+import java.util.Arrays;
+
 import compiler.CompilerUtils;
 import compiler.StaticInstruction;
 import compiler.CompilerConstants.InstructionConditions;
@@ -22,6 +24,12 @@ public class Ret extends StaticInstruction
 	
 	public static Ret create(String[] args)
 	{		
+		final String SUPPORT_STRING = "Ret only supports ([No Args]) or (InstructionCondition): Given ";
+		if (args.length > 1)
+		{
+			throw new IllegalArgumentException(SUPPORT_STRING + Arrays.toString(args));
+		}
+		
 		if (args.length == 0)
 		{
 			return new Ret();
@@ -32,24 +40,21 @@ public class Ret extends StaticInstruction
 			{
 				return new Ret(CompilerUtils.parseInstructionConditionsArg(args[0]));
 			}
-			catch (IllegalArgumentException iae)
-			{
-				throw new IllegalArgumentException("Ret only supports ([No Args]) or (InstructionCondition): " + iae.getMessage());
-			}
+			catch (IllegalArgumentException iae) {}
 		}
 
-		throw new IllegalArgumentException("Ret only supports ([No Args]) or (InstructionCondition): Given " + args.toString());
+		throw new IllegalArgumentException(SUPPORT_STRING + Arrays.toString(args));
 	}
 	
-	public void writeStaticBytes(byte[] bytes, int indexToAddAt)
+	public void writeStaticBytes(byte[] bytes, int indexToWriteAt)
 	{
 		if (InstructionConditions.NONE == conditions)
 		{
-			bytes[indexToAddAt] = (byte) 0xC9;
+			bytes[indexToWriteAt] = (byte) 0xC9;
 		}
 		else
 		{
-			bytes[indexToAddAt] = (byte) (0xC0 | (conditions.getValue() << 3));
+			bytes[indexToWriteAt] = (byte) (0xC0 | (conditions.getValue() << 3));
 		}
 	}
 }

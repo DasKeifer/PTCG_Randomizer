@@ -1,5 +1,7 @@
 package compiler.staticInstructs;
 
+import java.util.Arrays;
+
 import compiler.CompilerUtils;
 import compiler.StaticInstruction;
 import compiler.CompilerConstants.RegisterPair;
@@ -21,9 +23,10 @@ public class Lb extends StaticInstruction
 	
 	public static Lb create(String[] args)
 	{
+		final String SUPPORT_STRING = "Lb only supports (RegisterPair, byte, byte): Given ";
 		if (args.length != 3)
 		{
-			throw new IllegalArgumentException("Lb only supports (RegisterPair, byte, byte): Given " + args.toString());
+			throw new IllegalArgumentException(SUPPORT_STRING + Arrays.toString(args));
 		}
 		
 		try
@@ -32,17 +35,16 @@ public class Lb extends StaticInstruction
 					CompilerUtils.parseByteArg(args[1]),
 					CompilerUtils.parseByteArg(args[2]));
 		}
-		catch (IllegalArgumentException iae)
-		{
-			throw new IllegalArgumentException("Lb only supports RegisterPair, byte, byte: " + iae.getMessage());
-		}
+		catch (IllegalArgumentException iae) {}
+		
+		throw new IllegalArgumentException(SUPPORT_STRING + Arrays.toString(args));
 	}
 	
 	@Override
-	public void writeStaticBytes(byte[] bytes, int indexToAddAt)
+	public void writeStaticBytes(byte[] bytes, int indexToWriteAt)
 	{
-		bytes[indexToAddAt++] = (byte) (0x01 | (pair.getValue() << 4));
-		bytes[indexToAddAt++] = value2;
-		bytes[indexToAddAt] = value1;
+		bytes[indexToWriteAt++] = (byte) (0x01 | (pair.getValue() << 4));
+		bytes[indexToWriteAt++] = value2;
+		bytes[indexToWriteAt] = value1;
 	}
 }

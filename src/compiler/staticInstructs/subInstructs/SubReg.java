@@ -14,8 +14,8 @@ public class SubReg extends Sub
 		this.reg = reg;
 	}
 	
-	public void writeStaticBytes(byte[] bytes, int indexToAddAt)
+	public void writeStaticBytes(byte[] bytes, int indexToWriteAt)
 	{
-		bytes[indexToAddAt] = (byte) (0x90 | reg.getValue());
+		bytes[indexToWriteAt] = (byte) (0x90 | reg.getValue());
 	}
 }

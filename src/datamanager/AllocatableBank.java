@@ -5,6 +5,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import romAddressing.AddressRange;
+import romAddressing.AssignedAddresses;
+import romAddressing.BankAddress;
 import util.RomUtils;
 
 public class AllocatableBank 
@@ -38,13 +41,12 @@ public class AllocatableBank
 		// If the space isn't entirely in this banks range, then throw
 		if (!bankRange.contains(space))
 		{
-			// TODO: more cases where I need to use Arrays.toString
 			throw new IllegalArgumentException("Passed space is not entirely in this bank (" + bank + ")!" +
 					" bank addresses: " + Arrays.toString(RomUtils.getBankBounds(bank)) + " and space addresses: " +
-					space.start + ", " + space.stopExclusive);
+					space.getStart() + ", " + space.getStopExclusive());
 		}
 		// shift it to be relative to this bank and add it
-		spaces.add(new AddressRange(space.start - bankRange.start, space.stopExclusive - bankRange.start));
+		spaces.add(space.shiftNew(-bankRange.getStart()));
 	}
 
 	// Manually remove a space. Removing for fixed blocks should be done
@@ -55,7 +57,7 @@ public class AllocatableBank
 		if (bankRange.overlaps(range))
 		{
 			// Convert it relative to this bank
-			AddressRange bankRelative = new AddressRange(range.start - bankRange.start, range.stopExclusive - bankRange.start);
+			AddressRange bankRelative = range.shiftNew(-bankRange.getStart());
 			
 			// Then go through and remove the overlap potentially adding a new space in if the removed space is in the middle
 			// of an existing space
@@ -79,14 +81,14 @@ public class AllocatableBank
 		}
 	}
 	
-	public void addFixedBlock(FixedBlock fixedAlloc, AllocatedIndexes allocIndexes)
+	public void addFixedBlock(FixedBlock fixedAlloc, AssignedAddresses assignedAddresses)
 	{
 		fixedAllocations.add(fixedAlloc);
 		// Ensure there is space for this fixed alloc. This will throw if there is not space
-		getSpacesLeftRemovingFixedAllocs(allocIndexes);
+		getSpacesLeftRemovingFixedAllocs(assignedAddresses);
 	}
 	
-	private List<AddressRange> getSpacesLeftRemovingFixedAllocs(AllocatedIndexes allocIndexes)
+	private List<AddressRange> getSpacesLeftRemovingFixedAllocs(AssignedAddresses assignedAddresses)
 	{
 		List<AddressRange> spacesLeft = new LinkedList<>();
 		for (AddressRange range : spaces)
@@ -106,7 +108,7 @@ public class AllocatableBank
 			}
 			
 			boolean containedInSpace = false;
-			fixedRange = new AddressRange(block.getFixedAddress().addressInBank, block.getFixedAddress().addressInBank + block.getWorstCaseSize(allocIndexes));
+			fixedRange = new AddressRange(block.getFixedAddress().addressInBank, block.getFixedAddress().addressInBank + block.getWorstCaseSize(assignedAddresses));
 			for (AddressRange spaceLeft : spacesLeft)
 			{
 				// If it is contained in the space, we found where it lives. We 
@@ -126,7 +128,7 @@ public class AllocatableBank
 			{
 				throw new RuntimeException(String.format("There was not space from 0x%x to 0x%x in bank 0x%x for FixedBlock %s - "
 						+ "only ReplacementBlocks do not need free space in the bank", block.getFixedAddress().addressInBank, 
-						block.getFixedAddress().addressInBank + block.getWorstCaseSize(allocIndexes), bank, block.getId()));
+						block.getFixedAddress().addressInBank + block.getWorstCaseSize(assignedAddresses), bank, block.getId()));
 			}
 			
 			// If we have a new range to add, do so
@@ -145,7 +147,7 @@ public class AllocatableBank
 				continue;
 			}
 			
-			fixedRange = new AddressRange(block.getFixedAddress().addressInBank, block.getFixedAddress().addressInBank + block.getWorstCaseSize(allocIndexes));
+			fixedRange = new AddressRange(block.getFixedAddress().addressInBank, block.getFixedAddress().addressInBank + block.getWorstCaseSize(assignedAddresses));
 			for (AddressRange spaceLeft : spacesLeft)
 			{
 				splitRange = spaceLeft.removeOverlap(fixedRange);
@@ -166,7 +168,7 @@ public class AllocatableBank
 		priortizedAllocations.add(alloc);
     }
 
-	public boolean checkForAndRemoveExcessAllocs(List<MoveableBlock> allocsThatDontFit, AllocatedIndexes allocIndexes)
+	public boolean checkForAndRemoveExcessAllocs(List<MoveableBlock> allocsThatDontFit, AssignedAddresses assignedAddresses)
 	{
 		// Clear the spaces and output var
 		// Clear just the addresses but keep the banks since they still are
@@ -176,11 +178,11 @@ public class AllocatableBank
 		// Ensure the allocations are sorted
 		priortizedAllocations.sort(MoveableBlock.PRIORITY_SORTER);
 		
-		return checkForAndRemoveExcessAllocsInCollection(priortizedAllocations.iterator(), allocIndexes, allocsThatDontFit);
+		return checkForAndRemoveExcessAllocsInCollection(priortizedAllocations.iterator(), assignedAddresses, allocsThatDontFit);
 	}
 
 	// TODO: Probably can optimize packing into bank space some (i.e. leave most space, leave smallest space)
-	private boolean checkForAndRemoveExcessAllocsInCollection(Iterator<MoveableBlock> allocItr, AllocatedIndexes allocIndexes, List<MoveableBlock> allocsThatDontFit)
+	private boolean checkForAndRemoveExcessAllocsInCollection(Iterator<MoveableBlock> allocItr, AssignedAddresses assignedAddresses, List<MoveableBlock> allocsThatDontFit)
 	{
 		boolean stable = false;
 		boolean placed;
@@ -195,11 +197,11 @@ public class AllocatableBank
 			// Reassign the fixed block addresses in case it can shrink based on where the movable blocks are allocated
 			for (FixedBlock block : fixedAllocations)
 			{
-				DataManagerUtils.assignBlockAndSegmentBankAddresses(block, block.getFixedAddress(), allocIndexes);
+				DataManagerUtils.assignBlockAndSegmentBankAddresses(block, block.getFixedAddress(), assignedAddresses);
 			}
 			
 			// Now get the spaces that are left after the fixed block spaces are removed
-			spacesLeft = getSpacesLeftRemovingFixedAllocs(allocIndexes);
+			spacesLeft = getSpacesLeftRemovingFixedAllocs(assignedAddresses);
 			
 			// Loop over each movable block and see if it fits
 			while (allocItr.hasNext())
@@ -208,12 +210,12 @@ public class AllocatableBank
 				// we either find room or run out of spaces
 				alloc = allocItr.next();
 				placed = false;
-				allocSize = alloc.getWorstCaseSize(allocIndexes);
+				allocSize = alloc.getWorstCaseSize(assignedAddresses);
 				for (AddressRange space : spacesLeft)
 				{
 					if (allocSize <= space.size())
 					{
-						space.start += allocSize;
+						space.shrink(allocSize);
 						placed = true;
 					}
 				}
@@ -224,7 +226,7 @@ public class AllocatableBank
 					// We need another pass to see if anything else no longer
 					// will fit
 					stable = false;
-					DataManagerUtils.removeBlockAndSegmentAddresses(alloc, allocIndexes);
+					DataManagerUtils.removeBlockAndSegmentAddresses(alloc, assignedAddresses);
 					allocsThatDontFit.add(alloc);
 					allocItr.remove();
 				}
@@ -234,10 +236,10 @@ public class AllocatableBank
 		return !allocsThatDontFit.isEmpty();
 	}
 
-	public void assignAddresses(AllocatedIndexes allocIndexes) 
+	public void assignAddresses(AssignedAddresses assignedAddresses) 
 	{
 		// Get the spaces that are left after the fixed block spaces are removed
-		List<AddressRange> spacesLeft = getSpacesLeftRemovingFixedAllocs(allocIndexes);
+		List<AddressRange> spacesLeft = getSpacesLeftRemovingFixedAllocs(assignedAddresses);
 		
 		boolean placed;
 		int allocSize;
@@ -245,20 +247,22 @@ public class AllocatableBank
 		for (MoveableBlock block : priortizedAllocations)
 		{
 			placed = false;
-			allocSize = block.getWorstCaseSize(allocIndexes);
+			allocSize = block.getWorstCaseSize(assignedAddresses);
 			for (AddressRange space : spacesLeft)
 			{
 				if (allocSize <= space.size())
 				{
-					DataManagerUtils.assignBlockAndSegmentBankAddresses(block, new BankAddress(bank, (short) space.start), allocIndexes);
-					space.start += allocSize;
+					DataManagerUtils.assignBlockAndSegmentBankAddresses(block, new BankAddress(bank, (short) space.getStart()), assignedAddresses);
+					space.shrink(allocSize);
 					placed = true;
 				}
 			}
 			
 			if (!placed)
 			{
-				throw new RuntimeException("TODO!");
+				throw new RuntimeException(String.format("Failed to assign a address to block " + block.getId() +
+						" while assigning addresses for bank 0x%x. This should not occur if all banks are added then "
+						+ "Allocated via DataManger!", bank));
 			}
 		}
 	}

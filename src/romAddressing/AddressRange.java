@@ -1,13 +1,17 @@
-package datamanager;
+package romAddressing;
 
 
-class AddressRange 
+public class AddressRange 
 {
 	int start;
 	int stopExclusive;
 	
 	public AddressRange(int start, int stopExclusive)
 	{
+		if (start >= stopExclusive)
+		{
+			throw new IllegalArgumentException("AddressRange: The exclusive stop passed (" + stopExclusive + ") was equal to or before the start (" + start + ")");
+		}
 		this.start = start;
 		this.stopExclusive = stopExclusive;
 	}
@@ -77,13 +81,44 @@ class AddressRange
 		return null;
 	}
 	
+	public AddressRange shiftNew(int shift)
+	{
+		return new AddressRange(start + shift, stopExclusive + shift);
+	}
+	
+	public void shiftInPlace(int shift)
+	{
+		start += shift;
+		stopExclusive += shift;
+	}
+	
+	// Shrinks the start only
+	public void shrink(int shrink)
+	{
+		start += shrink;
+		if (start > stopExclusive)
+		{
+			start = stopExclusive;
+		}
+	}
+	
 	public int size()
 	{
 		return stopExclusive - start;
 	}
 	
-	boolean isEmpty()
+	public boolean isEmpty()
 	{
 		return size() <= 0;
+	}
+	
+	public int getStart()
+	{
+		return start;
+	}
+	
+	public int getStopExclusive()
+	{
+		return stopExclusive;
 	}
 }

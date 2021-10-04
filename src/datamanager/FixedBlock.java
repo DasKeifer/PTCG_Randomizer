@@ -4,6 +4,8 @@ package datamanager;
 import java.util.List;
 
 import compiler.DataBlock;
+import romAddressing.AssignedAddresses;
+import romAddressing.BankAddress;
 
 public class FixedBlock extends DataBlock
 {
@@ -33,14 +35,14 @@ public class FixedBlock extends DataBlock
 	}
 	
 	@Override
-	public void writeBytes(byte[] bytes, AllocatedIndexes allocatedIndexes)
+	public void writeBytes(byte[] bytes, AssignedAddresses assignedAddresses)
 	{	
-		BankAddress bankAddress = allocatedIndexes.getThrow(getId());
+		BankAddress bankAddress = assignedAddresses.getThrow(getId());
 		if (!bankAddress.equals(address))
 		{
 			throw new IllegalArgumentException("Passed address for FixedBlock (" + bankAddress + ") does" +
 					"not match the fixed address (" + address + ")!"); 
 		}
-		super.writeBytes(bytes, allocatedIndexes);
+		super.writeBytes(bytes, assignedAddresses);
 	}
 }

@@ -6,10 +6,10 @@ import constants.CardDataConstants.CardRarity;
 import constants.CardDataConstants.CardSet;
 import constants.CardDataConstants.CardType;
 import data.romtexts.CardName;
-import datamanager.AllocatedIndexes;
 import rom.Blocks;
 import rom.Cards;
 import rom.Texts;
+import romAddressing.AssignedAddresses;
 import util.ByteUtils;
 
 import java.security.InvalidParameterException;
@@ -83,7 +83,7 @@ public abstract class Card
 	
 	public abstract int readAndConvertIds(byte[] cardBytes, int startIndex, Texts idsToText);
 	public abstract void finalizeDataForAllocating(Cards<Card> cards, Texts texts, Blocks blocks);
-	public abstract int writeData(byte[] cardBytes, int startIndex, AllocatedIndexes allocatedIndexes);
+	public abstract int writeData(byte[] cardBytes, int startIndex, AssignedAddresses assignedAddresses);
 
 	public String toString()
 	{

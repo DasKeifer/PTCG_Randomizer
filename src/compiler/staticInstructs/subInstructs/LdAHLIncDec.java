@@ -1,7 +1,5 @@
 package compiler.staticInstructs.subInstructs;
 
-import compiler.CompilerUtils;
-import compiler.CompilerConstants.Register;
 import compiler.staticInstructs.Ld;
 
 public class LdAHLIncDec extends Ld
@@ -14,39 +12,6 @@ public class LdAHLIncDec extends Ld
 		super(1); // size
 		this.loadToA = loadToA;
 		this.increment = increment;
-	}
-
-	public static LdAHLIncDec create(String[] args)
-	{
-		final String supportedArgs = "LdAHLIncDec only supports (a, [hli or hld]) or ([hli or hld], a): ";
-		if (args.length != 2)
-		{
-			throw new IllegalArgumentException(supportedArgs + "Given " + args.toString());
-		}
-		
-		boolean isLoad = false;
-		boolean increment = false;
-		
-		// TODO need to add try catch or something
-		
-		// First arg is A?
-		if (CompilerUtils.parseRegisterArg(args[0]) == Register.A)
-		{
-			isLoad = true;
-			increment = CompilerUtils.parseHLIncDecArg(args[1]);
-		}
-		// First arg is presumably [hl] and second is A
-		else
-		{
-			// Is load already set to false
-			if (CompilerUtils.parseRegisterArg(args[1]) != Register.A)
-			{
-				throw new IllegalArgumentException(supportedArgs + "Given " + args.toString());
-			}
-			increment = CompilerUtils.parseHLIncDecArg(args[0]);
-		}
-		
-		return new LdAHLIncDec(isLoad, increment);
 	}
 	
 	@Override

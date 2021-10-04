@@ -8,9 +8,9 @@ import java.util.Map.Entry;
 
 import compiler.DataBlock;
 import compiler.Segment;
-import datamanager.AllocatedIndexes;
 import datamanager.FixedBlock;
 import datamanager.MoveableBlock;
+import romAddressing.AssignedAddresses;
 
 public class Blocks 
 {
@@ -91,11 +91,11 @@ public class Blocks
 		//return blocksToPlace;
 	}
 	
-	public void writeData(byte[] bytes, AllocatedIndexes allocatedIndexes)
+	public void writeData(byte[] bytes, AssignedAddresses assignedAddresses)
 	{
 		for (DataBlock block : blocksById.values())
 		{
-			block.writeBytes(bytes, allocatedIndexes);
+			block.writeBytes(bytes, assignedAddresses);
 		}
 	}
 }

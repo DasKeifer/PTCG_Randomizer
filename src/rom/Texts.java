@@ -14,6 +14,8 @@ public class Texts
 	// TODO: Add text labels here? Then we can treat everything as blocks?
 	// Or maybe just assume names and create a special class for/funct for
 	// getting the textLabel based on Id?
+	// TODO: Add some snazzy logic to leave most texts in place and only move ones that
+	// would be overwritten by adding more pointers
 	private Map<Short, String> textMap;
 	private Map<String, Short> reverseMap;
 

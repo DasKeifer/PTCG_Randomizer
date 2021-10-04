@@ -1,5 +1,7 @@
 package compiler.staticInstructs;
 
+import java.util.Arrays;
+
 import compiler.CompilerUtils;
 import compiler.StaticInstruction;
 import compiler.CompilerConstants.InstructionConditions;
@@ -24,7 +26,7 @@ public class Nop extends StaticInstruction
 		final String SUPPORT_STRING = "Nop only supports () or (byte effectiveNumNops): Given ";
 		if (args.length > 1)
 		{
-			throw new IllegalArgumentException(SUPPORT_STRING + args.toString());
+			throw new IllegalArgumentException(SUPPORT_STRING + Arrays.toString(args));
 		}
 		
 		if (args.length == 0)
@@ -38,26 +40,26 @@ public class Nop extends StaticInstruction
 				return new Nop(CompilerUtils.parseByteArg(args[0]));
 			}
 			catch (IllegalArgumentException iae)
-			{
-				throw new IllegalArgumentException(SUPPORT_STRING + iae.getMessage());
-			}
+			{}
 		}
+
+		throw new IllegalArgumentException(SUPPORT_STRING + Arrays.toString(args));
 	}
 	
-	public void writeStaticBytes(byte[] bytes, int indexToAddAt)
+	public void writeStaticBytes(byte[] bytes, int indexToWriteAt)
 	{
 		int size = getSize();	
 		// Write the Nops regardless of size
 		for (int offset = 0; offset < size; offset++)
 		{
-			bytes[indexToAddAt + offset] = NOP_VALUE;
+			bytes[indexToWriteAt + offset] = NOP_VALUE;
 		}
 		
 		// takes 3 cycles to jump so 4 or greater its more efficient to jump
 		if (size > 3)
 		{
 			// -2 because its relative to the end of the JR command
-			JumpCallCommon.writeJr(bytes, indexToAddAt, InstructionConditions.NONE, (byte) (size - 2));
+			JumpCallCommon.writeJr(bytes, indexToWriteAt, InstructionConditions.NONE, (byte) (size - 2));
 		}
 	}
 }

@@ -2,9 +2,9 @@ package compiler.referenceInstructs;
 
 
 import compiler.FixedLengthInstruct;
-import datamanager.AllocatedIndexes;
-import datamanager.BankAddress;
 import rom.Texts;
+import romAddressing.AssignedAddresses;
+import romAddressing.BankAddress;
 import util.ByteUtils;
 import util.RomUtils;
 
@@ -29,9 +29,9 @@ public class BlockBankLoadedAddress extends FixedLengthInstruct
 	}
 	
 	@Override
-	public void writeFixedSizeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
+	public void writeFixedSizeBytes(byte[] bytes, int addressToWriteAt, AssignedAddresses assignedAddresses) 
 	{
-		BankAddress address = allocatedIndexes.get(addressLabel);
+		BankAddress address = assignedAddresses.getThrow(addressLabel);
 		if (!address.isFullAddress())
 		{
 			throw new IllegalAccessError("BlockBankLoaded Address tried to write address for " + addressLabel + " but it is not fully assigned: " + address.toString());

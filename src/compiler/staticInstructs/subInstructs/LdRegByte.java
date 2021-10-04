@@ -16,9 +16,9 @@ public class LdRegByte extends Ld
 	}
 	
 	@Override
-	public void writeStaticBytes(byte[] bytes, int indexToAddAt)
+	public void writeStaticBytes(byte[] bytes, int indexToWriteAt)
 	{
-		bytes[indexToAddAt++] = (byte) (0x06 | (reg.getValue() << 3));
-		bytes[indexToAddAt] = value;
+		bytes[indexToWriteAt++] = (byte) (0x06 | (reg.getValue() << 3));
+		bytes[indexToWriteAt] = value;
 	}
 }

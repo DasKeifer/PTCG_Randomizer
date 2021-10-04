@@ -10,14 +10,14 @@ import compiler.referenceInstructs.BlockBankLoadedAddress;
 import compiler.referenceInstructs.Jump;
 import compiler.staticInstructs.Nop;
 import compiler.staticInstructs.RawBytes;
-import datamanager.AllocatedIndexes;
-import datamanager.BankAddress;
-import datamanager.BankPreference;
 import datamanager.MoveableBlock;
 import datamanager.ReplacementBlock;
 import datamanager.UnconstrainedMoveBlock;
 import constants.DuelConstants.EffectCommandTypes;
 import rom.Blocks;
+import romAddressing.AssignedAddresses;
+import romAddressing.BankAddress;
+import romAddressing.PrioritizedBankRange;
 import util.ByteUtils;
 import util.RomUtils;
 
@@ -65,12 +65,12 @@ public class CustomCardEffect extends CardEffect
 				"jp " + foundCommandFunction
 	});
 	
-	private static final List<BankPreference> effectFunctionPrefs = Arrays.asList(new BankPreference[] {
-		new BankPreference((byte) 1, (byte)0xb, (byte)0xc),
-		new BankPreference((byte) 2, (byte)0xa, (byte)0xb)
+	private static final List<PrioritizedBankRange> effectFunctionPrefs = Arrays.asList(new PrioritizedBankRange[] {
+		new PrioritizedBankRange((byte) 1, (byte)0xb, (byte)0xc),
+		new PrioritizedBankRange((byte) 2, (byte)0xa, (byte)0xb)
 	});
 	
-	private static final BankPreference effectCommandPref = new BankPreference((byte)1, (byte)6, (byte)7);
+	private static final PrioritizedBankRange effectCommandPref = new PrioritizedBankRange((byte)1, (byte)6, (byte)7);
 				
 	
 	private class DataOrAddr
@@ -187,9 +187,9 @@ public class CustomCardEffect extends CardEffect
 	}
 
 	@Override
-	public void writeEffectPointer(byte[] moveBytes, int startIndex, AllocatedIndexes allocIndexes)
+	public void writeEffectPointer(byte[] moveBytes, int startIndex, AssignedAddresses assignedAddresses)
 	{
-		BankAddress pointerAddress = allocIndexes.getThrow(effectCommand.getId());
+		BankAddress pointerAddress = assignedAddresses.getThrow(effectCommand.getId());
 		ByteUtils.writeAsShort(RomUtils.convertFromBankOffsetToLoadedOffset(pointerAddress.bank, pointerAddress.addressInBank), moveBytes, startIndex);
 	}
 

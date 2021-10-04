@@ -7,32 +7,23 @@ import java.util.TreeMap;
 
 import constants.RomConstants;
 import rom.Blocks;
+import romAddressing.AssignedAddresses;
+import romAddressing.BankAddress;
 
 public class DataManager
 {
 	// TODO: make static?
-	// TODO: instead of saving by data blocks, maybe save by bank/space allocation?
 	
 	// Bank, object
 	private SortedMap<Byte, AllocatableBank> freeSpace;
-	private AllocatedIndexes allocIndexes = new AllocatedIndexes();
+	private AssignedAddresses assignedAddresses = new AssignedAddresses();
 	
 	public DataManager()
 	{
 		freeSpace = new TreeMap<>();
 	}
 	
-	// New approach
-	// First do fixed allocations
-	// Start by allocating everything to its most desired bank
-	// Then go through and for each one that doesn't fit, move try to move it to its next preferred bank
-	// if there are no more banks, then shrink and repeat
-	// if it does not shrink, then start over and see if others can shrink
-	
-	// Go through and allocate all assuming worse case size. Go back and then assign addresses based on actual size. Don't try to
-	// expand - it might throw other things off
-	
-	public AllocatedIndexes allocateBlocks(
+	public AssignedAddresses allocateBlocks(
 			byte[] bytesToPlaceIn,
 			Blocks blocks)
 	{
@@ -53,7 +44,7 @@ public class DataManager
 			// If we were successful, assign the addresses for each item and then return
 			// a copy of the data
 			assignAddressesInBanks();
-			return new AllocatedIndexes(allocIndexes);
+			return new AssignedAddresses(assignedAddresses);
 		}
 		
 		return null;
@@ -65,15 +56,15 @@ public class DataManager
 		for (FixedBlock block : blocks.getAllFixedBlocks())
 		{
 			BankAddress address = block.getFixedAddress();
-			DataManagerUtils.assignBlockAndSegmentBanks(block, address.bank, allocIndexes);
+			DataManagerUtils.assignBlockAndSegmentBanks(block, address.bank, assignedAddresses);
 		}
 		
 		// Now go through and assign preliminary addresses and add them to the banks
 		for (FixedBlock block : blocks.getAllFixedBlocks())
 		{
 			BankAddress address = block.getFixedAddress();
-			DataManagerUtils.assignBlockAndSegmentBankAddresses(block, address, allocIndexes);
-			freeSpace.get(block.getFixedAddress().bank).addFixedBlock(block, allocIndexes);
+			DataManagerUtils.assignBlockAndSegmentBankAddresses(block, address, assignedAddresses);
+			freeSpace.get(block.getFixedAddress().bank).addFixedBlock(block, assignedAddresses);
 		}
 	}
 	
@@ -124,15 +115,16 @@ public class DataManager
 			}
 			else
 			{
-				AllocatableBank bank = freeSpace.get(alloc.popNextUnattemptedAllowableBank());
+				byte nextBank = alloc.popNextUnattemptedAllowableBank();
+				AllocatableBank bank = freeSpace.get(nextBank);
 				if (bank == null)
 				{
-					// Error! - ran out of preferences - shouldn't happen with above check
-					// TODO:
-					return false;
+					throw new RuntimeException(String.format("Popped next allowable bank (0x%x) for block " + 
+							alloc.getId() + " but failed to get a reference to the bank! This should never "
+							+ "happen if valid banks are given for the preferences", nextBank));
 				}
 				bank.addMoveableBlock(alloc);
-				DataManagerUtils.assignBlockAndSegmentBanks(alloc, bank.bank, allocIndexes);
+				DataManagerUtils.assignBlockAndSegmentBanks(alloc, bank.bank, assignedAddresses);
 			}
 		}
 		
@@ -154,7 +146,7 @@ public class DataManager
 		List<MoveableBlock> bankAllocsThatDontFit = new LinkedList<>();
 		for (AllocatableBank bank : freeSpace.values())
 		{
-			foundAllocThatDoesntFit = bank.checkForAndRemoveExcessAllocs(bankAllocsThatDontFit, allocIndexes) 
+			foundAllocThatDoesntFit = bank.checkForAndRemoveExcessAllocs(bankAllocsThatDontFit, assignedAddresses) 
 					|| foundAllocThatDoesntFit;
 			allocsThatDontFit.addAll(bankAllocsThatDontFit);
 		}
@@ -175,7 +167,7 @@ public class DataManager
 		// For each bank, assign actual addresses
 		for (AllocatableBank bank : freeSpace.values())
 		{
-			bank.assignAddresses(allocIndexes);
+			bank.assignAddresses(assignedAddresses);
 		}
 	}
 	

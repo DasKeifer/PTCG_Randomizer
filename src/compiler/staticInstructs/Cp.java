@@ -16,7 +16,7 @@ public abstract class Cp extends StaticInstruction
 
 	public static Cp create(String[] args)
 	{
-		final String SUPPORT_STRING = "Cp only supports (Byte) or (Register): Given";
+		final String SUPPORT_STRING = "Cp only supports (Byte) or (Register): Given ";
 		if (args.length != 1)
 		{
 			throw new IllegalArgumentException(SUPPORT_STRING + Arrays.toString(args));
@@ -26,7 +26,7 @@ public abstract class Cp extends StaticInstruction
 		{
 			return new CpByte(CompilerUtils.parseByteArg(args[0]));
 		}
-		catch(IllegalArgumentException iae) {}
+		catch (IllegalArgumentException iae) {} // continue to next constructor
 
 		try
 		{

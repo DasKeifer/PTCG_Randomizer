@@ -1,16 +1,16 @@
 package compiler;
 
 
-import datamanager.AllocatedIndexes;
-import datamanager.BankAddress;
 import rom.Texts;
+import romAddressing.AssignedAddresses;
+import romAddressing.BankAddress;
 
 public abstract class Instruction
 {		
 	public abstract void extractTexts(Texts texts);
 	
-	public abstract int getWorstCaseSize(BankAddress instructionAddress, AllocatedIndexes allocatedIndexes, AllocatedIndexes tempIndexes);
+	public abstract int getWorstCaseSize(BankAddress instructionAddress, AssignedAddresses assignedAddresses, AssignedAddresses tempIndexes);
 
 	// Return size written or something else?
-	public abstract int writeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes);
+	public abstract int writeBytes(byte[] bytes, int addressToWriteAt, AssignedAddresses assignedAddresses);
 }

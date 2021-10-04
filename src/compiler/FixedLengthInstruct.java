@@ -1,8 +1,8 @@
 package compiler;
 
 
-import datamanager.AllocatedIndexes;
-import datamanager.BankAddress;
+import romAddressing.AssignedAddresses;
+import romAddressing.BankAddress;
 
 public abstract class FixedLengthInstruct extends Instruction
 {
@@ -19,17 +19,17 @@ public abstract class FixedLengthInstruct extends Instruction
 	}
 
 	@Override
-	public int getWorstCaseSize(BankAddress unused1, AllocatedIndexes unused2, AllocatedIndexes unused3)
+	public int getWorstCaseSize(BankAddress unused1, AssignedAddresses unused2, AssignedAddresses unused3)
 	{
 		return getSize();
 	}
 	
 	@Override
-	public int writeBytes(byte[] bytes, int indexToAddAt, AllocatedIndexes allocatedIndexes)
+	public int writeBytes(byte[] bytes, int indexToAddAt, AssignedAddresses assignedAddresses)
 	{
-		writeFixedSizeBytes(bytes, indexToAddAt, allocatedIndexes);
+		writeFixedSizeBytes(bytes, indexToAddAt, assignedAddresses);
 		return size;
 	}
 
-	public abstract void writeFixedSizeBytes(byte[] bytes, int indexToAddAt, AllocatedIndexes allocatedIndexes);
+	public abstract void writeFixedSizeBytes(byte[] bytes, int indexToAddAt, AssignedAddresses assignedAddresses);
 }

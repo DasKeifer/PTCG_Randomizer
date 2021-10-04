@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 import compiler.referenceInstructs.PlaceholderInstruction;
-import datamanager.AllocatedIndexes;
-import datamanager.BankAddress;
 import rom.Texts;
+import romAddressing.AssignedAddresses;
+import romAddressing.BankAddress;
 
 public class Segment
 {
@@ -31,12 +31,12 @@ public class Segment
 		placeholderInstructs.add(instruct);
 	}
 	
-	public int getWorstCaseSize(BankAddress segmentAddress, AllocatedIndexes allocatedIndexes, AllocatedIndexes tempIndexes)
+	public int getWorstCaseSize(BankAddress segmentAddress, AssignedAddresses assignedAddresses, AssignedAddresses tempIndexes)
 	{
 		BankAddress instructAddr = new BankAddress(segmentAddress);
 		for (Instruction item : data)
 		{
-			instructAddr.addressInBank += item.getWorstCaseSize(instructAddr, allocatedIndexes, tempIndexes);
+			instructAddr.addressInBank += item.getWorstCaseSize(instructAddr, assignedAddresses, tempIndexes);
 		}
 		return instructAddr.addressInBank - segmentAddress.addressInBank;
 	}
@@ -59,12 +59,12 @@ public class Segment
 		}
 	}
 	
-	public int writeBytes(byte[] bytes, int assignedAddress, AllocatedIndexes allocatedIndexes)
+	public int writeBytes(byte[] bytes, int assignedAddress, AssignedAddresses assignedAddresses)
 	{
 		int writeAddress = assignedAddress;
 		for (Instruction item : data)
 		{
-			writeAddress += item.writeBytes(bytes, writeAddress, allocatedIndexes);
+			writeAddress += item.writeBytes(bytes, writeAddress, assignedAddresses);
 		}
 
 		if (DataBlock.debug)

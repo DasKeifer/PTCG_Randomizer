@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import constants.RomConstants;
 import data.Card;
 import data.hardcodedEffects.HardcodedEffects;
-import datamanager.AllocatedIndexes;
+import romAddressing.AssignedAddresses;
 import util.ByteUtils;
 import util.RomUtils;
 
@@ -19,6 +19,7 @@ public class RomIO
 	
 	static boolean verifyRom(byte[] rawBytes)
 	{
+		// TODO: Do a CRC instead? Maybe if we go with the BPS patch format
 		int index = RomConstants.HEADER_LOCATION;
 		for (byte headerByte : RomConstants.HEADER)
 		{
@@ -117,8 +118,6 @@ public class RomIO
 		// Finalize the card data, texts and blocks
 		cards.finalizeDataForAllocating(texts, blocks);
 		
-		// TODO convert cards to blocks? Then the later probably would make more sense
-		
 		// TODO: temp - trying to get texts working - shove into texts function and rename appropriately
 		blocks.extractTexts(texts);
 		
@@ -126,7 +125,7 @@ public class RomIO
 		texts.convertAndAddBlocks(blocks);
 	}
 	
-	static void writeAllCards(byte[] bytes, Cards<Card> cards, AllocatedIndexes allocations)
+	static void writeAllCards(byte[] bytes, Cards<Card> cards, AssignedAddresses assignedAddresses)
 	{		
 		// First write the 0 index "null" card
 		int ptrIndex = RomConstants.CARD_POINTERS_LOC - RomConstants.CARD_POINTER_SIZE_IN_BYTES;
@@ -147,7 +146,7 @@ public class RomIO
 			ptrIndex += RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 			
 			// Write the card
-			cardIndex = card.writeData(bytes, cardIndex, allocations);
+			cardIndex = card.writeData(bytes, cardIndex, assignedAddresses);
 		}
 
 		// Write the null pointer at the end of the cards pointers

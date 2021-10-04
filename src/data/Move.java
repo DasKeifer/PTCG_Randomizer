@@ -10,10 +10,10 @@ import constants.CardDataConstants.*;
 import data.hardcodedEffects.HardcodedEffects;
 import data.romtexts.EffectDescription;
 import data.romtexts.MoveName;
-import datamanager.AllocatedIndexes;
 import rom.Blocks;
 import rom.Cards;
 import rom.Texts;
+import romAddressing.AssignedAddresses;
 import util.ByteUtils;
 
 public class Move
@@ -299,7 +299,7 @@ public class Move
 	}
 
 	boolean debug = false;
-	public int writeData(byte[] moveBytes, int startIndex, AllocatedIndexes allocIndexes) 
+	public int writeData(byte[] moveBytes, int startIndex, AssignedAddresses assignedAddresses) 
 	{
 		int index = startIndex;
 		
@@ -319,7 +319,7 @@ public class Move
 		moveBytes[index++] = category.getValue();
 		
 		
-		effect.writeEffectPointer(moveBytes, index, allocIndexes);
+		effect.writeEffectPointer(moveBytes, index, assignedAddresses);
 		debug = name.contains("Call for");
 		if (debug)
 		{

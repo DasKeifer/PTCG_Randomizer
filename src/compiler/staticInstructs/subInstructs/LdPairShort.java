@@ -17,10 +17,10 @@ public class LdPairShort extends Ld
 	}
 	
 	@Override
-	public void writeStaticBytes(byte[] bytes, int indexToAddAt)
+	public void writeStaticBytes(byte[] bytes, int indexToWriteAt)
 	{
-		bytes[indexToAddAt++] = (byte) (0x01 | (pair.getValue() << 4));
+		bytes[indexToWriteAt++] = (byte) (0x01 | (pair.getValue() << 4));
 		
-		ByteUtils.writeAsShort(value, bytes, indexToAddAt);
+		ByteUtils.writeAsShort(value, bytes, indexToWriteAt);
 	}
 }

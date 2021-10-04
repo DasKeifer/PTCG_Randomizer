@@ -451,7 +451,8 @@ public class RandomizerApp {
 	        settings.setMovesMatchTypeSpecific(generalRandKeepTypeSpecMovesBox.isSelected());
 	        settings.setMovesRandomNumberOfAttacks(generalRandNumMovesBox.isSelected());
 	        
-	        settings.setApplyMultibankEffectsTweak(true); //TODO
+	        settings.setApplyMultibankEffectsTweak(true); //TODO - add a setting for this? Any reason why this
+	        												// wouldn't be allowed? Probably not
 	        
 	        attacksData.setRandomizationWithinType(moveRandWithinTypeBox.isSelected());
 	        attacksData.setRandomizationStrat(moveRandStrategyGoup.getSelection().getActionCommand());

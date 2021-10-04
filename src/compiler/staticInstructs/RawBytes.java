@@ -37,12 +37,12 @@ public class RawBytes extends StaticInstruction
 	}
 
 	@Override
-	public void writeStaticBytes(byte[] bytes, int indexToAddAt) 
+	public void writeStaticBytes(byte[] bytes, int indexToWriteAt) 
 	{
 		for (byte[] set : allBytes)
 		{
-			ByteUtils.copyBytes(bytes, indexToAddAt, set);
-			indexToAddAt += set.length;
+			ByteUtils.copyBytes(bytes, indexToWriteAt, set);
+			indexToWriteAt += set.length;
 		}
 		
 	}

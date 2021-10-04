@@ -3,10 +3,10 @@ package data;
 import constants.RomConstants;
 import data.romtexts.CardName;
 import data.romtexts.EffectDescription;
-import datamanager.AllocatedIndexes;
 import rom.Blocks;
 import rom.Cards;
 import rom.Texts;
+import romAddressing.AssignedAddresses;
 import util.ByteUtils;
 
 public class NonPokemonCard extends Card
@@ -67,7 +67,7 @@ public class NonPokemonCard extends Card
 	}
 	
 	@Override
-	public int writeData(byte[] cardBytes, int startIndex, AllocatedIndexes allocatedIndexes) 
+	public int writeData(byte[] cardBytes, int startIndex, AssignedAddresses unused) 
 	{
 		int index = commonWriteData(cardBytes, startIndex);
 		

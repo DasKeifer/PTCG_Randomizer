@@ -17,7 +17,7 @@ public abstract class Inc extends StaticInstruction
 
 	public static Inc create(String[] args)
 	{
-		final String SUPPORT_STRING = "Inc only supports (Register) or (RegisterPair): Given";
+		final String SUPPORT_STRING = "Inc only supports (Register) or (RegisterPair): Given ";
 		if (args.length != 1)
 		{
 			throw new IllegalArgumentException(SUPPORT_STRING + Arrays.toString(args));

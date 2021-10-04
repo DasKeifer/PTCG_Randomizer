@@ -1,8 +1,8 @@
 package compiler;
 
 
-import datamanager.AllocatedIndexes;
 import rom.Texts;
+import romAddressing.AssignedAddresses;
 
 public abstract class StaticInstruction extends FixedLengthInstruct
 {
@@ -18,7 +18,7 @@ public abstract class StaticInstruction extends FixedLengthInstruct
 	}
 	
 	@Override
-	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt, AllocatedIndexes allocatedIndexes)
+	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt, AssignedAddresses assignedAddresses)
 	{
 		writeStaticBytes(bytes, indexToAddAt);
 	}

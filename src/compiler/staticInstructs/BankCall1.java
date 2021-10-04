@@ -1,5 +1,7 @@
 package compiler.staticInstructs;
 
+import java.util.Arrays;
+
 import compiler.CompilerUtils;
 import compiler.StaticInstruction;
 import util.ByteUtils;
@@ -17,26 +19,25 @@ public class BankCall1 extends StaticInstruction
 	
 	public static BankCall1 create(String[] args)
 	{		
-		final String allowedArgs = "BankCall1 only supports (short): ";
+		final String SUPPORT_STRING = "BankCall1 only supports (short): Given ";
 		if (args.length != 1)
 		{
-			throw new IllegalArgumentException(allowedArgs + args.toString());
+			throw new IllegalArgumentException(SUPPORT_STRING + Arrays.toString(args));
 		}
 		
 		try
 		{
 			return new BankCall1(CompilerUtils.parseShortArg(args[0]));
 		}
-		catch (IllegalArgumentException iae)
-		{
-			throw new IllegalArgumentException(allowedArgs + iae.getMessage());
-		}
+		catch (IllegalArgumentException iae) {}
+		
+		throw new IllegalArgumentException(SUPPORT_STRING + Arrays.toString(args));
 	}
 	
-	public void writeStaticBytes(byte[] bytes, int indexToAddAt)
+	public void writeStaticBytes(byte[] bytes, int indexToWriteAt)
 	{
 		// bankcall1 is in RST 18
-		bytes[indexToAddAt++] = (byte) (0xC7 | 0x18); 
-		ByteUtils.writeAsShort(value, bytes, indexToAddAt);
+		bytes[indexToWriteAt++] = (byte) (0xC7 | 0x18); 
+		ByteUtils.writeAsShort(value, bytes, indexToWriteAt);
 	}
 }

@@ -3,13 +3,13 @@ package compiler.referenceInstructs;
 
 import compiler.CompilerConstants.InstructionConditions;
 import rom.Texts;
+import romAddressing.AssignedAddresses;
+import romAddressing.BankAddress;
 
 import java.util.Arrays;
 
 import compiler.CompilerUtils;
 import compiler.Instruction;
-import datamanager.AllocatedIndexes;
-import datamanager.BankAddress;
 import util.ByteUtils;
 import util.RomUtils;
 
@@ -131,20 +131,20 @@ public abstract class JumpCallCommon extends Instruction
 		}
 	}
 	
-	protected BankAddress getAddressToGoTo(AllocatedIndexes allocatedIndexes, AllocatedIndexes tempIndexes)
+	protected BankAddress getAddressToGoTo(AssignedAddresses assignedAddresses, AssignedAddresses tempAssigns)
 	{
 		BankAddress address = addressToGoTo;
 		if (address == BankAddress.UNASSIGNED)
 		{
 			// Try and get it from the temp indexes first
-			if (tempIndexes != null)
+			if (tempAssigns != null)
 			{
-				address = tempIndexes.getTry(labelToGoTo);
+				address = tempAssigns.getTry(labelToGoTo);
 			}
 			
 			if (address == BankAddress.UNASSIGNED)
 			{
-				address = allocatedIndexes.getTry(labelToGoTo);
+				address = assignedAddresses.getTry(labelToGoTo);
 				if (address == BankAddress.UNASSIGNED)
 				{
 					return BankAddress.UNASSIGNED;
@@ -161,9 +161,9 @@ public abstract class JumpCallCommon extends Instruction
 	}
 	
 	@Override
-	public int getWorstCaseSize(BankAddress instructAddress, AllocatedIndexes allocatedIndexes, AllocatedIndexes tempIndexes)
+	public int getWorstCaseSize(BankAddress instructAddress, AssignedAddresses assignedAddresses, AssignedAddresses tempAssigns)
 	{
-		if (isFarJpCall(instructAddress, getAddressToGoTo(allocatedIndexes, tempIndexes)))
+		if (isFarJpCall(instructAddress, getAddressToGoTo(assignedAddresses, tempAssigns)))
 		{
 			// If its not assigned, assume the worst
 			return getFarJpCallSize();
@@ -206,10 +206,10 @@ public abstract class JumpCallCommon extends Instruction
 	}
 	
 	@Override
-	public int writeBytes(byte[] bytes, int addressToWriteAt, AllocatedIndexes allocatedIndexes) 
+	public int writeBytes(byte[] bytes, int addressToWriteAt, AssignedAddresses assignedAddresses) 
 	{
 		int writeIdx = addressToWriteAt;
-		BankAddress toGoToAddress = getAddressToGoTo(allocatedIndexes, null);
+		BankAddress toGoToAddress = getAddressToGoTo(assignedAddresses, null);
 		if (!addressToGoTo.isFullAddress())
 		{
 			if (labelToGoTo != null)
