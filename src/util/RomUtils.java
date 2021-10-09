@@ -1,6 +1,7 @@
 package util;
 
 import constants.RomConstants;
+import romAddressing.BankAddress;
 
 public class RomUtils 
 {
@@ -57,6 +58,11 @@ public class RomUtils
 	{
 		return bank * RomConstants.BANK_SIZE + addressInBank;
 	}
+	
+	public static int convertToGlobalAddress(BankAddress bankAddress)
+	{
+		return convertToGlobalAddress(bankAddress.getBank(), bankAddress.getAddressInBank());
+	}
 
 	public static int convertToGlobalAddressFromLoadedBankOffset(byte bank, short loadedBankAddress)
 	{
@@ -76,5 +82,10 @@ public class RomUtils
 			return addressInBank;
 		}
 		return (short) (addressInBank + RomConstants.BANK_SIZE);
+	}
+
+	public static short convertFromBankOffsetToLoadedOffset(BankAddress pointerAddress)
+	{
+		return convertFromBankOffsetToLoadedOffset(pointerAddress.getBank(), pointerAddress.getAddressInBank());
 	}
 }

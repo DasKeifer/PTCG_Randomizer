@@ -5,7 +5,6 @@ import compiler.DataBlock;
 import romAddressing.AssignedAddresses;
 import romAddressing.PrioritizedBankRange;
 import romAddressing.BankRange;
-import util.ByteUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -27,7 +26,7 @@ public class MoveableBlock extends DataBlock
 		this(startingSegmentName, new ArrayList<>());
 	}
 	
-	public MoveableBlock(String startingSegmentName, byte priority, byte startBank, byte stopBank)
+	public MoveableBlock(String startingSegmentName, int priority, byte startBank, byte stopBank)
 	{
 		this(startingSegmentName);
 		addAllowableBankRange(priority, startBank, stopBank);
@@ -49,7 +48,7 @@ public class MoveableBlock extends DataBlock
 		this(sourceLines, new ArrayList<>());
 	}
 	
-	public MoveableBlock(List<String> sourceLines, byte priority, byte startBank, byte stopBank)
+	public MoveableBlock(List<String> sourceLines, int priority, byte startBank, byte stopBank)
 	{
 		this(sourceLines);
 		addAllowableBankRange(priority, startBank, stopBank);
@@ -87,12 +86,12 @@ public class MoveableBlock extends DataBlock
 		allowableBankPreferences.add(new PrioritizedBankRange(bankPref));
 	}
 	
-	public void addAllowableBankRange(byte priority, BankRange bankRange)
+	public void addAllowableBankRange(int priority, BankRange bankRange)
 	{
 		allowableBankPreferences.add(new PrioritizedBankRange(priority, bankRange));
 	}
 	
-	public void addAllowableBankRange(byte priority, byte startBank, byte stopBank)
+	public void addAllowableBankRange(int priority, byte startBank, byte stopBank)
 	{
 		allowableBankPreferences.add(new PrioritizedBankRange(priority, startBank, stopBank));
 	}
@@ -143,7 +142,7 @@ public class MoveableBlock extends DataBlock
 	}
 	
 	// Package
-	byte getNextUnatemptedAllowableBankPriority()
+	int getNextUnatemptedAllowableBankPriority()
 	{
 		if (unattemptedAllowableBankPreferences.isEmpty())
 		{
@@ -182,14 +181,14 @@ public class MoveableBlock extends DataBlock
 	{
 		public int compare(MoveableBlock a1, MoveableBlock a2)
 	    {   
-			int compareVal = ByteUtils.unsignedCompareBytes(a1.getNextUnatemptedAllowableBankPriority(), a2.getNextUnatemptedAllowableBankPriority());
+			int compareVal = Integer.compare(a1.getNextUnatemptedAllowableBankPriority(), a2.getNextUnatemptedAllowableBankPriority());
 			
 			if (compareVal == 0)
 			{
 				// Give larger blocks higher priority - We have to do it agnostic to where things are
 				// allocated but that is okay as this does not need to be 100% accurate
 				final AssignedAddresses emptyAssigns = new AssignedAddresses();
-				compareVal = Integer.compare(a1.getWorstCaseSize(emptyAssigns), a2.getWorstCaseSize(emptyAssigns));
+				compareVal = Integer.compare(a2.getWorstCaseSize(emptyAssigns), a1.getWorstCaseSize(emptyAssigns));
 			}
 			
 			if (compareVal == 0)

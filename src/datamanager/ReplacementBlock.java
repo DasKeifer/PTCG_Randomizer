@@ -12,8 +12,9 @@ public class ReplacementBlock extends FixedBlock
 {
 	int replaceLength;
 	
-	// TODO: Internally pad datablock with nops as part of preparing for alloc? That would make sense to me
-	// TODO: add a way to get the end of the fixed block to skip the nops?
+	// TODO: Internally pad datablock with nops as part of preparing for alloc? That would make sense to me - then
+	// this would handle the end of block reference (at least potentially). Otherwise If we just add a nop when writing, then
+	// the end of block will go to the nop/jump over nops to next code
 	
 	// For write overs with unpredictable sizes including "minimal jumps" for extending/slicing existing code
 	// Auto fill with nop (0x00) after
@@ -62,9 +63,10 @@ public class ReplacementBlock extends FixedBlock
 		}
 			
 		BankAddress bankAddress = assignedAddresses.getThrow(getId());
-		int globalAddress = RomUtils.convertToGlobalAddress(bankAddress.bank, bankAddress.addressInBank);
+		int globalAddress = RomUtils.convertToGlobalAddress(bankAddress);
 		
 		// TODO: Optimize? Write all extra bytes instead? Think this current way was leftover from previous approach
+		// Can save the size from when we do the replace length check above
 		ByteUtils.setBytes(bytes, globalAddress, replaceLength, Nop.NOP_VALUE);
 		
 		super.writeBytes(bytes, assignedAddresses);
@@ -73,7 +75,7 @@ public class ReplacementBlock extends FixedBlock
 		if (debug)
 		{
 			System.out.println("HCE - " + getId());
-			int address = RomUtils.convertToGlobalAddress(getFixedAddress().bank, getFixedAddress().addressInBank);
+			int address = RomUtils.convertToGlobalAddress(getFixedAddress());
 			for (int i = address; i < address + replaceLength; i++)
 			{
 				System.out.println(String.format("0x%x - 0x%x", i, bytes[i]));

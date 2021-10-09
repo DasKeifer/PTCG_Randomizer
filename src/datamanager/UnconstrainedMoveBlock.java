@@ -14,7 +14,7 @@ public class UnconstrainedMoveBlock extends MoveableBlock
 		super(startingSegmentName);
 	}
 	
-	public UnconstrainedMoveBlock(String startingSegmentName, byte priority, byte startBank, byte stopBank)
+	public UnconstrainedMoveBlock(String startingSegmentName, int priority, byte startBank, byte stopBank)
 	{
 		super(startingSegmentName, priority, startBank, stopBank);
 	}
@@ -34,7 +34,7 @@ public class UnconstrainedMoveBlock extends MoveableBlock
 		super(sourceLines);
 	}
 	
-	public UnconstrainedMoveBlock(List<String> sourceLines, byte priority, byte startBank, byte stopBank)
+	public UnconstrainedMoveBlock(List<String> sourceLines, int priority, byte startBank, byte stopBank)
 	{
 		super(sourceLines, priority, startBank, stopBank);
 	}
@@ -52,10 +52,8 @@ public class UnconstrainedMoveBlock extends MoveableBlock
 	@Override
 	public SortedSet<PrioritizedBankRange> getAllowableBankPreferences()
 	{
-		// TODO: be consistent with priority - low is high?
-		// TODO: Also change priority to an int to make it easier to deal with?
 		SortedSet<PrioritizedBankRange> toReturn = super.getAllowableBankPreferences();
-		toReturn.add(new PrioritizedBankRange((byte) 127, (byte) 0, (byte) (RomConstants.NUMBER_OF_BANKS - 1)));
+		toReturn.add(new PrioritizedBankRange(Integer.MAX_VALUE, (byte) 0, (byte) (RomConstants.NUMBER_OF_BANKS - 1)));
 		return toReturn;
 	}
 }

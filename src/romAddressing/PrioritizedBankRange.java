@@ -7,15 +7,15 @@ import util.ByteUtils;
 public class PrioritizedBankRange extends BankRange
 {
 	public static final Comparator<PrioritizedBankRange> BASIC_SORTER = new BasicSorter();
-	byte priority;
+	int priority;
 	
-	public PrioritizedBankRange(byte priority, byte start, byte stopExclusive)
+	public PrioritizedBankRange(int priority, byte start, byte stopExclusive)
 	{
 		super(start, stopExclusive);
 		this.priority = priority;
 	}
 	
-	public PrioritizedBankRange(byte priority, BankRange bankRange) 
+	public PrioritizedBankRange(int priority, BankRange bankRange) 
 	{
 		super(bankRange);
 		this.priority = priority;
@@ -27,8 +27,7 @@ public class PrioritizedBankRange extends BankRange
 		this.priority = toCopy.priority;
 	}
 
-	// TODO: Change to int for ease of use
-	public byte getPriority()
+	public int getPriority()
 	{
 		return priority;
 	}
@@ -37,7 +36,7 @@ public class PrioritizedBankRange extends BankRange
 	{
 		public int compare(PrioritizedBankRange p1, PrioritizedBankRange p2)
 	    {   
-			int compareVal = ByteUtils.unsignedCompareBytes(p1.priority, p2.priority);
+			int compareVal = Integer.compare(p1.priority, p2.priority);
 			
 			if (compareVal == 0)
 			{

@@ -19,23 +19,23 @@ public class PokemonCard extends Card
 	public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
 	public static final int MAX_NUM_MOVES = 2;
 	
-	byte hp; // TODO: non multiples of 10?
-	public EvolutionStage stage; // TODO: Encaspsulate?
-	public CardName prevEvoName; // TODO: Encaspsulate?
+	byte hp; // TODO later: non multiples of 10?
+	public EvolutionStage stage; // TODO later: Encaspsulate?
+	public CardName prevEvoName; // TODO later: Encaspsulate?
 	
 	private Move[] moves;
 	
-	byte retreatCost; // TODO: max allowed?
-	WeaknessResistanceType weakness; // TODO: Allows multiple? Yes
-	WeaknessResistanceType resistance; // TODO: Allows multiple? Yes
-	public PokeCategory pokemonCategory; // TODO: Investigate? Any gameplay impact?
+	byte retreatCost; // TODO later: max allowed?
+	WeaknessResistanceType weakness; // Allows multiple
+	WeaknessResistanceType resistance; // Allows multiple
+	public PokeCategory pokemonCategory; // TODO later: Investigate? Any gameplay impact?
 	public byte pokedexNumber;
-	byte unknownByte1; // TODO: Always 0?
-	byte level; // TODO: Investigate No gameplay impact?
-	short length; //TODO: One byte is feet, another is inches - separate them // TODO: Investigate No gameplay impact?
-	short weight; // TODO: Investigate No gameplay impact?
+	byte unknownByte1; // TODO later: Always 0?
+	byte level; // TODO later: Investigate No gameplay impact?
+	short length; //TODO later: One byte is feet, another is inches - separate them? // TODO later: Investigate No gameplay impact?
+	short weight; // TODO later: Investigate No gameplay impact?
 	PokeDescription description;
-	byte unknownByte2; // TODO: At least somewhat tracks with evo stage in asm files - 19 for first stage, 16 for second stage, 0 for final stage?
+	byte unknownByte2; // TODO later: At least somewhat tracks with evo stage in asm files - 19 for first stage, 16 for second stage, 0 for final stage?
 
 	public PokemonCard()
 	{

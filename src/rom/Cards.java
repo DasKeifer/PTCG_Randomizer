@@ -175,7 +175,7 @@ public class Cards<T extends Card>
 		return cardSet.size();
 	}
 	
-	// TODO: Maybe move out of here since its a bit awkward here?
+	// TODO later: Maybe move out of here since its a bit awkward here?
 	public void finalizeDataForAllocating(Texts texts, Blocks blocks)
 	{
 		for (Card card : toList())

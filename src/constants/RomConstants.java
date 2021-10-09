@@ -20,11 +20,11 @@ public class RomConstants
 	// Text info
 	public static final int MAX_CHARS_POKE_NAME = 20; // not including starting char. For reasons poke names have to be shorter
 	public static final int MAX_CHARS_CARD_NAME = 25; // not including starting char
-	public static final int MAX_CHARS_POKE_CATEGORY = 20; // not including starting char // TODO figure out
-	public static final int MAX_CHARS_MOVE_NAME = 20; // not including starting char // TODO figure out
+	public static final int MAX_CHARS_POKE_CATEGORY = 20; // not including starting char // TODO later: figure out
+	public static final int MAX_CHARS_MOVE_NAME = 20; // not including starting char // TODO later: figure out
 	public static final int MAX_CHARS_PER_LINE_CARD = 36; // Not including newline or starting char 
-	public static final int MAX_CHARS_PER_LINE_TEXTBOX = 36; // Not including newline or starting char // TODO figure out
-	public static final int MAX_CHARS_PER_LINE_HALF_TEXTBOX = 20; // Not including newline or starting char // TODO figure out
+	public static final int MAX_CHARS_PER_LINE_TEXTBOX = 36; // Not including newline or starting char // TODO later: figure out
+	public static final int MAX_CHARS_PER_LINE_HALF_TEXTBOX = 20; // Not including newline or starting char // TODO later: figure out
 	
 	public static final int MAX_LINES_POKE_DESC = 4;
 	public static final int MAX_LINES_HALF_TEXTBOX = 2;
@@ -39,7 +39,7 @@ public class RomConstants
 	public static final int BANK_SIZE = 0x4000;
 	public static final byte NUMBER_OF_BANKS = 64;
 
-	// TODO: It would potentially be more stable to read in from a location in the engine than
+	// TODO later: It would potentially be more stable to read in from a location in the engine than
 	// hardcoded locations in case we ever want to support adding more cards or hacks that add
 	// more cards or shifted data around. Not sure how easy that would be though
 	

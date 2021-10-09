@@ -244,7 +244,7 @@ public class RomText
 		{
 			for (;blockIndex < expectedBlocks; blockIndex++)
 			{
-				ByteUtils.writeAsShort((short)0, bytes, indexesToWriteAt[blockIndex]);
+				ByteUtils.writeAsShort((short) 0, bytes, indexesToWriteAt[blockIndex]);
 			}
 		}
 		
@@ -335,7 +335,7 @@ public class RomText
 		// that means it displays as two spaces but if its an odd char, it displays as one space. To 
 		// keep the  formatting generic, we add the extra space in for all energies to assume the 
 		// "worst" case
-		// TODO: Could probably be slightly smarter about this
+		// TODO later: Could probably be slightly smarter about this
 		for (CharMapConstants.SpecialSymbol specialSym : CharMapConstants.SpecialSymbol.values())
 		{
 			// First remove in case this is called more than once or something

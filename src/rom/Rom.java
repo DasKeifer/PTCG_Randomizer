@@ -81,7 +81,7 @@ public class Rom
 		DataManager manager = new DataManager();
 		AssignedAddresses assignedAddresses = manager.allocateBlocks(rawBytes, blocks);
 			
-		// Now save the cards - TODO: move to blocks eventually? (on future branch)
+		// Now save the cards - TODO later: move to blocks eventually?
 		RomIO.writeAllCards(rawBytes, allCards, assignedAddresses);
 			
 		// Now actually write to the bytes

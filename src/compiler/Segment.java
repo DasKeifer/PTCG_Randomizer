@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import compiler.referenceInstructs.PlaceholderInstruction;
+import constants.RomConstants;
 import rom.Texts;
 import romAddressing.AssignedAddresses;
 import romAddressing.BankAddress;
@@ -33,12 +34,25 @@ public class Segment
 	
 	public int getWorstCaseSize(BankAddress segmentAddress, AssignedAddresses assignedAddresses, AssignedAddresses tempIndexes)
 	{
-		BankAddress instructAddr = new BankAddress(segmentAddress);
+		BankAddress instructAddr = segmentAddress;
 		for (Instruction item : data)
 		{
-			instructAddr.addressInBank += item.getWorstCaseSize(instructAddr, assignedAddresses, tempIndexes);
+			int instructSize = item.getWorstCaseSize(instructAddr, assignedAddresses, tempIndexes);
+			// If it doesn't fit, we have an issue
+			if (!instructAddr.fitsInBankAddress(instructSize))
+			{
+				return -1;
+			}
+			instructAddr = instructAddr.newOffsetted(instructSize);
 		}
-		return instructAddr.addressInBank - segmentAddress.addressInBank;
+		
+		// The instruction can be null if the last instruction perfectly aligned with the end
+		// of the bank
+		if (instructAddr == null)
+		{
+			return RomConstants.BANK_SIZE - segmentAddress.getAddressInBank();
+		}
+		return instructAddr.getAddressInBank() - segmentAddress.getAddressInBank();
 	}
 	
 	public void fillPlaceholders(Map<String, String> placeholderToArgs)

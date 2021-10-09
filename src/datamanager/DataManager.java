@@ -11,16 +11,15 @@ import romAddressing.AssignedAddresses;
 import romAddressing.BankAddress;
 
 public class DataManager
-{
-	// TODO: make static?
-	
-	// Bank, object
+{	
+	// BankId, bank object
 	private SortedMap<Byte, AllocatableBank> freeSpace;
-	private AssignedAddresses assignedAddresses = new AssignedAddresses();
+	private AssignedAddresses assignedAddresses;
 	
 	public DataManager()
 	{
 		freeSpace = new TreeMap<>();
+		assignedAddresses = new AssignedAddresses();
 	}
 	
 	public AssignedAddresses allocateBlocks(
@@ -56,7 +55,7 @@ public class DataManager
 		for (FixedBlock block : blocks.getAllFixedBlocks())
 		{
 			BankAddress address = block.getFixedAddress();
-			DataManagerUtils.assignBlockAndSegmentBanks(block, address.bank, assignedAddresses);
+			DataManagerUtils.assignBlockAndSegmentBanks(block, address.getBank(), assignedAddresses);
 		}
 		
 		// Now go through and assign preliminary addresses and add them to the banks
@@ -64,7 +63,7 @@ public class DataManager
 		{
 			BankAddress address = block.getFixedAddress();
 			DataManagerUtils.assignBlockAndSegmentBankAddresses(block, address, assignedAddresses);
-			freeSpace.get(block.getFixedAddress().bank).addFixedBlock(block, assignedAddresses);
+			freeSpace.get(block.getFixedAddress().getBank()).addFixedBlock(block, assignedAddresses);
 		}
 	}
 	
@@ -171,8 +170,8 @@ public class DataManager
 		}
 	}
 	
-	// TODO: we need to avoid images/gfx somehow - perhaps have it hardcoded which banks these occur in?
-	// GFX banks
+	// TODO later: we need to avoid images/gfx somehow - perhaps have it hardcoded which banks these occur in?
+	// or maybe just have a separate file to read to describe space in rom?
 	
 	//engine banks 0-8 + 9 & a
 	//effect functions: b (overflow to a?)
@@ -182,8 +181,6 @@ public class DataManager
 	//audio 3d & 3e
 	//sfx 3f
 	
-	// TODO: detect all spaces then clear the data? Then we don't have to worry about 
-	// overflowing as much
 	private void determineAllFreeSpace(byte[] rawBytes)
 	{
 		freeSpace.clear();

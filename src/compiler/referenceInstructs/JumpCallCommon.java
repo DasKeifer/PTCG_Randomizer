@@ -176,13 +176,13 @@ public abstract class JumpCallCommon extends Instruction
 	protected static boolean isFarJpCall(BankAddress instructAddress, BankAddress toGoTo)
 	{
 		// If either bank is unassigned, assume the worst
-		if (instructAddress.bank == BankAddress.UNASSIGNED_BANK || toGoTo.bank == BankAddress.UNASSIGNED_BANK)
+		if (instructAddress.getBank() == BankAddress.UNASSIGNED_BANK || toGoTo.getBank() == BankAddress.UNASSIGNED_BANK)
 		{
 			return true;
 		}
 		
 		// If its assigned a specific address and its in the same bank or its in the home bank
-		if (isInBankOrHomeBank(instructAddress.bank, toGoTo.bank))
+		if (isInBankOrHomeBank(instructAddress.getBank(), toGoTo.getBank()))
 		{
 			return false;
 		}
@@ -251,7 +251,7 @@ public abstract class JumpCallCommon extends Instruction
 		}
 		
 		// Now write the local address
-		ByteUtils.writeAsShort(RomUtils.convertFromBankOffsetToLoadedOffset(addressToGoTo.bank, addressToGoTo.addressInBank), bytes, indexToAddAt + 1);
+		ByteUtils.writeAsShort(RomUtils.convertFromBankOffsetToLoadedOffset(addressToGoTo), bytes, indexToAddAt + 1);
 		return 3;
 	}
 
@@ -263,8 +263,8 @@ public abstract class JumpCallCommon extends Instruction
 		bytes[indexToAddAt] = (byte) (0xC7 | farInstuctRstVal); 
 		
 		// Now write the rest of the address
-		bytes[indexToAddAt + 1] = addressToGoTo.bank;
-		ByteUtils.writeAsShort(RomUtils.convertFromBankOffsetToLoadedOffset(addressToGoTo.bank, addressToGoTo.addressInBank), bytes, indexToAddAt + 2);
+		bytes[indexToAddAt + 1] = addressToGoTo.getBank();
+		ByteUtils.writeAsShort(RomUtils.convertFromBankOffsetToLoadedOffset(addressToGoTo), bytes, indexToAddAt + 2);
 		return 4;
 	}
 	

@@ -19,7 +19,7 @@ public class RomIO
 	
 	static boolean verifyRom(byte[] rawBytes)
 	{
-		// TODO: Do a CRC instead? Maybe if we go with the BPS patch format
+		// TODO later: Do a CRC instead? Maybe if we go with the BPS patch format
 		int index = RomConstants.HEADER_LOCATION;
 		for (byte headerByte : RomConstants.HEADER)
 		{
@@ -112,7 +112,7 @@ public class RomIO
 	
 	static void finalizeDataForAllocating(Cards<Card> cards, Texts texts, Blocks blocks)
 	{
-		// Reset the singleton -- TODO: Needed?
+		// Reset the singleton -- TODO later: Needed?
 		HardcodedEffects.reset();
 		
 		// Finalize the card data, texts and blocks

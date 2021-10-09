@@ -66,11 +66,11 @@ public class CustomCardEffect extends CardEffect
 	});
 	
 	private static final List<PrioritizedBankRange> effectFunctionPrefs = Arrays.asList(new PrioritizedBankRange[] {
-		new PrioritizedBankRange((byte) 1, (byte)0xb, (byte)0xc),
-		new PrioritizedBankRange((byte) 2, (byte)0xa, (byte)0xb)
+		new PrioritizedBankRange(1, (byte)0xb, (byte)0xc),
+		new PrioritizedBankRange(2, (byte)0xa, (byte)0xb)
 	});
 	
-	private static final PrioritizedBankRange effectCommandPref = new PrioritizedBankRange((byte)1, (byte)6, (byte)7);
+	private static final PrioritizedBankRange effectCommandPref = new PrioritizedBankRange(1, (byte)6, (byte)7);
 				
 	
 	private class DataOrAddr
@@ -92,26 +92,22 @@ public class CustomCardEffect extends CardEffect
 	}
 	
 	String id;
-	byte priority;
 	private EnumMap<EffectCommandTypes, DataOrAddr> effects;
-	// TODO: For now they are constrained. Maybe make a tweak to allow more banks
+	// TODO later: For now they are constrained. Maybe make a tweak to allow more banks
 	private MoveableBlock effectCommand; 
 	
-	public CustomCardEffect(String id, byte priority)
+	public CustomCardEffect(String id)
 	{
 		this.id = id;
-		this.priority = priority;
 		effects = new EnumMap<>(EffectCommandTypes.class);
 	}
 
 	@Override
 	public CardEffect copy()
 	{
-		// TOOD: Implement
+		// TODO: Implement
 		return null;
 	}
-	
-	// TODO: Add tweak to allow for effect commands in banks other than 6?
 	
 	public static void addTweakToAllowEffectsInMoreBanks(Blocks blocks)
 	{
@@ -133,8 +129,8 @@ public class CustomCardEffect extends CardEffect
 		 with our custom logic that handles other banks
 		 */	
 		UnconstrainedMoveBlock logicBlock = new UnconstrainedMoveBlock(MoreEffectBanksTweakLogicSegCode,
-				(byte) 0, (byte)0x0, (byte)0x1); //Try to fit it in home to avoid bankswaps
-		logicBlock.addAllowableBankRange((byte) 1, (byte)0xb, (byte)0xd);
+				0, (byte)0x0, (byte)0x1); //Try to fit it in home to avoid bankswaps
+		logicBlock.addAllowableBankRange(1, (byte)0xb, (byte)0xd);
 
 		// Create the block to jump to our new logic and make sure it fits nicely into
 		// the existing instructions
@@ -174,7 +170,8 @@ public class CustomCardEffect extends CardEffect
 					// Add the block
 					blocks.addMoveableBlock(effect.getValue().block);
 					
-					// TODO: Make a new class for this that will compress as possible?					
+					// TODO: Make a new class/instruct for this that will compress as possible? Perhaps have a generic
+					// "if not in this bank do x" type instruct for farcall/jump and this?
 					// Signal its a 3 byte pointer while preserving the value
 					effectCommand.appendInstruction(new RawBytes((byte)(effect.getKey().getValue() + MULTIBANK_EFFECT_OFFSET)));
 					// Add the 3 byte pointer
@@ -190,7 +187,7 @@ public class CustomCardEffect extends CardEffect
 	public void writeEffectPointer(byte[] moveBytes, int startIndex, AssignedAddresses assignedAddresses)
 	{
 		BankAddress pointerAddress = assignedAddresses.getThrow(effectCommand.getId());
-		ByteUtils.writeAsShort(RomUtils.convertFromBankOffsetToLoadedOffset(pointerAddress.bank, pointerAddress.addressInBank), moveBytes, startIndex);
+		ByteUtils.writeAsShort(RomUtils.convertFromBankOffsetToLoadedOffset(pointerAddress), moveBytes, startIndex);
 	}
 
 	@Override

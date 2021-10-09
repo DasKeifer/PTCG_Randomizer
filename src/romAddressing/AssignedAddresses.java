@@ -42,7 +42,7 @@ public class AssignedAddresses
 	{
 		if (addresses.containsKey(key))
 		{
-			addresses.get(key).bank = bank;
+			addresses.get(key).setBank(bank);
 		}
 		else
 		{
@@ -53,7 +53,7 @@ public class AssignedAddresses
 	// Rename putAddressInBankOnly
 	public void setAddressInBank(String segmentId, short addressInBank) 
 	{
-		getThrow(segmentId).addressInBank = addressInBank;
+		getThrow(segmentId).setAddressInBank(addressInBank);
 	}
 
 	public BankAddress getThrow(String segmentId)

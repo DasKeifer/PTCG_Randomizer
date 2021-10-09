@@ -11,10 +11,10 @@ import datamanager.ReplacementBlock;
 
 public class Texts 
 {
-	// TODO: Add text labels here? Then we can treat everything as blocks?
+	// TODO later: Add text labels here? Then we can treat everything as blocks?
 	// Or maybe just assume names and create a special class for/funct for
 	// getting the textLabel based on Id?
-	// TODO: Add some snazzy logic to leave most texts in place and only move ones that
+	// TODO later: Add some snazzy logic to leave most texts in place and only move ones that
 	// would be overwritten by adding more pointers
 	private Map<Short, String> textMap;
 	private Map<String, Short> reverseMap;
@@ -103,8 +103,8 @@ public class Texts
 				if (nullTextLabel.isEmpty())
 				{
 					nullTextLabel = "internal_romTextNull";
-					// TODO determine/set actual range - needs to at least be larger than the text pointer offset
-					MoveableBlock nullText = new MoveableBlock(nullTextLabel, (byte)1, (byte)0xd, (byte)0x1c);
+					// TODO later: determine/set actual range - needs to at least be larger than the text pointer offset
+					MoveableBlock nullText = new MoveableBlock(nullTextLabel, 1, (byte)0xd, (byte)0x1c);
 					blocks.addMoveableBlock(nullText);
 					nullText.appendInstruction(new RawBytes("NULL TEXT".getBytes(), textTerminator));
 				}
@@ -125,15 +125,15 @@ public class Texts
 			}
 			
 			// Create the data block from the string bytes and add the trailing null and then add the block for it
-			// TODO determine/set actual range - needs to at least be larger than the text pointer offset
-			MoveableBlock text = new MoveableBlock(textLabel, (byte)1, (byte)0xd, (byte)0x1c);
+			// TODO later: determine/set actual range - needs to at least be larger than the text pointer offset
+			MoveableBlock text = new MoveableBlock(textLabel, 1, (byte)0xd, (byte)0x1c);
 			blocks.addMoveableBlock(text);
 			text.appendInstruction(new RawBytes(stringBytes, textTerminator));
 			usedCount++;
 		}
 
 		// Not -1 because we write the 0th id "000000" pointer
-		// TODO: Make this or something overwrite any partial text that may have been leftover?
+		// TODO later: Make this or something overwrite any partial text that may have been leftover
 		textPtrs.setReplaceLength(textId * RomConstants.TEXT_POINTER_SIZE_IN_BYTES);  
 	}
 }

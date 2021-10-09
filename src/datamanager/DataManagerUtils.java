@@ -31,7 +31,7 @@ public class DataManagerUtils
 		for (String segment : alloc.getSegmentIds())
 		{
 			BankAddress relAddress = relAddresses.getThrow(segment);
-			assignedAddresses.put(segment, relAddress.bank, (short) (relAddress.addressInBank + blockAddress.addressInBank));
+			assignedAddresses.put(segment, relAddress.getBank(), (short) (relAddress.getAddressInBank() + blockAddress.getAddressInBank()));
 		}
 	}
 	

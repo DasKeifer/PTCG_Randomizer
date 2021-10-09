@@ -42,6 +42,6 @@ public class BlockGlobalAddress extends FixedLengthInstruct
 			throw new IllegalAccessError("BlockGlobalAddress tried to write address for " + addressLabel + " but it is not fully assigned: " + address.toString());
 		}
 		
-		ByteUtils.writeLittleEndian(RomUtils.convertToGlobalAddress(address.bank, address.addressInBank) - offset, bytes, addressToWriteAt, SIZE);
+		ByteUtils.writeLittleEndian(RomUtils.convertToGlobalAddress(address) - offset, bytes, addressToWriteAt, SIZE);
 	}
 }

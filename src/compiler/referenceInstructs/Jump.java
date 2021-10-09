@@ -112,14 +112,14 @@ public class Jump extends JumpCallCommon
 	
 	private static int getJrValue(BankAddress instAddress, BankAddress addressToGoTo)
 	{
-		if (instAddress.bank != addressToGoTo.bank)
+		if (!instAddress.isSameBank(addressToGoTo))
 		{
 			return Integer.MAX_VALUE;
 		}
 		
 		// Minus 2 because its relative to the end of the jump
 		// instruction (i.e. we jump less far) and we assume JR for this
-		return addressToGoTo.addressInBank - instAddress.addressInBank - 2;
+		return addressToGoTo.getAddressInBank() - instAddress.getAddressInBank() - 2;
 	}
 
 	@Override

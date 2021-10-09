@@ -39,8 +39,8 @@ public class BlockBankLoadedAddress extends FixedLengthInstruct
 		
 		if (includeBank)
 		{
-			bytes[addressToWriteAt++] = address.bank;
+			bytes[addressToWriteAt++] = address.getBank();
 		}
-		ByteUtils.writeAsShort(RomUtils.convertFromBankOffsetToLoadedOffset(address.bank, address.addressInBank), bytes, addressToWriteAt);
+		ByteUtils.writeAsShort(RomUtils.convertFromBankOffsetToLoadedOffset(address), bytes, addressToWriteAt);
 	}
 }

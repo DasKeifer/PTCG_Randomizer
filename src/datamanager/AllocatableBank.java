@@ -108,7 +108,7 @@ public class AllocatableBank
 			}
 			
 			boolean containedInSpace = false;
-			fixedRange = new AddressRange(block.getFixedAddress().addressInBank, block.getFixedAddress().addressInBank + block.getWorstCaseSize(assignedAddresses));
+			fixedRange = new AddressRange(block.getFixedAddress().getAddressInBank(), block.getFixedAddress().getAddressInBank() + block.getWorstCaseSize(assignedAddresses));
 			for (AddressRange spaceLeft : spacesLeft)
 			{
 				// If it is contained in the space, we found where it lives. We 
@@ -127,8 +127,8 @@ public class AllocatableBank
 			if (!containedInSpace)
 			{
 				throw new RuntimeException(String.format("There was not space from 0x%x to 0x%x in bank 0x%x for FixedBlock %s - "
-						+ "only ReplacementBlocks do not need free space in the bank", block.getFixedAddress().addressInBank, 
-						block.getFixedAddress().addressInBank + block.getWorstCaseSize(assignedAddresses), bank, block.getId()));
+						+ "only ReplacementBlocks do not need free space in the bank", block.getFixedAddress().getAddressInBank(), 
+						block.getFixedAddress().getAddressInBank() + block.getWorstCaseSize(assignedAddresses), bank, block.getId()));
 			}
 			
 			// If we have a new range to add, do so
@@ -147,7 +147,7 @@ public class AllocatableBank
 				continue;
 			}
 			
-			fixedRange = new AddressRange(block.getFixedAddress().addressInBank, block.getFixedAddress().addressInBank + block.getWorstCaseSize(assignedAddresses));
+			fixedRange = new AddressRange(block.getFixedAddress().getAddressInBank(), block.getFixedAddress().getAddressInBank() + block.getWorstCaseSize(assignedAddresses));
 			for (AddressRange spaceLeft : spacesLeft)
 			{
 				splitRange = spaceLeft.removeOverlap(fixedRange);
@@ -181,7 +181,7 @@ public class AllocatableBank
 		return checkForAndRemoveExcessAllocsInCollection(priortizedAllocations.iterator(), assignedAddresses, allocsThatDontFit);
 	}
 
-	// TODO: Probably can optimize packing into bank space some (i.e. leave most space, leave smallest space)
+	// TODO later: Probably can optimize packing into bank space some (i.e. leave most space, leave smallest space)
 	private boolean checkForAndRemoveExcessAllocsInCollection(Iterator<MoveableBlock> allocItr, AssignedAddresses assignedAddresses, List<MoveableBlock> allocsThatDontFit)
 	{
 		boolean stable = false;

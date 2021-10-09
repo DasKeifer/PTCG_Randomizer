@@ -73,7 +73,7 @@ public class HardcodedEffects
 		effectMap.put(cardName, effect);
 	}
 	
-	// TODO: Make so this can be read in from a file. Have a Constants file for all these static things
+	// TODO later: Make so this can be read in from a file. Have a Constants file for all these static things
 	// then have more files that define the datablocks - i.e. their preferences/required locations and
 	// the code itself
 	
@@ -160,13 +160,13 @@ public class HardcodedEffects
 		}
 	}
 	
-	// TODO: Handle cards with multiple IDs (e.g. 4 different pikachus)
-	// TODO: Handle multiple cards (e.g. nidoran male or female)
+	// TODO later: Handle cards with multiple IDs (e.g. 4 different pikachus)
+	// TODO later: Handle multiple cards (e.g. nidoran male or female)
 	public static class CallForFamily
 	{		
 		static final String effectName = "CallForFamily";
 		
-		// TODO: Read from rom?
+		// TODO later: Read from rom?
 		static final int INITIAL_EFFECT_ADDRESS = 0x2cc40; // Bellsprout's but they are all the same even for nidoran
 		static final int PUT_IN_PLAY_AREA_EFFECT_ADDRESS = 0x2ccc2; // Bellsprout's but they are all the same even for nidoran
 
@@ -175,7 +175,7 @@ public class HardcodedEffects
 		{
 			// Just assume the first one for now. This probably won't work well for things like
 			// pikachu where there are versions of them
-			// TODO: can flying pikachu evolve into raichu? Looks like no since it is comparing
+			// TODO later: can flying pikachu evolve into raichu? Looks like no since it is comparing
 			// the pointer and not the text
 //			List<CardId> basicIds = new LinkedList<>();
 //			String basicNames = "";
@@ -287,7 +287,7 @@ public class HardcodedEffects
 						"ret" // Bellsprout found
 			});
 
-			effect = new CustomCardEffect(effectName + toFindBasicOf.name.toString(), (byte) 3);
+			effect = new CustomCardEffect(effectName + toFindBasicOf.name.toString());
 			effect.addEffectCommand(EffectCommandTypes.InitialEffect1, RomUtils.convertToLoadedBankOffset(INITIAL_EFFECT_ADDRESS));
 			effect.addEffectCommand(EffectCommandTypes.AfterDamage, RomUtils.convertToLoadedBankOffset(PUT_IN_PLAY_AREA_EFFECT_ADDRESS));
 			effect.addEffectCommand(EffectCommandTypes.RequireSelection, playerSelectCode);
