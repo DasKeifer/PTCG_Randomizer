@@ -8,7 +8,7 @@ import java.nio.file.Files;
 
 import constants.RomConstants;
 import data.Card;
-import data.hardcodedEffects.HardcodedEffects;
+import data.customCardEffects.HardcodedEffects;
 import romAddressing.AssignedAddresses;
 import util.ByteUtils;
 import util.RomUtils;
@@ -110,16 +110,13 @@ public class RomIO
 		return textMap;
 	}
 	
-	static void finalizeDataForAllocating(Cards<Card> cards, Texts texts, Blocks blocks)
+	static void finalizeDataAndGenerateBlocks(Cards<Card> cards, Texts texts, Blocks blocks)
 	{
 		// Reset the singleton -- TODO later: Needed?
 		HardcodedEffects.reset();
 		
 		// Finalize the card data, texts and blocks
 		cards.finalizeDataForAllocating(texts, blocks);
-		
-		// TODO: temp - trying to get texts working - shove into texts function and rename appropriately
-		blocks.extractTexts(texts);
 		
 		// Convert the text to blocks
 		texts.convertAndAddBlocks(blocks);

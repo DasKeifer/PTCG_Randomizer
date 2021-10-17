@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import data.Card;
-import data.CustomCardEffect;
+import data.customCardEffects.CustomCardEffect;
 import datamanager.DataManager;
 import romAddressing.AssignedAddresses;
 
@@ -17,31 +17,6 @@ public class Rom
 	public Cards<Card> allCards;
 	public Texts idsToText;
 	public Blocks blocks;
-	
-	// TODO: extract to separate class
-	// TODO: Maybe make a smart class that will hold onto the data and only assign it as saving based on total space avail and what not
-	// The class would rejigger and farcall as needed based on available space. That sounds pretty snazzy - lets give it a whirl
-	//
-	// Thoughts on this:
-	// We would need to hold onto pointers for things like text and calls.
-	// Calls we would need special logic to determine if we can do them locally or need a farcall
-	// We also need some concept of non-bank swappable pointers for the effect commands since those assume a bank and are
-	// only given addresses relative to that bank. The addressed location could presumably then farcall something else
-	// Text would just be a matter of putting the right value int so that would be easier
-	// So we have: Call/jp, ldtx, and bankSpecificPointers
-	// Then with that data I think we can rejigger things
-	// Effect command would be byte, bankSpecificPointer(B, effectFunctionId), byte, bankSpecificPointer(B, effectFunctionId), ..., byte
-	// Effect function would then be byte[], call(bank, address), byte[], etc.
-	// 		if it was relocated, the function would just be a farcall to the new loc then a ret
-	
-	// Function - ID, CallLocation(reqBank, address)[], trueBank, trueAddr, data<bytesOrCalls>
-	// Blob - ID, requiredBank, address, data<bytesOrCalls>
-	// Text probably doesn't need to be here - it can be part of defining the data/Is handled separately but then we need to remove the text space from here...
-	// Hmmm gets tricky
-	
-	// Process - do all the texts first. Read in all the text, label all that space as free, but as we add text, it gets used up. This probably isn't too much
-	// of a change from how we do it now.
-	// Then do the other stuff - check if we need to move things around, etc.s
 	
 	public Rom(File romFile) throws IOException
 	{
@@ -67,15 +42,18 @@ public class Rom
 		
 		// Clear the old text from the bytes - the manager will
 		// take care of allocating the space as needed
-		// TODO: clear unused move commands/effects as well?
+		// TODO later: clear unused move commands/effects as well?
 		RomIO.clearAllText(rawBytes);
 		
-		// TODO: Need to handle tweak blocks somehow
+		// TODO later: Need to handle tweak blocks somehow. Should these all be
+		// file defined and selected via a menu? could also include if they default
+		// to on or not. Also for now we can handle these after the other blocks
+		// are generated but we arbitrarily do it before. Is there any reason to
+		// do one or the other?
 		CustomCardEffect.addTweakToAllowEffectsInMoreBanks(blocks);
 		
 		// Finalize all the data to prepare for writing
-		// TODO: Change to generateBlocks or something like that?
-		RomIO.finalizeDataForAllocating(allCards, idsToText, blocks);
+		RomIO.finalizeDataAndGenerateBlocks(allCards, idsToText, blocks);
 		
 		// Now assign locations for the data
 		DataManager manager = new DataManager();

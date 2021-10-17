@@ -38,9 +38,9 @@ public class PlaceholderInstruction extends Instruction
 	}
 	
 	@Override
-	public void extractTexts(Texts texts)
+	public void extractText(Texts texts)
 	{
-		inst.extractTexts(texts);
+		inst.extractText(texts);
 	}
 
 	@Override

@@ -139,9 +139,6 @@ public class Settings
 	private boolean movesMatchPokeSpecific;
 	private boolean movesMatchTypeSpecific;
 	
-	private boolean applyMultibankEffectsTweak;
-	
-	
 	public int getSeedValue()
 	{
 		// Try to treat it as a number first
@@ -220,11 +217,5 @@ public class Settings
 	}
 	public String getSeedString() {
 		return seed;
-	}
-	public boolean applyMultibankEffectsTweak() {
-		return applyMultibankEffectsTweak;
-	}
-	public void setApplyMultibankEffectsTweak(boolean applyMultibankEffectsTweak) {
-		this.applyMultibankEffectsTweak = applyMultibankEffectsTweak;
 	}
 }

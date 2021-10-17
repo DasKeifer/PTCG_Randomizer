@@ -51,6 +51,8 @@ public class DataManager
 	
 	private void allocateFixedBlocks(Blocks blocks)
 	{
+		// TODO: Not working or getting overwritten? Also should be done later
+		
 		// First assign them to their banks. This allows some optimization of sizes some
 		for (FixedBlock block : blocks.getAllFixedBlocks())
 		{

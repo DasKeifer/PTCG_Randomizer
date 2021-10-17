@@ -3,13 +3,16 @@ package data;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import constants.RomConstants;
 import constants.CardDataConstants.*;
-import data.hardcodedEffects.HardcodedEffects;
+import data.customCardEffects.CustomCardEffect;
+import data.customCardEffects.HardcodedEffects;
 import data.romtexts.EffectDescription;
 import data.romtexts.MoveName;
+import datamanager.MoveableBlock;
 import rom.Blocks;
 import rom.Cards;
 import rom.Texts;
@@ -288,7 +291,13 @@ public class Move
 			}
 			
 			CustomCardEffect custEffect = HardcodedEffects.CallForFamily.createMoveEffect(cards, basics);
-			custEffect.convertAndAddBlocks(blocks);
+			List<MoveableBlock> effectBlocks = custEffect.convertToBlocks();
+			for (MoveableBlock block : effectBlocks)
+			{
+				blocks.addMoveableBlock(block);
+				block.extractTextsFromInstructions(texts);
+			}
+			
 			effect = custEffect;
 			description.finalizeAndAddTexts(texts, basics.toList().get(0).name.toString());
 		}

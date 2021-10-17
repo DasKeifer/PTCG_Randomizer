@@ -4,12 +4,9 @@ import util.ByteUtils;
 
 public class DuelConstants 
 {
-	public enum EffectCommandTypes
+	public enum EffectFunctionTypes
 	{
-		// effect command constants (TryExecuteEffectCommandFunction)
-		// Note: the game assumes they are ordered in the effect command in increasing
-		// numeric order. If an effect command does not obey this, things will not work
-		// correctly.
+		// effect function constants (TryExecuteEffectCommandFunction)
 		// Rough execution order and notes on effects:
 		/*; Commands are associated to a time or a scope (EFFECTCMDTYPE_*) that determines when their function is executed during the turn.
 		; - EFFECTCMDTYPE_INITIAL_EFFECT_1: Executed right after attack or trainer card is used. Bypasses Smokescreen and Sand Attack effects.
@@ -35,12 +32,12 @@ public class DuelConstants
 		AiSwitchDefendingPkmn	(0x0a);
 		
 		private byte value;
-		private EffectCommandTypes(int inValue)
+		private EffectFunctionTypes(int inValue)
 		{
 			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
 				throw new IllegalArgumentException("Invalid constant input for "
-						+ "CardRarity enum: " + inValue);
+						+ "EffectFunctionType enum: " + inValue);
 			}
 			value = (byte) inValue;
 		}
@@ -50,16 +47,16 @@ public class DuelConstants
 			return value;
 		}
 		
-	    public static EffectCommandTypes readFromByte(byte b)
+	    public static EffectFunctionTypes readFromByte(byte b)
 	    {
-	    	for (EffectCommandTypes num : EffectCommandTypes.values())
+	    	for (EffectFunctionTypes num : EffectFunctionTypes.values())
 	    	{
 	    		if (b == num.getValue())
 	    		{
 	    			return num;
 	    		}
 	    	}
-	    	throw new IllegalArgumentException("Invalid EffectCommandTypes value " + b + " was passed");
+	    	throw new IllegalArgumentException("Invalid EffectFunctionTypes value " + b + " was passed");
 	    }
 	}
 }

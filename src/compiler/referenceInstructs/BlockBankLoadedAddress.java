@@ -23,7 +23,7 @@ public class BlockBankLoadedAddress extends FixedLengthInstruct
 	}
 
 	@Override
-	public void extractTexts(Texts texts)
+	public void extractText(Texts texts)
 	{
 		// No texts in this instruct
 	}

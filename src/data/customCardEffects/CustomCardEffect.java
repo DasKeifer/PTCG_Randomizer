@@ -1,19 +1,19 @@
-package data;
+package data.customCardEffects;
 
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 
 import compiler.CompilerUtils;
-import compiler.referenceInstructs.BlockBankLoadedAddress;
 import compiler.referenceInstructs.Jump;
-import compiler.staticInstructs.Nop;
 import compiler.staticInstructs.RawBytes;
 import datamanager.MoveableBlock;
 import datamanager.ReplacementBlock;
 import datamanager.UnconstrainedMoveBlock;
-import constants.DuelConstants.EffectCommandTypes;
+import constants.DuelConstants.EffectFunctionTypes;
+import data.CardEffect;
 import rom.Blocks;
 import romAddressing.AssignedAddresses;
 import romAddressing.BankAddress;
@@ -23,7 +23,8 @@ import util.RomUtils;
 
 public class CustomCardEffect extends CardEffect
 {
-	private final byte MULTIBANK_EFFECT_OFFSET = (byte) 0x80;
+	public static final byte EFFECT_FUNCTION_SHORTCUT_BANK = 0xb;
+	public static final byte MULTIBANK_EFFECT_OFFSET = (byte) 0x80;
 
 	private static final String checkCommandLoopFunction = "$3012";
 	private static final String foundCommandFunction = "$301d";
@@ -92,21 +93,26 @@ public class CustomCardEffect extends CardEffect
 	}
 	
 	String id;
-	private EnumMap<EffectCommandTypes, DataOrAddr> effects;
+	private EnumMap<EffectFunctionTypes, DataOrAddr> effects;
 	// TODO later: For now they are constrained. Maybe make a tweak to allow more banks
 	private MoveableBlock effectCommand; 
 	
 	public CustomCardEffect(String id)
 	{
 		this.id = id;
-		effects = new EnumMap<>(EffectCommandTypes.class);
+		effects = new EnumMap<>(EffectFunctionTypes.class);
+		effectCommand = null;
 	}
 
 	@Override
 	public CardEffect copy()
 	{
-		// TODO: Implement
-		return null;
+		// TODO later: Try an remove card copying. If not then consider
+		// making this a deep copy
+		CustomCardEffect copy = new CustomCardEffect(id);
+		copy.effects = new EnumMap<>(effects);
+		copy.effectCommand = effectCommand;
+		return copy;
 	}
 	
 	public static void addTweakToAllowEffectsInMoreBanks(Blocks blocks)
@@ -117,9 +123,7 @@ public class CustomCardEffect extends CardEffect
 		* We add an empty block because the replacement block will handle placing in nops for us to 
 		* get it to the correct size
 		*/
-		ReplacementBlock removeSeg = new ReplacementBlock("MoreEffectBanksTweak_removeSeg", 0x300d, 5);
-		removeSeg.appendInstruction(new Nop(5));  // TODO: Add as auto optimization for fixed blocks
-		blocks.addFixedBlock(removeSeg);
+		blocks.addFixedBlock(new ReplacementBlock("MoreEffectBanksTweak_removeSeg", 0x300d, 5));
 		
 		/* replace
 		 cp c
@@ -131,6 +135,7 @@ public class CustomCardEffect extends CardEffect
 		UnconstrainedMoveBlock logicBlock = new UnconstrainedMoveBlock(MoreEffectBanksTweakLogicSegCode,
 				0, (byte)0x0, (byte)0x1); //Try to fit it in home to avoid bankswaps
 		logicBlock.addAllowableBankRange(1, (byte)0xb, (byte)0xd);
+		blocks.addMoveableBlock(logicBlock);
 
 		// Create the block to jump to our new logic and make sure it fits nicely into
 		// the existing instructions
@@ -139,24 +144,25 @@ public class CustomCardEffect extends CardEffect
 		blocks.addFixedBlock(callLogicSeg);
 	}
 	
-	public void addEffectCommand(EffectCommandTypes type, List<String> sourceLines)
+	public void addEffectFunction(EffectFunctionTypes type, List<String> sourceLines)
 	{
 		effects.put(type, new DataOrAddr(new UnconstrainedMoveBlock(sourceLines, effectFunctionPrefs)));
 	}
 
 	// For referencing existing functions in the game
-	public void addEffectCommand(EffectCommandTypes type, short bankBAddress)
+	public void addEffectFunction(EffectFunctionTypes type, short bankBAddress)
 	{
 		effects.put(type, new DataOrAddr(bankBAddress));
 	}
 
-	public void convertAndAddBlocks(Blocks blocks)
+	public List<MoveableBlock> convertToBlocks()
 	{
+		List<MoveableBlock> blocks = new LinkedList<>();
 		if (!effects.isEmpty())
 		{
 			effectCommand = new MoveableBlock(id, effectCommandPref);
-			blocks.addMoveableBlock(effectCommand);
-			for (Entry<EffectCommandTypes, DataOrAddr> effect : effects.entrySet())
+			blocks.add(effectCommand);
+			for (Entry<EffectFunctionTypes, DataOrAddr> effect : effects.entrySet())
 			{
 				if (effect.getValue().address >= 0) // If it has an address, its an existing function we will tie into
 				{
@@ -167,20 +173,16 @@ public class CustomCardEffect extends CardEffect
 				}
 				else // Otherwise we need to figure out where to put it
 				{
-					// Add the block
-					blocks.addMoveableBlock(effect.getValue().block);
-					
-					// TODO: Make a new class/instruct for this that will compress as possible? Perhaps have a generic
-					// "if not in this bank do x" type instruct for farcall/jump and this?
-					// Signal its a 3 byte pointer while preserving the value
-					effectCommand.appendInstruction(new RawBytes((byte)(effect.getKey().getValue() + MULTIBANK_EFFECT_OFFSET)));
-					// Add the 3 byte pointer
-					effectCommand.appendInstruction(new BlockBankLoadedAddress(effect.getValue().block.getId(), true)); // True = include bank
+					// Add the block containing the custom effect
+					blocks.add(effect.getValue().block);
+					// Now add the instruction to this effect command for pointing to it
+					effectCommand.appendInstruction(new EffectFunctionPointerInstruct(effect.getKey(), effect.getValue().block.getId()));
 				}
 			}
 			// Append a null at the end so we know its finished
 			effectCommand.appendInstruction(new RawBytes((byte) 0));
 		}
+		return blocks;
 	}
 
 	@Override

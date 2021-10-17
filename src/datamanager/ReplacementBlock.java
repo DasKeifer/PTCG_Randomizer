@@ -5,16 +5,11 @@ import java.util.List;
 import compiler.staticInstructs.Nop;
 import romAddressing.AssignedAddresses;
 import romAddressing.BankAddress;
-import util.ByteUtils;
 import util.RomUtils;
 
 public class ReplacementBlock extends FixedBlock
 {
 	int replaceLength;
-	
-	// TODO: Internally pad datablock with nops as part of preparing for alloc? That would make sense to me - then
-	// this would handle the end of block reference (at least potentially). Otherwise If we just add a nop when writing, then
-	// the end of block will go to the nop/jump over nops to next code
 	
 	// For write overs with unpredictable sizes including "minimal jumps" for extending/slicing existing code
 	// Auto fill with nop (0x00) after
@@ -44,8 +39,28 @@ public class ReplacementBlock extends FixedBlock
 	public void setReplaceLength(int length)
 	{
 		replaceLength = length;
+	}	
+	
+	public int getSize()
+	{
+		return replaceLength;
 	}
 	
+	@Override 
+	public int getWorstCaseSize(AssignedAddresses unused)
+	{
+		return getSize();
+	}
+	
+	@Override
+	public AssignedAddresses getSegmentsRelativeAddresses(BankAddress blockAddress, AssignedAddresses assignedAddresses)
+	{
+		AssignedAddresses relAddresses = new AssignedAddresses();
+		getSizeAndSegmentsRelativeAddresses(blockAddress, assignedAddresses, relAddresses, false); // false = don't include end segment
+		relAddresses.put(getEndSegmentId(), new BankAddress(blockAddress.getBank(), (short) getSize()));
+		return relAddresses;
+	}
+
 	boolean debug = false;
 	@Override
 	public void writeBytes(byte[] bytes, AssignedAddresses assignedAddresses)
@@ -55,20 +70,22 @@ public class ReplacementBlock extends FixedBlock
 			throw new IllegalArgumentException("ReplacementBlock replaceLength is invalid (" + replaceLength + ") - it must be greater than 0");
 		}
 		
-		// Preliminary safety check. Need to handle non-continuous write detection
-		// TODO: More Safety Check?
-		if (getWorstCaseSize(assignedAddresses) > replaceLength)
+		// Preliminary safety check
+		// TODO later:  handle non-continuous write detection?
+		int blockSize = getSize();
+		if (blockSize > replaceLength)
 		{
-			throw new IllegalArgumentException("Data size (" + getWorstCaseSize(assignedAddresses) + ") is larger than allowed size (" + replaceLength + ")");
+			throw new IllegalArgumentException("ReplacementBlock Data size (" + blockSize + ") is larger than allowed size (" + replaceLength + ")");
+		}
+		
+		// Now that we know the size, we can pad it with nops
+		if (blockSize < replaceLength)
+		{
+			appendInstruction(new Nop(blockSize - replaceLength));
 		}
 			
-		BankAddress bankAddress = assignedAddresses.getThrow(getId());
-		int globalAddress = RomUtils.convertToGlobalAddress(bankAddress);
-		
-		// TODO: Optimize? Write all extra bytes instead? Think this current way was leftover from previous approach
-		// Can save the size from when we do the replace length check above
-		ByteUtils.setBytes(bytes, globalAddress, replaceLength, Nop.NOP_VALUE);
-		
+		// Now that we padded it so it will replace the whole length safely,
+		// we can just write normally at the address.
 		super.writeBytes(bytes, assignedAddresses);
 
 //		debug = getId().contains("MoreEffect");

@@ -1,6 +1,7 @@
 package compiler;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -21,10 +22,10 @@ public class DataBlock
 	LinkedHashMap<String, Segment> segments; // linked to keep order
 	private String id;
 
-	String rootSegmentName;
-	Segment currSegment;
-	String endSegmentName; // Root name + "." + END_OF_DATA_BLOCK_SUBSEG_LABEL
-	Segment endSegment; // and empty segment so we can refer to with "." + END_OF_BLOCK_LABEL for any datablock
+	private String rootSegmentName;
+	private Segment currSegment;
+	private String endSegmentName; // Root name + "." + END_OF_DATA_BLOCK_SUBSEG_LABEL
+	private Segment endSegment; // and empty segment so we can refer to with "." + END_OF_BLOCK_LABEL for any datablock
 	
 	// Constructor to keep instruction/line less constructors from being ambiguous
 	public DataBlock(String startingSegmentName)
@@ -134,6 +135,11 @@ public class DataBlock
 	{
 		return id;
 	}
+	
+	public String getEndSegmentId()
+	{
+		return endSegmentName;
+	}
 
 	public Set<String> getSegmentIds() 
 	{
@@ -168,17 +174,22 @@ public class DataBlock
 	public int getWorstCaseSize(AssignedAddresses assignedAddresses)
 	{
 		BankAddress blockAddress = assignedAddresses.getTry(getId());
-		return getSizeAndSegmentsRelativeAddresses(blockAddress, assignedAddresses, null); // null = don't care about the relative address of segments
+		return getSizeAndSegmentsRelativeAddresses(blockAddress, assignedAddresses, null, false); // null = don't care about the relative address of segments, false = do not include end segment
 	}
 	
 	public AssignedAddresses getSegmentsRelativeAddresses(BankAddress blockAddress, AssignedAddresses assignedAddresses)
 	{
 		AssignedAddresses relAddresses = new AssignedAddresses();
-		getSizeAndSegmentsRelativeAddresses(blockAddress, assignedAddresses, relAddresses);
+		getSizeAndSegmentsRelativeAddresses(blockAddress, assignedAddresses, relAddresses, true); // true = include end segment
 		return relAddresses;
 	}
 	
-	private int getSizeAndSegmentsRelativeAddresses(BankAddress blockAddress, AssignedAddresses assignedAddresses, AssignedAddresses relAddresses)
+	protected int getSizeAndSegmentsRelativeAddresses(
+			BankAddress blockAddress, 
+			AssignedAddresses assignedAddresses, 
+			AssignedAddresses relAddresses,
+			boolean includeEndSeg
+	)
 	{
 		if (relAddresses == null)
 		{
@@ -200,34 +211,44 @@ public class DataBlock
 		
 		// Otherwise we need more complex logic
 		// Get the starting point of the addresses
-		Map<String, Segment> segmentsWithEndPlaceholder = getSegmentsById();
-		getSegRelAddressesStartingPoint(segmentsWithEndPlaceholder, blockAddress, assignedAddresses, relAddresses);
+		Map<String, Segment> segmentsToUse = getSegmentsById(includeEndSeg);
+		getSegRelAddressesStartingPoint(segmentsToUse, blockAddress, assignedAddresses, relAddresses);
 
 		// Now do more passes until we have a stable length for all the segments
 		boolean stable = false;
 		BankAddress foundAddress;
-		BankAddress relAddress = blockAddress.newAtStartOfBank();
+		BankAddress relAddress;
+		int size = 0;
+		Entry<String, Segment> segEntry;
+		Iterator<Entry<String, Segment>> segIter;
 		while (!stable)
 		{
 			// Assume we are good until proven otherwise
 			stable = true;
 			
-			// Reset the start relative address for this pass
+			// Reset the variables for this pass
+			size = 0;
 			relAddress = blockAddress.newAtStartOfBank();
-			for (Entry<String, Segment> segEntry : segmentsWithEndPlaceholder.entrySet())
+			segIter = segmentsToUse.entrySet().iterator();
+			while (segIter.hasNext())
 			{
+				// Get the next entry and its address
+				segEntry = segIter.next();
 				foundAddress = relAddresses.getThrow(segEntry.getKey());
 
-				// If the address is null (i.e. we reached the end of the block)
-				// and we are not on the end segment, we ran out of room. 
-				if (relAddress == null)
+				// Now get where we found it to be
+				if (size < RomConstants.BANK_SIZE)
 				{
-					// If it is the end segment, then we are good - set the address to the start
-					// of the next bank for now and let it settle like normal
+					relAddress.setAddressInBank((short) size);
+				}
+				else if (size == RomConstants.BANK_SIZE)
+				{
+					// If we are at the limit at this is the end segment, we are fine
 					if (segEntry.getKey() == endSegmentName)
 					{
 						relAddress = new BankAddress((byte) (blockAddress.getBank() + 1), (short) 0);
 					}
+					// Otherwise we have an issue
 					else
 					{
 						throw new RuntimeException("Failed to assign relative address in the bank for the datablock \"" + 
@@ -236,13 +257,15 @@ public class DataBlock
 								") to add");
 					}
 				}
+				// The greater than case is handled by worst case size below - if it would be over length,
+				// it is caught there on the previous iteration
 				
-				// If it doesn't we aren't stable yet and we need to update the stored
-				// address
+				// If it expected address doesn't equal the assigned one, 
+				// we aren't stable yet and we need to update the stored address
 				if (!foundAddress.equals(relAddress))
 				{
 					stable = false;
-					foundAddress = relAddress;
+					foundAddress.setToCopyOf(relAddress);
 				}
 						
 				// Now determine the overall block size so far/where the next segments rel address would be
@@ -254,29 +277,26 @@ public class DataBlock
 							getId() + "\"- Adding a segment (" + segEntry.getKey() + "( makes the datablock's worst " +
 							"case size greater than the bank size (" + RomConstants.BANK_SIZE + ")");
 				}
-				// Will only return a null address if the bank is perfectly full and the next address would
-				// be the start of the next bank
-				relAddress = relAddress.newOffsetted(segSize);
+				size += segSize;
 			}
 		}
 		
-		// The size will be stored in the relAddress since it was added at the end to get the final value
-		return relAddress.getAddressInBank();
+		return size;
 	}
 	
 	private AssignedAddresses getSegRelAddressesStartingPoint(
-			Map<String, Segment> segmentsWithEndPlaceholder, 
+			Map<String, Segment> segmentsToUse, 
 			BankAddress blockAddress, 
 			AssignedAddresses assignedAddresses, 
 			AssignedAddresses startingPoint
 	)
 	{
-		BankAddress allocAddress = assignedAddresses.getTry(segmentsWithEndPlaceholder.entrySet().iterator().next().getKey());
+		BankAddress allocAddress = assignedAddresses.getTry(segmentsToUse.entrySet().iterator().next().getKey());
 		if (allocAddress.isFullAddress())
 		{
 			// This means some allocation has already been done. Leverage that for a starting
 			// point
-			for (Entry<String, Segment> segEntry : segmentsWithEndPlaceholder.entrySet())
+			for (Entry<String, Segment> segEntry : segmentsToUse.entrySet())
 			{
 				allocAddress = assignedAddresses.getTry(segEntry.getKey());
 				if (allocAddress == null)
@@ -297,7 +317,7 @@ public class DataBlock
 		else
 		{			
 			BankAddress nextSegRelAddress = blockAddress.newAtStartOfBank();
-			for (Entry<String, Segment> segEntry : segmentsWithEndPlaceholder.entrySet())
+			for (Entry<String, Segment> segEntry : segmentsToUse.entrySet())
 			{
 				// If the address is null (i.e. we reached the end of the block)
 				// and we are not on the end segment, we ran out of room. 
@@ -357,13 +377,13 @@ public class DataBlock
 		segments = refreshedSegments;
 	}
 
-	public void extractTexts(Texts texts) 
+	public void extractTextsFromInstructions(Texts texts) 
 	{
 		// Use segments because we know we don't need to extract anything in the
 		// end segment placeholder
 		for (Segment seg : segments.values())
 		{
-			seg.extractTexts(texts);
+			seg.extractTextsFromInstructions(texts);
 		}
 		
 		// End reference has no code so no text exisist in it
@@ -382,6 +402,7 @@ public class DataBlock
 		for (Entry<String, Segment> segEntry : segments.entrySet())
 		{
 			BankAddress segAddress = assignedAddresses.getThrow(segEntry.getKey());
+			// TODO: Finding but the address isn't assigned at all...
 			segEntry.getValue().writeBytes(bytes, RomUtils.convertToGlobalAddress(segAddress), assignedAddresses);
 		}
 		

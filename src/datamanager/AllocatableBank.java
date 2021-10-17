@@ -236,6 +236,7 @@ public class AllocatableBank
 		return !allocsThatDontFit.isEmpty();
 	}
 
+	boolean debug = false;
 	public void assignAddresses(AssignedAddresses assignedAddresses) 
 	{
 		// Get the spaces that are left after the fixed block spaces are removed
@@ -246,8 +247,16 @@ public class AllocatableBank
 		
 		for (MoveableBlock block : priortizedAllocations)
 		{
+			if (debug)
+			{
+				System.out.print("Assigning address for block " + block.getId());
+			}
 			placed = false;
-			allocSize = block.getWorstCaseSize(assignedAddresses);
+			allocSize = block.getWorstCaseSize(assignedAddresses);			
+			if (debug)
+			{
+				System.out.print(" - size " + allocSize);
+			}
 			for (AddressRange space : spacesLeft)
 			{
 				if (allocSize <= space.size())
@@ -255,6 +264,7 @@ public class AllocatableBank
 					DataManagerUtils.assignBlockAndSegmentBankAddresses(block, new BankAddress(bank, (short) space.getStart()), assignedAddresses);
 					space.shrink(allocSize);
 					placed = true;
+					break;
 				}
 			}
 			

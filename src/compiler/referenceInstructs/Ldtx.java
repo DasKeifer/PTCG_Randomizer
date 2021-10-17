@@ -46,7 +46,7 @@ public class Ldtx extends FixedLengthInstruct
 	}
 	
 	@Override
-	public void extractTexts(Texts texts)
+	public void extractText(Texts texts)
 	{
 		text.finalizeAndAddTexts(texts);
 	}

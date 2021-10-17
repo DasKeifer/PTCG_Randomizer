@@ -12,7 +12,7 @@ public abstract class StaticInstruction extends FixedLengthInstruct
 	}
 	
 	@Override
-	public void extractTexts(Texts texts)
+	public void extractText(Texts texts)
 	{
 		// Nothing to do here - these are fully static
 	}

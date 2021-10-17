@@ -1,4 +1,4 @@
-package data.hardcodedEffects;
+package data.customCardEffects;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -8,9 +8,8 @@ import java.util.Map;
 import compiler.CompilerUtils;
 import constants.CardDataConstants.EnergyType;
 import constants.CharMapConstants;
-import constants.DuelConstants.EffectCommandTypes;
+import constants.DuelConstants.EffectFunctionTypes;
 import data.Card;
-import data.CustomCardEffect;
 import rom.Cards;
 import util.RomUtils;
 
@@ -77,7 +76,7 @@ public class HardcodedEffects
 	// then have more files that define the datablocks - i.e. their preferences/required locations and
 	// the code itself
 	
-	// TODO: Have a move effect class that contains a uniqueness aspect of globally, type, pokemonname, etc.
+	// TODO later: Have a move effect class that contains a uniqueness aspect of globally, type, pokemonname, etc.
 	// In that class have an effect command and effect pointers
 	//
 	// Have a higher level move effect tracker class that will pull out all the rom's move effects based on pokemon
@@ -288,10 +287,10 @@ public class HardcodedEffects
 			});
 
 			effect = new CustomCardEffect(effectName + toFindBasicOf.name.toString());
-			effect.addEffectCommand(EffectCommandTypes.InitialEffect1, RomUtils.convertToLoadedBankOffset(INITIAL_EFFECT_ADDRESS));
-			effect.addEffectCommand(EffectCommandTypes.AfterDamage, RomUtils.convertToLoadedBankOffset(PUT_IN_PLAY_AREA_EFFECT_ADDRESS));
-			effect.addEffectCommand(EffectCommandTypes.RequireSelection, playerSelectCode);
-			effect.addEffectCommand(EffectCommandTypes.AiSelection, aiSelectCode);
+			effect.addEffectFunction(EffectFunctionTypes.InitialEffect1, RomUtils.convertToLoadedBankOffset(INITIAL_EFFECT_ADDRESS));
+			effect.addEffectFunction(EffectFunctionTypes.AfterDamage, RomUtils.convertToLoadedBankOffset(PUT_IN_PLAY_AREA_EFFECT_ADDRESS));
+			effect.addEffectFunction(EffectFunctionTypes.RequireSelection, playerSelectCode);
+			effect.addEffectFunction(EffectFunctionTypes.AiSelection, aiSelectCode);
 			
 			HardcodedEffects.getInstance().addCardNameUniqueEffect(effectName, toFindBasicOf.name.toString(), effect);
 			return effect;

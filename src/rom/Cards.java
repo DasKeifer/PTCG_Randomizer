@@ -182,6 +182,5 @@ public class Cards<T extends Card>
 		{
 			card.finalizeDataForAllocating(this.upcast(), texts, blocks);
 		}
-		
 	}
 }

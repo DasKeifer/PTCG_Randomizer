@@ -63,14 +63,6 @@ public class Blocks
 			}
 		}
 	}
-
-	public void extractTexts(Texts texts) 
-	{
-		for (DataBlock block : blocksById.values())
-		{
-			block.extractTexts(texts);
-		}
-	}
 	
 	public List<FixedBlock> getAllFixedBlocks()
 	{
@@ -92,7 +84,7 @@ public class Blocks
 	}
 	
 	public void writeData(byte[] bytes, AssignedAddresses assignedAddresses)
-	{
+	{		
 		for (DataBlock block : blocksById.values())
 		{
 			block.writeBytes(bytes, assignedAddresses);

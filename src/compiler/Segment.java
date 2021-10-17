@@ -65,11 +65,11 @@ public class Segment
 
 	// Done at a separate time than placeholders in case we want to incrementally replace 
 	// placeholders prior to extracting texts or linking
-	public void extractTexts(Texts texts) 
+	public void extractTextsFromInstructions(Texts texts) 
 	{
 		for (Instruction item : data)
 		{
-			item.extractTexts(texts);
+			item.extractText(texts);
 		}
 	}
 	

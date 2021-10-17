@@ -155,7 +155,7 @@ public abstract class JumpCallCommon extends Instruction
 	}
 
 	@Override
-	public void extractTexts(Texts texts)
+	public void extractText(Texts texts)
 	{
 		// No texts in this instruct
 	}
@@ -210,7 +210,7 @@ public abstract class JumpCallCommon extends Instruction
 	{
 		int writeIdx = addressToWriteAt;
 		BankAddress toGoToAddress = getAddressToGoTo(assignedAddresses, null);
-		if (!addressToGoTo.isFullAddress())
+		if (!toGoToAddress.isFullAddress())
 		{
 			if (labelToGoTo != null)
 			{
