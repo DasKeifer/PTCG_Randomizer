@@ -74,6 +74,7 @@ public class RomConstants
 
 	// There is alot of text that comes before this but for now we just
 	// care about the card texts which are all grouped at the end
+	// TODO later: used?
 	public static final int FIRST_TEXT_BYTE = 0x3630a;
 	public static final int LAST_TEXT_BYTE = 0x67fff; // Used for padding data as needed
 	

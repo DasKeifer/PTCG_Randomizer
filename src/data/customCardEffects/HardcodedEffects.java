@@ -211,7 +211,7 @@ public class HardcodedEffects
 					"CallForFamilyPS" + cardName + ":",
 						"ld a, $ff",
 						"ldh [$ffa0], a",
-						"call " + FUNC_DISPLAY_CARD_LIST_BANK1ADDR,
+						"call " + FUNC_CREATE_DECK_CARD_LIST_ADDR,
 						"ldtx hl, halfTextBox:Choose a " + cardName + " from the deck",
 						"ldtx bc, cardName:" + cardName,
 						"lb de, " + CONST_SEARCHEFFECT_CARD_ID_VAL + ", " + cardId,

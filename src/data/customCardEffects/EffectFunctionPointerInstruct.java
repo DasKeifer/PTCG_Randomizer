@@ -39,7 +39,7 @@ public class EffectFunctionPointerInstruct extends Instruction
 		// If it was unassigned, then try from the assigned ones
 		if (address == BankAddress.UNASSIGNED)
 		{
-			assignedAddresses.getTry(functionLabel);
+			address = assignedAddresses.getTry(functionLabel);
 		}
 		
 		// If its in b we can use the default logic that only needs the function type and the loaded bank b offset

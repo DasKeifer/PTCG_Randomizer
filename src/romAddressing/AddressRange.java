@@ -23,7 +23,7 @@ public class AddressRange
 	
 	public boolean contains(int doesContain)
 	{
-		return start <= doesContain && stopExclusive < doesContain;
+		return start <= doesContain && doesContain < stopExclusive;
 	}
 	
 	public boolean contains(AddressRange doesContain)
@@ -53,10 +53,23 @@ public class AddressRange
 			// range by splitting it. We return the latter of the two new ranges
 			if (contains(toRemove))
 			{
-				// Split this range up
-				AddressRange newRange = new AddressRange(toRemove.stopExclusive, stopExclusive);
-				stopExclusive = toRemove.start; 
-				return newRange;
+				// if the have the same start, just modify this one as the other would be empty
+				if (toRemove.start == start)
+				{
+					start = toRemove.stopExclusive;
+				}
+				// Similarly if we have the same stop, modify this one too
+				else if (toRemove.stopExclusive == stopExclusive)
+				{
+					stopExclusive = toRemove.start;
+				}
+				// Otherwise, we will end up with splits on each side
+				else
+				{
+					AddressRange newRange = new AddressRange(toRemove.stopExclusive, stopExclusive);
+					stopExclusive = toRemove.start;
+					return newRange;
+				}
 			}
 			// else shorten this up based on the removed portion
 			else if (contains(toRemove.start))

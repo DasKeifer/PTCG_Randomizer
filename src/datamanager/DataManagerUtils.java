@@ -11,7 +11,7 @@ public class DataManagerUtils
 	{			
 		for (String segId : alloc.getSegmentsById().keySet())
 		{
-			assignedAddresses.addSetBank(segId, bank);
+			assignedAddresses.putBankOnly(segId, bank);
 		}
 	}
 
@@ -23,7 +23,7 @@ public class DataManagerUtils
 		}
 	}
 	
-	static boolean debug = true;
+	static boolean debug = false;
 	public static void assignBlockAndSegmentBankAddresses(DataBlock alloc, BankAddress blockAddress, AssignedAddresses assignedAddresses)
 	{
 		AssignedAddresses relAddresses = alloc.getSegmentsRelativeAddresses(blockAddress, assignedAddresses);

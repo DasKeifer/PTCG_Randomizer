@@ -37,8 +37,7 @@ public class AssignedAddresses
 		addresses.put(key, new BankAddress(bank, addressInBank));
 	}
 	
-	// Rename putBankOnly
-	public void addSetBank(String key, byte bank)
+	public void putBankOnly(String key, byte bank)
 	{
 		if (addresses.containsKey(key))
 		{
@@ -50,8 +49,7 @@ public class AssignedAddresses
 		}
 	}
 
-	// Rename putAddressInBankOnly
-	public void setAddressInBank(String segmentId, short addressInBank) 
+	public void putAddressInBankOnly(String segmentId, short addressInBank) 
 	{
 		getThrow(segmentId).setAddressInBank(addressInBank);
 	}

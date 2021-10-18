@@ -392,7 +392,7 @@ public class DataBlock
 	public static boolean debug = false;
 	public void writeBytes(byte[] bytes, AssignedAddresses assignedAddresses)
 	{
-		debug = id.contains("CallFor");
+//		debug = id.contains("CallFor");
 		if (debug) 
 		{
 			System.out.println("Segment - " + id);

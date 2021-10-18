@@ -85,6 +85,7 @@ public class Texts
 	{
 		// Write a null pointer to start because thats how it was in the original rom
 		ReplacementBlock textPtrs = new ReplacementBlock("internal_textPointers", RomConstants.TEXT_POINTERS_LOC);
+		blocks.addFixedBlock(textPtrs);
 		textPtrs.appendInstruction(new RawBytes((byte) 0, (byte) 0, (byte) 0));
 		
 		// Create the rest of the text blocks and pointers

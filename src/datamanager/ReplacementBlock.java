@@ -61,7 +61,7 @@ public class ReplacementBlock extends FixedBlock
 		return relAddresses;
 	}
 
-	boolean debug = false;
+	static boolean debug = false;
 	@Override
 	public void writeBytes(byte[] bytes, AssignedAddresses assignedAddresses)
 	{
@@ -72,21 +72,21 @@ public class ReplacementBlock extends FixedBlock
 		
 		// Preliminary safety check
 		// TODO later:  handle non-continuous write detection?
-		int blockSize = getSize();
+		int blockSize = super.getWorstCaseSize(assignedAddresses);
 		if (blockSize > replaceLength)
 		{
 			throw new IllegalArgumentException("ReplacementBlock Data size (" + blockSize + ") is larger than allowed size (" + replaceLength + ")");
 		}
 		
-		// Now that we know the size, we can pad it with nops
+		// Now that we know if fits, write the meat of the data
+		super.writeBytes(bytes, assignedAddresses);
+		
+		// Now we need to see if we need to append nops at the end
 		if (blockSize < replaceLength)
 		{
-			appendInstruction(new Nop(blockSize - replaceLength));
+			// Create the nop of the size remaining and write it where the other one left off
+			(new Nop(replaceLength - blockSize)).writeBytes(bytes, RomUtils.convertToGlobalAddress(getFixedAddress()) + blockSize, assignedAddresses);
 		}
-			
-		// Now that we padded it so it will replace the whole length safely,
-		// we can just write normally at the address.
-		super.writeBytes(bytes, assignedAddresses);
 
 //		debug = getId().contains("MoreEffect");
 		if (debug)
