@@ -2,10 +2,10 @@ package compiler;
 
 
 import rom.Texts;
-import romAddressing.AssignedAddresses;
-import romAddressing.BankAddress;
+import rom_addressing.AssignedAddresses;
+import rom_addressing.BankAddress;
 
-public abstract class Instruction
+public interface Instruction
 {		
 	public abstract void extractText(Texts texts);
 	

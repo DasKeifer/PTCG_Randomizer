@@ -7,8 +7,9 @@ import java.util.TreeMap;
 
 import constants.RomConstants;
 import rom.Blocks;
-import romAddressing.AssignedAddresses;
-import romAddressing.BankAddress;
+import rom_addressing.AssignedAddresses;
+import rom_addressing.BankAddress;
+import util.RomUtils;
 
 public class DataManager
 {	
@@ -29,11 +30,6 @@ public class DataManager
 		// Determine what space we have free
 		determineAllFreeSpace(bytesToPlaceIn);
 		
-//		for (Entry<Byte, AllocatableBank> entry : freeSpace.entrySet())
-//		{
-//			System.out.println("\t" + entry.getKey() + ": " + entry.getValue());
-//		}
-		
 		// Assign fixed blocks first so the moveable ones can reference them
 		allocateFixedBlocks(blocks);
 	
@@ -50,9 +46,7 @@ public class DataManager
 	}
 	
 	private void allocateFixedBlocks(Blocks blocks)
-	{
-		// TODO: Not working or getting overwritten? Also should be done later
-		
+	{		
 		// First assign them to their banks. This allows some optimization of sizes some
 		for (FixedBlock block : blocks.getAllFixedBlocks())
 		{
@@ -187,9 +181,6 @@ public class DataManager
 	{
 		freeSpace.clear();
 		
-		int spaceAddress;
-		int address;
-		int nextBankBoundary = 0;
 		byte numBanks = (byte) Math.ceil((double) rawBytes.length / RomConstants.BANK_SIZE);
 		for (byte bank = 0; bank < numBanks; bank++)
 		{
@@ -197,40 +188,31 @@ public class DataManager
 			AllocatableBank bankSpace = new AllocatableBank(bank);
 			freeSpace.put(bank, bankSpace);
 			
-			// Reset the address in case the last bank ended with an empty space
-			address = nextBankBoundary;
-			
-			// Determine where this bank ends
-			nextBankBoundary = nextBankBoundary + RomConstants.BANK_SIZE;
-			if (nextBankBoundary > rawBytes.length)
+			determineFreeSpaceInBank(rawBytes, bank, bankSpace);
+		}
+	}
+
+	private void determineFreeSpaceInBank(byte[] rawBytes, byte bankToCheck, AllocatableBank bank)
+	{
+		int[] bankBounds = RomUtils.getBankBounds(bankToCheck);
+		// Loop through the bank looking for empty space
+		int address = bankBounds[0];
+		while (address <= bankBounds[1])
+		{
+			if (rawBytes[address] == (byte) 0xFF)
 			{
-				nextBankBoundary = rawBytes.length;
-			}
-			
-			// Loop through the bank looking for empty space
-			for (/*don't reset*/; address < nextBankBoundary; address++)
-			{
-				if (rawBytes[address] == (byte) 0xFF)
+				int spaceStart = address;
+				while (++address < bankBounds[1] && rawBytes[address] == (byte) 0xFF);
+				
+				// If we found space, then save it to the map
+				// We only save spaces that are at least x long to prevent finding locations that are probably
+				// actually images which can be 0xFF
+				if (address - spaceStart > 40)
 				{
-					spaceAddress = address;
-					for (address++; address < nextBankBoundary; address++)
-					{
-						if (rawBytes[address] != (byte) 0xFF)
-						{
-							break;
-						}
-					}
-					
-					// If we found space, then save it to the map
-					// We only save spaces that are at least 3 long to prevent finding memory locations
-					// which can be 0xFF
-					if (address - spaceAddress > 40)
-					{
-						bankSpace.addSpace(spaceAddress, address);
-						System.out.println(String.format("0x%x - 0x%x - 0x%x", bank, spaceAddress, address - spaceAddress));
-					}
+					bank.addSpace(spaceStart, address);
 				}
-			}
+			} 
+			address++;
 		}
 	}
 }

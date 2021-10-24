@@ -1,10 +1,10 @@
 package compiler;
 
 
-import romAddressing.AssignedAddresses;
-import romAddressing.BankAddress;
+import rom_addressing.AssignedAddresses;
+import rom_addressing.BankAddress;
 
-public abstract class FixedLengthInstruct extends Instruction
+public abstract class FixedLengthInstruct implements Instruction
 {
 	private int size;
 	

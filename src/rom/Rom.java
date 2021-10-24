@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.IOException;
 
 import data.Card;
-import data.customCardEffects.CustomCardEffect;
+import data.custom_card_effects.CustomCardEffect;
 import datamanager.DataManager;
-import romAddressing.AssignedAddresses;
+import rom_addressing.AssignedAddresses;
 
 public class Rom
 {
@@ -36,7 +36,7 @@ public class Rom
 		allCards = RomIO.readAllCardsFromPointers(rawBytes, idsToText);
 	}
 	
-	public void writeRom(File romFile) throws IOException
+	public void writeRom(File romFile)
 	{
 		// TODO merge with ROM?
 		

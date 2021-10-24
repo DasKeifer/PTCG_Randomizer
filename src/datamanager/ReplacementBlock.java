@@ -2,9 +2,9 @@ package datamanager;
 
 import java.util.List;
 
-import compiler.staticInstructs.Nop;
-import romAddressing.AssignedAddresses;
-import romAddressing.BankAddress;
+import compiler.static_instructs.Nop;
+import rom_addressing.AssignedAddresses;
+import rom_addressing.BankAddress;
 import util.RomUtils;
 
 public class ReplacementBlock extends FixedBlock
@@ -16,22 +16,22 @@ public class ReplacementBlock extends FixedBlock
 	public ReplacementBlock(String startingSegmentName, int fixedStartAddress)
 	{
 		super(startingSegmentName, fixedStartAddress);
-		setCommonData(-1);
+		setReplacementBlockCommonData(-1);
 	}
 	
 	public ReplacementBlock(String startingSegmentName, int fixedStartAddress, int replaceLength)
 	{
 		super(startingSegmentName, fixedStartAddress);
-		setCommonData(replaceLength);
+		setReplacementBlockCommonData(replaceLength);
 	}
 	
 	public ReplacementBlock(List<String> sourceLines, int fixedStartAddress, int replaceLength)
 	{
 		super(sourceLines, fixedStartAddress);
-		setCommonData(replaceLength);
+		setReplacementBlockCommonData(replaceLength);
 	}
 	
-	private void setCommonData(int replaceLength)
+	private void setReplacementBlockCommonData(int replaceLength)
 	{
 		this.replaceLength = replaceLength;
 	}
@@ -61,7 +61,6 @@ public class ReplacementBlock extends FixedBlock
 		return relAddresses;
 	}
 
-	static boolean debug = false;
 	@Override
 	public void writeBytes(byte[] bytes, AssignedAddresses assignedAddresses)
 	{
@@ -86,17 +85,6 @@ public class ReplacementBlock extends FixedBlock
 		{
 			// Create the nop of the size remaining and write it where the other one left off
 			(new Nop(replaceLength - blockSize)).writeBytes(bytes, RomUtils.convertToGlobalAddress(getFixedAddress()) + blockSize, assignedAddresses);
-		}
-
-//		debug = getId().contains("MoreEffect");
-		if (debug)
-		{
-			System.out.println("HCE - " + getId());
-			int address = RomUtils.convertToGlobalAddress(getFixedAddress());
-			for (int i = address; i < address + replaceLength; i++)
-			{
-				System.out.println(String.format("0x%x - 0x%x", i, bytes[i]));
-			}
 		}
 	}
 }

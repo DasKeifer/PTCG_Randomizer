@@ -8,15 +8,15 @@ import java.util.Set;
 
 import constants.RomConstants;
 import constants.CardDataConstants.*;
-import data.customCardEffects.CustomCardEffect;
-import data.customCardEffects.HardcodedEffects;
+import data.custom_card_effects.CustomCardEffect;
+import data.custom_card_effects.HardcodedEffects;
 import data.romtexts.EffectDescription;
 import data.romtexts.MoveName;
 import datamanager.MoveableBlock;
 import rom.Blocks;
 import rom.Cards;
 import rom.Texts;
-import romAddressing.AssignedAddresses;
+import rom_addressing.AssignedAddresses;
 import util.ByteUtils;
 
 public class Move
@@ -290,7 +290,7 @@ public class Move
 				throw new IllegalArgumentException("Failed to find basic card for " + hostCard.name.toString());
 			}
 			
-			CustomCardEffect custEffect = HardcodedEffects.CallForFamily.createMoveEffect(cards, basics);
+			CustomCardEffect custEffect = HardcodedEffects.CallForFamily.createMoveEffect(/*cards,*/ basics);
 			List<MoveableBlock> effectBlocks = custEffect.convertToBlocks();
 			for (MoveableBlock block : effectBlocks)
 			{

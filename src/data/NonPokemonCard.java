@@ -6,7 +6,7 @@ import data.romtexts.EffectDescription;
 import rom.Blocks;
 import rom.Cards;
 import rom.Texts;
-import romAddressing.AssignedAddresses;
+import rom_addressing.AssignedAddresses;
 import util.ByteUtils;
 
 public class NonPokemonCard extends Card

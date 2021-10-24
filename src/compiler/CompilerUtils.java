@@ -6,14 +6,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import compiler.CompilerConstants.*;
-import compiler.referenceInstructs.*;
-import compiler.staticInstructs.*;
+import compiler.reference_instructs.*;
+import compiler.static_instructs.*;
 import constants.RomConstants;
 import data.romtexts.*;
 import util.ByteUtils;
 
-public class CompilerUtils 
+public final class CompilerUtils 
 {
+	private CompilerUtils() {}
+	
 	public static final int UNASSIGNED_ADDRESS = -1;
 	public static final int UNASSIGNED_BANK = -1;
 	public static final int UNASSIGNED_LOCAL_ADDRESS = -2;
@@ -181,7 +183,7 @@ public class CompilerUtils
 		}		
 
 		int maxLines = Integer.MAX_VALUE; // Unbounded by default
-		int charsPerLine = Integer.MAX_VALUE; // Unbounded by default
+		int charsPerLine; // Unbounded by default
 		switch (formatAndVal[0].toLowerCase())
 		{
 			case "pokename":
@@ -223,11 +225,7 @@ public class CompilerUtils
 	
 	public static boolean containsPlaceholder(String line)
 	{
-		if (line.contains(PLACEHOLDER_MARKER))
-		{
-			return true;
-		}
-		return false;
+		return line.contains(PLACEHOLDER_MARKER);
 	}
 	
 	public static String createPlaceholder(String placeholderId)

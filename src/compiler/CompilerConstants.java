@@ -24,8 +24,8 @@ public class CompilerConstants
 			// half to make things make more sense in this code
 			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
-				throw new IllegalArgumentException("Invalid constant input for "
-						+ "Register enum " + inValue);
+				throw new IllegalArgumentException(
+						"Invalid constant input for Register enum " + inValue);
 			}
 			value = (byte) inValue;
 		}
@@ -52,8 +52,8 @@ public class CompilerConstants
 			// half to make things make more sense in this code
 			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
-				throw new IllegalArgumentException("Invalid constant input for "
-						+ "RegisterPair enum " + inValue);
+				throw new IllegalArgumentException(
+						"Invalid constant input for RegisterPair enum " + inValue);
 			}
 			value = (byte) inValue;
 		}
@@ -80,8 +80,8 @@ public class CompilerConstants
 			// half to make things make more sense in this code
 			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
-				throw new IllegalArgumentException("Invalid constant input for "
-						+ "PushPopRegisterPair enum " + inValue);
+				throw new IllegalArgumentException(
+						"Invalid constant input for PushPopRegisterPair enum " + inValue);
 			}
 			value = (byte) inValue;
 		}
@@ -108,8 +108,8 @@ public class CompilerConstants
 			// half to make things make more sense in this code
 			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
-				throw new IllegalArgumentException("Invalid constant input for "
-						+ "InstructionConditions enum " + inValue);
+				throw new IllegalArgumentException(
+						"Invalid constant input for InstructionConditions enum " + inValue);
 			}
 			value = (byte) inValue;
 		}

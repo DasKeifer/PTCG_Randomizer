@@ -4,11 +4,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import compiler.referenceInstructs.PlaceholderInstruction;
+import compiler.reference_instructs.PlaceholderInstruction;
 import constants.RomConstants;
 import rom.Texts;
-import romAddressing.AssignedAddresses;
-import romAddressing.BankAddress;
+import rom_addressing.AssignedAddresses;
+import rom_addressing.BankAddress;
 
 public class Segment
 {
@@ -79,14 +79,6 @@ public class Segment
 		for (Instruction item : data)
 		{
 			writeAddress += item.writeBytes(bytes, writeAddress, assignedAddresses);
-		}
-
-		if (DataBlock.debug)
-		{
-			for (int i = assignedAddress; i < writeAddress; i++)
-			{
-				System.out.println(String.format("0x%x - 0x%x", i, bytes[i]));
-			}
 		}
 		
 		return writeAddress - assignedAddress;

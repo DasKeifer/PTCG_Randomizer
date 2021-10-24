@@ -4,8 +4,8 @@ package datamanager;
 import java.util.List;
 
 import compiler.DataBlock;
-import romAddressing.AssignedAddresses;
-import romAddressing.BankAddress;
+import rom_addressing.AssignedAddresses;
+import rom_addressing.BankAddress;
 
 public class FixedBlock extends DataBlock
 {
@@ -15,16 +15,16 @@ public class FixedBlock extends DataBlock
 	public FixedBlock(String startingSegmentName, int fixedStartAddress)
 	{
 		super(startingSegmentName);
-		setCommonData(fixedStartAddress);
+		setFixedBlockCommonData(fixedStartAddress);
 	}
 	
 	public FixedBlock(List<String> sourceLines, int fixedStartAddress)
 	{
 		super(sourceLines);
-		setCommonData(fixedStartAddress);
+		setFixedBlockCommonData(fixedStartAddress);
 	}
 	
-	private void setCommonData(int fixedStartAddress)
+	private void setFixedBlockCommonData(int fixedStartAddress)
 	{
 		address = new BankAddress(fixedStartAddress);
 	}

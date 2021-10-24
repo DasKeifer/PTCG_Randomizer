@@ -1,10 +1,12 @@
 package util;
 
 import constants.RomConstants;
-import romAddressing.BankAddress;
+import rom_addressing.BankAddress;
 
-public class RomUtils 
+public final class RomUtils 
 {
+	private RomUtils() {}
+	
 	public static byte determineBank(int address)
 	{
 		return (byte) (address / RomConstants.BANK_SIZE);

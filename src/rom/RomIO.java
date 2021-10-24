@@ -1,15 +1,14 @@
 package rom;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 
 import constants.RomConstants;
 import data.Card;
-import data.customCardEffects.HardcodedEffects;
-import romAddressing.AssignedAddresses;
+import data.custom_card_effects.HardcodedEffects;
+import rom_addressing.AssignedAddresses;
 import util.ByteUtils;
 import util.RomUtils;
 
@@ -42,8 +41,6 @@ public class RomIO
 		try (FileOutputStream fos = new FileOutputStream(romFile))
 		{
 			fos.write(rawBytes);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -1,7 +1,9 @@
 package util;
 
-public class ByteUtils 
+public final class ByteUtils 
 {	
+	private ByteUtils() {}
+	
 	public static final int MAX_BYTE_VALUE = 0xff;
 	public static final int MIN_BYTE_VALUE = 0x00;
 	public static final int MAX_HEX_CHAR_VALUE = 0xf;
@@ -110,7 +112,23 @@ public class ByteUtils
 		}
 		return number;
 	}
-
+	
+	public static void writeLittleEndian(int value, byte[] byteArray, int index, int numBytes) 
+	{
+		if (numBytes > 4)
+		{
+			String errorText = "writeLittleEndian: Bytes must fit in a int (i.e. be less than 4) if an int "
+					+ "is passed. Was given " + numBytes;
+			if (numBytes <= 8)
+			{
+				errorText += ". Use the version that takes a long instead";
+			}
+			throw new IllegalArgumentException(errorText);
+		}
+		
+		writeLittleEndian((long) value, byteArray, index, numBytes);
+	}
+	
 	public static void writeLittleEndian(long value, byte[] byteArray, int index, int numBytes) 
 	{	
 		if (numBytes > 8)
@@ -180,7 +198,7 @@ public class ByteUtils
 		}
 		
 		long val = Long.parseLong(str, 16); //16 = hex
-		if (val > (Math.pow(MAX_BYTE_VALUE + 1, numBytes) - 1) || val < MIN_BYTE_VALUE)
+		if (val > (Math.pow(MAX_BYTE_VALUE + 1.0, numBytes) - 1) || val < MIN_BYTE_VALUE)
 		{
 			throw new NumberFormatException("Failed to parse " + numBytes + " unsigned hex bytes from " + str);
 		}

@@ -1,6 +1,6 @@
 package data;
 
-import romAddressing.AssignedAddresses;
+import rom_addressing.AssignedAddresses;
 import util.ByteUtils;
 
 public class UnchangedCardEffect extends CardEffect

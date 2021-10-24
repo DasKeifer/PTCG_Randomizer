@@ -1,6 +1,6 @@
 package data;
 
-import romAddressing.AssignedAddresses;
+import rom_addressing.AssignedAddresses;
 
 public abstract class CardEffect 
 {

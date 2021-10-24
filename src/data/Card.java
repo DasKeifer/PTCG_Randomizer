@@ -9,7 +9,7 @@ import data.romtexts.CardName;
 import rom.Blocks;
 import rom.Cards;
 import rom.Texts;
-import romAddressing.AssignedAddresses;
+import rom_addressing.AssignedAddresses;
 import util.ByteUtils;
 
 import java.security.InvalidParameterException;

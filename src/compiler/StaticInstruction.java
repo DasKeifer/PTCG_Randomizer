@@ -2,7 +2,7 @@ package compiler;
 
 
 import rom.Texts;
-import romAddressing.AssignedAddresses;
+import rom_addressing.AssignedAddresses;
 
 public abstract class StaticInstruction extends FixedLengthInstruct
 {

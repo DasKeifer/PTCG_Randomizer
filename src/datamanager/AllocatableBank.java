@@ -5,9 +5,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import romAddressing.AddressRange;
-import romAddressing.AssignedAddresses;
-import romAddressing.BankAddress;
+import rom_addressing.AddressRange;
+import rom_addressing.AssignedAddresses;
+import rom_addressing.BankAddress;
 import util.RomUtils;
 
 public class AllocatableBank 
@@ -61,23 +61,27 @@ public class AllocatableBank
 			
 			// Then go through and remove the overlap potentially adding a new space in if the removed space is in the middle
 			// of an existing space
-			for (int spaceIdx = 0; spaceIdx < spaces.size(); spaceIdx++)
+			AddressRange space;
+			Iterator<AddressRange> spaceItr = spaces.iterator();
+			List<AddressRange> newRanges = new LinkedList<>();
+			while (spaceItr.hasNext())
 			{
-				AddressRange space = spaces.get(spaceIdx);
+				space = spaceItr.next();
 				AddressRange otherSplit = space.removeOverlap(bankRelative);
 				
 				if (space.isEmpty())
 				{
-					spaces.remove(spaceIdx--);
+					spaceItr.remove();
 				}
 				else if (otherSplit != null)
 				{
-					// Add it and skip it since we already checked it. We add it after
-					// because the function will shorten the address its called on to
-					// the first of the two spaces and return the "higher" of the two
-					spaces.add(spaceIdx++, new AddressRange(otherSplit));
+					// We don't need to add the split now since we already have checked the space it came from
+					newRanges.add(otherSplit);
 				}
 			}
+			
+			// Add any new ranges that were created
+			spaces.addAll(newRanges);
 		}
 	}
 	
@@ -95,10 +99,19 @@ public class AllocatableBank
 		{
 			spacesLeft.add(new AddressRange(range));
 		}
+		
+		removeFixedBlocksSpaces(spacesLeft, assignedAddresses);
+		removeReplacementBlocksSpaces(spacesLeft, assignedAddresses);
+			
+		// Getting here means we found space for every fixed alloc
+		return spacesLeft;
+	}
 
-		boolean containedInSpace;
+	private void removeFixedBlocksSpaces(List<AddressRange> spacesLeft, AssignedAddresses assignedAddresses)
+	{
+		AddressRange containingSpace = null;
 		AddressRange fixedRange;
-		AddressRange splitRange = null;
+		int spaceIndex;
 		for (FixedBlock block : fixedAllocations)
 		{
 			// If its a replacement block, we might not have space for it since its overwriting
@@ -109,39 +122,50 @@ public class AllocatableBank
 			}
 			
 			// For non replacement blocks, we need to make sure they fit in a space
-			containedInSpace = false;
+			// We know that it should always be contained in a space
 			fixedRange = new AddressRange(block.getFixedAddress().getAddressInBank(), block.getFixedAddress().getAddressInBank() + block.getWorstCaseSize(assignedAddresses));
-			for (AddressRange spaceLeft : spacesLeft)
+			for (spaceIndex = 0; spaceIndex < spacesLeft.size(); spaceIndex++)
 			{
 				// If it is contained in the space, we found where it lives. We 
 				// need to remove it from the space and potentially add a new
 				// space to the list
-				if (spaceLeft.contains(fixedRange))
+				if (spacesLeft.get(spaceIndex).contains(fixedRange))
 				{
-					splitRange = spaceLeft.removeOverlap(fixedRange);
-					containedInSpace = true;
+					containingSpace = spacesLeft.get(spaceIndex);
 					break;
 				}
 			}
 			
 			// If we didn't find any space that fits this, then we cannot put it here so we
 			// abort
-			if (!containedInSpace)
+			if (containingSpace == null)
 			{
 				throw new RuntimeException(String.format("There was not space from 0x%x to 0x%x in bank 0x%x for FixedBlock %s - "
 						+ "only ReplacementBlocks do not need free space in the bank", block.getFixedAddress().getAddressInBank(), 
 						block.getFixedAddress().getAddressInBank() + block.getWorstCaseSize(assignedAddresses), bank, block.getId()));
 			}
 			
-			// If we have a new range to add, do so
+			// Otherwise its good - we found a space that contains it as expected
+			AddressRange splitRange = containingSpace.removeOverlap(fixedRange);
+			if (containingSpace.isEmpty())
+			{
+				spacesLeft.remove(spaceIndex);
+			}
 			if (splitRange != null)
 			{
 				spacesLeft.add(splitRange);
 			}
 		}
-		
+	}
+	
+	private void removeReplacementBlocksSpaces(List<AddressRange> spacesLeft, AssignedAddresses assignedAddresses)
+	{
 		// We still need to remove the overlap for the replacement blocks if there is any though
+		AddressRange fixedRange;
+		AddressRange space;
+		AddressRange splitRange;
 		List<AddressRange> newRanges = new LinkedList<>();
+		Iterator<AddressRange> spacesItr;
 		for (FixedBlock block : fixedAllocations)
 		{
 			// Non replacement blocks have already been handled
@@ -151,9 +175,16 @@ public class AllocatableBank
 			}
 			
 			fixedRange = new AddressRange(block.getFixedAddress().getAddressInBank(), block.getFixedAddress().getAddressInBank() + block.getWorstCaseSize(assignedAddresses));
-			for (AddressRange spaceLeft : spacesLeft)
+			spacesItr = spacesLeft.iterator();
+			while (spacesItr.hasNext())
 			{
-				splitRange = spaceLeft.removeOverlap(fixedRange);
+				space = spacesItr.next();
+				splitRange = space.removeOverlap(fixedRange);
+				// Make sure its not empty. If it is remove it
+				if (space.isEmpty())
+				{
+					spacesItr.remove();
+				}
 				// If we have a new range to add, add it to a temp list. We have to do this
 				// because we could overlap with more than one space and we can't add during
 				// the loop because that would cause concurrent modifications
@@ -166,9 +197,6 @@ public class AllocatableBank
 		
 		// Add any newly created spaces to the list
 		spacesLeft.addAll(newRanges);
-		
-		// Getting here means we found space for every fixed alloc
-		return spacesLeft;
 	}
 	
 	public void addMoveableBlock(MoveableBlock alloc)

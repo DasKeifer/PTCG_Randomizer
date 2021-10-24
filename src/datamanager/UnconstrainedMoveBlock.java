@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.SortedSet;
 
 import constants.RomConstants;
-import romAddressing.PrioritizedBankRange;
+import rom_addressing.PrioritizedBankRange;
 
 public class UnconstrainedMoveBlock extends MoveableBlock
 {

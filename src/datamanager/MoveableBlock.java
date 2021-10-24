@@ -2,9 +2,9 @@ package datamanager;
 
 
 import compiler.DataBlock;
-import romAddressing.AssignedAddresses;
-import romAddressing.PrioritizedBankRange;
-import romAddressing.BankRange;
+import rom_addressing.AssignedAddresses;
+import rom_addressing.BankRange;
+import rom_addressing.PrioritizedBankRange;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -40,7 +40,7 @@ public class MoveableBlock extends DataBlock
 	public MoveableBlock(String startingSegmentName, List<PrioritizedBankRange> prefs)
 	{
 		super(startingSegmentName);
-		setCommonData(prefs);
+		setMoveableBlockCommonData(prefs);
 	}
 	
 	protected MoveableBlock(List<String> sourceLines)
@@ -62,7 +62,7 @@ public class MoveableBlock extends DataBlock
 	public MoveableBlock(List<String> sourceLines, List<PrioritizedBankRange> prefs)
 	{
 		super(sourceLines);
-		setCommonData(prefs);
+		setMoveableBlockCommonData(prefs);
 	}
 	
 	private static ArrayList<PrioritizedBankRange> prefAsList(PrioritizedBankRange pref)
@@ -72,7 +72,7 @@ public class MoveableBlock extends DataBlock
 		return prefAsList;
 	}
 	
-	private void setCommonData(List<PrioritizedBankRange> prefs)
+	private void setMoveableBlockCommonData(List<PrioritizedBankRange> prefs)
 	{		
 		allowableBankPreferences = new TreeSet<>(PrioritizedBankRange.BASIC_SORTER);
 		for (PrioritizedBankRange pref : prefs)
@@ -153,7 +153,7 @@ public class MoveableBlock extends DataBlock
 	
 	private void removeUnattemptedBank(byte bank)
 	{
-		List<PrioritizedBankRange> modified = new LinkedList<PrioritizedBankRange>();
+		List<PrioritizedBankRange> modified = new LinkedList<>();
 		Iterator<PrioritizedBankRange> iter = unattemptedAllowableBankPreferences.iterator();
 		PrioritizedBankRange currPref;
 		while (iter.hasNext())

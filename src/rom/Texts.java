@@ -3,8 +3,8 @@ package rom;
 import java.util.HashMap;
 import java.util.Map;
 
-import compiler.referenceInstructs.BlockGlobalAddress;
-import compiler.staticInstructs.RawBytes;
+import compiler.reference_instructs.BlockGlobalAddress;
+import compiler.static_instructs.RawBytes;
 import constants.RomConstants;
 import datamanager.MoveableBlock;
 import datamanager.ReplacementBlock;
