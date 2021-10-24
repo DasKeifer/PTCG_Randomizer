@@ -2,8 +2,13 @@ Seed 42, randomize args: false, pokes, numMovesPerPokemon (in rom), true, 1
 1. investigate call for family text with Nidoran and in general. Assuming it will not randomize as is? can we make it randomize?
 2. Boyfriends (nidoqueen) on tangela - change from nidoking?
 3. pokepower/moves with names/categories? Diglett's Kabuto Armor, Tauros meowth's cat punch
-4. Snorlax still has thick fat despite not having the poke power?
+4. Snorlax still has thick fat despite not having the poke power? Hardcoded? Other non-triggered poke powers?
 5. Self destruct does damage equal to HP
 6. Two poke powers per poke
 7. Pokepowers with energy and moves without energy/moves
 8. Convergent evolutions
+9. Leek slap? Does this work with other pokes?
+10. Sword dance/focus energy
+
+11. Doubleless energy text too long on one line
+12. Randomizing without reloading doesn' reset seed?

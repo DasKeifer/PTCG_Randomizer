@@ -2,10 +2,15 @@ package data;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import constants.CardDataConstants.*;
+import data.romtexts.CardName;
+import data.romtexts.PokeCategory;
+import data.romtexts.PokeDescription;
+import rom.Blocks;
+import rom.Cards;
 import rom.Texts;
+import rom_addressing.AssignedAddresses;
 import util.ByteUtils;
 
 public class PokemonCard extends Card 
@@ -14,36 +19,35 @@ public class PokemonCard extends Card
 	public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
 	public static final int MAX_NUM_MOVES = 2;
 	
-	byte hp; // TODO: non multiples of 10?
-	EvolutionStage stage;
-	OneLineText prevEvoName;
+	byte hp; // TODO later: non multiples of 10?
+	public EvolutionStage stage; // TODO later: Encaspsulate?
+	public CardName prevEvoName; // TODO later: Encaspsulate?
 	
 	private Move[] moves;
 	
-	byte retreatCost; // TODO: max allowed?
-	WeaknessResistanceType weakness; // TODO: Allows multiple?
-	WeaknessResistanceType resistance; // TODO: Allows multiple?
-	public OneLineText pokemonCategory; // TODO: Investigate
+	byte retreatCost; // TODO later: max allowed?
+	WeaknessResistanceType weakness; // Allows multiple
+	WeaknessResistanceType resistance; // Allows multiple
+	public PokeCategory pokemonCategory; // TODO later: Investigate? Any gameplay impact?
 	public byte pokedexNumber;
-	byte unknownByte1; // TODO: Always 0?
-	byte level; // TODO: Investigate No gameplay impact?
-	short length; //TODO: One byte is feet, another is inches - separate them // TODO: Investigate No gameplay impact?
-	short weight; // TODO: Investigate No gameplay impact?
+	byte unknownByte1; // TODO later: Always 0?
+	byte level; // TODO later: Investigate No gameplay impact?
+	short length; //TODO later: One byte is feet, another is inches - separate them? // TODO later: Investigate No gameplay impact?
+	short weight; // TODO later: Investigate No gameplay impact?
 	PokeDescription description;
-	 // TODO: At least somewhat tracks with evo stage in asm files - 19 for first stage, 16 for second stage, 0 for final stage?
-	byte unknownByte2;
+	byte unknownByte2; // TODO later: At least somewhat tracks with evo stage in asm files - 19 for first stage, 16 for second stage, 0 for final stage?
 
 	public PokemonCard()
 	{
 		super();
 		
-		prevEvoName = new OneLineText();
+		prevEvoName = new CardName(true); // Pokename
 		moves = new Move[MAX_NUM_MOVES];
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
 			moves[moveIndex] = new Move();
 		}
-		pokemonCategory = new OneLineText();
+		pokemonCategory = new PokeCategory();
 		description = new PokeDescription();
 	}
 	
@@ -53,7 +57,7 @@ public class PokemonCard extends Card
 		
 		hp = toCopy.hp;
 		stage = toCopy.stage;
-		prevEvoName = new OneLineText(toCopy.prevEvoName);
+		prevEvoName = new CardName(toCopy.prevEvoName);
 		moves = new Move[MAX_NUM_MOVES];
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
@@ -62,7 +66,7 @@ public class PokemonCard extends Card
 		retreatCost = toCopy.retreatCost;
 		weakness = toCopy.weakness;
 		resistance = toCopy.resistance;
-		pokemonCategory = new OneLineText(toCopy.pokemonCategory);
+		pokemonCategory = new PokeCategory(toCopy.pokemonCategory);
 		pokedexNumber = toCopy.pokedexNumber;
 		unknownByte1 = toCopy.unknownByte1;
 		level = toCopy.level;
@@ -70,6 +74,12 @@ public class PokemonCard extends Card
 		weight = toCopy.weight;
 		description = new PokeDescription(toCopy.description);
 		unknownByte2 = toCopy.unknownByte2;
+	}
+	
+	@Override
+	protected CardName createCardName()
+	{
+		return new CardName(true); // a pokename
 	}
 	
 	public PokemonCard copy()
@@ -214,27 +224,27 @@ public class PokemonCard extends Card
 	}
 	
 	@Override
-	public int readDataAndConvertIds(byte[] cardBytes, int startIndex, Texts idToText, Set<Short> textIdsUsed) 
+	public int readAndConvertIds(byte[] cardBytes, int startIndex, Texts idToText) 
 	{
-		readCommonNameAndDataAndConvertIds(cardBytes, startIndex, idToText, textIdsUsed);
+		commonReadAndConvertIds(cardBytes, startIndex, idToText);
 		
 		int index = startIndex + Card.CARD_COMMON_SIZE;
 		hp = cardBytes[index++];
 		stage = EvolutionStage.readFromByte(cardBytes[index++]);
 		
 		// Read the prev evolution
-		index = prevEvoName.readDataAndConvertIds(cardBytes, index, idToText, textIdsUsed);
+		index = prevEvoName.readDataAndConvertIds(cardBytes, index, idToText);
 
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
-			index = moves[moveIndex].readDataAndConvertIds(cardBytes, index, name, idToText, textIdsUsed);
+			index = moves[moveIndex].readDataAndConvertIds(cardBytes, index, name, idToText);
 		}
 		
 		retreatCost = cardBytes[index++];
 		weakness = WeaknessResistanceType.readFromByte(cardBytes[index++]);
 		resistance = WeaknessResistanceType.readFromByte(cardBytes[index++]);
 
-		index = pokemonCategory.readDataAndConvertIds(cardBytes, index, idToText, textIdsUsed);
+		index = pokemonCategory.readDataAndConvertIds(cardBytes, index, idToText);
 		
 		pokedexNumber = cardBytes[index++];
 		unknownByte1 = cardBytes[index++];
@@ -244,34 +254,49 @@ public class PokemonCard extends Card
 		weight = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 		
-		index = description.readDataAndConvertIds(cardBytes, index, idToText, textIdsUsed);
+		index = description.readDataAndConvertIds(cardBytes, index, idToText);
 		
 		unknownByte2 = cardBytes[index++];
 		
 		return index;
 	}
-
+	
 	@Override
-	public int convertToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts idToText) 
+	public void finalizeDataForAllocating(Cards<Card> cards, Texts texts, Blocks blocks)
 	{
-		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex, idToText);
+		commonFinalizeDataForAllocating(texts);
 		
-		cardBytes[index++] = hp;
-		cardBytes[index++] = stage.getValue();
-		
-		index = prevEvoName.convertToIdsAndWriteData(cardBytes, index, idToText);
+		prevEvoName.finalizeAndAddTexts(texts);
+		pokemonCategory.finalizeAndAddTexts(texts);
+		description.finalizeAndAddTexts(texts);
 
 		sortMoves();
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
-			index = moves[moveIndex].convertToIdsAndWriteData(cardBytes, index, name, idToText);
+			moves[moveIndex].finalizeDataForAllocating(cards, texts, blocks, this);
+		}
+	}
+
+	@Override
+	public int writeData(byte[] cardBytes, int startIndex, AssignedAddresses assignedAddresses) 
+	{
+		int index = commonWriteData(cardBytes, startIndex);
+		
+		cardBytes[index++] = hp;
+		cardBytes[index++] = stage.getValue();
+		
+		index = prevEvoName.writeTextId(cardBytes, index);
+
+		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
+		{
+			index = moves[moveIndex].writeData(cardBytes, index, assignedAddresses);
 		}
 		
 		cardBytes[index++] = retreatCost;
 		cardBytes[index++] = weakness.getValue();
 		cardBytes[index++] = resistance.getValue();
 
-		index = pokemonCategory.convertToIdsAndWriteData(cardBytes, index, idToText);
+		index = pokemonCategory.writeTextId(cardBytes, index);
 		
 		cardBytes[index++] = pokedexNumber;
 		cardBytes[index++] = unknownByte1;
@@ -281,7 +306,7 @@ public class PokemonCard extends Card
 		ByteUtils.writeAsShort(weight, cardBytes, index);
 		index += 2;
 
-		index = description.convertToIdsAndWriteData(cardBytes, index, idToText);
+		index = description.writeTextId(cardBytes, index);
 		
 		cardBytes[index++] = unknownByte2;
 		return index;

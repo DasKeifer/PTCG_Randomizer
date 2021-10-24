@@ -1,9 +1,12 @@
 package data;
 
-import java.util.Set;
-
 import constants.RomConstants;
+import data.romtexts.CardName;
+import data.romtexts.EffectDescription;
+import rom.Blocks;
+import rom.Cards;
 import rom.Texts;
+import rom_addressing.AssignedAddresses;
 import util.ByteUtils;
 
 public class NonPokemonCard extends Card
@@ -11,8 +14,8 @@ public class NonPokemonCard extends Card
 	public static final int TOTAL_SIZE_IN_BYTES = 14;
 	public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
 	
-	short effectPtr;
-	public EffectDescription description;
+	private short effectPtr;
+	private EffectDescription description;
 
 	public NonPokemonCard() 
 	{
@@ -35,9 +38,15 @@ public class NonPokemonCard extends Card
 	}
 	
 	@Override
-	public int readDataAndConvertIds(byte[] cardBytes, int startIndex, Texts idToText, Set<Short> textIdsUsed) 
+	protected CardName createCardName()
 	{
-		readCommonNameAndDataAndConvertIds(cardBytes, startIndex, idToText, textIdsUsed);
+		return new CardName(false); // not a poke name
+	}
+	
+	@Override
+	public int readAndConvertIds(byte[] cardBytes, int startIndex, Texts idToText) 
+	{
+		commonReadAndConvertIds(cardBytes, startIndex, idToText);
 		int index = startIndex + Card.CARD_COMMON_SIZE;
 		
 		// reading non pokemon specific data
@@ -45,21 +54,29 @@ public class NonPokemonCard extends Card
 		index += 2;
 
 		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
-		description.readDataAndConvertIds(cardBytes, descIndexes, name, idToText, textIdsUsed);
+		description.readDataAndConvertIds(cardBytes, descIndexes, name, idToText);
 		return index + RomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
 	}
 	
 	@Override
-	public int convertToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts idToText) 
+	public void finalizeDataForAllocating(Cards<Card> cards, Texts texts, Blocks blocks)
 	{
-		int index = convertCommonToIdsAndWriteData(cardBytes, startIndex, idToText);
+		commonFinalizeDataForAllocating(texts);
+		
+		description.finalizeAndAddTexts(texts, name.toString());
+	}
+	
+	@Override
+	public int writeData(byte[] cardBytes, int startIndex, AssignedAddresses unused) 
+	{
+		int index = commonWriteData(cardBytes, startIndex);
 		
 		// write non pokemon specific data
 		ByteUtils.writeAsShort(effectPtr, cardBytes, index);
 		index += 2;
 
 		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
-		description.convertToIdsAndWriteData(cardBytes, descIndexes, name, idToText);
+		description.writeTextId(cardBytes, descIndexes);
 		return index + RomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
 	}
 }

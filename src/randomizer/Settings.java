@@ -8,7 +8,9 @@ import constants.CardDataConstants.CardType;
 
 public class Settings 
 {
-	// TODO: Generation is very stretch - don't worry too much about for now
+	// TODO later: Make settings a singleton? Then we don't have to pass them everywhere
+	
+	// TODO later: Generation is very stretch - don't worry too much about for now
     public enum RandomizationStrategy 
     {
         INVALID, UNCHANGED, SHUFFLE, RANDOM, GENERATED;
@@ -45,11 +47,11 @@ public class Settings
         }
     }
 
-    // TODO: Once these settle down some more, move them into separate files
+    // TODO later: Once these settle down some more, move them into separate files
     public static class TypeSpecificData 
     {
     	// Only if RANDOM or GENERATED
-    	// TODO get from cards - only applicable for Random or generated
+    	// TODO later get from cards? - only applicable for Random or generated
     	int[] percentWithNumMoves = new int[] {0, 50, 50}; // Need to do logic to make sure it matches with two following ones
     	int[] percentWithNumAttacks = new int[] {0, 50, 30};
     	int[] percentWithNumPowers = new int[] {0, 20, 0};
@@ -137,7 +139,6 @@ public class Settings
 	private boolean movesMatchPokeSpecific;
 	private boolean movesMatchTypeSpecific;
 	
-	
 	public int getSeedValue()
 	{
 		// Try to treat it as a number first
@@ -188,7 +189,7 @@ public class Settings
 	public void setMovesRandomNumberOfAttacks(boolean movesRandomNumberOfAttacks) {
 		this.movesRandomNumberOfAttacks = movesRandomNumberOfAttacks;
 	}
-	// TODO: Temp setting
+	// TODO later: Temp setting - replace with exclude/replace list and custom effects
 	public boolean isMovesMatchPokeSpecific() {
 		return movesMatchPokeSpecific;
 	}
@@ -198,6 +199,7 @@ public class Settings
 	public boolean isMovesMatchTypeSpecific() {
 		return movesMatchTypeSpecific;
 	}
+	// TODO later: Temp setting - replace with exclude/replace list and custom effects
 	public void setMovesMatchTypeSpecific(boolean movesMatchTypeSpecific) {
 		this.movesMatchTypeSpecific = movesMatchTypeSpecific;
 	}

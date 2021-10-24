@@ -2,8 +2,10 @@ package util;
 
 import java.util.Arrays;
 
-public class MathUtils 
+public final class MathUtils 
 {	
+	private MathUtils() {}
+	
 	public static int[] convertToIntPercentages(double[] percentages)
 	{
 		return convertPercentageToIntValues(percentages, 100);
@@ -85,7 +87,7 @@ public class MathUtils
 
 		if (sum == 0)
 		{
-			throw new IllegalArgumentException("Summed numbers equal 0!: " + numbers.toString());
+			throw new IllegalArgumentException("Summed numbers equal 0!: " + Arrays.toString(numbers));
 		}
 		
 		for (int numIndex = 0; numIndex < numbers.length; numIndex++)

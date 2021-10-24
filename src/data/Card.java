@@ -5,12 +5,15 @@ import constants.CardDataConstants.BoosterPack;
 import constants.CardDataConstants.CardRarity;
 import constants.CardDataConstants.CardSet;
 import constants.CardDataConstants.CardType;
+import data.romtexts.CardName;
+import rom.Blocks;
+import rom.Cards;
 import rom.Texts;
+import rom_addressing.AssignedAddresses;
 import util.ByteUtils;
 
 import java.security.InvalidParameterException;
 import java.util.Comparator;
-import java.util.Set;
 
 public abstract class Card
 {
@@ -18,9 +21,9 @@ public abstract class Card
 	public static final Comparator<Card> ID_SORTER = new IdSorter();
 	public static final Comparator<Card> ROM_SORTER = new RomSorter();
 	
-	// TODO encapsulate these or make public
+	// TODO later: encapsulate these or make public?
 	public CardType type;
-	public OneLineText name;
+	public CardName name;
 	short gfx; // Card art
 	CardRarity rarity;
 
@@ -32,13 +35,15 @@ public abstract class Card
 	
 	public Card()
 	{
-		name = new OneLineText();
+		name = createCardName(); 
 	}
+	
+	protected abstract CardName createCardName();
 	
 	public Card(Card toCopy)
 	{
 		type = toCopy.type;
-		name = new OneLineText(toCopy.name);
+		name = new CardName(toCopy.name);
 		gfx = toCopy.gfx;
 		rarity = toCopy.rarity;
 		set = toCopy.set;
@@ -48,7 +53,7 @@ public abstract class Card
 	
 	public abstract Card copy();
 	
-	public static int addCardFromBytes(byte[] cardBytes, int startIndex, Texts idToText, Set<Short> textIdsUsed, Cards<Card> toAddTo)
+	public static int addCardFromBytes(byte[] cardBytes, int startIndex, Texts idToText, Cards<Card> toAddTo)
 	{
 		CardType type = CardType.readFromByte(cardBytes[startIndex]);
 		
@@ -71,13 +76,14 @@ public abstract class Card
 					startIndex + " that is of type " + type);
 		}
 
-		startIndex = card.readDataAndConvertIds(cardBytes, startIndex, idToText, textIdsUsed);
+		startIndex = card.readAndConvertIds(cardBytes, startIndex, idToText);
 		toAddTo.add(card);
 		return startIndex;
 	}
 	
-	public abstract int readDataAndConvertIds(byte[] cardBytes, int startIndex, Texts idToText, Set<Short> textIdsUsed);
-	public abstract int convertToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts idToText);
+	public abstract int readAndConvertIds(byte[] cardBytes, int startIndex, Texts idsToText);
+	public abstract void finalizeDataForAllocating(Cards<Card> cards, Texts texts, Blocks blocks);
+	public abstract int writeData(byte[] cardBytes, int startIndex, AssignedAddresses assignedAddresses);
 
 	public String toString()
 	{
@@ -89,7 +95,7 @@ public abstract class Card
 				"\nPack = " + pack;
 	}
 	
-	protected int readCommonNameAndDataAndConvertIds(byte[] cardBytes, int startIndex, Texts idToText, Set<Short> textIdsUsed) 
+	protected int commonReadAndConvertIds(byte[] cardBytes, int startIndex, Texts idsToText) 
 	{
 		int index = startIndex;
 		
@@ -97,7 +103,7 @@ public abstract class Card
 		gfx = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 		
-		index = name.readDataAndConvertIds(cardBytes, index, idToText, textIdsUsed);
+		index = name.readDataAndConvertIds(cardBytes, index, idsToText);
 		
 		rarity = CardRarity.readFromByte(cardBytes[index++]);
 
@@ -109,7 +115,12 @@ public abstract class Card
 		return index;
 	}
 	
-	protected int convertCommonToIdsAndWriteData(byte[] cardBytes, int startIndex, Texts idToText) 
+	protected void commonFinalizeDataForAllocating(Texts texts)
+	{
+		name.finalizeAndAddTexts(texts);
+	}
+	
+	protected int commonWriteData(byte[] cardBytes, int startIndex) 
 	{
 		int index = startIndex;
 		
@@ -117,7 +128,7 @@ public abstract class Card
 		ByteUtils.writeAsShort(gfx, cardBytes, index);
 		index += 2;
 		
-		index = name.convertToIdsAndWriteData(cardBytes, index, idToText);
+		index = name.writeTextId(cardBytes, index);
 		
 		cardBytes[index++] = rarity.getValue();
 

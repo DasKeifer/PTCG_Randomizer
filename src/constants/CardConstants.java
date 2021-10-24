@@ -6,6 +6,7 @@ public class CardConstants
 {
 	public enum CardId
 	{
+		// TODO later: Expunge poke names?
 		NO_CARD                 (0x00, false), // Not a real cad - needed for spacing
 		GRASS_ENERGY            (0x01),
 		FIRE_ENERGY             (0x02),

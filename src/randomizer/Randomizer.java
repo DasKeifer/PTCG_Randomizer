@@ -5,15 +5,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-import constants.CardDataConstants.MoveCategory;
 import data.Card;
-import data.Cards;
-import data.Move;
-import data.PokemonCard;
 import rom.Texts;
 import util.Logger;
-import rom.RomData;
-import rom.RomHandler;
+import rom.Cards;
+import rom.Rom;
 
 public class Randomizer 
 {
@@ -21,7 +17,7 @@ public class Randomizer
 	static final String LOG_FILE_EXTENSION = ".log.txt";
 	
 	private Logger logger;
-	private RomData romData;
+	private Rom romData;
 	
 	public Randomizer()
 	{
@@ -32,11 +28,11 @@ public class Randomizer
 	{
 		try 
 		{
-			romData = RomHandler.readRom(romFile);
+			romData = new Rom(romFile);
 		} 
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
+			// TODO later: Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -73,38 +69,32 @@ public class Randomizer
 			logger.open(romBasePath + LOG_FILE_EXTENSION);
 		}
 		
-		RomData randomized = randomize(settings);
+		Rom randomized = randomize(settings);
 
 		logger.close();
 		
-		// TODO: Due to an error, the same data was being written more than once
+		// TODO later: Due to an error, the same data was being written more than once
 		// and when this happened, the text for some cards compoundly got worse.
-		// Need to look into why this is happening
-		try {
-			RomHandler.writeRom(randomized, romFile);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
+		// Need to look into why this is happening and if it still is
+		randomized.writeRom(romFile);
 	}
 	
 	//public static void main(String[] args) throws IOException //Temp
-	public RomData randomize(Settings settings)
+	public Rom randomize(Settings settings)
 	{
 		// get and store the base seed as the next one to use
 		int nextSeed = settings.getSeedValue();
-
+		
 		// Make a copy of the data to modify and return
-		RomData randomizedData = new RomData(romData);
+		Rom randomizedData = new Rom(romData);
 		
 		// Create sub randomizers. If they need to original data, they can save off a copy
-		// when they are creaeted
+		// when they are created
 		MoveSetRandomizer moveSetRand = new MoveSetRandomizer(randomizedData, logger);
 		
 		List<Card> venu = randomizedData.allCards.getCardsWithName("Venusaur").toList();
-		venu.get(1).name.setTextAndDeformat("Test-a-saur"); // Quick check to see if we ran and saved successfully
-		
+		venu.get(1).name.setText("Test-a-saur"); // Quick check to see if we ran and saved successfully
+	
 		// Randomize Evolutions (either within current types or completely random)
 		// If randomizing evos and types but keeping lines consistent, completely 
 		// randomize here then sort it out in the types
@@ -139,8 +129,6 @@ public class Randomizer
 		// Randomize Promos
 		
 		// Randomize Decks
-
-		//test(randomizedData.allCards.getCardsWithName("Mew"));
 		
 		// Temp hack to add more value cards to a pack. In the future this will be more formalized
 		// 11 is the most we can do

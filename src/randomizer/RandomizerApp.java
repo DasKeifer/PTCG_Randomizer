@@ -29,8 +29,6 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
 
 public class RandomizerApp {
 
@@ -146,7 +144,7 @@ public class RandomizerApp {
 					    	randomizer.randomizeAndSaveRom(saveFile, settings);
 					    }
 					} catch (IOException e1) {
-						// TODO Auto-generated catch block
+						// TODO later: Auto-generated catch block
 						e1.printStackTrace();
 					}
 				});

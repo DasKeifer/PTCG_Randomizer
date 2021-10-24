@@ -1,0 +1,59 @@
+https://eldred.fr/gb-asm-tutorial/stack.html
+
+Type Specific
+
+//fire spin? Will be hard to separate from pokepower? Not really but will need alternate effect
+Energy Trans POKEMON_POWER -* As often as you like during your turn (before your attack), you may take 1  Energy card attached to 1 of your Pok`mon and attach it to a different one. This power can't be used if  is Asleep, Confused, or Paralyzed.
+Ember DAMAGE_NORMAL 30* Discard 1  Energy card attached to  in order to use this attack.
+Flamethrower DAMAGE_NORMAL 50* Discard 1  Energy card attached to  in order to use this attack.
+Energy Burn POKEMON_POWER -* As often as you like during your turn (before your attack), you may turn all Energy attached to  into  Energy for the rest of the turn. This power can't be used if  is Asleep, Confused, or Paralyzed.
+Fire Blast DAMAGE_NORMAL 80* Discard 1  Energy card attached to  in order to use this attack.
+Flames of Rage DAMAGE_PLUS 40* Discard 2  Energy cards attached to  in order to use this attack. This attack does 40 damage plus 10 more damage for each damage counter on .
+Flamethrower DAMAGE_NORMAL 50* Discard 1  Energy card attached to  in order to use this attack.
+Flamethrower DAMAGE_NORMAL 50* Discard 1  Energy card attached to  in order to use this attack.
+Flamethrower DAMAGE_NORMAL 60* Discard 1  Energy card attached to  in order to use this attack.
+Wildfire RESIDUAL -* You may discard any number of  Energy cards attached to  when you use this attack. If you do, discard that many cards from the top of your opponent's deck.
+Firegiver POKEMON_POWER -* When you put  into play during your turn (not during set-up), put from 1 to 4 (chosen at random)  Energy cards from your deck into your hand. Shuffle your deck afterward.
+Rain Dance POKEMON_POWER -* As often as you like during your turn (before your attack), you may attach 1  Energy card to 1 of your  Pok`mon. (This doesn't use up your 1 Energy card attachment for the turn.)This power can't be used if  is Asleep, Confused, or Paralyzed.
+Hydro Pump DAMAGE_PLUS 40* Does 40 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Water Gun DAMAGE_PLUS 10* Does 10 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Water Gun DAMAGE_PLUS 30* Does 30 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Water Gun DAMAGE_PLUS 20* Does 20 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Recover RESIDUAL -* Discard 1  Energy card attached to  in order to use this attack. Remove all damage counters from .
+Water Gun DAMAGE_PLUS 10* Does 10 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Water Gun DAMAGE_PLUS 30* Does 30 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Water Gun DAMAGE_PLUS 10* Does 10 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Water Gun DAMAGE_PLUS 20* Does 20 damage plus 10 more damage for each  Energy attached to  but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way.
+Call for Friend RESIDUAL -* Search your deck for a  Basic Pok`mon card and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)
+Recover RESIDUAL -* Discard 1  Energy card attached to  in order to use this attack. Remove all damage counters from .
+Scavenge RESIDUAL -* Discard 1  Energy card attached to  in order to use this attack. Put a Trainer card from your discard pile into your hand.
+Destiny Bond RESIDUAL -* Discard 1  Energy card attached to  in order to use this attack. If a Pok`mon Knocks Out  during your opponent's next turn, Knock Out that Pok`mon.
+Barrier RESIDUAL -* Discard 1  Energy card attached to  in order to use this attack. During your opponent's next turn, prevent all effects of attacks, including damage, done to .
+
+
+Poke Specific
+
+Call for Family RESIDUAL -* Search your deck for a Basic Pok`mon named  or Nidoran$ and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)
+Boyfriends DAMAGE_PLUS 20* Does 20 damage plus 20 more damage for each Nidoking you have in play.
+Sprout RESIDUAL -* Search your deck for a Basic Pok`mon named  and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)
+Call for Family RESIDUAL -* Search your deck for a Basic Pok`mon named  and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)
+Call for Family RESIDUAL -* Search your deck for a Basic Pok`mon named  and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)
+
+
+Continuous poke powers to investigate - All except maybe peal of thunder are hard coded but could still be replaced/randomized
+
+peal of thunder
+Toxic Gas POKEMON_POWER -* Ignore all Pok`mon Powers other than Toxic Gases. This power stops working while  is Asleep, Confused, or Paralyzed.
+Clairvoyance POKEMON_POWER -* Your opponent plays with his or her hand face up. This power stops working while  is Asleep, Confused, or Paralyzed.
+Strikes Back POKEMON_POWER -* Whenever your opponent's attack damages  (even if  is Knocked Out), this power does 10 damage to the attacking Pok`mon. (Don't apply Weakness and Resistance.) This power can't be used if  is already Asleep, Confused, or Paralyzed when your opponent attacks.
+Kabuto Armor POKEMON_POWER -* Whenever an attack (even your own) does damage to  (after applying Weakness and Resistance), that attack only does half the damage to  (rounded down to the nearest 10).(Any other effects of attacks still happen.) This power stops working while  is Asleep, Confused, or Paralyzed.
+Prehistoric Power POKEMON_POWER -* No more Evolution cards can be played. This power stops working while  is Asleep, Confused, or Paralyzed.
+Transparency POKEMON_POWER -* Whenever an attack does anything to , flip a coin. If heads, prevent all effects of that attack, including damage, done to . This power stops working while  is Asleep, Confused, or Paralyzed.
+Neutralizing Shield POKEMON_POWER -* Prevent all effects of attacks, including damage, done to  by evolved Pok`mon (excluding your own). This power stops working while  is Asleep, Confused, or Paralyzed.
+Retreat Aid POKEMON_POWER -* As long as  is Benched, pay  less to retreat your Active Pok`mon.
+Thick Skinned POKEMON_POWER -*  can't become Asleep, Confused, Paralyzed, or Poisoned. This power can't be used if  is already Asleep, Confused, or Paralyzed.
+
+rain dance, wuick freeze, energy burn, firegiver, invis wall, healing wind
+Thick skinned, toxic gas, clairvoyance, strike back, kabuto armor, prehistoric power, Transparency, Neutralizing sheild, retreat aid, is hardcoded
+
+Peal of thunder partially?

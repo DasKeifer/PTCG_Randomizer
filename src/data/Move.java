@@ -3,11 +3,20 @@ package data;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import constants.RomConstants;
 import constants.CardDataConstants.*;
+import data.custom_card_effects.CustomCardEffect;
+import data.custom_card_effects.HardcodedEffects;
+import data.romtexts.EffectDescription;
+import data.romtexts.MoveName;
+import datamanager.MoveableBlock;
+import rom.Blocks;
+import rom.Cards;
 import rom.Texts;
+import rom_addressing.AssignedAddresses;
 import util.ByteUtils;
 
 public class Move
@@ -17,11 +26,11 @@ public class Move
 	public static final Comparator<Move> BASIC_SORTER = new BasicSorter();
 	
 	EnumMap<EnergyType, Byte> energyCost;
-	public OneLineText name;
+	public MoveName name;
 	public EffectDescription description;
-	public byte damage; // TODO: non multiple of 10?
-	MoveCategory category;
-	short effectPtr; // TODO: Make enum?
+	public byte damage; // TODO later: non multiple of 10?
+	public MoveCategory category;
+	CardEffect effect;
 	Set<MoveEffect1> effect1;
 	Set<MoveEffect2> effect2;
 	Set<MoveEffect3> effect3;
@@ -31,9 +40,10 @@ public class Move
 	public Move()
 	{
 		energyCost = new EnumMap<>(EnergyType.class);
-		name = new OneLineText();
+		name = new MoveName();
 		description = new EffectDescription();
 		category = MoveCategory.DAMAGE_NORMAL;
+		effect = UnchangedCardEffect.NONE;
 		effect1 = new HashSet<>();
 		effect2 = new HashSet<>();
 		effect3 = new HashSet<>();
@@ -42,11 +52,11 @@ public class Move
 	public Move(Move toCopy) 
 	{
 		energyCost = toCopy.energyCost;
-		name = new OneLineText(toCopy.name);
+		name = new MoveName(toCopy.name);
 		description = new EffectDescription(toCopy.description);
 		damage = toCopy.damage;
 		category = toCopy.category;
-		effectPtr = toCopy.effectPtr;
+		effect = toCopy.effect.copy();
 		effect1 = new HashSet<>(toCopy.effect1);
 		effect2 = new HashSet<>(toCopy.effect2);
 		effect3 = new HashSet<>(toCopy.effect3);
@@ -58,7 +68,7 @@ public class Move
 	{
 		public int compare(Move m1, Move m2)
 	    {   
-			int compareVal = m1.name.getText().compareTo(m2.name.getText());
+			int compareVal = m1.name.toString().compareTo(m2.name.toString());
 			
 			if (compareVal == 0)
 			{
@@ -72,7 +82,7 @@ public class Move
 			
 			if (compareVal == 0)
 			{
-				compareVal = m2.effectPtr - m1.effectPtr;
+				return m1.effect.toString().compareTo(m2.effect.toString());
 			}
 			
 			return compareVal;
@@ -95,7 +105,7 @@ public class Move
 		{
 			// If its listed as doing damage or is one of the moves that does damage just doesn't
 			// have an associated damage number, this will return true
-			return damage > 0 || RomConstants.ZERO_DAMAGE_DAMAGING_MOVES.contains(name.getText());
+			return damage > 0 || RomConstants.ZERO_DAMAGE_DAMAGING_MOVES.contains(name.toString());
 		}
 		
 		return false;
@@ -165,7 +175,7 @@ public class Move
 		builder.append("\nDescription: ");
 		builder.append(description.toString());
 		builder.append("\nEffectPtr: ");
-		builder.append(effectPtr);
+		builder.append(effect.toString());
 		builder.append("\nEffectFlags: ");
 		builder.append(effect1);
 		builder.append(", ");
@@ -229,7 +239,7 @@ public class Move
 		energyCost.put(inType, inCost);
 	}
 	
-	public int readDataAndConvertIds(byte[] moveBytes, int startIndex, RomText cardName, Texts idToText, Set<Short> textIdsUsed) 
+	public int readDataAndConvertIds(byte[] moveBytes, int startIndex, RomText cardName, Texts idToText) 
 	{
 		int index = startIndex;
 		
@@ -249,15 +259,15 @@ public class Move
 		setCost(EnergyType.UNUSED_TYPE, ByteUtils.readLowerHexChar(moveBytes[index]));
 		index++;
 		
-		index = name.readDataAndConvertIds(moveBytes, index, idToText, textIdsUsed);
+		index = name.readDataAndConvertIds(moveBytes, index, idToText);
 		
 		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
-		description.readDataAndConvertIds(moveBytes, descIndexes, cardName, idToText, textIdsUsed);
+		description.readDataAndConvertIds(moveBytes, descIndexes, cardName, idToText);
 		index += RomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
 		
 		damage = moveBytes[index++];
 		category = MoveCategory.readFromByte(moveBytes[index++]);
-		effectPtr = ByteUtils.readAsShort(moveBytes, index);
+		effect = new UnchangedCardEffect(ByteUtils.readAsShort(moveBytes, index));
 		index += 2;
 		effect1 = MoveEffect1.readFromByte(moveBytes[index++]);
 		effect2 = MoveEffect2.readFromByte(moveBytes[index++]);
@@ -268,7 +278,37 @@ public class Move
 		return index;
 	}
 
-	public int convertToIdsAndWriteData(byte[] moveBytes, int startIndex, RomText cardName, Texts idToText) 
+	public void finalizeDataForAllocating(Cards<Card> cards, Texts texts, Blocks blocks, PokemonCard hostCard)
+	{
+		name.finalizeAndAddTexts(texts);
+
+		if (name.toString().compareToIgnoreCase("call for family") == 0)
+		{
+			Cards<Card> basics = cards.getBasicEvolutionOfCard(hostCard);
+			if (basics.count() <= 0)
+			{
+				throw new IllegalArgumentException("Failed to find basic card for " + hostCard.name.toString());
+			}
+			
+			CustomCardEffect custEffect = HardcodedEffects.CallForFamily.createMoveEffect(/*cards,*/ basics);
+			List<MoveableBlock> effectBlocks = custEffect.convertToBlocks();
+			for (MoveableBlock block : effectBlocks)
+			{
+				blocks.addMoveableBlock(block);
+				block.extractTextsFromInstructions(texts);
+			}
+			
+			effect = custEffect;
+			description.finalizeAndAddTexts(texts, basics.toList().get(0).name.toString());
+		}
+		else
+		{
+			description.finalizeAndAddTexts(texts, hostCard.name.toString());
+		}
+	}
+
+	boolean debug = false;
+	public int writeData(byte[] moveBytes, int startIndex, AssignedAddresses assignedAddresses) 
 	{
 		int index = startIndex;
 		
@@ -277,17 +317,25 @@ public class Move
 		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.FIGHTING), getCost(EnergyType.PSYCHIC));
 		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.COLORLESS), getCost(EnergyType.UNUSED_TYPE));
 
-		name.convertToIdsAndWriteData(moveBytes, index, idToText);
+		name.writeTextId(moveBytes, index);
 		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
 
 		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
-		description.convertToIdsAndWriteData(moveBytes, descIndexes, cardName, idToText);
+		description.writeTextId(moveBytes, descIndexes);
 		index += RomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
 		
 		moveBytes[index++] = damage;
 		moveBytes[index++] = category.getValue();
-		ByteUtils.writeAsShort(effectPtr, moveBytes, index);
+		
+		
+		effect.writeEffectPointer(moveBytes, index, assignedAddresses);
+		debug = name.contains("Call for");
+		if (debug)
+		{
+			System.out.println("Move - " + name + " - " + description + " - EffectPtr - " + String.format("0x%x%x", moveBytes[index], moveBytes[index+1]));
+		}
 		index += 2;
+		
 		moveBytes[index++] = MoveEffect1.storeAsByte(effect1);
 		moveBytes[index++] = MoveEffect2.storeAsByte(effect2);
 		moveBytes[index++] = MoveEffect3.storeAsByte(effect3);
