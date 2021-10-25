@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
+import config.MoveExclusions;
 import data.Card;
 import rom.Texts;
 import util.Logger;
@@ -82,6 +83,9 @@ public class Randomizer
 	//public static void main(String[] args) throws IOException //Temp
 	public Rom randomize(Settings settings)
 	{
+		// Load the config files
+		Configs configs = new Configs();		
+		
 		// get and store the base seed as the next one to use
 		int nextSeed = settings.getSeedValue();
 		

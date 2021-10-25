@@ -1,12 +1,15 @@
 Outstanding:
+Move compiler and data manager to separate repos
+Change saving to BPS or similar
+Exclude and specify moves (i.e. don't include thick fat or other non-randomizable ones and give them to specific pokes)
+Effects replacement framework (i.e. call for family fixing/generation)
+
+Reformat code - create style file for repo
 Add tool tips for implemented interface items
-Reformat text - create style file for repo
-re-evaluate seed distribution - only needed if one change won't affect another (i.e. a different move pool)
-Check for generic length of moves in functions
-Try to make generic for force number of attacks (i.e. don't assume one)
-Make error messages more informative
-Re-evalate private vs public and static
 Comment functions
+
+re-evaluate seed distribution - only needed if one change won't affect another (i.e. a different move pool)
+Try to make generic for force number of attacks (i.e. don't assume one)
 
 
 Completed this release:
