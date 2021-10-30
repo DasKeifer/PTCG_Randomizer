@@ -1,15 +1,15 @@
 package randomizer;
 
-import java.util.List;
 
 import config.MoveExclusions;
+import rom.Rom;
 
 public class Configs 
 {
-	public List<MoveExclusions> moveExclusions;
+	public MoveExclusions moveExclusions;
 	
-	public Configs()
+	public Configs(Rom romData)
 	{
-		moveExclusions = MoveExclusions.parseMoveExclusionsCsv();
+		moveExclusions = MoveExclusions.parseMoveExclusionsCsv(romData.allCards);
 	}
 }

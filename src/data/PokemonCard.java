@@ -109,6 +109,17 @@ public class PokemonCard extends Card
 		}
 		return numMoves;
 	}
+
+	// TODO later: investigate return immutable object instead of a copy
+	public Move getMove(int moveIndex)
+	{
+		if (moveIndex > moves.length)
+		{
+			return Move.EMPTY_MOVE;
+		}
+		
+		return new Move(moves[moveIndex]);
+	}
 	
 	public void setMove(Move move, int moveSlot)
 	{

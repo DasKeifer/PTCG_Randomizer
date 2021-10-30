@@ -27,29 +27,19 @@ public final class DataManagerUtils
 		}
 	}
 	
-	static boolean debug = false;
 	public static void assignBlockAndSegmentBankAddresses(DataBlock alloc, BankAddress blockAddress, AssignedAddresses assignedAddresses)
 	{
 		// Will throw if the addresses are invalid - means we can make some assumptions here
 		AssignedAddresses relAddresses = alloc.getSegmentsRelativeAddresses(blockAddress, assignedAddresses);
 		
 		// For each segment relative address, offset it to the block address and add it to the
-		// allocated indexes
-		if (debug)
-		{
-			System.out.println("block address " + blockAddress);
-		}
-		
+		// allocated indexes		
 		String segmentId;
 		Iterator<String> segItr = alloc.getSegmentIds().iterator();
 		while (segItr.hasNext())
 		{
 			segmentId = segItr.next();
 			BankAddress relAddress = relAddresses.getThrow(segmentId);
-			if (debug)
-			{
-				System.out.println("segment address " + relAddress);
-			}
 			int addressInBank = relAddress.getAddressInBank() + blockAddress.getAddressInBank();
 			// Make sure we didn't pass the end of the bank
 			if (addressInBank > RomConstants.BANK_SIZE)
