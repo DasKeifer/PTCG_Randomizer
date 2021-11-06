@@ -22,6 +22,8 @@ public class IOUtils
 	public static final String NEWLINE = System.getProperty("line.separator");
 	public static final String FILE_SEPARATOR = System.getProperty("file.separator");
 	
+	private IOUtils() {}
+	
 	public static void showScrollingMessageDialog(
 			Component parentComponent,
             String message,
@@ -58,20 +60,17 @@ public class IOUtils
     {
         URL url = ConfigConstants.class.getProtectionDomain().getCodeSource().getLocation();
         String jarPath = URLDecoder.decode(url.getFile(), "UTF-8");
-        String parentPath = new File(jarPath).getParentFile().getPath();
-        return parentPath;
+        return new File(jarPath).getParentFile().getPath();
     }
-    
+
     public static File copyFileFromConfigsIfNotPresent(String resourcePath, String fileName, String destinationFolderPath) throws IOException
     {
         File file = new File(destinationFolderPath + FILE_SEPARATOR + fileName);
  
         // If the file doesn't exist, we need to create it
-        if (!file.exists())
+        file.getParentFile().mkdir();
+        if (file.createNewFile()) // returns false if the file already exists
         {
-        	file.getParentFile().mkdir();
-            file.createNewFile();
-            
             try (InputStream fileIn = ConfigConstants.class.getResourceAsStream(resourcePath + fileName);
             		OutputStream fileOut = new FileOutputStream(file)
 			)

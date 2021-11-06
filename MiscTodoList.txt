@@ -1,7 +1,7 @@
 Outstanding:
 Move compiler and data manager to separate repos
 Change saving to BPS or similar
-Exclude and specify moves (i.e. don't include thick fat or other non-randomizable ones and give them to specific pokes)
+Specify moves (Allow setting call for family to a specific poke)
 Effects replacement framework (i.e. call for family fixing/generation)
 
 Reformat code - create style file for repo
