@@ -1,5 +1,6 @@
 package randomizer;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -18,13 +19,14 @@ public class Randomizer
 	
 	private Logger logger;
 	private Rom romData;
+	private Configs configs;
 	
 	public Randomizer()
 	{
 		logger = new Logger();
 	}
 	
-	public void openRom(File romFile)
+	public void openRom(File romFile, Component toCenterPopupsOn)
 	{
 		try 
 		{
@@ -35,6 +37,10 @@ public class Randomizer
 			// TODO later: Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		// TODO later: Move to saving?
+		// Now load the config files
+		configs = new Configs(romData, toCenterPopupsOn);		
 	}
 	
 	public void randomizeAndSaveRom(File romFile, Settings settings) throws IOException
@@ -81,7 +87,7 @@ public class Randomizer
 	
 	//public static void main(String[] args) throws IOException //Temp
 	public Rom randomize(Settings settings)
-	{
+	{		
 		// get and store the base seed as the next one to use
 		int nextSeed = settings.getSeedValue();
 		
@@ -119,7 +125,7 @@ public class Randomizer
 		nextSeed += 100;
 		
 		// Randomize movesets (full random or match to type)
-		moveSetRand.randomize(nextSeed, settings);
+		moveSetRand.randomize(nextSeed, settings, configs);
 		nextSeed += 100;
 		
 		// Non card randomizations

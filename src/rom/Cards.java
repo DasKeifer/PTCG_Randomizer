@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import config.MoveExclusions;
 import constants.CardDataConstants.CardType;
 import constants.CardDataConstants.EvolutionStage;
 import data.Card;
@@ -125,8 +126,8 @@ public class Cards<T extends Card>
 		return new Cards<>(cardSet.stream().filter(
 				card -> cardType.equals(card.type)).collect(Collectors.toList()));
 	}
-
-	public List<Move> getAllMoves()
+	
+	public List<Move> getAllMovesForRandomization(MoveExclusions movesToExclude)
 	{
 		Cards<PokemonCard> pokeCards = getPokemonCards();
 		List<Move> moves = new ArrayList<>();
@@ -134,7 +135,7 @@ public class Cards<T extends Card>
 		{
 			for (Move move : card.getAllMovesIncludingEmptyOnes())
 			{
-				if (!move.isEmpty())
+				if (!move.isEmpty() && !movesToExclude.isMoveExcluded(card.id, move, false)) // false is if its excluded from being selected
 				{
 					moves.add(move);
 				}

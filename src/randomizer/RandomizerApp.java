@@ -158,7 +158,7 @@ public class RandomizerApp {
 				{
 				    int returnVal = openRomChooser.showOpenDialog(frmPokemonTradingCard);
 				    if (returnVal == JFileChooser.APPROVE_OPTION) {
-				    	randomizer.openRom(openRomChooser.getSelectedFile());
+				    	randomizer.openRom(openRomChooser.getSelectedFile(), frmPokemonTradingCard);
 				    }
 				});
 		openRomPanel.add(openRomButton);
