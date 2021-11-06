@@ -1,5 +1,6 @@
 package randomizer;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -25,7 +26,7 @@ public class Randomizer
 		logger = new Logger();
 	}
 	
-	public void openRom(File romFile)
+	public void openRom(File romFile, Component toCenterPopupsOn)
 	{
 		try 
 		{
@@ -37,8 +38,9 @@ public class Randomizer
 			e.printStackTrace();
 		}
 		
+		// TODO later: Move to saving?
 		// Now load the config files
-		configs = new Configs(romData);		
+		configs = new Configs(romData, toCenterPopupsOn);		
 	}
 	
 	public void randomizeAndSaveRom(File romFile, Settings settings) throws IOException

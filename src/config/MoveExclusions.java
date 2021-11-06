@@ -1,5 +1,6 @@
 package config;
 
+import java.awt.Component;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -10,16 +11,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JOptionPane;
+
 import constants.CardConstants.CardId;
-import constants.CardDataConstants.EnergyType;
 import data.Card;
 import data.Move;
 import rom.Cards;
+import util.IOUtils;
 
 public class MoveExclusions
 {
 	public static final String FILE_NAME = "MoveExclusions.csv";
-	public static final String FILE_REL_LOCATION = "configs";
 
 	Map<CardId, List<MoveExcl>> exclByCardId;
 	Map<String, List<MoveExcl>> exclByMoveName;
@@ -52,133 +54,154 @@ public class MoveExclusions
 		return false;
 	}
 	
-	public static MoveExclusions parseMoveExclusionsCsv(Cards<Card> allCards)
+	public static MoveExclusions parseMoveExclusionsCsv(Cards<Card> allCards, Component toCenterPopupsOn)
 	{
 		MoveExclusions exclusions = new MoveExclusions();
+		StringBuilder warningsFound = new StringBuilder();
 		try
 		{
-			File file = ConfigUtils.copyFileFromConfigsIfNotPresent(FILE_NAME, FILE_REL_LOCATION);
+			File file = IOUtils.copyFileFromConfigsIfNotPresent(ConfigConstants.CONFIG_FILE_SOURCE_LOC, FILE_NAME, ConfigConstants.CONFIG_FILE_INSTALL_LOC);
 	        
 	        // Now go ahead and read the file
-	        FileReader configFR = new FileReader(file);
-	        BufferedReader configReader = new BufferedReader(configFR); 
-	        String line = configReader.readLine();  // Skip the first title line
-	        while((line = configReader.readLine()) != null)  
-	        {  
-	        	// If we don't limit it, it will remove empty columns so we use a negative
-	        	// number to get all the columns without actually limiting it
-	        	List<MoveExcl> excls = parseLine(line, allCards);
-	        		
-	        	for (MoveExcl excl : excls)
-	        	{
-	        		boolean isCardSpecific = false;
-	        		if (excl.cardId != CardId.NO_CARD)
-	        		{
-	        			List<MoveExcl> list = exclusions.exclByCardId.computeIfAbsent(excl.cardId, 
-	        					ll -> new LinkedList<>());
-	        			list.add(excl);
-	        			isCardSpecific = true;
-	        		}
-	        		
-	        		// Only add it to the move list if its not card specific. Otherwise it
-	        		// will get handled above with the cards
-	        		if (!isCardSpecific)
-	        		{
-	        			if (excl.moveName.isEmpty())
-	        			{
-	    	        		// TODO: Log or splash on popup
-	    	    			System.err.println("Failed to read a valid card name/id or move name "
-	    	    					+ "for line so it is being skipped: " + line);
-	    	    			break;
-	        			}
-	
-	        			List<MoveExcl> list = exclusions.exclByMoveName.computeIfAbsent(excl.moveName, 
-	        					ll -> new LinkedList<>());
-	        			list.add(excl);
-	        		}
-	        	}
-	        }  
-	        
-	        // TODO: Move to finally?
-	        configReader.close();
-	        configFR.close();
+			try (FileReader configFR = new FileReader(file);
+					BufferedReader configReader = new BufferedReader(configFR)
+			)
+			{
+		        String line = configReader.readLine();  // Skip the first title line
+		        while((line = configReader.readLine()) != null)  
+		        {  
+		        	// If we don't limit it, it will remove empty columns so we use a negative
+		        	// number to get all the columns without actually limiting it
+		        	List<MoveExcl> excls = parseLine(line, allCards, warningsFound);
+		        		
+		        	for (MoveExcl excl : excls)
+		        	{
+		        		boolean isCardSpecific = false;
+		        		if (excl.cardId != CardId.NO_CARD)
+		        		{
+		        			List<MoveExcl> list = exclusions.exclByCardId.computeIfAbsent(excl.cardId, 
+		        					ll -> new LinkedList<>());
+		        			list.add(excl);
+		        			isCardSpecific = true;
+		        		}
+		        		
+		        		// Only add it to the move list if its not card specific. Otherwise it
+		        		// will get handled above with the cards
+		        		if (!isCardSpecific)
+		        		{
+		        			List<MoveExcl> list = exclusions.exclByMoveName.computeIfAbsent(excl.moveName, 
+		        					ll -> new LinkedList<>());
+		        			list.add(excl);
+		        		}
+		        	}
+		        }  
+			}
+			// IO errors will be caught by the below statement
 		}
 		catch(IOException e)
 		{
-			// TODO: Log or put on pop up
-			System.err.println("IO Exception reading move exclusions: ");
-			e.printStackTrace();
+			// We have to insert in in reverse order since we are always inserting at the start
+			warningsFound.insert(0, e.getMessage());
+			warningsFound.insert(0, "Unexpected IO Exception reading move exclusions. Information likely was not read in successfully: ");
+		}
+		
+		if (warningsFound.length() > 0)
+		{
+			// We have to insert in in reverse order since we are always inserting at the start
+			warningsFound.insert(0, IOUtils.NEWLINE);
+			warningsFound.insert(0, "\" relative to the JAR:");
+			warningsFound.insert(0, ConfigConstants.CONFIG_FILE_INSTALL_LOC);
+			warningsFound.insert(0, IOUtils.FILE_SEPARATOR);
+			warningsFound.insert(0, "\" config file located in \"");
+			warningsFound.insert(0, FILE_NAME);
+			warningsFound.insert(0, "The following issue(s) were encoundered while parsing the \"");
+			IOUtils.showScrollingMessageDialog(toCenterPopupsOn, warningsFound.toString(), 
+					"Issue(s) encountered while parsing " + FILE_NAME, JOptionPane.WARNING_MESSAGE);
 		}
         
 		return exclusions;
 	}
 	
-	private static List<MoveExcl> parseLine(String line, Cards<Card> allCards)
+	private static List<MoveExcl> parseLine(String line, Cards<Card> allCards, StringBuilder warningsFound)
 	{
 		List<MoveExcl> parsedExcl = new LinkedList<>();
 		String[] args = line.split(",", -1);
 		
-		// TODO: Check args length
-		
-    	boolean removeFromCard = Boolean.parseBoolean(args[0]);
-    	byte moveDamage = -1;
-    	if (!args[3].isEmpty())
-    	{
-    		// TODO: Catch/log/display and skip
-    		moveDamage = Byte.parseByte(args[3]);
-    	}
-
-    	EnumMap<EnergyType, Byte> energyCost = new EnumMap<>(EnergyType.class);
-    	if (!args[4].isEmpty())
-    	{
-    		// TODO: Implement
-    	}
-    	
-    	// See if it is empty
-    	if (args[1].isEmpty())
-    	{
-    		// If it also doesn't have a move name, its an invalid line
-    		if (args[2].isEmpty())
-    		{
-    			// TODO: error
-    			// Log or popup
-    			System.err.println("Line does not have either a card name/id or a move name so it - "
-    					+ "will be skipped a line must have at least one of these: " + line);
-    		}
-    		else
-    		{
-    			parsedExcl.add(new MoveExcl(
-        				CardId.NO_CARD, args[2], moveDamage, energyCost, removeFromCard));
-    		}
-    	}
-    	else
-    	{
-	    	// Assume its a card ID
-	    	try
+		if (args.length != 3)
+		{
+			// Add a message to the warning string
+			warningsFound.append(IOUtils.NEWLINE);
+			warningsFound.append("Line has incorrect number of columns (comma separated) and will be skipped: ");
+			warningsFound.append(IOUtils.NEWLINE);
+			warningsFound.append("\t");
+			warningsFound.append(line);
+		}
+		else 
+		{		
+	    	boolean removeFromCard = args[0].equalsIgnoreCase("true");
+	    	if (!removeFromCard && !args[0].equalsIgnoreCase("false"))
 	    	{
-	    		parsedExcl.add(new MoveExcl(CardId.readFromByte(Byte.parseByte(args[1])), 
-	    				args[2], moveDamage, energyCost, removeFromCard));
+				// Add a message to the warning string
+				warningsFound.append(IOUtils.NEWLINE);
+				warningsFound.append("Line's \"Remove Move from Card(s)\" field specifies a value other ");
+				warningsFound.append("than \"true\" or \"false\". False will be assumed for this line: ");
+    			warningsFound.append(IOUtils.NEWLINE);
+    			warningsFound.append("\t");
+				warningsFound.append(line);
 	    	}
-	    	// Otherwise assume its a name
-	    	catch (IllegalArgumentException e) // Includes number format exception
+	    	
+	    	// See if it is empty
+	    	if (args[1].isEmpty())
 	    	{
-	    		Cards<Card> foundCards = allCards.getCardsWithName(args[1]);
-	    		if (foundCards.count() < 1)
+	    		// If it also doesn't have a move name, its an invalid line
+	    		if (args[2].isEmpty())
 	    		{
-	    			// TODO: error
-	    			// Log or popup
-	    			System.err.println("Failed to determine valid card name or id for "
-	    					+ "line so it will be skipped: " + line);
+	    			// Add a message to the warning string
+	    			warningsFound.append(IOUtils.NEWLINE);
+	    			warningsFound.append("Line does not have either a card name/id or a move name so it - ");
+	    			warningsFound.append("will be skipped. A line must have at least one of these: ");
+	    			warningsFound.append(IOUtils.NEWLINE);
+	    			warningsFound.append("\t");
+	    			warningsFound.append(line);
 	    		}
 	    		else
 	    		{
-	    			for (Card card : foundCards.toList())
-	    			{
-	    				parsedExcl.add(new MoveExcl(card.id, args[2], moveDamage, energyCost, removeFromCard));
-	    			}
+	    			parsedExcl.add(new MoveExcl(CardId.NO_CARD, args[2], removeFromCard));
 	    		}
 	    	}
-    	}
+	    	else
+	    	{
+		    	// Assume its a card ID
+		    	try
+		    	{
+		    		parsedExcl.add(new MoveExcl(CardId.readFromByte(Byte.parseByte(args[1])), 
+		    				args[2], removeFromCard));
+		    	}
+		    	// Otherwise assume its a name which means it could apply to a number of
+		    	// cards
+		    	catch (IllegalArgumentException e) // Includes number format exception
+		    	{
+		    		Cards<Card> foundCards = allCards.getCardsWithName(args[1]);
+		    		if (foundCards.count() < 1)
+		    		{
+		    			// Add a message to the warning string
+		    			warningsFound.append(IOUtils.NEWLINE);
+		    			warningsFound.append("Failed to determine valid card name or id for ");
+		    			warningsFound.append("line so it will be skipped: ");
+		    			warningsFound.append(IOUtils.NEWLINE);
+		    			warningsFound.append("\t");
+		    			warningsFound.append(line);
+		    		}
+		    		else
+		    		{
+		    			for (Card card : foundCards.toList())
+		    			{
+		    				parsedExcl.add(new MoveExcl(card.id, args[2], removeFromCard));
+		    			}
+		    		}
+		    	}
+	    	}
+		}
     	
     	return parsedExcl;
 	}
