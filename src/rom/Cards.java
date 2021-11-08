@@ -29,6 +29,12 @@ public class Cards<T extends Card>
 		cardSet = new TreeSet<>(Card.ID_SORTER);
 	}
 	
+	private Cards(List<T> list) 
+	{
+		this();
+		cardSet.addAll(list);
+	}
+	
 	public Cards<T> copy(Class<? extends T> cardClass) 
 	{
 		Cards<T> copy = new Cards<>();
@@ -58,19 +64,54 @@ public class Cards<T extends Card>
 	    }
 	    return asCard;
 	}
-	
-	private Cards(List<T> list) 
-	{
-		this();
-		cardSet.addAll(list);
-	}
 
-	public Cards<T> getCardsWithName(String name)
+	public Cards<T> getCardsWithNameIgnoringNumber(String nameNumberIgnored)
 	{
-    	// TODO: Enhance function so it will handle _n for cards with more than one version 
-		// and F & M for the female and male symbols and any other special cases we may have
 		return new Cards<>(cardSet.stream().filter(
-				card -> name.equals(card.name.toString())).collect(Collectors.toList()));
+				card -> card.name.matchesIgnoringPotentialNumber(nameNumberIgnored)).collect(Collectors.toList()));
+	}
+	
+	// returns null if error encountered or no number was found
+	public static <T extends Card> T getCardFromNameSetBasedOnNumber(
+			Cards<T> cardsWithSameName, 
+			String numberOrNameNumberIgnored
+	)
+	{
+		// All will have the same name so just choose the first
+		int cardIndex = -1;
+		try
+		{
+			Integer.parseInt(numberOrNameNumberIgnored);
+		}
+		catch (NumberFormatException nfe)
+		{
+			cardIndex = cardsWithSameName.cardSet.first().name.getCardNumFromNameIfMatches(numberOrNameNumberIgnored);
+		}
+		
+		// If we found an index (0 means no name, negative means failed to match name), return based on the index
+		if (cardIndex > 0)
+		{
+			// If we found an index, try to get it shifting it to 0 based
+			return getCardBasedOnIndex(cardsWithSameName, cardIndex - 1);
+		}
+		
+		return null;
+	}
+	
+	// Null if index out of bounds
+	public static <T extends Card> T getCardBasedOnIndex(
+			Cards<T> cardsWithSameName, 
+			int index
+	)
+	{
+		List<T> asList = cardsWithSameName.toList();
+		
+		if (index >= asList.size() || index < 0)
+		{
+			return null;
+		}
+		
+		return asList.get(index);
 	}
 
 	public T getCardWithId(CardId cardId) 
@@ -101,7 +142,7 @@ public class Cards<T extends Card>
 		{	
 			while (card.stage != EvolutionStage.BASIC)
 			{
-				basics = getCardsWithName(card.prevEvoName.toString()).upcast();
+				basics = getCardsWithNameIgnoringNumber(card.prevEvoName.toString()).upcast();
 				if (basics.count() <= 0)
 				{
 					break;
@@ -157,7 +198,7 @@ public class Cards<T extends Card>
 		{
 			for (Move move : card.getAllMovesIncludingEmptyOnes())
 			{
-				if (!move.isEmpty() && !movesToExclude.isMoveExcluded(card.id, move, false)) // false is if its excluded from being selected
+				if (!move.isEmpty() && !movesToExclude.isMoveRemovedFromPool(card.id, move))
 				{
 					moves.add(move);
 				}

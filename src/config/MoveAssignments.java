@@ -41,9 +41,13 @@ public class MoveAssignments
 			List<MoveAssignmentData> assigns = assignmentsByCardId.get(card.id);
 			for (MoveAssignmentData assign : assigns)
 			{
+				// Set the move on the card
 				card.setMove(assign.getMove(), assign.getMoveSlot());
 				
-				// TODO: Add to exclusions
+				// Now add an exclusion so it won't get randomized
+				exclusionsToAddTo.addMoveExclusion(card.id, assign.getMove().name.toString(), 
+						false, // false = do not remove move from rand pool - if they want it removed, they need to do so through moveExclusions
+						true); // true = remove from randomization so the move will be kept on the card
 			}
 		}
 	}
@@ -183,7 +187,10 @@ public class MoveAssignments
 	    	// cards
 	    	catch (IllegalArgumentException e) // Includes number format exception
 	    	{
-	    		Cards<Card> foundCards = allCards.getCardsWithName(cardNameOrId);
+	    		// Get the cards that match the name
+	    		Cards<Card> foundCards = allCards.getCardsWithNameIgnoringNumber(cardNameOrId);
+	    		
+	    		// Ensure we found at least one
 	    		if (foundCards.count() < 1)
 	    		{
 	    			// Add a message to the warning string
@@ -196,6 +203,13 @@ public class MoveAssignments
 	    		}
 	    		else
 	    		{
+		    		// See if we have a specific card
+		    		Card specificCard = Cards.getCardFromNameSetBasedOnNumber(foundCards, cardNameOrId);
+		    		if (specificCard == null)
+		    		{
+		    			
+		    		}
+		    			
 	    			for (Card card : foundCards.toList())
 	    			{
 	    				parsedExcl.add(new MoveExclusionData(card.id, moveName, removeFromCard));

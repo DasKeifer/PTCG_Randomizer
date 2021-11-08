@@ -4,7 +4,6 @@ import java.awt.Component;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
 
 import config.Configs;
 import data.Card;
@@ -99,8 +98,8 @@ public class Randomizer
 		// when they are created
 		MoveSetRandomizer moveSetRand = new MoveSetRandomizer(randomizedData, logger);
 		
-		List<Card> venu = randomizedData.allCards.getCardsWithName("Venusaur").toList();
-		venu.get(1).name.setText("Test-a-saur"); // Quick check to see if we ran and saved successfully
+		Cards<Card> venus = randomizedData.allCards.getCardsWithNameIgnoringNumber("Venusaur");
+		Cards.getCardBasedOnIndex(venus, 1).name.setText("Test-a-saur"); // Quick check to see if we ran and saved successfully
 	
 		// Randomize Evolutions (either within current types or completely random)
 		// If randomizing evos and types but keeping lines consistent, completely 

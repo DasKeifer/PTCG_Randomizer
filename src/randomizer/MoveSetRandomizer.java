@@ -726,7 +726,7 @@ public class MoveSetRandomizer {
 		int randMoveIndex = rand.nextInt(moves.size());
 		
 		// If its not a move we are excluding from randomization
-		if (!movesToKeep.isMoveExcluded(poke.id, poke.getMove(moveIndex), true)) // True means only return if its not removed from card
+		if (!movesToKeep.isMoveExcludedFromRandomization(poke.id, poke.getMove(moveIndex)))
 		{	
 			// Ensure the unusedMoves is not empty if doing shuffling
 			if (shuffle && unusedMoves.isEmpty())
