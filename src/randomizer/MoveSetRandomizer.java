@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import config.Configs;
 import config.MoveExclusions;
 
 import java.util.Random;
@@ -63,12 +64,19 @@ public class MoveSetRandomizer {
 				RandomizationStrategy.RANDOM == powerRandStrat || RandomizationStrategy.SHUFFLE == powerRandStrat)
 		{
 			changedMoves = true;
+			
+			// Assign any specific moves and add them to the exclusion list so we don't
+			// remove them when we randomize
+			configs.moveAssignments.assignSpecifiedMoves(pokes, configs.moveExclusions);
+			
 			Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap = getMoveTypesPerPokemon(nextSeed, pokes, settings);
 			nextSeed += 10; // Reserve seed space for when we add randomization to this
 
 			shuffleOrRandomizePokemonMoves(nextSeed, cardMovesMap, settings, configs);
 		}
 		// nextSeed += 80; not needed currently as this is the last step in randomization here
+		
+		// TODO Later: add option to assign moves without shuffling or randomizing
 		
 		// See if we need to tweak the move types at all
 		MoveTypeChanges moveTypeChanges = settings.getAttacks().getMoveTypeChanges();
@@ -487,7 +495,7 @@ public class MoveSetRandomizer {
 			Settings settings,
 			Configs configs
 	)
-	{				
+	{						
 		// Perform a first pass through the moves assigning at least the attacks (both forced damaging and others) and possible
 		// the pokepowers if set that way
 		firstPassMoveAssignment(nextSeed, cardMovesMap, pokeToGetAttacksFrom, settings, configs);

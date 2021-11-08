@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
+import config.Configs;
 import data.Card;
 import rom.Texts;
 import util.Logger;

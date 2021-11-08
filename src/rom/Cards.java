@@ -1,6 +1,8 @@
 package rom;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,6 +12,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import config.MoveExclusions;
+import constants.CardConstants.CardId;
 import constants.CardDataConstants.CardType;
 import constants.CardDataConstants.EvolutionStage;
 import data.Card;
@@ -64,8 +67,27 @@ public class Cards<T extends Card>
 
 	public Cards<T> getCardsWithName(String name)
 	{
+    	// TODO: Enhance function so it will handle _n for cards with more than one version 
+		// and F & M for the female and male symbols and any other special cases we may have
 		return new Cards<>(cardSet.stream().filter(
 				card -> name.equals(card.name.toString())).collect(Collectors.toList()));
+	}
+
+	public T getCardWithId(CardId cardId) 
+	{
+		Optional<T> foundCard = cardSet.stream().filter(card -> card.id == cardId).findFirst();
+		if (foundCard.isPresent())
+		{
+			return foundCard.get();
+		}
+		
+		return null;
+	}
+	
+	public Cards<T> getCardsWithIds(Set<CardId> cardIds) 
+	{
+		return new Cards<>(cardSet.stream().filter(
+				card -> cardIds.contains(card.id)).collect(Collectors.toList()));
 	}
 	
 	public Cards<Card> getBasicEvolutionOfCard(PokemonCard card)
