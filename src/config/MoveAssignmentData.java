@@ -16,11 +16,6 @@ public class MoveAssignmentData
 		this.moveSlot = moveSlot;
 		this.move = new Move(move);
 	}
-
-	public boolean isCardIdSet()
-	{
-		return cardId != CardId.NO_CARD;
-	}
 	
 	public CardId getCardId()
 	{

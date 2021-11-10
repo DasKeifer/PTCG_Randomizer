@@ -64,6 +64,11 @@ public class Cards<T extends Card>
 	    }
 	    return asCard;
 	}
+	
+	public T first()
+	{
+		return cardSet.first();
+	}
 
 	public Cards<T> getCardsWithNameIgnoringNumber(String nameNumberIgnored)
 	{

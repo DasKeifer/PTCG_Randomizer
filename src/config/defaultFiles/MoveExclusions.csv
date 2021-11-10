@@ -1,4 +1,9 @@
-Remove from Randomization Pool, Exclude Move from Randomization (i.e. Move stays on card(s)),Card Name/Id,Move Name
+# Used to exclude specific moves from the move pool while still optionally letting them stay on their typical card
+# This is used to prevent "hardcoded" moves that aren't supported from the randomizer ending up on the wrong cards
+# or could be used to remove moves from a playthrough that are deemed too powerful or problematic
+#
+# Columns:
+# Remove from Randomization Pool, Exclude Move from Randomization (i.e. Move stays on card(s)), Card Name/Id, Move Name
 True,True,,Ember
 True,True,,Flamethrower
 True,True,,Fire Blast

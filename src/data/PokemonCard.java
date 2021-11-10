@@ -97,6 +97,19 @@ public class PokemonCard extends Card
 		return movesList;
 	}
 	
+	public List<Move> getAllNonEmptyMoves()
+	{
+		ArrayList<Move> movesList = new ArrayList<>();
+		for (Move move : moves)
+		{
+			if (!move.isEmpty())
+			{
+				movesList.add(new Move(move));
+			}
+		}
+		return movesList;
+	}
+	
 	public int getNumMoves()
 	{
 		int numMoves = 0;

@@ -6,17 +6,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.swing.JOptionPane;
 
 import constants.CardConstants.CardId;
-import data.Card;
 import data.Move;
 import data.PokemonCard;
 import rom.Cards;
@@ -33,9 +29,9 @@ public class MoveAssignments
 		assignmentsByCardId = new EnumMap<>(CardId.class);
 	}
 
-	public void assignSpecifiedMoves(Cards<PokemonCard> allCards, MoveExclusions exclusionsToAddTo)
+	public void assignSpecifiedMoves(Cards<PokemonCard> cardsToApplyTo, MoveExclusions exclusionsToAddTo)
 	{
-		Cards<PokemonCard> foundCards = allCards.getCardsWithIds(assignmentsByCardId.keySet());
+		Cards<PokemonCard> foundCards = cardsToApplyTo.getCardsWithIds(assignmentsByCardId.keySet());
 		for (PokemonCard card : foundCards.iterable())
 		{
 			List<MoveAssignmentData> assigns = assignmentsByCardId.get(card.id);
@@ -43,7 +39,7 @@ public class MoveAssignments
 			{
 				// Set the move on the card
 				card.setMove(assign.getMove(), assign.getMoveSlot());
-				
+			
 				// Now add an exclusion so it won't get randomized
 				exclusionsToAddTo.addMoveExclusion(card.id, assign.getMove().name.toString(), 
 						false, // false = do not remove move from rand pool - if they want it removed, they need to do so through moveExclusions
@@ -52,11 +48,11 @@ public class MoveAssignments
 		}
 	}
 	
-	public static MoveAssignments parseMoveAssignmentsCsv(Cards<Card> allCards, Component toCenterPopupsOn)
+	public static MoveAssignments parseMoveAssignmentsCsv(Cards<PokemonCard> allCards, Component toCenterPopupsOn)
 	{
 		// TODO: Check move slot while reading and find the moves
 		
-		MoveAssignments assignments = new MoveAssignments();
+		MoveAssignments assigns = new MoveAssignments();
 		StringBuilder warningsFound = new StringBuilder();
 		try
 		{
@@ -67,35 +63,25 @@ public class MoveAssignments
 					BufferedReader configReader = new BufferedReader(configFR)
 			)
 			{
-		        String line = configReader.readLine();  // Skip the first title line
+				String line;
 		        while((line = configReader.readLine()) != null)  
 		        {  
-		        	// If we don't limit it, it will remove empty columns so we use a negative
-		        	// number to get all the columns without actually limiting it
-		        	List<MoveAssignmentData> assigns = parseLine(line, allCards, warningsFound);
-		        		
-		        	for (MoveAssignmentData assign : assigns)
+		        	// # is the line we use for comments in the files - skip those
+		        	if (!line.startsWith("#"))
 		        	{
-		        		if (assign.isCardIdSet())
-		        		{
-		        			List<MoveExclusionData> list = exclusions.exclByCardId.computeIfAbsent(excl.getCardId(), 
-		        					ll -> new LinkedList<>());
-		        			list.add(excl);
-		        		}
-		        		// Only add it to the move list if its not card specific. Otherwise it
-		        		// will get handled above with the cards
-		        		else
-		        		{
-		        			List<MoveExclusionData> list = exclusions.exclByMoveName.computeIfAbsent(excl.getMoveName(), 
-		        					ll -> new LinkedList<>());
-		        			list.add(excl);
-		        		}
+			        	MoveAssignmentData assign = parseLine(line, allCards, warningsFound);
+			        	if (assign != null)
+			        	{
+	                        List<MoveAssignmentData> list = assigns.assignmentsByCardId.computeIfAbsent(
+	                        		assign.getCardId(), ll -> new LinkedList<>());
+	                        list.add(assign);
+			        	}
 		        	}
 		        }  
 			}
 			// IO errors will be caught by the below statement
 		}
-		catch(IOException e)
+		catch (IOException e)
 		{
 			// We have to insert in in reverse order since we are always inserting at the start
 			warningsFound.insert(0, e.getMessage());
@@ -116,108 +102,192 @@ public class MoveAssignments
 					"Issue(s) encountered while parsing " + FILE_NAME, JOptionPane.WARNING_MESSAGE);
 		}
         
-		return exclusions;
+		return assigns;
 	}
 	
-	private static List<MoveExclusionData> parseLine(String line, Cards<Card> allCards, StringBuilder warningsFound)
+	private static MoveAssignmentData parseLine(String line, Cards<PokemonCard> allCards, StringBuilder warningsFound)
 	{
+    	// If we don't limit it, it will remove empty columns so we use a negative
+    	// number to get all the columns without actually limiting it
 		String[] args = line.split(",", -1);
 		
-		if (args.length != 3)
+		// card name, move slot, host name, move name
+		if (args.length != 4)
 		{
 			// Add a message to the warning string
 			warningsFound.append(IOUtils.NEWLINE);
-			warningsFound.append("Line has incorrect number of columns (comma separated) and will be skipped: ");
+			warningsFound.append("Line has incorrect number of columns (comma separated) and will be skipped - found ");
+			warningsFound.append(args.length);
+			warningsFound.append(" but expected 4:");
 			warningsFound.append(IOUtils.NEWLINE);
 			warningsFound.append("\t");
 			warningsFound.append(line);
 		}
 		else 
 		{		
-	    	boolean removeFromCard = args[0].equalsIgnoreCase("true");
-	    	if (!removeFromCard && !args[0].equalsIgnoreCase("false"))
-	    	{
+			// Get the slot number of the destination card
+			int cardSlot = parseMoveSlot(args[1].trim());
+			if (cardSlot >= 0)
+			{
+		    	return createMoveAssignmentData(args[0].trim(), cardSlot, args[2].trim(), args[3].trim(), allCards, warningsFound, line);
+			}
+			else
+			{
 				// Add a message to the warning string
 				warningsFound.append(IOUtils.NEWLINE);
-				warningsFound.append("Line's \"Remove Move from Card(s)\" field specifies a value other ");
-				warningsFound.append("than \"true\" or \"false\". False will be assumed for this line: ");
-    			warningsFound.append(IOUtils.NEWLINE);
-    			warningsFound.append("\t");
+				warningsFound.append("Failed to parse the move slot number to put the move at on the specified card for \"");
+				warningsFound.append(args[1]);
+				warningsFound.append("\" in line so it will be skipped. It must be a valid number from 1 to ");
+				warningsFound.append(PokemonCard.MAX_NUM_MOVES);
+				warningsFound.append(": ");
+				warningsFound.append(IOUtils.NEWLINE);
+				warningsFound.append("\t");
 				warningsFound.append(line);
-	    	}
-	    	
-	    	return createMoveExclusionData(removeFromCard, args[1], args[2], allCards, warningsFound, line);
+			}
 		}
     	
-    	return new LinkedList<>();
+    	return null;
 	}
 	
-	private static List<MoveExclusionData> createMoveExclusionData(boolean removeFromCard, String cardNameOrId, String moveName, Cards<Card> allCards, StringBuilder warningsFound, String line)
+	private static MoveAssignmentData createMoveAssignmentData(String cardNameOrIdToAdd, int slot, String moveHostCardNameOrId, String moveNameOrIndexToAdd, Cards<PokemonCard> allCards, StringBuilder warningsFound, String line)
 	{
-		List<MoveExclusionData> parsedExcl = new LinkedList<>();
+		MoveAssignmentData assign = null;
 		
-    	// See if card name is empty
-    	if (cardNameOrId.isEmpty())
+		// Get the card to add the move to - already will add errors if not found
+		PokemonCard toAddTo = getCardFromString(cardNameOrIdToAdd, allCards, warningsFound, line);
+		if (toAddTo != null)
+		{
+			// Get the host card to get the move from - already will add errors if not found
+			PokemonCard hostCard = getCardFromString(moveHostCardNameOrId, allCards, warningsFound, line);
+			if (hostCard != null)
+			{				
+				// Try to get the move slot number from the string
+				int moveToAddSlot = parseMoveSlot(moveNameOrIndexToAdd);
+				if (moveToAddSlot >= 0)
+				{
+					// Its tempting to save the card itself but we save the id because we modify a copy
+					// of the cards and not the one that is found now
+					assign = new MoveAssignmentData(toAddTo.id, slot, hostCard.getMove(moveToAddSlot));
+				}
+				// If not then try it as a name
+				else
+				{
+					for (Move move : hostCard.getAllNonEmptyMoves())
+					{
+						if (move.name.toString().equals(moveNameOrIndexToAdd))
+						{
+							// Its tempting to save the card itself but we save the id because we modify a copy
+							// of the cards and not the one that is found now
+							assign = new MoveAssignmentData(toAddTo.id, slot, move);
+						}
+					}
+					
+					// If we didn't find it, skip the line
+					if (assign == null)
+					{
+						// Add a message to the warning string
+						warningsFound.append(IOUtils.NEWLINE);
+						warningsFound.append("Failed to find move on the host card with the given name or failed to parse the slot number of the move (must be a valid number from 1 to ");
+						warningsFound.append(PokemonCard.MAX_NUM_MOVES);
+						warningsFound.append(") to add to the specified card from \"");
+						warningsFound.append(moveNameOrIndexToAdd);
+						warningsFound.append("\" in line so it will be skipped: ");
+						warningsFound.append(IOUtils.NEWLINE);
+						warningsFound.append("\t");
+						warningsFound.append(line);
+					}
+				}
+			}
+		}
+		
+		return assign;
+	}
+	
+	private static PokemonCard getCardFromString(String cardNameOrId, Cards<PokemonCard> allCards, StringBuilder warningsFound, String line)
+	{
+		PokemonCard foundCard = null;
+				
+    	// Assume its a card ID
+    	try
     	{
-    		// If it also doesn't have a move name, its an invalid line
-    		if (moveName.isEmpty())
-    		{
-    			// Add a message to the warning string
-    			warningsFound.append(IOUtils.NEWLINE);
-    			warningsFound.append("Line does not have either a card name/id or a move name so it - ");
-    			warningsFound.append("will be skipped. A line must have at least one of these: ");
-    			warningsFound.append(IOUtils.NEWLINE);
-    			warningsFound.append("\t");
-    			warningsFound.append(line);
-    		}
-    		else
-    		{
-    			parsedExcl.add(new MoveExclusionData(CardId.NO_CARD, moveName, removeFromCard));
-    		}
+    		return allCards.getCardWithId(CardId.readFromByte(Byte.parseByte(cardNameOrId)));
     	}
-    	else
+    	// Otherwise assume its a name which means it could apply to a number of
+    	// cards
+    	catch (IllegalArgumentException e) // Includes number format exception
     	{
-	    	// Assume its a card ID
-	    	try
-	    	{
-	    		parsedExcl.add(new MoveExclusionData(CardId.readFromByte(Byte.parseByte(cardNameOrId)), 
-	    				moveName, removeFromCard));
-	    	}
-	    	// Otherwise assume its a name which means it could apply to a number of
-	    	// cards
-	    	catch (IllegalArgumentException e) // Includes number format exception
-	    	{
-	    		// Get the cards that match the name
-	    		Cards<Card> foundCards = allCards.getCardsWithNameIgnoringNumber(cardNameOrId);
-	    		
-	    		// Ensure we found at least one
-	    		if (foundCards.count() < 1)
-	    		{
-	    			// Add a message to the warning string
-	    			warningsFound.append(IOUtils.NEWLINE);
-	    			warningsFound.append("Failed to determine valid card name or id for ");
-	    			warningsFound.append("line so it will be skipped: ");
-	    			warningsFound.append(IOUtils.NEWLINE);
-	    			warningsFound.append("\t");
-	    			warningsFound.append(line);
-	    		}
-	    		else
-	    		{
-		    		// See if we have a specific card
-		    		Card specificCard = Cards.getCardFromNameSetBasedOnNumber(foundCards, cardNameOrId);
-		    		if (specificCard == null)
-		    		{
-		    			
-		    		}
-		    			
-	    			for (Card card : foundCards.toList())
-	    			{
-	    				parsedExcl.add(new MoveExclusionData(card.id, moveName, removeFromCard));
-	    			}
-	    		}
-	    	}
+    		// Continued outside catch since it will return otherwise
     	}
     	
-		return parsedExcl;
+		// Get the cards that match the name
+		Cards<PokemonCard> foundCards = allCards.getCardsWithNameIgnoringNumber(cardNameOrId);
+		
+		// Ensure we found at least one
+		if (foundCards.count() < 1)
+		{
+			// Add a message to the warning string
+			warningsFound.append(IOUtils.NEWLINE);
+			warningsFound.append("Failed to determine valid card name or id for \"");
+			warningsFound.append(cardNameOrId);
+			warningsFound.append("\" in line so it will be skipped: ");
+			warningsFound.append(IOUtils.NEWLINE);
+			warningsFound.append("\t");
+			warningsFound.append(line);
+		}
+		else
+		{
+    		// See if we have a specific card and if so return its ID
+			foundCard = Cards.getCardFromNameSetBasedOnNumber(foundCards, cardNameOrId);
+    		if (foundCard == null)
+    		{
+    			// No number is an expected case since if there is only one with that name
+    			if (foundCards.count() == 1)
+    			{
+        			foundCard = foundCards.first();
+    			}
+    			// Otherwise notify of the failure. We don't want to assume but instead force it
+    			// to be specific
+    			else
+    			{
+        			// Otherwise we just assume the first
+        			// Add a message to the warning string
+        			warningsFound.append(IOUtils.NEWLINE);
+        			warningsFound.append("The name \"");
+        			warningsFound.append(cardNameOrId);
+        			warningsFound.append("\" specified has multiple versions of the card but the version number failed ");
+        			warningsFound.append("to be read in line so it will be skipped. It should be in the format \""); 
+        			warningsFound.append(cardNameOrId);
+        			warningsFound.append("_1\" (assuming the first on was intended): ");
+        			warningsFound.append(IOUtils.NEWLINE);
+        			warningsFound.append("\t");
+        			warningsFound.append(line);
+    			}
+    		}
+		}
+    	
+		return foundCard;
+	}
+	
+	private static int parseMoveSlot(String moveSlot)
+	{
+		int cardSlot = -1;
+		try
+		{
+			cardSlot = Integer.parseInt(moveSlot);
+			if (cardSlot < 1 || cardSlot > PokemonCard.MAX_NUM_MOVES)
+			{
+				// change it back to -1 to indicate failure
+				cardSlot = -1;
+			}
+			
+			// Change it to 0 based
+			cardSlot--;
+		}
+		catch (NumberFormatException nfe)
+		{
+			//leave it a -1 to indicate failure
+		}
+		
+		return cardSlot;
 	}
 }

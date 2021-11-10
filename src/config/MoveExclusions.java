@@ -106,27 +106,29 @@ public class MoveExclusions
 					BufferedReader configReader = new BufferedReader(configFR)
 			)
 			{
-		        String line = configReader.readLine();  // Skip the first title line
+		        String line;
 		        while((line = configReader.readLine()) != null)  
 		        {  
-		        	// If we don't limit it, it will remove empty columns so we use a negative
-		        	// number to get all the columns without actually limiting it
-		        	List<MoveExclusionData> excls = parseLine(line, allCards, warningsFound);
-		        		
-		        	for (MoveExclusionData excl : excls)
+		        	// # is the line we use for comments in the files - skip those
+		        	if (!line.startsWith("#"))
 		        	{
-		        		if (!exclusions.validateAndAddMoveExclusion(excl))
-		        		{
-		        			warningsFound.append(IOUtils.NEWLINE);
-		        			warningsFound.append("Failed to validate and add move exclusion for card id \"");
-		        			warningsFound.append(excl.getCardId().toString());
-		        			warningsFound.append("\" with move name \"");
-		        			warningsFound.append(excl.getMoveName());
-		        			warningsFound.append(" while parsing line for unknown reasons - it will be skipped:");
-		        			warningsFound.append(IOUtils.NEWLINE);
-		        			warningsFound.append("\t");
-		        			warningsFound.append(line);
-		        		}
+			        	List<MoveExclusionData> excls = parseLine(line, allCards, warningsFound);
+			        		
+			        	for (MoveExclusionData excl : excls)
+			        	{
+			        		if (!exclusions.validateAndAddMoveExclusion(excl))
+			        		{
+			        			warningsFound.append(IOUtils.NEWLINE);
+			        			warningsFound.append("Failed to validate and add move exclusion for card id \"");
+			        			warningsFound.append(excl.getCardId().toString());
+			        			warningsFound.append("\" with move name \"");
+			        			warningsFound.append(excl.getMoveName());
+			        			warningsFound.append(" while parsing line for unknown reasons - it will be skipped:");
+			        			warningsFound.append(IOUtils.NEWLINE);
+			        			warningsFound.append("\t");
+			        			warningsFound.append(line);
+			        		}
+			        	}
 		        	}
 		        }  
 			}
@@ -158,13 +160,17 @@ public class MoveExclusions
 	
 	private static List<MoveExclusionData> parseLine(String line, Cards<Card> allCards, StringBuilder warningsFound)
 	{
+    	// If we don't limit it, it will remove empty columns so we use a negative
+    	// number to get all the columns without actually limiting it
 		String[] args = line.split(",", -1);
 		
 		if (args.length != 4)
 		{
 			// Add a message to the warning string
 			warningsFound.append(IOUtils.NEWLINE);
-			warningsFound.append("Line has incorrect number of columns (comma separated) and will be skipped: ");
+			warningsFound.append("Line has incorrect number of columns (comma separated) and will be skipped - found ");
+			warningsFound.append(args.length);
+			warningsFound.append(" but expected 4:");
 			warningsFound.append(IOUtils.NEWLINE);
 			warningsFound.append("\t");
 			warningsFound.append(line);
