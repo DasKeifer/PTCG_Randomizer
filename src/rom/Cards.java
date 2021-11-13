@@ -86,7 +86,7 @@ public class Cards<T extends Card>
 		int cardIndex = -1;
 		try
 		{
-			Integer.parseInt(numberOrNameNumberIgnored);
+			cardIndex = Integer.parseInt(numberOrNameNumberIgnored);
 		}
 		catch (NumberFormatException nfe)
 		{
@@ -195,6 +195,11 @@ public class Cards<T extends Card>
 				card -> cardType.equals(card.type)).collect(Collectors.toList()));
 	}
 	
+	public List<Move> getAllMoves()
+	{
+		return getAllMovesForRandomization(null);
+	}
+	
 	public List<Move> getAllMovesForRandomization(MoveExclusions movesToExclude)
 	{
 		Cards<PokemonCard> pokeCards = getPokemonCards();
@@ -203,7 +208,7 @@ public class Cards<T extends Card>
 		{
 			for (Move move : card.getAllMovesIncludingEmptyOnes())
 			{
-				if (!move.isEmpty() && !movesToExclude.isMoveRemovedFromPool(card.id, move))
+				if (!move.isEmpty() && (movesToExclude == null || !movesToExclude.isMoveRemovedFromPool(card.id, move)))
 				{
 					moves.add(move);
 				}

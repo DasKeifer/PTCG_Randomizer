@@ -67,7 +67,8 @@ public class MoveAssignments
 		        while((line = configReader.readLine()) != null)  
 		        {  
 		        	// # is the line we use for comments in the files - skip those
-		        	if (!line.startsWith("#"))
+		        	line = line.trim();
+		        	if (!line.isEmpty() && !line.startsWith("#"))
 		        	{
 			        	MoveAssignmentData assign = parseLine(line, allCards, warningsFound);
 			        	if (assign != null)
@@ -135,9 +136,9 @@ public class MoveAssignments
 			{
 				// Add a message to the warning string
 				warningsFound.append(IOUtils.NEWLINE);
-				warningsFound.append("Failed to parse the move slot number to put the move at on the specified card for \"");
+				warningsFound.append("Failed to parse the move slot number to put the move at on the specified card from \"");
 				warningsFound.append(args[1]);
-				warningsFound.append("\" in line so it will be skipped. It must be a valid number from 1 to ");
+				warningsFound.append("\" so the line will be skipped. It must be a valid number from 1 to ");
 				warningsFound.append(PokemonCard.MAX_NUM_MOVES);
 				warningsFound.append(": ");
 				warningsFound.append(IOUtils.NEWLINE);
@@ -172,18 +173,14 @@ public class MoveAssignments
 				// If not then try it as a name
 				else
 				{
-					for (Move move : hostCard.getAllNonEmptyMoves())
+					Move moveWithName = hostCard.getMoveWithName(moveNameOrIndexToAdd);
+					if (moveWithName != null)
 					{
-						if (move.name.toString().equals(moveNameOrIndexToAdd))
-						{
-							// Its tempting to save the card itself but we save the id because we modify a copy
-							// of the cards and not the one that is found now
-							assign = new MoveAssignmentData(toAddTo.id, slot, move);
-						}
+						// Its tempting to save the card itself but we save the id because we modify a copy
+						// of the cards and not the one that is found now
+						assign = new MoveAssignmentData(toAddTo.id, slot, moveWithName);
 					}
-					
-					// If we didn't find it, skip the line
-					if (assign == null)
+					else
 					{
 						// Add a message to the warning string
 						warningsFound.append(IOUtils.NEWLINE);
@@ -191,7 +188,7 @@ public class MoveAssignments
 						warningsFound.append(PokemonCard.MAX_NUM_MOVES);
 						warningsFound.append(") to add to the specified card from \"");
 						warningsFound.append(moveNameOrIndexToAdd);
-						warningsFound.append("\" in line so it will be skipped: ");
+						warningsFound.append("\" so the line will be skipped: ");
 						warningsFound.append(IOUtils.NEWLINE);
 						warningsFound.append("\t");
 						warningsFound.append(line);
@@ -227,9 +224,9 @@ public class MoveAssignments
 		{
 			// Add a message to the warning string
 			warningsFound.append(IOUtils.NEWLINE);
-			warningsFound.append("Failed to determine valid card name or id for \"");
+			warningsFound.append("Failed to determine valid card name or id of \"");
 			warningsFound.append(cardNameOrId);
-			warningsFound.append("\" in line so it will be skipped: ");
+			warningsFound.append("\" so the line will be skipped: ");
 			warningsFound.append(IOUtils.NEWLINE);
 			warningsFound.append("\t");
 			warningsFound.append(line);

@@ -10,16 +10,20 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.swing.JOptionPane;
 
 import constants.CardConstants.CardId;
-import data.Card;
 import data.Move;
+import data.PokemonCard;
 import data.romtexts.CardName;
 import rom.Cards;
 import util.IOUtils;
 
+// TODO future: Add another option for if they are excluded only from full randomization or if they are
+// also excluded from type randomization
 public class MoveExclusions
 {
 	public static final String FILE_NAME = "MoveExclusions.csv";
@@ -93,7 +97,7 @@ public class MoveExclusions
 		return success;
 	}
 	
-	public static MoveExclusions parseMoveExclusionsCsv(Cards<Card> allCards, Component toCenterPopupsOn)
+	public static MoveExclusions parseMoveExclusionsCsv(Cards<PokemonCard> allCards, Component toCenterPopupsOn)
 	{
 		MoveExclusions exclusions = new MoveExclusions();
 		StringBuilder warningsFound = new StringBuilder();
@@ -106,13 +110,17 @@ public class MoveExclusions
 					BufferedReader configReader = new BufferedReader(configFR)
 			)
 			{
+				// Get the set of all the move names of all the cards
+				Set<String> allMovesNames = allCards.getAllMoves().stream().map(m -> m.name.toString().toLowerCase()).collect(Collectors.toSet());
+				
 		        String line;
 		        while((line = configReader.readLine()) != null)  
 		        {  
-		        	// # is the line we use for comments in the files - skip those
-		        	if (!line.startsWith("#"))
+		        	// # is the line we use for comments in the files - skip those and empty lines
+		        	line = line.trim();
+		        	if (!line.isEmpty() && !line.startsWith("#"))
 		        	{
-			        	List<MoveExclusionData> excls = parseLine(line, allCards, warningsFound);
+			        	List<MoveExclusionData> excls = parseLine(line, allCards, allMovesNames, warningsFound);
 			        		
 			        	for (MoveExclusionData excl : excls)
 			        	{
@@ -158,7 +166,7 @@ public class MoveExclusions
 		return exclusions;
 	}
 	
-	private static List<MoveExclusionData> parseLine(String line, Cards<Card> allCards, StringBuilder warningsFound)
+	private static List<MoveExclusionData> parseLine(String line, Cards<PokemonCard> allCards, Set<String> allMovesNames, StringBuilder warningsFound)
 	{
     	// If we don't limit it, it will remove empty columns so we use a negative
     	// number to get all the columns without actually limiting it
@@ -182,8 +190,9 @@ public class MoveExclusions
 	    	{
 				// Add a message to the warning string
 				warningsFound.append(IOUtils.NEWLINE);
-				warningsFound.append("Line's \"Remove Move from randomization pool\" field specifies a value other ");
-				warningsFound.append("than \"true\" or \"false\". False will be assumed for this line: ");
+				warningsFound.append("Line's \"Remove Move from randomization pool\" field specifies a value of \"");
+				warningsFound.append(args[0]);
+				warningsFound.append("\" which is not either \"true\" or \"false\". False will be assumed for this line: ");
     			warningsFound.append(IOUtils.NEWLINE);
     			warningsFound.append("\t");
 				warningsFound.append(line);
@@ -194,20 +203,30 @@ public class MoveExclusions
 	    	{
 				// Add a message to the warning string
 				warningsFound.append(IOUtils.NEWLINE);
-				warningsFound.append("Line's \"Exclude Move from Randomization (i.e. Move stays on card(s))\" field specifies ");
-				warningsFound.append("a value other  than \"true\" or \"false\". False will be assumed for this line: ");
+				warningsFound.append("Line's \"Exclude Move from Randomization (i.e. Move stays on card(s))\" field specifies a value of \"");
+				warningsFound.append(args[1]);
+				warningsFound.append("\" which is not either \"true\" or \"false\". False will be assumed for this line: ");
     			warningsFound.append(IOUtils.NEWLINE);
     			warningsFound.append("\t");
 				warningsFound.append(line);
 	    	}
 	    	
-	    	return createMoveExclusionData(removeFromPool, excludeFromRandomization, args[2], args[3], allCards, warningsFound, line);
+	    	return createMoveExclusionData(removeFromPool, excludeFromRandomization, args[2], args[3], allCards, allMovesNames, warningsFound, line);
 		}
     	
     	return new LinkedList<>();
 	}
 	
-	private static List<MoveExclusionData> createMoveExclusionData(boolean removeFromPool, boolean excludeFromRandomization, String cardNameOrId, String moveName, Cards<Card> allCards, StringBuilder warningsFound, String line)
+	private static List<MoveExclusionData> createMoveExclusionData(
+			boolean removeFromPool, 
+			boolean excludeFromRandomization, 
+			String cardNameOrId, 
+			String moveName, 
+			Cards<PokemonCard> allCards, 
+			Set<String> allMovesNames,
+			StringBuilder warningsFound, 
+			String line
+	)
 	{
 		List<MoveExclusionData> parsedExcl = new LinkedList<>();
 		
@@ -227,7 +246,22 @@ public class MoveExclusions
     		}
     		else
     		{
-    			parsedExcl.add(new MoveExclusionData(CardId.NO_CARD, moveName, removeFromPool, excludeFromRandomization));
+    			// Ensure the move is a valid move on at least one card
+    			if (allMovesNames.contains(moveName.trim().toLowerCase()))
+    			{
+    				parsedExcl.add(new MoveExclusionData(CardId.NO_CARD, moveName, removeFromPool, excludeFromRandomization));
+    			}
+    			else
+    			{
+	    			// Add a message to the warning string
+	    			warningsFound.append(IOUtils.NEWLINE);
+	    			warningsFound.append("Failed to find any card with the specified move for \"");
+	    			warningsFound.append(moveName.toString());
+	    			warningsFound.append("\" so the line will be skipped:");
+	    			warningsFound.append(IOUtils.NEWLINE);
+	    			warningsFound.append("\t");
+	    			warningsFound.append(line);
+    			}
     		}
     	}
     	else
@@ -242,13 +276,14 @@ public class MoveExclusions
 	    	// cards
 	    	catch (IllegalArgumentException e) // Includes number format exception
 	    	{
-	    		Cards<Card> foundCards = allCards.getCardsWithNameIgnoringNumber(cardNameOrId);
+	    		Cards<PokemonCard> foundCards = allCards.getCardsWithNameIgnoringNumber(cardNameOrId);
 	    		if (foundCards.count() < 1)
 	    		{
 	    			// Add a message to the warning string
 	    			warningsFound.append(IOUtils.NEWLINE);
-	    			warningsFound.append("Failed to determine valid card name or id for ");
-	    			warningsFound.append("line so it will be skipped: ");
+	    			warningsFound.append("Failed to determine valid card name or id of \"");
+	    			warningsFound.append(cardNameOrId);
+	    			warningsFound.append("\" so the line will be skipped: ");
 	    			warningsFound.append(IOUtils.NEWLINE);
 	    			warningsFound.append("\t");
 	    			warningsFound.append(line);
@@ -258,7 +293,7 @@ public class MoveExclusions
 	    			// If we found some, see if its numbered
 		    		if (CardName.doesHaveNumber(cardNameOrId))
 		    		{
-		    			Card specificCard = Cards.getCardFromNameSetBasedOnNumber(foundCards, cardNameOrId);
+		    			PokemonCard specificCard = Cards.getCardFromNameSetBasedOnNumber(foundCards, cardNameOrId);
 		    			if (specificCard == null)
 		    			{
 			    			// Add a message to the warning string
@@ -268,7 +303,9 @@ public class MoveExclusions
 			    			warningsFound.append("parse the number or it was out of bounds) from the set found with ");
 			    			warningsFound.append("the card name (found ");
 			    			warningsFound.append(foundCards.count());
-			    			warningsFound.append("). Line will be skipped:");
+			    			warningsFound.append(") for \"");
+			    			warningsFound.append(cardNameOrId);
+			    			warningsFound.append("\". Line will be skipped:");
 			    			warningsFound.append(IOUtils.NEWLINE);
 			    			warningsFound.append("\t");
 			    			warningsFound.append(line);
@@ -276,15 +313,55 @@ public class MoveExclusions
 		    			// Found the card!
 		    			else 
 		    			{
-		    	    		parsedExcl.add(new MoveExclusionData(specificCard.id, moveName, removeFromPool, excludeFromRandomization));
+		    				// If there is a move name, make sure it is a valid move
+		    				if (!moveName.isEmpty() && specificCard.getMoveWithName(moveName) == null)
+	    					{
+				    			// Add a message to the warning string
+				    			warningsFound.append(IOUtils.NEWLINE);
+				    			warningsFound.append("Found the specified card (");
+				    			warningsFound.append(specificCard.name.toString());
+				    			warningsFound.append(" with id ");
+				    			warningsFound.append(specificCard.id.getValue());
+				    			warningsFound.append(") but failed to find move with name \"");
+				    			warningsFound.append(moveName);
+				    			warningsFound.append("\" on the card so the line will be skipped:");
+				    			warningsFound.append(IOUtils.NEWLINE);
+				    			warningsFound.append("\t");
+				    			warningsFound.append(line);
+		    				}
+		    				else 
+		    				{
+			    	    		parsedExcl.add(new MoveExclusionData(specificCard.id, moveName, removeFromPool, excludeFromRandomization));
+		    				}
 		    			}
 		    		}
 		    		// Otherwise it applies to all
 		    		else
 		    		{
-		    			for (Card card : foundCards.toList())
+		    			boolean foundAMove = false;
+		    			for (PokemonCard card : foundCards.toList())
 		    			{
-		    				parsedExcl.add(new MoveExclusionData(card.id, moveName, removeFromPool, excludeFromRandomization));
+		    				if (moveName.isEmpty() || card.getMoveWithName(moveName) != null)
+	    					{
+		    					parsedExcl.add(new MoveExclusionData(card.id, moveName, removeFromPool, excludeFromRandomization));
+		    					foundAMove = true;
+	    					}
+		    			}
+		    			
+		    			if (!foundAMove)
+		    			{
+			    			// Add a message to the warning string
+			    			warningsFound.append(IOUtils.NEWLINE);
+			    			warningsFound.append("Found ");
+			    			warningsFound.append(foundCards.count());
+			    			warningsFound.append(" card(s) with the specified name (");
+			    			warningsFound.append(cardNameOrId);
+			    			warningsFound.append(") but failed to find a move with name \"");
+			    			warningsFound.append(moveName);
+			    			warningsFound.append("\" on any of them so the line will be skipped:");
+			    			warningsFound.append(IOUtils.NEWLINE);
+			    			warningsFound.append("\t");
+			    			warningsFound.append(line);
 		    			}
 		    		}
 	    		}

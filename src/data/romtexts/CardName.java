@@ -22,7 +22,9 @@ public class CardName extends OneLineText
 	
 	public boolean matchesIgnoringPotentialNumber(String namePotentiallyWithNumber)
 	{
-		return namePotentiallyWithNumber.trim().startsWith(toString());
+		// Split of the number if there is one and match on the name portion
+		String[] split = namePotentiallyWithNumber.split("_"); 		// TODO: make a constant somewhere
+		return split[0].trim().equals(toString());
 	}
 	
 	public static boolean doesHaveNumber(String namePotentiallyWithNumber)
@@ -48,12 +50,8 @@ public class CardName extends OneLineText
 				}
 				catch (NumberFormatException nfe)
 				{
-					retVal = 0;
+					// Ret val already set to 0
 				}
-			}
-			else
-			{
-				retVal = 1;
 			}
 		}
 		
