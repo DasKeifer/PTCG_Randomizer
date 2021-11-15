@@ -23,6 +23,8 @@ public class MoveAssignments
 	public static final String FILE_NAME = "MoveAssignments.csv";
 
 	Map<CardId, List<MoveAssignmentData>> assignmentsByCardId;
+	// TODO: create and move to base class
+	StringBuilder warningsFoundParsing;
 	
 	private MoveAssignments()
 	{
@@ -40,20 +42,20 @@ public class MoveAssignments
 				// Set the move on the card
 				card.setMove(assign.getMove(), assign.getMoveSlot());
 			
+				// TODO: Figure out how to handle this...
 				// Now add an exclusion so it won't get randomized
 				exclusionsToAddTo.addMoveExclusion(card.id, assign.getMove().name.toString(), 
 						false, // false = do not remove move from rand pool - if they want it removed, they need to do so through moveExclusions
-						true); // true = remove from randomization so the move will be kept on the card
+						true, //// true = remove from randomization so the move will be kept on the card
+						"Internal error occured while adding exclusion based on Move Assignment with card ID " + assign.getCardId() +
+						" and move " + assign.getMove().name.toString()); 
 			}
 		}
 	}
 	
 	public static MoveAssignments parseMoveAssignmentsCsv(Cards<PokemonCard> allCards, Component toCenterPopupsOn)
 	{
-		// TODO: Check move slot while reading and find the moves
-		
-		MoveAssignments assigns = new MoveAssignments();
-		StringBuilder warningsFound = new StringBuilder();
+		MoveAssignments assignments = new MoveAssignments();
 		try
 		{
 			File file = IOUtils.copyFileFromConfigsIfNotPresent(ConfigConstants.CONFIG_FILE_SOURCE_LOC, FILE_NAME, ConfigConstants.CONFIG_FILE_INSTALL_LOC);
@@ -70,10 +72,10 @@ public class MoveAssignments
 		        	line = line.trim();
 		        	if (!line.isEmpty() && !line.startsWith("#"))
 		        	{
-			        	MoveAssignmentData assign = parseLine(line, allCards, warningsFound);
+			        	MoveAssignmentData assign = assignments.parseLine(line, allCards);
 			        	if (assign != null)
 			        	{
-	                        List<MoveAssignmentData> list = assigns.assignmentsByCardId.computeIfAbsent(
+	                        List<MoveAssignmentData> list = assignments.assignmentsByCardId.computeIfAbsent(
 	                        		assign.getCardId(), ll -> new LinkedList<>());
 	                        list.add(assign);
 			        	}
@@ -85,28 +87,17 @@ public class MoveAssignments
 		catch (IOException e)
 		{
 			// We have to insert in in reverse order since we are always inserting at the start
-			warningsFound.insert(0, e.getMessage());
-			warningsFound.insert(0, "Unexpected IO Exception reading move exclusions. Information likely was not read in successfully: ");
+			assignments.warningsFoundParsing.insert(0, e.getMessage());
+			assignments.warningsFoundParsing.insert(0, "Unexpected IO Exception reading move exclusions. Information likely was not read in successfully: ");
 		}
 		
-		if (warningsFound.length() > 0)
-		{
-			// We have to insert in in reverse order since we are always inserting at the start
-			warningsFound.insert(0, IOUtils.NEWLINE);
-			warningsFound.insert(0, "\" relative to the JAR:");
-			warningsFound.insert(0, ConfigConstants.CONFIG_FILE_INSTALL_LOC);
-			warningsFound.insert(0, IOUtils.FILE_SEPARATOR);
-			warningsFound.insert(0, "\" config file located in \"");
-			warningsFound.insert(0, FILE_NAME);
-			warningsFound.insert(0, "The following issue(s) were encoundered while parsing the \"");
-			IOUtils.showScrollingMessageDialog(toCenterPopupsOn, warningsFound.toString(), 
-					"Issue(s) encountered while parsing " + FILE_NAME, JOptionPane.WARNING_MESSAGE);
-		}
+		assignments.displayWarningsIfPresent(toCenterPopupsOn);
         
-		return assigns;
+		return assignments;
 	}
 	
-	private static MoveAssignmentData parseLine(String line, Cards<PokemonCard> allCards, StringBuilder warningsFound)
+	// TODO: refactor to parseAndAddLine to match exclusion
+	private MoveAssignmentData parseLine(String line, Cards<PokemonCard> allCards)
 	{
     	// If we don't limit it, it will remove empty columns so we use a negative
     	// number to get all the columns without actually limiting it
@@ -116,13 +107,13 @@ public class MoveAssignments
 		if (args.length != 4)
 		{
 			// Add a message to the warning string
-			warningsFound.append(IOUtils.NEWLINE);
-			warningsFound.append("Line has incorrect number of columns (comma separated) and will be skipped - found ");
-			warningsFound.append(args.length);
-			warningsFound.append(" but expected 4:");
-			warningsFound.append(IOUtils.NEWLINE);
-			warningsFound.append("\t");
-			warningsFound.append(line);
+			warningsFoundParsing.append(IOUtils.NEWLINE);
+			warningsFoundParsing.append("Line has incorrect number of columns (comma separated) and will be skipped - found ");
+			warningsFoundParsing.append(args.length);
+			warningsFoundParsing.append(" but expected 4:");
+			warningsFoundParsing.append(IOUtils.NEWLINE);
+			warningsFoundParsing.append("\t");
+			warningsFoundParsing.append(line);
 		}
 		else 
 		{		
@@ -130,36 +121,43 @@ public class MoveAssignments
 			int cardSlot = parseMoveSlot(args[1].trim());
 			if (cardSlot >= 0)
 			{
-		    	return createMoveAssignmentData(args[0].trim(), cardSlot, args[2].trim(), args[3].trim(), allCards, warningsFound, line);
+		    	return createMoveAssignmentData(args[0].trim(), cardSlot, args[2].trim(), args[3].trim(), allCards, line);
 			}
 			else
 			{
 				// Add a message to the warning string
-				warningsFound.append(IOUtils.NEWLINE);
-				warningsFound.append("Failed to parse the move slot number to put the move at on the specified card from \"");
-				warningsFound.append(args[1]);
-				warningsFound.append("\" so the line will be skipped. It must be a valid number from 1 to ");
-				warningsFound.append(PokemonCard.MAX_NUM_MOVES);
-				warningsFound.append(": ");
-				warningsFound.append(IOUtils.NEWLINE);
-				warningsFound.append("\t");
-				warningsFound.append(line);
+				warningsFoundParsing.append(IOUtils.NEWLINE);
+				warningsFoundParsing.append("Failed to parse the move slot number to put the move at on the specified card from \"");
+				warningsFoundParsing.append(args[1]);
+				warningsFoundParsing.append("\" so the line will be skipped. It must be a valid number from 1 to ");
+				warningsFoundParsing.append(PokemonCard.MAX_NUM_MOVES);
+				warningsFoundParsing.append(": ");
+				warningsFoundParsing.append(IOUtils.NEWLINE);
+				warningsFoundParsing.append("\t");
+				warningsFoundParsing.append(line);
 			}
 		}
     	
     	return null;
 	}
 	
-	private static MoveAssignmentData createMoveAssignmentData(String cardNameOrIdToAdd, int slot, String moveHostCardNameOrId, String moveNameOrIndexToAdd, Cards<PokemonCard> allCards, StringBuilder warningsFound, String line)
+	private MoveAssignmentData createMoveAssignmentData(
+			String cardNameOrIdToAdd, 
+			int slot, 
+			String moveHostCardNameOrId, 
+			String moveNameOrIndexToAdd, 
+			Cards<PokemonCard> allCards,
+			String line
+	)
 	{
 		MoveAssignmentData assign = null;
 		
 		// Get the card to add the move to - already will add errors if not found
-		PokemonCard toAddTo = getCardFromString(cardNameOrIdToAdd, allCards, warningsFound, line);
+		PokemonCard toAddTo = getCardFromString(cardNameOrIdToAdd, allCards, line);
 		if (toAddTo != null)
 		{
 			// Get the host card to get the move from - already will add errors if not found
-			PokemonCard hostCard = getCardFromString(moveHostCardNameOrId, allCards, warningsFound, line);
+			PokemonCard hostCard = getCardFromString(moveHostCardNameOrId, allCards, line);
 			if (hostCard != null)
 			{				
 				// Try to get the move slot number from the string
@@ -183,15 +181,15 @@ public class MoveAssignments
 					else
 					{
 						// Add a message to the warning string
-						warningsFound.append(IOUtils.NEWLINE);
-						warningsFound.append("Failed to find move on the host card with the given name or failed to parse the slot number of the move (must be a valid number from 1 to ");
-						warningsFound.append(PokemonCard.MAX_NUM_MOVES);
-						warningsFound.append(") to add to the specified card from \"");
-						warningsFound.append(moveNameOrIndexToAdd);
-						warningsFound.append("\" so the line will be skipped: ");
-						warningsFound.append(IOUtils.NEWLINE);
-						warningsFound.append("\t");
-						warningsFound.append(line);
+						warningsFoundParsing.append(IOUtils.NEWLINE);
+						warningsFoundParsing.append("Failed to find move on the host card with the given name or failed to parse the slot number of the move (must be a valid number from 1 to ");
+						warningsFoundParsing.append(PokemonCard.MAX_NUM_MOVES);
+						warningsFoundParsing.append(") to add to the specified card from \"");
+						warningsFoundParsing.append(moveNameOrIndexToAdd);
+						warningsFoundParsing.append("\" so the line will be skipped: ");
+						warningsFoundParsing.append(IOUtils.NEWLINE);
+						warningsFoundParsing.append("\t");
+						warningsFoundParsing.append(line);
 					}
 				}
 			}
@@ -200,7 +198,7 @@ public class MoveAssignments
 		return assign;
 	}
 	
-	private static PokemonCard getCardFromString(String cardNameOrId, Cards<PokemonCard> allCards, StringBuilder warningsFound, String line)
+	private PokemonCard getCardFromString(String cardNameOrId, Cards<PokemonCard> allCards, String line)
 	{
 		PokemonCard foundCard = null;
 				
@@ -223,13 +221,13 @@ public class MoveAssignments
 		if (foundCards.count() < 1)
 		{
 			// Add a message to the warning string
-			warningsFound.append(IOUtils.NEWLINE);
-			warningsFound.append("Failed to determine valid card name or id of \"");
-			warningsFound.append(cardNameOrId);
-			warningsFound.append("\" so the line will be skipped: ");
-			warningsFound.append(IOUtils.NEWLINE);
-			warningsFound.append("\t");
-			warningsFound.append(line);
+			warningsFoundParsing.append(IOUtils.NEWLINE);
+			warningsFoundParsing.append("Failed to determine valid card name or id of \"");
+			warningsFoundParsing.append(cardNameOrId);
+			warningsFoundParsing.append("\" so the line will be skipped: ");
+			warningsFoundParsing.append(IOUtils.NEWLINE);
+			warningsFoundParsing.append("\t");
+			warningsFoundParsing.append(line);
 		}
 		else
 		{
@@ -248,16 +246,16 @@ public class MoveAssignments
     			{
         			// Otherwise we just assume the first
         			// Add a message to the warning string
-        			warningsFound.append(IOUtils.NEWLINE);
-        			warningsFound.append("The name \"");
-        			warningsFound.append(cardNameOrId);
-        			warningsFound.append("\" specified has multiple versions of the card but the version number failed ");
-        			warningsFound.append("to be read in line so it will be skipped. It should be in the format \""); 
-        			warningsFound.append(cardNameOrId);
-        			warningsFound.append("_1\" (assuming the first on was intended): ");
-        			warningsFound.append(IOUtils.NEWLINE);
-        			warningsFound.append("\t");
-        			warningsFound.append(line);
+        			warningsFoundParsing.append(IOUtils.NEWLINE);
+        			warningsFoundParsing.append("The name \"");
+        			warningsFoundParsing.append(cardNameOrId);
+        			warningsFoundParsing.append("\" specified has multiple versions of the card but the version number failed ");
+        			warningsFoundParsing.append("to be read in line so it will be skipped. It should be in the format \""); 
+        			warningsFoundParsing.append(cardNameOrId);
+        			warningsFoundParsing.append("_1\" (assuming the first on was intended): ");
+        			warningsFoundParsing.append(IOUtils.NEWLINE);
+        			warningsFoundParsing.append("\t");
+        			warningsFoundParsing.append(line);
     			}
     		}
 		}
@@ -286,5 +284,22 @@ public class MoveAssignments
 		}
 		
 		return cardSlot;
+	}
+
+	private void displayWarningsIfPresent(Component toCenterPopupsOn)
+	{
+		if (warningsFoundParsing.length() > 0)
+		{
+			// We have to insert in in reverse order since we are always inserting at the start
+			warningsFoundParsing.insert(0, IOUtils.NEWLINE);
+			warningsFoundParsing.insert(0, "\" relative to the JAR:");
+			warningsFoundParsing.insert(0, ConfigConstants.CONFIG_FILE_INSTALL_LOC);
+			warningsFoundParsing.insert(0, IOUtils.FILE_SEPARATOR);
+			warningsFoundParsing.insert(0, "\" config file located in \"");
+			warningsFoundParsing.insert(0, FILE_NAME);
+			warningsFoundParsing.insert(0, "The following issue(s) were encoundered while parsing the \"");
+			IOUtils.showScrollingMessageDialog(toCenterPopupsOn, warningsFoundParsing.toString(), 
+					"Issue(s) encountered while parsing " + FILE_NAME, JOptionPane.WARNING_MESSAGE);
+		}
 	}
 }

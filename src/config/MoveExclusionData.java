@@ -34,6 +34,11 @@ public class MoveExclusionData
 	{
 		return cardId;
 	}
+
+	public boolean isMoveNameSet() 
+	{
+		return !moveName.isEmpty();
+	}
 	
 	public String getMoveName()
 	{
