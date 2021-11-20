@@ -1,10 +1,6 @@
 package config;
 
 import java.awt.Component;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -13,8 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.swing.JOptionPane;
-
 import constants.CardConstants.CardId;
 import data.Move;
 import data.PokemonCard;
@@ -22,20 +16,38 @@ import data.romtexts.CardName;
 import rom.Cards;
 import util.IOUtils;
 
-public class MoveExclusions
+public class MoveExclusions extends CsvConfigReader
 {
-	public static final String FILE_NAME = "MoveExclusions.csv";
-
 	Map<CardId, List<MoveExclusionData>> exclByCardId;
 	Map<String, List<MoveExclusionData>> exclByMoveName;
-	StringBuilder warningsFoundParsing;
 	
-	private MoveExclusions()
+	private class MoveExclusionLineArgs extends ParseLineArgs
 	{
+		Set<String> allMovesNames;
+		
+		public MoveExclusionLineArgs(Cards<PokemonCard> allCards)
+		{
+			super (allCards);
+			
+			allMovesNames = allCards.getAllMoves().stream().map(m -> m.name.toString().toLowerCase()).collect(Collectors.toSet());
+		}
+	}
+	
+	public MoveExclusions(Cards<PokemonCard> allCards, Component toCenterPopupsOn)
+	{
+		super(toCenterPopupsOn);
+		
 		exclByCardId = new EnumMap<>(CardId.class);
 		exclByMoveName = new HashMap<>();
-		warningsFoundParsing = new StringBuilder();
+		
+		readAndParseConfig(new MoveExclusionLineArgs(allCards));
 	}
+	
+	@Override
+	public String getName() 
+	{
+		return "MoveExclusions";
+	}	
 	
 	public boolean isMoveRemovedFromPool(CardId id, Move move)
 	{
@@ -109,49 +121,24 @@ public class MoveExclusions
 
 		return success;
 	}
-	
-	public static MoveExclusions parseMoveExclusionsCsv(Cards<PokemonCard> allCards, Component toCenterPopupsOn)
+
+	@Override
+	protected void parseAndAddLine(String line, ParseLineArgs moveExclLineArgs)
 	{
-		MoveExclusions exclusions = new MoveExclusions();
+		// Cast the arg to the expected type and stop if it fails
+		// Should never fail but this is to play it safe
+		MoveExclusionLineArgs additionalArgs;
 		try
 		{
-			File file = IOUtils.copyFileFromConfigsIfNotPresent(ConfigConstants.CONFIG_FILE_SOURCE_LOC, FILE_NAME, ConfigConstants.CONFIG_FILE_INSTALL_LOC);
-	        
-			// Now go ahead and read the file
-			try (FileReader configFR = new FileReader(file);
-					BufferedReader configReader = new BufferedReader(configFR)
-			)
-			{
-				// Get the set of all the move names of all the cards
-				Set<String> allMovesNames = allCards.getAllMoves().stream().map(m -> m.name.toString().toLowerCase()).collect(Collectors.toSet());
-				
-		        String line;
-		        while((line = configReader.readLine()) != null)  
-		        {  
-		        	// # is the line we use for comments in the files - skip those and empty lines
-		        	line = line.trim();
-		        	if (!line.isEmpty() && !line.startsWith("#"))
-		        	{
-			        	exclusions.parseAndAddLine(line, allCards, allMovesNames);
-		        	}
-		        }  
-			}
-			// IO errors will be caught by the below statement
+			additionalArgs = (MoveExclusionLineArgs) moveExclLineArgs;
 		}
-		catch(IOException e)
+		catch (ClassCastException cce)
 		{
-			// We have to insert in in reverse order since we are always inserting at the start
-			exclusions.warningsFoundParsing.insert(0, e.getMessage());
-			exclusions.warningsFoundParsing.insert(0, "Unexpected IO Exception reading move exclusions. Information likely was not read in successfully: ");
+			warningsFoundParsing.append("Internal Logic Error! Invalid ParseLineArgs passed for ");
+			warningsFoundParsing.append("MoveExclusions - they must be of type MoveExclusionLineArgs!");
+			return;
 		}
 		
-		exclusions.displayWarningsIfPresent(toCenterPopupsOn);
-        
-		return exclusions;
-	}
-	
-	private void parseAndAddLine(String line, Cards<PokemonCard> allCards, Set<String> allMovesNames)
-	{
     	// If we don't limit it, it will remove empty columns so we use a negative
     	// number to get all the columns without actually limiting it
 		String[] args = line.split(",", -1);
@@ -195,7 +182,7 @@ public class MoveExclusions
 				warningsFoundParsing.append(line);
 	    	}
 	    	
-	    	createAndAddMoveExclusionData(removeFromPool, excludeFromRandomization, args[2], args[3], allCards, allMovesNames, line);
+	    	createAndAddMoveExclusionData(removeFromPool, excludeFromRandomization, args[2], args[3], additionalArgs, line);
 		}
 	}
 	
@@ -204,8 +191,7 @@ public class MoveExclusions
 			boolean excludeFromRandomization, 
 			String cardNameOrId, 
 			String moveName, 
-			Cards<PokemonCard> allCards, 
-			Set<String> allMovesNames,
+			MoveExclusionLineArgs additionalArgs,
 			String line
 	)
 	{
@@ -213,11 +199,11 @@ public class MoveExclusions
     	if (cardNameOrId.isEmpty())
     	{
     		createAndAddMoveExclusionDataWithNoCard(
-    				excludeFromRandomization, excludeFromRandomization, line, allMovesNames, line);
+    				excludeFromRandomization, excludeFromRandomization, moveName, additionalArgs.allMovesNames, line);
     	}
     	else
     	{
-    		createAndAddMoveExclusionDataForCard(removeFromPool, excludeFromRandomization, cardNameOrId, moveName, allCards, line);
+    		createAndAddMoveExclusionDataForCard(removeFromPool, excludeFromRandomization, cardNameOrId, moveName, additionalArgs.allPokes, line);
     	}
 	}
 	
@@ -266,7 +252,7 @@ public class MoveExclusions
 			boolean excludeFromRandomization, 
 			String cardNameOrId, 
 			String moveName, 
-			Cards<PokemonCard> allCards, 
+			Cards<PokemonCard> allPokes, 
 			String line
 	)
 	{
@@ -280,7 +266,7 @@ public class MoveExclusions
     	// cards
     	catch (IllegalArgumentException e) // Includes number format exception
     	{
-    		Cards<PokemonCard> foundCards = allCards.getCardsWithNameIgnoringNumber(cardNameOrId);
+    		Cards<PokemonCard> foundCards = allPokes.getCardsWithNameIgnoringNumber(cardNameOrId);
     		if (foundCards.count() < 1)
     		{
     			// Add a message to the warning string
@@ -395,23 +381,6 @@ public class MoveExclusions
 			warningsFoundParsing.append(IOUtils.NEWLINE);
 			warningsFoundParsing.append("\t");
 			warningsFoundParsing.append(line);
-		}
-	}
-
-	private void displayWarningsIfPresent(Component toCenterPopupsOn)
-	{
-		if (warningsFoundParsing.length() > 0)
-		{
-			// We have to insert in in reverse order since we are always inserting at the start
-			warningsFoundParsing.insert(0, IOUtils.NEWLINE);
-			warningsFoundParsing.insert(0, "\" relative to the JAR:");
-			warningsFoundParsing.insert(0, ConfigConstants.CONFIG_FILE_INSTALL_LOC);
-			warningsFoundParsing.insert(0, IOUtils.FILE_SEPARATOR);
-			warningsFoundParsing.insert(0, "\" config file located in \"");
-			warningsFoundParsing.insert(0, FILE_NAME);
-			warningsFoundParsing.insert(0, "The following issue(s) were encoundered while parsing the \"");
-			IOUtils.showScrollingMessageDialog(toCenterPopupsOn, warningsFoundParsing.toString(), 
-					"Issue(s) encountered while parsing " + FILE_NAME, JOptionPane.WARNING_MESSAGE);
 		}
 	}
 }

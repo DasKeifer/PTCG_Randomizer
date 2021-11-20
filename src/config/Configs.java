@@ -15,7 +15,8 @@ public class Configs
 	public Configs(Rom romData, Component toCenterPopupsOn)
 	{
 		Cards<PokemonCard> allPokes = romData.allCards.getPokemonCards();
-		moveExclusions = MoveExclusions.parseMoveExclusionsCsv(allPokes, toCenterPopupsOn);
-		moveAssignments = MoveAssignments.parseMoveAssignmentsCsv(allPokes, toCenterPopupsOn);
+		
+		moveExclusions = new MoveExclusions(allPokes, toCenterPopupsOn);
+		moveAssignments = new MoveAssignments(allPokes, toCenterPopupsOn);
 	}
 }

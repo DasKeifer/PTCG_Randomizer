@@ -1,16 +1,10 @@
 package config;
 
 import java.awt.Component;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import javax.swing.JOptionPane;
 
 import constants.CardConstants.CardId;
 import data.Move;
@@ -18,17 +12,23 @@ import data.PokemonCard;
 import rom.Cards;
 import util.IOUtils;
 
-public class MoveAssignments
+public class MoveAssignments extends CsvConfigReader
 {
-	public static final String FILE_NAME = "MoveAssignments.csv";
-
 	Map<CardId, List<MoveAssignmentData>> assignmentsByCardId;
-	// TODO: create and move to base class
-	StringBuilder warningsFoundParsing;
 	
-	private MoveAssignments()
+	public MoveAssignments(Cards<PokemonCard> allCards, Component toCenterPopupsOn)
 	{
+		super(toCenterPopupsOn);
+		
 		assignmentsByCardId = new EnumMap<>(CardId.class);
+		
+		readAndParseConfig(new ParseLineArgs(allCards));
+	}
+	
+	@Override
+	public String getName() 
+	{
+		return "MoveAssignments";
 	}
 
 	public void assignSpecifiedMoves(Cards<PokemonCard> cardsToApplyTo, MoveExclusions exclusionsToAddTo)
@@ -42,8 +42,9 @@ public class MoveAssignments
 				// Set the move on the card
 				card.setMove(assign.getMove(), assign.getMoveSlot());
 			
-				// TODO: Figure out how to handle this...
 				// Now add an exclusion so it won't get randomized
+				// Note that at the end of assigning all the moves, we will pop up the move exclusion
+				// dialog to show any errors encountered during adding the exclusions
 				exclusionsToAddTo.addMoveExclusion(card.id, assign.getMove().name.toString(), 
 						false, // false = do not remove move from rand pool - if they want it removed, they need to do so through moveExclusions
 						true, //// true = remove from randomization so the move will be kept on the card
@@ -51,53 +52,13 @@ public class MoveAssignments
 						" and move " + assign.getMove().name.toString()); 
 			}
 		}
-	}
-	
-	public static MoveAssignments parseMoveAssignmentsCsv(Cards<PokemonCard> allCards, Component toCenterPopupsOn)
-	{
-		MoveAssignments assignments = new MoveAssignments();
-		try
-		{
-			File file = IOUtils.copyFileFromConfigsIfNotPresent(ConfigConstants.CONFIG_FILE_SOURCE_LOC, FILE_NAME, ConfigConstants.CONFIG_FILE_INSTALL_LOC);
-	        
-			// Now go ahead and read the file
-			try (FileReader configFR = new FileReader(file);
-					BufferedReader configReader = new BufferedReader(configFR)
-			)
-			{
-				String line;
-		        while((line = configReader.readLine()) != null)  
-		        {  
-		        	// # is the line we use for comments in the files - skip those
-		        	line = line.trim();
-		        	if (!line.isEmpty() && !line.startsWith("#"))
-		        	{
-			        	MoveAssignmentData assign = assignments.parseLine(line, allCards);
-			        	if (assign != null)
-			        	{
-	                        List<MoveAssignmentData> list = assignments.assignmentsByCardId.computeIfAbsent(
-	                        		assign.getCardId(), ll -> new LinkedList<>());
-	                        list.add(assign);
-			        	}
-		        	}
-		        }  
-			}
-			// IO errors will be caught by the below statement
-		}
-		catch (IOException e)
-		{
-			// We have to insert in in reverse order since we are always inserting at the start
-			assignments.warningsFoundParsing.insert(0, e.getMessage());
-			assignments.warningsFoundParsing.insert(0, "Unexpected IO Exception reading move exclusions. Information likely was not read in successfully: ");
-		}
 		
-		assignments.displayWarningsIfPresent(toCenterPopupsOn);
-        
-		return assignments;
+		// Now pop up the errors if any occurred while creating and adding exclusions
+		exclusionsToAddTo.displayWarningsIfPresent();
 	}
-	
-	// TODO: refactor to parseAndAddLine to match exclusion
-	private MoveAssignmentData parseLine(String line, Cards<PokemonCard> allCards)
+
+	@Override
+	protected void parseAndAddLine(String line, ParseLineArgs additionalArgs)
 	{
     	// If we don't limit it, it will remove empty columns so we use a negative
     	// number to get all the columns without actually limiting it
@@ -121,7 +82,7 @@ public class MoveAssignments
 			int cardSlot = parseMoveSlot(args[1].trim());
 			if (cardSlot >= 0)
 			{
-		    	return createMoveAssignmentData(args[0].trim(), cardSlot, args[2].trim(), args[3].trim(), allCards, line);
+		    	createAndAddMoveAssignmentData(args[0].trim(), cardSlot, args[2].trim(), args[3].trim(), additionalArgs.allPokes, line);
 			}
 			else
 			{
@@ -137,21 +98,27 @@ public class MoveAssignments
 				warningsFoundParsing.append(line);
 			}
 		}
-    	
-    	return null;
 	}
 	
-	private MoveAssignmentData createMoveAssignmentData(
+	private void addMoveAssignment(CardId toAddTo, int moveSlot, Move moveToAdd)
+	{
+		// Its tempting to save the card itself but we save the id because we modify a copy
+		// of the cards and not the one that is found now
+		MoveAssignmentData assign = new MoveAssignmentData(toAddTo, moveSlot, moveToAdd);
+        List<MoveAssignmentData> list = assignmentsByCardId.computeIfAbsent(
+        		assign.getCardId(), ll -> new LinkedList<>());
+        list.add(assign);
+	}
+	
+	private void createAndAddMoveAssignmentData(
 			String cardNameOrIdToAdd, 
 			int slot, 
 			String moveHostCardNameOrId, 
-			String moveNameOrIndexToAdd, 
+			String moveNameOrIndexToAdd,
 			Cards<PokemonCard> allCards,
 			String line
 	)
 	{
-		MoveAssignmentData assign = null;
-		
 		// Get the card to add the move to - already will add errors if not found
 		PokemonCard toAddTo = getCardFromString(cardNameOrIdToAdd, allCards, line);
 		if (toAddTo != null)
@@ -166,7 +133,7 @@ public class MoveAssignments
 				{
 					// Its tempting to save the card itself but we save the id because we modify a copy
 					// of the cards and not the one that is found now
-					assign = new MoveAssignmentData(toAddTo.id, slot, hostCard.getMove(moveToAddSlot));
+					addMoveAssignment(toAddTo.id, slot,  hostCard.getMove(moveToAddSlot));
 				}
 				// If not then try it as a name
 				else
@@ -174,9 +141,7 @@ public class MoveAssignments
 					Move moveWithName = hostCard.getMoveWithName(moveNameOrIndexToAdd);
 					if (moveWithName != null)
 					{
-						// Its tempting to save the card itself but we save the id because we modify a copy
-						// of the cards and not the one that is found now
-						assign = new MoveAssignmentData(toAddTo.id, slot, moveWithName);
+						addMoveAssignment(toAddTo.id, slot, moveWithName);
 					}
 					else
 					{
@@ -194,8 +159,6 @@ public class MoveAssignments
 				}
 			}
 		}
-		
-		return assign;
 	}
 	
 	private PokemonCard getCardFromString(String cardNameOrId, Cards<PokemonCard> allCards, String line)
@@ -284,22 +247,5 @@ public class MoveAssignments
 		}
 		
 		return cardSlot;
-	}
-
-	private void displayWarningsIfPresent(Component toCenterPopupsOn)
-	{
-		if (warningsFoundParsing.length() > 0)
-		{
-			// We have to insert in in reverse order since we are always inserting at the start
-			warningsFoundParsing.insert(0, IOUtils.NEWLINE);
-			warningsFoundParsing.insert(0, "\" relative to the JAR:");
-			warningsFoundParsing.insert(0, ConfigConstants.CONFIG_FILE_INSTALL_LOC);
-			warningsFoundParsing.insert(0, IOUtils.FILE_SEPARATOR);
-			warningsFoundParsing.insert(0, "\" config file located in \"");
-			warningsFoundParsing.insert(0, FILE_NAME);
-			warningsFoundParsing.insert(0, "The following issue(s) were encoundered while parsing the \"");
-			IOUtils.showScrollingMessageDialog(toCenterPopupsOn, warningsFoundParsing.toString(), 
-					"Issue(s) encountered while parsing " + FILE_NAME, JOptionPane.WARNING_MESSAGE);
-		}
 	}
 }
