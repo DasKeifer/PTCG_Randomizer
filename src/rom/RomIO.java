@@ -133,7 +133,7 @@ public class RomIO
 		// here but we still need to handle the last null pointer
 		int cardIndex = RomConstants.CARD_POINTERS_LOC + (cards.count() + 1) * RomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		
-		for (Card card : cards.toSortedList())
+		for (Card card : cards.toListOrderedByCardId())
 		{
 			// Write the pointer
 			ByteUtils.writeLittleEndian(cardIndex - RomConstants.CARD_POINTER_OFFSET, bytes, ptrIndex, RomConstants.CARD_POINTER_SIZE_IN_BYTES);

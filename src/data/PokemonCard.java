@@ -97,6 +97,19 @@ public class PokemonCard extends Card
 		return movesList;
 	}
 	
+	public List<Move> getAllNonEmptyMoves()
+	{
+		ArrayList<Move> movesList = new ArrayList<>();
+		for (Move move : moves)
+		{
+			if (!move.isEmpty())
+			{
+				movesList.add(new Move(move));
+			}
+		}
+		return movesList;
+	}
+	
 	public int getNumMoves()
 	{
 		int numMoves = 0;
@@ -119,6 +132,21 @@ public class PokemonCard extends Card
 		}
 		
 		return new Move(moves[moveIndex]);
+	}
+
+	public Move getMoveWithName(String moveName)
+	{
+		// For each move see if the name matches and if it does, return the move
+		for (Move move : moves)
+		{
+			if (move.name.toString().equals(moveName))
+			{
+				return new Move(move);
+			}
+		}
+		
+		// If we didn't find a match, return null
+		return null;
 	}
 	
 	public void setMove(Move move, int moveSlot)

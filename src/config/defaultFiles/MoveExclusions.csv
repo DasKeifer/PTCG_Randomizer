@@ -1,27 +1,34 @@
-Remove Move from Card(s),Card Name/Id,Move Name
-False,,Ember
-False,,Flamethrower
-False,,Fire Blast
-False,,Flames of Rage
-False,,Hydro Pump
-False,,Water Gun
-False,,Recover
-False,,Call for Friend
-False,,Destiny Bond
-False,,Barrier
-False,,Boyfriends
-False,,Sprout
-False,,Energy Trans
-False,,Energy Burn
-False,,Firegiver
-False,,Rain Dance
-False,,Peal of Thunder
-False,,Toxic Gas
-False,,Clairvoyance
-False,,Strikes Back
-False,,Kabuto Armor
-False,,Prehistoric Power
-False,,Transparency
-False,,Neutralizing Shield
-False,,Retreat Aid
-False,,Thick Skinned
+# Used to exclude specific moves from the move pool while still optionally letting them stay on their typical card
+# This is used to prevent "hardcoded" moves that aren't supported from the randomizer ending up on the wrong cards
+# or could be used to remove moves from a playthrough that are deemed too powerful or problematic
+#
+# The current default contents of this file reflect the moves that are not fully randomizable
+#
+# Columns:
+# Remove from Randomization Pool, Exclude Move from Randomization (i.e. Move stays on card(s)), Card Name/Id, Move Name
+True,True,,Ember
+True,True,,Flamethrower
+True,True,,Fire Blast
+True,True,,Flames of Rage
+True,True,,Hydro Pump
+True,True,,Water Gun
+True,True,,Recover
+True,True,,Call for Friend
+True,True,,Destiny Bond
+True,True,,Barrier
+True,True,,Boyfriends
+True,True,,Sprout
+True,True,,Energy Trans
+True,True,,Energy Burn
+True,True,,Firegiver
+True,True,,Rain Dance
+True,True,,Peal of Thunder
+True,True,,Toxic Gas
+True,True,,Clairvoyance
+True,True,,Strikes Back
+True,True,,Kabuto Armor
+True,True,,Prehistoric Power
+True,True,,Transparency
+True,True,,Neutralizing Shield
+True,True,,Retreat Aid
+True,True,,Thick Skinned

@@ -299,7 +299,7 @@ public class Move
 			}
 			
 			effect = custEffect;
-			description.finalizeAndAddTexts(texts, basics.toList().get(0).name.toString());
+			description.finalizeAndAddTexts(texts, basics.toListOrderedByCardId().get(0).name.toString());
 		}
 		else
 		{

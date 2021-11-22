@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import config.Configs;
 import config.MoveExclusions;
 
 import java.util.Random;
@@ -63,12 +64,19 @@ public class MoveSetRandomizer {
 				RandomizationStrategy.RANDOM == powerRandStrat || RandomizationStrategy.SHUFFLE == powerRandStrat)
 		{
 			changedMoves = true;
+			
+			// Assign any specific moves and add them to the exclusion list so we don't
+			// remove them when we randomize
+			configs.getMoveAssignments().assignSpecifiedMoves(pokes, configs.getMoveExclusions());
+			
 			Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap = getMoveTypesPerPokemon(nextSeed, pokes, settings);
 			nextSeed += 10; // Reserve seed space for when we add randomization to this
 
 			shuffleOrRandomizePokemonMoves(nextSeed, cardMovesMap, settings, configs);
 		}
 		// nextSeed += 80; not needed currently as this is the last step in randomization here
+		
+		// TODO Later: add option to assign moves without shuffling or randomizing
 		
 		// See if we need to tweak the move types at all
 		MoveTypeChanges moveTypeChanges = settings.getAttacks().getMoveTypeChanges();
@@ -259,7 +267,7 @@ public class MoveSetRandomizer {
 
 		// For each number of moves, go through and assign cards to values
 		Map<PokemonCard, List<RandomizerMoveCategory>> cardMovesMap = new TreeMap<>(Card.ID_SORTER);
-		List<PokemonCard> unassignedPokes = pokes.toList();
+		List<PokemonCard> unassignedPokes = pokes.toListOrderedByCardId();
 		Random attacksRand = new Random(nextSeed++);
 		Random powersRand = new Random(nextSeed); // ++ not needed since this is the last increment for now
 		for (int numMoves = 0; numMoves <= PokemonCard.MAX_NUM_MOVES; numMoves++)
@@ -487,7 +495,7 @@ public class MoveSetRandomizer {
 			Settings settings,
 			Configs configs
 	)
-	{				
+	{						
 		// Perform a first pass through the moves assigning at least the attacks (both forced damaging and others) and possible
 		// the pokepowers if set that way
 		firstPassMoveAssignment(nextSeed, cardMovesMap, pokeToGetAttacksFrom, settings, configs);
@@ -534,17 +542,17 @@ public class MoveSetRandomizer {
 					firstPassMoveAssignmentHelper(nextSeed, 
 							getEntrysForType(cardMovesMap, pokeType), 
 							getSubsetOfMovePool(
-									pokesToGetMovesFrom.getCardsOfCardType(pokeType).getAllMovesForRandomization(configs.moveExclusions), 
+									pokesToGetMovesFrom.getCardsOfCardType(pokeType).getAllMovesForRandomization(configs.getMoveExclusions()), 
 									firstPassMoveCat), 
-							firstPassMoveCat, settings, configs.moveExclusions);
+							firstPassMoveCat, settings, configs.getMoveExclusions());
 					nextSeed += 3; // helper uses two seeds - leave one for expansion, 24 total
 				}
 			}
 			else
 			{
 				firstPassMoveAssignmentHelper(nextSeed, cardMovesMap, 
-						pokesToGetMovesFrom.getAllMovesForRandomization(configs.moveExclusions), 
-						firstPassMoveCat, settings, configs.moveExclusions);
+						pokesToGetMovesFrom.getAllMovesForRandomization(configs.getMoveExclusions()), 
+						firstPassMoveCat, settings, configs.getMoveExclusions());
 				// nextSeed += 3 * CardType.pokemonValues().size(); not needed at the moment - 24 total
 			}
 		}
@@ -605,12 +613,12 @@ public class MoveSetRandomizer {
 					assignMovesToPokemon(nextSeed, 
 							getEntrysForType(cardMovesMap, pokeType), 
 							new ArrayList<>(getSubsetOfMovePool(
-									originalPokesToTakeMovesFrom.getCardsOfCardType(pokeType).getAllMovesForRandomization(configs.moveExclusions), 
+									originalPokesToTakeMovesFrom.getCardsOfCardType(pokeType).getAllMovesForRandomization(configs.getMoveExclusions()), 
 									RandomizerMoveCategory.POKE_POWER)), 
 							new ArrayList<>(), // Empty list since this is separate from other move randomization
 							RandomizerMoveCategory.POKE_POWER,
 							RandomizationStrategy.SHUFFLE == powerRandStrat, // If its shuffle mode or not
-							configs.moveExclusions); 
+							configs.getMoveExclusions()); 
 					nextSeed += 3; // +3 to be consistent with first pass
 				}
 			}
@@ -620,12 +628,12 @@ public class MoveSetRandomizer {
 				assignMovesToPokemon(nextSeed, 
 						cardMovesMap, 
 						new ArrayList<>(getSubsetOfMovePool(
-								originalPokesToTakeMovesFrom.getAllMovesForRandomization(configs.moveExclusions),
+								originalPokesToTakeMovesFrom.getAllMovesForRandomization(configs.getMoveExclusions()),
 								RandomizerMoveCategory.POKE_POWER)), 
 						new ArrayList<>(), // Empty list since this is separate from other move randomization
 						RandomizerMoveCategory.POKE_POWER, 
 						RandomizationStrategy.SHUFFLE == powerRandStrat, // If its shuffle mode or not
-						configs.moveExclusions);
+						configs.getMoveExclusions());
 				// nextSeed += 3 * CardType.pokemonValues().size(); not needed at the moment
 			}
 		}
@@ -718,7 +726,7 @@ public class MoveSetRandomizer {
 		int randMoveIndex = rand.nextInt(moves.size());
 		
 		// If its not a move we are excluding from randomization
-		if (!movesToKeep.isMoveExcluded(poke.id, poke.getMove(moveIndex), true)) // True means only return if its not removed from card
+		if (!movesToKeep.isMoveExcludedFromRandomization(poke.id, poke.getMove(moveIndex)))
 		{	
 			// Ensure the unusedMoves is not empty if doing shuffling
 			if (shuffle && unusedMoves.isEmpty())

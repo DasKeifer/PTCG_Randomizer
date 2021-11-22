@@ -1,4 +1,4 @@
-package config;
+package config.support;
 
 
 import constants.CardConstants.CardId;
@@ -8,13 +8,15 @@ public class MoveExclusionData
 {
 	private CardId cardId;
 	private String moveName;
-	private boolean removeFromCard;
+	private boolean removeFromPool;
+	private boolean excludeFromRandomization;
 	
-	MoveExclusionData(CardId cardId, String moveName, boolean removeFromCard)
+	public MoveExclusionData(CardId cardId, String moveName, boolean removeFromPool, boolean excludeFromRandomization)
 	{
 		this.cardId = cardId;
 		this.moveName = moveName;
-		this.removeFromCard = removeFromCard;
+		this.removeFromPool = removeFromPool;
+		this.excludeFromRandomization = excludeFromRandomization;
 	}
 	
 	public boolean matchesMove(CardId id, Move move)
@@ -32,14 +34,24 @@ public class MoveExclusionData
 	{
 		return cardId;
 	}
+
+	public boolean isMoveNameSet() 
+	{
+		return !moveName.isEmpty();
+	}
 	
 	public String getMoveName()
 	{
 		return moveName;
 	}
 	
-	public boolean isRemoveFromCard() 
+	public boolean isRemoveFromPool() 
 	{
-		return removeFromCard;
+		return removeFromPool;
+	}
+	
+	public boolean isExcludeFromRandomization() 
+	{
+		return excludeFromRandomization;
 	}
 }

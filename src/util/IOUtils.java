@@ -15,8 +15,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 
-import config.ConfigConstants;
-
 public class IOUtils 
 {    
 	public static final String NEWLINE = System.getProperty("line.separator");
@@ -58,7 +56,7 @@ public class IOUtils
 	
     public static String getJarRootPath() throws UnsupportedEncodingException 
     {
-        URL url = ConfigConstants.class.getProtectionDomain().getCodeSource().getLocation();
+        URL url = IOUtils.class.getProtectionDomain().getCodeSource().getLocation();
         String jarPath = URLDecoder.decode(url.getFile(), "UTF-8");
         return new File(jarPath).getParentFile().getPath();
     }
@@ -71,7 +69,7 @@ public class IOUtils
         file.getParentFile().mkdir();
         if (file.createNewFile()) // returns false if the file already exists
         {
-            try (InputStream fileIn = ConfigConstants.class.getResourceAsStream(resourcePath + fileName);
+            try (InputStream fileIn = IOUtils.class.getResourceAsStream(resourcePath + fileName);
             		OutputStream fileOut = new FileOutputStream(file)
 			)
             {

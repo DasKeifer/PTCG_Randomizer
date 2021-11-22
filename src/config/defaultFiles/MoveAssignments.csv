@@ -1,0 +1,5 @@
+# Sets the given slot of the specified card to the specified move (or move slot) from the specified host card
+# This file is mainly intended to be used for testing purposes when creating, modifying, etc. moves.
+#
+# Columns:
+# Card Name/Id, Move Slot to Override (may still be rearranged after randomization), Move Original Card Name/Id, Move Name/slot number
