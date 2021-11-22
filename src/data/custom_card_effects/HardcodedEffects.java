@@ -186,7 +186,7 @@ public class HardcodedEffects
 //			}
 			
 			// For now assume only one id
-			Card toFindBasicOf = basics.toList().get(0);
+			Card toFindBasicOf = basics.toListOrderedByCardId().get(0);
 			
 			CustomCardEffect effect = HardcodedEffects.getInstance().tryGetCardNameUniqueEffect(EFFECT_NAME, toFindBasicOf.name.toString());
 			if (effect != null)

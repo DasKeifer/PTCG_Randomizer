@@ -1,4 +1,4 @@
-package config;
+package config.support;
 
 
 import constants.CardConstants.CardId;
@@ -10,7 +10,7 @@ public class MoveAssignmentData
 	private int moveSlot;
 	private Move move;
 	
-	MoveAssignmentData(CardId cardId, int moveSlot, Move move)
+	public MoveAssignmentData(CardId cardId, int moveSlot, Move move)
 	{
 		this.cardId = cardId;
 		this.moveSlot = moveSlot;

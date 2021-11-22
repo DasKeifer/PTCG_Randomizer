@@ -134,12 +134,12 @@ public class PokemonCard extends Card
 		return new Move(moves[moveIndex]);
 	}
 
-	public Move getMoveWithName(String moveNameOrIndexToAdd)
+	public Move getMoveWithName(String moveName)
 	{
 		// For each move see if the name matches and if it does, return the move
 		for (Move move : moves)
 		{
-			if (move.name.toString().equals(moveNameOrIndexToAdd))
+			if (move.name.toString().equals(moveName))
 			{
 				return new Move(move);
 			}

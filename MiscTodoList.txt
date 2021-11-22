@@ -1,6 +1,4 @@
 Outstanding:
-Specify moves (Allow setting call for family to a specific poke)
-	Check that exclude is working for both cases...
 Move compiler and data manager to separate repos
 Change saving to BPS or similar
 Effects replacement framework (i.e. call for family fixing/generation)

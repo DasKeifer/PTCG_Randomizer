@@ -1,4 +1,4 @@
-package config;
+package config.support;
 
 import java.awt.Component;
 import java.io.BufferedReader;
@@ -8,43 +8,32 @@ import java.io.IOException;
 
 import javax.swing.JOptionPane;
 
-import data.PokemonCard;
-import rom.Cards;
 import util.IOUtils;
 
-public abstract class CsvConfigReader 
-{
+public abstract class PtcgLineByLineConfigReader 
+{	
 	public static final String CONFIG_FILE_SOURCE_LOC = "/config/defaultFiles/";
 	public static final String CONFIG_FILE_INSTALL_LOC = "configs";
-	public static final String CONFIG_FILE_EXTENSION = ".csv";
+	public static final String CSV_CONFIG_FILE_EXTENSION = ".csv";
 
 	protected final Component toCenterPopupsOn;
 	protected StringBuilder warningsFoundParsing;
 	
-	protected class ParseLineArgs
-	{
-		Cards<PokemonCard> allPokes;
-		
-		public ParseLineArgs(Cards<PokemonCard> allPokes) 
-		{
-			this.allPokes = allPokes;
-		}
-	}
-	
-	protected CsvConfigReader(Component toCenterPopupsOn)
+	protected PtcgLineByLineConfigReader(Component toCenterPopupsOn)
 	{
 		this.toCenterPopupsOn = toCenterPopupsOn;
 		warningsFoundParsing = new StringBuilder();
 	}
 
 	public abstract String getName();
-	protected abstract void parseAndAddLine(String line, ParseLineArgs additionalArgs);	
+	public abstract String getExtension();
+	protected abstract void parseAndAddLine(String line, PtcgAdditionalLineArgs additionalArgs);	
 	
-	protected void readAndParseConfig(ParseLineArgs additionalParsingArgs)
+	protected void readAndParseConfig(PtcgAdditionalLineArgs additionalParsingArgs)
 	{
 		try
 		{
-			File file = IOUtils.copyFileFromConfigsIfNotPresent(CONFIG_FILE_SOURCE_LOC, getName() + CONFIG_FILE_EXTENSION, CONFIG_FILE_INSTALL_LOC);
+			File file = IOUtils.copyFileFromConfigsIfNotPresent(CONFIG_FILE_SOURCE_LOC, getName() + getExtension(), CONFIG_FILE_INSTALL_LOC);
 	        
 			// Now go ahead and read the file
 			try (FileReader configFR = new FileReader(file);
@@ -68,7 +57,10 @@ public abstract class CsvConfigReader
 		{
 			// We have to insert in in reverse order since we are always inserting at the start
 			warningsFoundParsing.insert(0, e.getMessage());
-			warningsFoundParsing.insert(0, "Unexpected IO Exception reading move exclusions. Information likely was not read in successfully: ");
+			warningsFoundParsing.insert(0, " - information likely was not read in successfully: ");
+			warningsFoundParsing.insert(0, getExtension());
+			warningsFoundParsing.insert(0, getName());
+			warningsFoundParsing.insert(0, "Unexpected IO Exception reading ");
 		}
 		
 		displayIOWarningsIfPresent();
@@ -84,11 +76,11 @@ public abstract class CsvConfigReader
 			warningsFoundParsing.insert(0, CONFIG_FILE_INSTALL_LOC);
 			warningsFoundParsing.insert(0, IOUtils.FILE_SEPARATOR);
 			warningsFoundParsing.insert(0, "\" config file located in \"");
-			warningsFoundParsing.insert(0, CONFIG_FILE_EXTENSION);
+			warningsFoundParsing.insert(0, getExtension());
 			warningsFoundParsing.insert(0, getName());
 			warningsFoundParsing.insert(0, "The following issue(s) were encoundered while parsing the \"");
 			IOUtils.showScrollingMessageDialog(toCenterPopupsOn, warningsFoundParsing.toString(), 
-					"Issue(s) encountered while parsing " + getName() + CONFIG_FILE_EXTENSION, 
+					"Issue(s) encountered while parsing " + getName() + getExtension(), 
 					JOptionPane.WARNING_MESSAGE);
 			
 			// Reset the string buffer
@@ -100,7 +92,6 @@ public abstract class CsvConfigReader
 	{
 		if (warningsFoundParsing.length() > 0)
 		{
-			// TODO: 
 			// We have to insert in in reverse order since we are always inserting at the start
 			warningsFoundParsing.insert(0, IOUtils.NEWLINE);
 			warningsFoundParsing.insert(0, ":");

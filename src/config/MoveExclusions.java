@@ -7,8 +7,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+import config.support.MoveExclusionAdditionalLineArgs;
+import config.support.MoveExclusionData;
+import config.support.PtcgAdditionalLineArgs;
+import config.support.PtcgLineByLineConfigReader;
 import constants.CardConstants.CardId;
 import data.Move;
 import data.PokemonCard;
@@ -16,22 +19,12 @@ import data.romtexts.CardName;
 import rom.Cards;
 import util.IOUtils;
 
-public class MoveExclusions extends CsvConfigReader
+public class MoveExclusions extends PtcgLineByLineConfigReader
 {
 	Map<CardId, List<MoveExclusionData>> exclByCardId;
 	Map<String, List<MoveExclusionData>> exclByMoveName;
 	
-	private class MoveExclusionLineArgs extends ParseLineArgs
-	{
-		Set<String> allMovesNames;
-		
-		public MoveExclusionLineArgs(Cards<PokemonCard> allCards)
-		{
-			super (allCards);
-			
-			allMovesNames = allCards.getAllMoves().stream().map(m -> m.name.toString().toLowerCase()).collect(Collectors.toSet());
-		}
-	}
+
 	
 	public MoveExclusions(Cards<PokemonCard> allCards, Component toCenterPopupsOn)
 	{
@@ -40,7 +33,7 @@ public class MoveExclusions extends CsvConfigReader
 		exclByCardId = new EnumMap<>(CardId.class);
 		exclByMoveName = new HashMap<>();
 		
-		readAndParseConfig(new MoveExclusionLineArgs(allCards));
+		readAndParseConfig(new MoveExclusionAdditionalLineArgs(allCards));
 	}
 	
 	@Override
@@ -48,6 +41,12 @@ public class MoveExclusions extends CsvConfigReader
 	{
 		return "MoveExclusions";
 	}	
+	
+	@Override
+	public String getExtension() 
+	{
+		return CSV_CONFIG_FILE_EXTENSION;
+	}
 	
 	public boolean isMoveRemovedFromPool(CardId id, Move move)
 	{
@@ -109,7 +108,7 @@ public class MoveExclusions extends CsvConfigReader
 		if (!success)
 		{
 			warningsFoundParsing.append(IOUtils.NEWLINE);
-			warningsFoundParsing.append("Failed to validate and add move exclusion for card id \"");
+			warningsFoundParsing.append("Failed to validate and add MoveExclusion for card id \"");
 			warningsFoundParsing.append(excl.getCardId().toString());
 			warningsFoundParsing.append("\" with move name \"");
 			warningsFoundParsing.append(excl.getMoveName());
@@ -123,19 +122,19 @@ public class MoveExclusions extends CsvConfigReader
 	}
 
 	@Override
-	protected void parseAndAddLine(String line, ParseLineArgs moveExclLineArgs)
+	protected void parseAndAddLine(String line, PtcgAdditionalLineArgs moveExclLineArgs)
 	{
 		// Cast the arg to the expected type and stop if it fails
 		// Should never fail but this is to play it safe
-		MoveExclusionLineArgs additionalArgs;
+		MoveExclusionAdditionalLineArgs additionalArgs;
 		try
 		{
-			additionalArgs = (MoveExclusionLineArgs) moveExclLineArgs;
+			additionalArgs = (MoveExclusionAdditionalLineArgs) moveExclLineArgs;
 		}
 		catch (ClassCastException cce)
 		{
-			warningsFoundParsing.append("Internal Logic Error! Invalid ParseLineArgs passed for ");
-			warningsFoundParsing.append("MoveExclusions - they must be of type MoveExclusionLineArgs!");
+			warningsFoundParsing.append("Internal Logic Error! Invalid PtcgAdditionalLineArgs passed for ");
+			warningsFoundParsing.append("MoveExclusions - they must be of type MoveExclusionAdditionalLineArgs!");
 			return;
 		}
 		
@@ -182,29 +181,17 @@ public class MoveExclusions extends CsvConfigReader
 				warningsFoundParsing.append(line);
 	    	}
 	    	
-	    	createAndAddMoveExclusionData(removeFromPool, excludeFromRandomization, args[2], args[3], additionalArgs, line);
+	    	// See if card name is empty
+	    	if (args[2].isEmpty())
+	    	{
+	    		createAndAddMoveExclusionDataWithNoCard(
+	    				excludeFromRandomization, excludeFromRandomization, args[3], additionalArgs.getAllMovesNames(), line);
+	    	}
+	    	else
+	    	{
+	    		createAndAddMoveExclusionDataForCard(removeFromPool, excludeFromRandomization, args[2], args[3], additionalArgs.getAllPokes(), line);
+	    	}
 		}
-	}
-	
-	private void createAndAddMoveExclusionData(
-			boolean removeFromPool, 
-			boolean excludeFromRandomization, 
-			String cardNameOrId, 
-			String moveName, 
-			MoveExclusionLineArgs additionalArgs,
-			String line
-	)
-	{
-    	// See if card name is empty
-    	if (cardNameOrId.isEmpty())
-    	{
-    		createAndAddMoveExclusionDataWithNoCard(
-    				excludeFromRandomization, excludeFromRandomization, moveName, additionalArgs.allMovesNames, line);
-    	}
-    	else
-    	{
-    		createAndAddMoveExclusionDataForCard(removeFromPool, excludeFromRandomization, cardNameOrId, moveName, additionalArgs.allPokes, line);
-    	}
 	}
 	
 	private void createAndAddMoveExclusionDataWithNoCard(
@@ -283,7 +270,7 @@ public class MoveExclusions extends CsvConfigReader
     			// If we found some, see if its numbered
 	    		if (CardName.doesHaveNumber(cardNameOrId))
 	    		{
-	    			createAndAddMoveExclusionDataForCardWithId(
+	    			createAndAddMoveExclusionDataForCardNameWithNumber(
 	    					removeFromPool, excludeFromRandomization, cardNameOrId, moveName, foundCards, line);
 	    		}
 	    		// Otherwise it applies to all
@@ -296,16 +283,16 @@ public class MoveExclusions extends CsvConfigReader
     	}
 	}
 	
-	private void createAndAddMoveExclusionDataForCardWithId(
+	private void createAndAddMoveExclusionDataForCardNameWithNumber(
 			boolean removeFromPool, 
 			boolean excludeFromRandomization, 
-			String cardNameOrId, 
+			String cardNameWithNumber, 
 			String moveName, 
 			Cards<PokemonCard> foundCards,
 			String line
 	)
 	{
-		PokemonCard specificCard = Cards.getCardFromNameSetBasedOnNumber(foundCards, cardNameOrId);
+		PokemonCard specificCard = Cards.getCardFromNameSetBasedOnNumber(foundCards, cardNameWithNumber);
 		if (specificCard == null)
 		{
 			// Add a message to the warning string
@@ -316,7 +303,7 @@ public class MoveExclusions extends CsvConfigReader
 			warningsFoundParsing.append("the card name (found ");
 			warningsFoundParsing.append(foundCards.count());
 			warningsFoundParsing.append(") for \"");
-			warningsFoundParsing.append(cardNameOrId);
+			warningsFoundParsing.append(cardNameWithNumber);
 			warningsFoundParsing.append("\". Line will be skipped:");
 			warningsFoundParsing.append(IOUtils.NEWLINE);
 			warningsFoundParsing.append("\t");
@@ -351,14 +338,14 @@ public class MoveExclusions extends CsvConfigReader
 	private void createAndAddMoveExclusionDataForAllCardInSet(
 			boolean removeFromPool, 
 			boolean excludeFromRandomization, 
-			String cardNameOrId, 
+			String cardName, 
 			String moveName, 
 			Cards<PokemonCard> foundCards, 
 			String line
 	)
 	{
 		boolean foundAMove = false;
-		for (PokemonCard card : foundCards.toList())
+		for (PokemonCard card : foundCards.toListOrderedByCardId())
 		{
 			if (moveName.isEmpty() || card.getMoveWithName(moveName) != null)
 			{
@@ -374,7 +361,7 @@ public class MoveExclusions extends CsvConfigReader
 			warningsFoundParsing.append("Found ");
 			warningsFoundParsing.append(foundCards.count());
 			warningsFoundParsing.append(" card(s) with the specified name (");
-			warningsFoundParsing.append(cardNameOrId);
+			warningsFoundParsing.append(cardName);
 			warningsFoundParsing.append(") but failed to find a move with name \"");
 			warningsFoundParsing.append(moveName);
 			warningsFoundParsing.append("\" on any of them so the line will be skipped:");

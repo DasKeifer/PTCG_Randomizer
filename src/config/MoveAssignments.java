@@ -6,13 +6,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import config.support.MoveAssignmentData;
+import config.support.PtcgAdditionalLineArgs;
+import config.support.PtcgLineByLineConfigReader;
 import constants.CardConstants.CardId;
 import data.Move;
 import data.PokemonCard;
 import rom.Cards;
 import util.IOUtils;
 
-public class MoveAssignments extends CsvConfigReader
+public class MoveAssignments extends PtcgLineByLineConfigReader
 {
 	Map<CardId, List<MoveAssignmentData>> assignmentsByCardId;
 	
@@ -22,13 +25,19 @@ public class MoveAssignments extends CsvConfigReader
 		
 		assignmentsByCardId = new EnumMap<>(CardId.class);
 		
-		readAndParseConfig(new ParseLineArgs(allCards));
+		readAndParseConfig(new PtcgAdditionalLineArgs(allCards));
 	}
 	
 	@Override
 	public String getName() 
 	{
 		return "MoveAssignments";
+	}
+	
+	@Override
+	public String getExtension() 
+	{
+		return CSV_CONFIG_FILE_EXTENSION;
 	}
 
 	public void assignSpecifiedMoves(Cards<PokemonCard> cardsToApplyTo, MoveExclusions exclusionsToAddTo)
@@ -48,7 +57,7 @@ public class MoveAssignments extends CsvConfigReader
 				exclusionsToAddTo.addMoveExclusion(card.id, assign.getMove().name.toString(), 
 						false, // false = do not remove move from rand pool - if they want it removed, they need to do so through moveExclusions
 						true, //// true = remove from randomization so the move will be kept on the card
-						"Internal error occured while adding exclusion based on Move Assignment with card ID " + assign.getCardId() +
+						"Internal error occured while adding MoveExclusion based on MoveAssignment with card ID " + assign.getCardId() +
 						" and move " + assign.getMove().name.toString()); 
 			}
 		}
@@ -58,7 +67,7 @@ public class MoveAssignments extends CsvConfigReader
 	}
 
 	@Override
-	protected void parseAndAddLine(String line, ParseLineArgs additionalArgs)
+	protected void parseAndAddLine(String line, PtcgAdditionalLineArgs additionalArgs)
 	{
     	// If we don't limit it, it will remove empty columns so we use a negative
     	// number to get all the columns without actually limiting it
@@ -82,7 +91,7 @@ public class MoveAssignments extends CsvConfigReader
 			int cardSlot = parseMoveSlot(args[1].trim());
 			if (cardSlot >= 0)
 			{
-		    	createAndAddMoveAssignmentData(args[0].trim(), cardSlot, args[2].trim(), args[3].trim(), additionalArgs.allPokes, line);
+		    	createAndAddMoveAssignmentData(args[0].trim(), cardSlot, args[2].trim(), args[3].trim(), additionalArgs.getAllPokes(), line);
 			}
 			else
 			{

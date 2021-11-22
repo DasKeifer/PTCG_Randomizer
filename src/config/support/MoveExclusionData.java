@@ -1,4 +1,4 @@
-package config;
+package config.support;
 
 
 import constants.CardConstants.CardId;
@@ -11,7 +11,7 @@ public class MoveExclusionData
 	private boolean removeFromPool;
 	private boolean excludeFromRandomization;
 	
-	MoveExclusionData(CardId cardId, String moveName, boolean removeFromPool, boolean excludeFromRandomization)
+	public MoveExclusionData(CardId cardId, String moveName, boolean removeFromPool, boolean excludeFromRandomization)
 	{
 		this.cardId = cardId;
 		this.moveName = moveName;
