@@ -1,35 +1,28 @@
 package rom;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 
-import compiler.DataBlock;
-import compiler.Segment;
+import gbc_rom_packer.AllocBlock;
 import gbc_rom_packer.FixedBlock;
 import gbc_rom_packer.MoveableBlock;
-import gbc_framework.rom_addressing.AssignedAddresses;
 
 public class Blocks 
 {
 	// BlockId, Block
 	// This can be used for determining references of one block in another and ensures
 	// each ID is unique
-	private Map<String, DataBlock> blocksById;
-	List<FixedBlock> replacementBlocks;
-	List<MoveableBlock> blocksToPlace;
-	
-	// SegmentId, Segment Reference - mainly for linking
-	private Map<String, Segment> segmentRefsById;
+	private Set<String> usedIds;
+	private List<FixedBlock> replacementBlocks;
+	private List<MoveableBlock> blocksToPlace;
 	
 	public Blocks()
 	{
-		blocksById = new HashMap<>();
+		usedIds = new HashSet<>();
 		replacementBlocks = new LinkedList<>();
 		blocksToPlace = new LinkedList<>();
-		segmentRefsById = new HashMap<>();
 	}
 	
 	public void addFixedBlock(FixedBlock block)
@@ -44,24 +37,9 @@ public class Blocks
 		blocksToPlace.add(block);
 	}
 	
-	private void addBlockById(DataBlock block)
+	private void addBlockById(AllocBlock block)
 	{
-		// See if it already had an entry that is not this instance of the block
-		DataBlock existing = blocksById.put(block.getId(), block);
-		if (existing != null && existing != block)
-		{
-			throw new IllegalArgumentException("Duplicate block ID detected! There must be only " +
-					"one allocation block per data block: " + block.getId());
-		}
-
-		// Add the references for its segments
-		for (Entry<String, Segment> idSegRef : block.getSegmentsById().entrySet())
-		{
-			if (segmentRefsById.put(idSegRef.getKey(), idSegRef.getValue()) != null)
-			{
-				throw new IllegalArgumentException("Duplicate segment ID detected: " + idSegRef.getKey());
-			}
-		}
+		block.addAllIds(usedIds);
 	}
 	
 	public List<FixedBlock> getAllFixedBlocks()
@@ -71,22 +49,6 @@ public class Blocks
 	
 	public List<MoveableBlock> getAllBlocksToAllocate()
 	{
-		List<MoveableBlock> temp = new LinkedList<>();
-		for (DataBlock block : blocksById.values())
-		{
-			if (block instanceof MoveableBlock)
-			{
-				temp.add((MoveableBlock) block);
-			}
-		}
-		return temp;
-	}
-	
-	public void writeData(byte[] bytes, AssignedAddresses assignedAddresses)
-	{		
-		for (DataBlock block : blocksById.values())
-		{
-			block.writeBytes(bytes, assignedAddresses);
-		}
+		return blocksToPlace;
 	}
 }

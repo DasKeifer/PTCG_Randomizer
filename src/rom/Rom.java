@@ -3,7 +3,7 @@ package rom;
 import java.io.File;
 import java.io.IOException;
 
-import compiler.DataBlock;
+import compiler.CodeBlock;
 import data.Card;
 import data.PtcgInstructionParser;
 import data.custom_card_effects.CustomCardEffect;
@@ -49,7 +49,7 @@ public class Rom
 		
 		// Create the custom parser and set the data blocks to use it
 		PtcgInstructionParser parser = new PtcgInstructionParser();
-		DataBlock.setInstructionParserSingleton(parser);
+		CodeBlock.setInstructionParserSingleton(parser);
 		
 		// TODO later: Need to handle tweak blocks somehow. Should these all be
 		// file defined and selected via a menu? could also include if they default
@@ -72,7 +72,8 @@ public class Rom
 		RomIO.writeAllCards(rawBytes, allCards, assignedAddresses);
 			
 		// Now actually write to the bytes
-		blocks.writeData(rawBytes, assignedAddresses);
+		// TODO: Move to different writing scheme
+		//blocks.writeData(rawBytes, assignedAddresses);
 		
 		// Write the bytes to the file
 		RomIO.writeRaw(rawBytes, romFile);

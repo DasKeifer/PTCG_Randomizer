@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import compiler.CodeBlock;
 import compiler.reference_instructs.Jump;
 import compiler.static_instructs.RawBytes;
 import gbc_rom_packer.MoveableBlock;
@@ -74,8 +75,7 @@ public class CustomCardEffect extends CardEffect
 	
 	String id;
 	private EnumMap<EffectFunctionTypes, EffectFunction> effects;
-	// TODO later: For now they are constrained. Maybe make a tweak to allow more banks
-	private MoveableBlock effectCommand; 
+	private CodeBlock effectCommand; 
 	
 	public CustomCardEffect(String id)
 	{
@@ -103,7 +103,7 @@ public class CustomCardEffect extends CardEffect
 		* We add an empty block because the replacement block will handle placing in nops for us to 
 		* get it to the correct size
 		*/
-		blocks.addFixedBlock(new ReplacementBlock("MoreEffectBanksTweak_removeSeg", 0x300d, 5));
+		blocks.addFixedBlock(new ReplacementBlock(new CodeBlock("MoreEffectBanksTweak_removeSeg"), 0x300d, 5));
 		
 		/* replace
 		 cp c
@@ -112,21 +112,23 @@ public class CustomCardEffect extends CardEffect
 		 inc hl
 		 with our custom logic that handles other banks
 		 */	
-		UnconstrainedMoveBlock logicBlock = new UnconstrainedMoveBlock(MORE_EFFECT_BANK_TWEAK_LOGIC_SEG_CODE,
+		UnconstrainedMoveBlock logicBlock = new UnconstrainedMoveBlock(
+				new CodeBlock(MORE_EFFECT_BANK_TWEAK_LOGIC_SEG_CODE),
 				0, (byte)0x0, (byte)0x1); //Try to fit it in home to avoid bankswaps
 		logicBlock.addAllowableBankRange(1, (byte)0xb, (byte)0xd);
 		blocks.addMoveableBlock(logicBlock);
 
 		// Create the block to jump to our new logic and make sure it fits nicely into
 		// the existing instructions
-		ReplacementBlock callLogicSeg = new ReplacementBlock("MoreEffectBanksTweak_jumpToLogicSeg", 0x3016, 5);
-		callLogicSeg.appendInstruction(new Jump(logicBlock.getId()));
-		blocks.addFixedBlock(callLogicSeg);
+		CodeBlock callLogic = new CodeBlock("MoreEffectBanksTweak_jumpToLogicSeg");
+		callLogic.appendInstruction(new Jump(logicBlock.getId()));
+		ReplacementBlock callLogicBlock = new ReplacementBlock(callLogic, 0x3016, 5);
+		blocks.addFixedBlock(callLogicBlock);
 	}
 	
 	public void addEffectFunction(EffectFunctionTypes type, List<String> sourceLines)
 	{
-		effects.put(type, new EffectFunction(new UnconstrainedMoveBlock(sourceLines, effectFunctionPrefs)));
+		effects.put(type, new EffectFunction(new UnconstrainedMoveBlock(new CodeBlock(sourceLines), effectFunctionPrefs)));
 	}
 
 	// For referencing existing functions in the game
@@ -140,8 +142,9 @@ public class CustomCardEffect extends CardEffect
 		List<MoveableBlock> blocks = new LinkedList<>();
 		if (!effects.isEmpty())
 		{
-			effectCommand = new MoveableBlock(id, effectCommandPref);
-			blocks.add(effectCommand);
+			// TODO later: For now they are constrained. Maybe make a tweak to allow more banks
+			effectCommand = new CodeBlock(id);
+			blocks.add(new MoveableBlock(effectCommand, effectCommandPref));
 			for (Entry<EffectFunctionTypes, EffectFunction> effect : effects.entrySet())
 			{
 				if (effect.getValue().isExistingFunction())

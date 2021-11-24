@@ -3,6 +3,7 @@ package rom;
 import java.util.HashMap;
 import java.util.Map;
 
+import compiler.CodeBlock;
 import compiler.reference_instructs.BlockGlobalAddress;
 import compiler.static_instructs.RawBytes;
 import constants.PtcgRomConstants;
@@ -83,8 +84,7 @@ public class Texts
 	public void convertAndAddBlocks(Blocks blocks)
 	{
 		// Write a null pointer to start because thats how it was in the original rom
-		ReplacementBlock textPtrs = new ReplacementBlock("internal_textPointers", PtcgRomConstants.TEXT_POINTERS_LOC);
-		blocks.addFixedBlock(textPtrs);
+		CodeBlock textPtrs = new CodeBlock("internal_textPointers");
 		textPtrs.appendInstruction(new RawBytes((byte) 0, (byte) 0, (byte) 0));
 		
 		// Create the rest of the text blocks and pointers
@@ -104,8 +104,8 @@ public class Texts
 				{
 					nullTextLabel = "internal_romTextNull";
 					// TODO later: determine/set actual range - needs to at least be larger than the text pointer offset
-					MoveableBlock nullText = new MoveableBlock(nullTextLabel, 1, (byte)0xd, (byte)0x1c);
-					blocks.addMoveableBlock(nullText);
+					CodeBlock nullText = new CodeBlock(nullTextLabel);
+					blocks.addMoveableBlock(new MoveableBlock(nullText, 1, (byte)0xd, (byte)0x1c));
 					nullText.appendInstruction(new RawBytes("NULL TEXT".getBytes(), textTerminator));
 				}
 				
@@ -120,14 +120,14 @@ public class Texts
 			
 			// Create the data block from the string bytes and add the trailing null and then add the block for it
 			// TODO later: determine/set actual range - needs to at least be larger than the text pointer offset
-			MoveableBlock text = new MoveableBlock(textLabel, 1, (byte)0xd, (byte)0x1c);
-			blocks.addMoveableBlock(text);
+			CodeBlock text = new CodeBlock(textLabel);
+			blocks.addMoveableBlock(new MoveableBlock(text, 1, (byte)0xd, (byte)0x1c));
 			text.appendInstruction(new RawBytes(stringBytes, textTerminator));
 			usedCount++;
 		}
 
 		// Not -1 because we write the 0th id "000000" pointer
 		// TODO later: Make this or something overwrite any partial text that may have been leftover
-		textPtrs.setReplaceLength(textId * PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES);  
+		blocks.addFixedBlock(new ReplacementBlock(textPtrs, PtcgRomConstants.TEXT_POINTERS_LOC, textId * PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES));
 	}
 }
