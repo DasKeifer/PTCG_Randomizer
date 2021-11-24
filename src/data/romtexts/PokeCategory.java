@@ -1,12 +1,12 @@
 package data.romtexts;
 
-import constants.RomConstants;
+import constants.PtcgRomConstants;
 
 public class PokeCategory extends OneLineText
 {
 	public PokeCategory()
 	{
-		super(RomConstants.MAX_CHARS_POKE_CATEGORY);
+		super(PtcgRomConstants.MAX_CHARS_POKE_CATEGORY);
 	}
 	
 	public PokeCategory(String text)

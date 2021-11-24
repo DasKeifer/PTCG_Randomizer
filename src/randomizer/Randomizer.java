@@ -8,7 +8,7 @@ import java.io.IOException;
 import config.Configs;
 import data.Card;
 import rom.Texts;
-import util.Logger;
+import gbc_framework.utils.Logger;
 import rom.Cards;
 import rom.Rom;
 

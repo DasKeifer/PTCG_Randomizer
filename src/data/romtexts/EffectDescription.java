@@ -1,10 +1,10 @@
 package data.romtexts;
 
 
-import constants.RomConstants;
+import constants.PtcgRomConstants;
 import data.RomText;
 import rom.Texts;
-import util.StringUtils;
+import gbc_framework.utils.StringUtils;
 
 public class EffectDescription extends RomText
 {	
@@ -12,10 +12,10 @@ public class EffectDescription extends RomText
 
 	public EffectDescription()
 	{
-		super(RomConstants.MAX_CHARS_PER_LINE_CARD, 
-				RomConstants.PREFERRED_LINES_PER_BLOCK_EFFECT_DESC, 
-				RomConstants.MAX_LINES_PER_BLOCK_EFFECT_DESC, 
-				RomConstants.MAX_BLOCKS_EFFECT_DESC);
+		super(PtcgRomConstants.MAX_CHARS_PER_LINE_CARD, 
+				PtcgRomConstants.PREFERRED_LINES_PER_BLOCK_EFFECT_DESC, 
+				PtcgRomConstants.MAX_LINES_PER_BLOCK_EFFECT_DESC, 
+				PtcgRomConstants.MAX_BLOCKS_EFFECT_DESC);
 		sourceCardName = "";
 	}
 	
@@ -41,11 +41,11 @@ public class EffectDescription extends RomText
 		if (!isEmpty())
 		{
 			// Some descriptions have misspelled names. Check if this is one and if so, replace it
-			if (RomConstants.MISPELLED_CARD_NAMES.containsKey(sourceCardName))
+			if (PtcgRomConstants.MISPELLED_CARD_NAMES.containsKey(sourceCardName))
 			{
-				if (deformatted.contains(RomConstants.MISPELLED_CARD_NAMES.get(sourceCardName)))
+				if (deformatted.contains(PtcgRomConstants.MISPELLED_CARD_NAMES.get(sourceCardName)))
 				{
-					StringUtils.replaceAll(deformatted, RomConstants.MISPELLED_CARD_NAMES.get(sourceCardName), owningCardName);
+					StringUtils.replaceAll(deformatted, PtcgRomConstants.MISPELLED_CARD_NAMES.get(sourceCardName), owningCardName);
 					changedText = true;
 				}
 			}

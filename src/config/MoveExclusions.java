@@ -17,7 +17,7 @@ import data.Move;
 import data.PokemonCard;
 import data.romtexts.CardName;
 import rom.Cards;
-import util.IOUtils;
+import gbc_framework.utils.IOUtils;
 
 public class MoveExclusions extends PtcgLineByLineConfigReader
 {

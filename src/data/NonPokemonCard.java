@@ -1,13 +1,13 @@
 package data;
 
-import constants.RomConstants;
+import constants.PtcgRomConstants;
 import data.romtexts.CardName;
 import data.romtexts.EffectDescription;
 import rom.Blocks;
 import rom.Cards;
 import rom.Texts;
-import rom_addressing.AssignedAddresses;
-import util.ByteUtils;
+import gbc_framework.rom_addressing.AssignedAddresses;
+import gbc_framework.utils.ByteUtils;
 
 public class NonPokemonCard extends Card
 {
@@ -53,9 +53,9 @@ public class NonPokemonCard extends Card
 		effectPtr = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 
-		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
+		int[] descIndexes = {index, index + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES};
 		description.readDataAndConvertIds(cardBytes, descIndexes, name, idToText);
-		return index + RomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
+		return index + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
 	}
 	
 	@Override
@@ -75,8 +75,8 @@ public class NonPokemonCard extends Card
 		ByteUtils.writeAsShort(effectPtr, cardBytes, index);
 		index += 2;
 
-		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
+		int[] descIndexes = {index, index + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES};
 		description.writeTextId(cardBytes, descIndexes);
-		return index + RomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
+		return index + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
 	}
 }

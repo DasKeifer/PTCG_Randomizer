@@ -1,6 +1,6 @@
 package data;
 
-import rom_addressing.AssignedAddresses;
+import gbc_framework.rom_addressing.AssignedAddresses;
 
 public abstract class CardEffect 
 {

@@ -1,7 +1,7 @@
 package data.romtexts;
 
 
-import constants.RomConstants;
+import constants.PtcgRomConstants;
 import data.RomText;
 import rom.Texts;
 
@@ -27,13 +27,13 @@ public class OneBlockText extends RomText
 	{
 		int[] textIdIndexes = {textIdIndex};
 		readDataAndConvertIds(bytes, textIdIndexes, idToText);
-		return textIdIndex + RomConstants.TEXT_ID_SIZE_IN_BYTES;
+		return textIdIndex + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES;
 	}
 
 	public int writeTextId(byte[] bytes, int textIdIndex)
 	{
 		int[] textIdIndexes = {textIdIndex};
 		writeTextId(bytes, textIdIndexes);
-		return textIdIndex + RomConstants.TEXT_ID_SIZE_IN_BYTES;
+		return textIdIndex + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES;
 	}
 }

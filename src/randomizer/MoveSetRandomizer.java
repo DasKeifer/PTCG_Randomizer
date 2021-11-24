@@ -25,8 +25,8 @@ import randomizer.Settings.MoveTypeChanges;
 import randomizer.Settings.RandomizationStrategy;
 import rom.Cards;
 import rom.Rom;
-import util.Logger;
-import util.MathUtils;
+import gbc_framework.utils.Logger;
+import gbc_framework.utils.MathUtils;
 
 public class MoveSetRandomizer {
 	private Rom romData;

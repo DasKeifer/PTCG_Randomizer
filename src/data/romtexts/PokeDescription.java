@@ -1,13 +1,13 @@
 package data.romtexts;
 
 
-import constants.RomConstants;
+import constants.PtcgRomConstants;
 
 public class PokeDescription extends OneBlockText
 {		
 	public PokeDescription() 
 	{
-		super(RomConstants.MAX_CHARS_PER_LINE_CARD, RomConstants.MAX_LINES_POKE_DESC);
+		super(PtcgRomConstants.MAX_CHARS_PER_LINE_CARD, PtcgRomConstants.MAX_LINES_POKE_DESC);
 	}
 	
 	public PokeDescription(String text)

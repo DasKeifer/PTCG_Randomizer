@@ -3,10 +3,12 @@ package rom;
 import java.io.File;
 import java.io.IOException;
 
+import compiler.DataBlock;
 import data.Card;
+import data.PtcgInstructionParser;
 import data.custom_card_effects.CustomCardEffect;
-import datamanager.DataManager;
-import rom_addressing.AssignedAddresses;
+import gbc_rom_packer.DataManager;
+import gbc_framework.rom_addressing.AssignedAddresses;
 
 public class Rom
 {
@@ -45,6 +47,10 @@ public class Rom
 		// TODO later: clear unused move commands/effects as well?
 		RomIO.clearAllText(rawBytes);
 		
+		// Create the custom parser and set the data blocks to use it
+		PtcgInstructionParser parser = new PtcgInstructionParser();
+		DataBlock.setInstructionParserSingleton(parser);
+		
 		// TODO later: Need to handle tweak blocks somehow. Should these all be
 		// file defined and selected via a menu? could also include if they default
 		// to on or not. Also for now we can handle these after the other blocks
@@ -55,9 +61,12 @@ public class Rom
 		// Finalize all the data to prepare for writing
 		RomIO.finalizeDataAndGenerateBlocks(allCards, idsToText, blocks);
 		
+		// Now add all the text from the custom parser instructions
+		parser.finalizeAndAddTexts(idsToText);
+		
 		// Now assign locations for the data
 		DataManager manager = new DataManager();
-		AssignedAddresses assignedAddresses = manager.allocateBlocks(rawBytes, blocks);
+		AssignedAddresses assignedAddresses = manager.allocateBlocks(rawBytes, blocks.getAllFixedBlocks(), blocks.getAllBlocksToAllocate());
 			
 		// Now save the cards - TODO later: move to blocks eventually?
 		RomIO.writeAllCards(rawBytes, allCards, assignedAddresses);

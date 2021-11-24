@@ -5,12 +5,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import constants.RomConstants;
+import constants.PtcgRomConstants;
 import data.Card;
 import data.custom_card_effects.HardcodedEffects;
-import rom_addressing.AssignedAddresses;
-import util.ByteUtils;
-import util.RomUtils;
+import gbc_framework.rom_addressing.AssignedAddresses;
+import gbc_framework.utils.ByteUtils;
+import gbc_framework.utils.RomUtils;
 
 public class RomIO
 {
@@ -19,8 +19,8 @@ public class RomIO
 	static boolean verifyRom(byte[] rawBytes)
 	{
 		// TODO later: Do a CRC instead? Maybe if we go with the BPS patch format
-		int index = RomConstants.HEADER_LOCATION;
-		for (byte headerByte : RomConstants.HEADER)
+		int index = PtcgRomConstants.HEADER_LOCATION;
+		for (byte headerByte : PtcgRomConstants.HEADER)
 		{
 			if (headerByte != rawBytes[index++])
 			{
@@ -51,19 +51,19 @@ public class RomIO
 		Cards<Card> allCards = new Cards<>();
 
 		// Read the text based on the pointer map in the rom
-		int ptrIndex = RomConstants.CARD_POINTERS_LOC;
+		int ptrIndex = PtcgRomConstants.CARD_POINTERS_LOC;
 		int cardIndex = 0;
 
 		// Read each pointer one at a time until we reach the ending null pointer
 		while ((cardIndex = (short) ByteUtils.readLittleEndian(
-					rawBytes, ptrIndex, RomConstants.CARD_POINTER_SIZE_IN_BYTES)
+					rawBytes, ptrIndex, PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES)
 				) != 0)
 		{
-			cardIndex += RomConstants.CARD_POINTER_OFFSET;
+			cardIndex += PtcgRomConstants.CARD_POINTER_OFFSET;
 			Card.addCardFromBytes(rawBytes, cardIndex, allText, allCards);
 
 			// Move our text pointer to the next pointer
-			ptrIndex += RomConstants.CARD_POINTER_SIZE_IN_BYTES;
+			ptrIndex += PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		}
 		
 		return allCards;
@@ -77,7 +77,7 @@ public class RomIO
 		 
 		 // Read the text based on the pointer map in the rom
 		// First pointer is a null pointer so we skip it
-		int ptrIndex = RomConstants.TEXT_POINTERS_LOC + RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+		int ptrIndex = PtcgRomConstants.TEXT_POINTERS_LOC + PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 		int ptr = 0;
 		int textIndex = 0;
 		int firstPtr = Integer.MAX_VALUE;
@@ -86,8 +86,8 @@ public class RomIO
 		while (ptrIndex < firstPtr)
 		{
 			ptr = (int) ByteUtils.readLittleEndian(
-					rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES) + 
-					RomConstants.TEXT_POINTER_OFFSET;
+					rawBytes, ptrIndex, PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES) + 
+					PtcgRomConstants.TEXT_POINTER_OFFSET;
 			if (ptr < firstPtr)
 			{
 				firstPtr = ptr;
@@ -101,7 +101,7 @@ public class RomIO
 			textMap.insertTextAtNextId(new String(rawBytes, ptr, textIndex - ptr));
 
 			// Move our text pointer to the next pointer
-			ptrIndex += RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+			ptrIndex += PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 		}
 		
 		return textMap;
@@ -122,8 +122,8 @@ public class RomIO
 	static void writeAllCards(byte[] bytes, Cards<Card> cards, AssignedAddresses assignedAddresses)
 	{		
 		// First write the 0 index "null" card
-		int ptrIndex = RomConstants.CARD_POINTERS_LOC - RomConstants.CARD_POINTER_SIZE_IN_BYTES;
-		for (int byteIndex = 0; byteIndex < RomConstants.CARD_POINTER_SIZE_IN_BYTES; byteIndex++)
+		int ptrIndex = PtcgRomConstants.CARD_POINTERS_LOC - PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES;
+		for (int byteIndex = 0; byteIndex < PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES; byteIndex++)
 		{
 			bytes[ptrIndex++] = 0;
 		}
@@ -131,20 +131,20 @@ public class RomIO
 		// determine where the first card will go based off the number of cards we have
 		// The first null pointer was already taken care of so we don't need to handle it 
 		// here but we still need to handle the last null pointer
-		int cardIndex = RomConstants.CARD_POINTERS_LOC + (cards.count() + 1) * RomConstants.CARD_POINTER_SIZE_IN_BYTES;
+		int cardIndex = PtcgRomConstants.CARD_POINTERS_LOC + (cards.count() + 1) * PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		
 		for (Card card : cards.toListOrderedByCardId())
 		{
 			// Write the pointer
-			ByteUtils.writeLittleEndian(cardIndex - RomConstants.CARD_POINTER_OFFSET, bytes, ptrIndex, RomConstants.CARD_POINTER_SIZE_IN_BYTES);
-			ptrIndex += RomConstants.CARD_POINTER_SIZE_IN_BYTES;
+			ByteUtils.writeLittleEndian(cardIndex - PtcgRomConstants.CARD_POINTER_OFFSET, bytes, ptrIndex, PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES);
+			ptrIndex += PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES;
 			
 			// Write the card
 			cardIndex = card.writeData(bytes, cardIndex, assignedAddresses);
 		}
 
 		// Write the null pointer at the end of the cards pointers
-		for (int byteIndex = 0; byteIndex < RomConstants.CARD_POINTER_SIZE_IN_BYTES; byteIndex++)
+		for (int byteIndex = 0; byteIndex < PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES; byteIndex++)
 		{
 			bytes[ptrIndex++] = 0;
 		}
@@ -157,13 +157,13 @@ public class RomIO
 	static void clearAllText(byte[] rawBytes)
 	{				
 		// Free the starting set of 0's
-		ByteUtils.setBytes(rawBytes, RomConstants.TEXT_POINTERS_LOC, 
-				RomConstants.TEXT_POINTER_SIZE_IN_BYTES, (byte) 0xFF);
+		ByteUtils.setBytes(rawBytes, PtcgRomConstants.TEXT_POINTERS_LOC, 
+				PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES, (byte) 0xFF);
 		
 		// Read the text based on the pointer map in the rom
 		// 0th is a null pointer and we already handled it so we jump to the
 		// first "real" pointer
-		int ptrIndex = RomConstants.TEXT_POINTERS_LOC + RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+		int ptrIndex = PtcgRomConstants.TEXT_POINTERS_LOC + PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 		int textAddress = 0;
 		int textIndex = 0;
 		int firstAddress = Integer.MAX_VALUE;
@@ -176,8 +176,8 @@ public class RomIO
 		{
 			// Get the address from the ptr
 			textAddress = (int) ByteUtils.readLittleEndian(
-					rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES) + 
-					RomConstants.TEXT_POINTER_OFFSET;
+					rawBytes, ptrIndex, PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES) + 
+					PtcgRomConstants.TEXT_POINTER_OFFSET;
 			
 			// If this is an earlier address, we need to update where to stop
 			if (textAddress < firstAddress)
@@ -218,10 +218,10 @@ public class RomIO
 			}
 			
 			// Now write over the pointer as well
-			ByteUtils.setBytes(rawBytes, ptrIndex, RomConstants.TEXT_POINTER_SIZE_IN_BYTES, (byte) 0xFF);
+			ByteUtils.setBytes(rawBytes, ptrIndex, PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES, (byte) 0xFF);
 
 			// Finally, move our text pointer to the next pointer
-			ptrIndex += RomConstants.TEXT_POINTER_SIZE_IN_BYTES;
+			ptrIndex += PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 		}
 	}
 }

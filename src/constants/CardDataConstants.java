@@ -5,7 +5,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import util.ByteUtils;
+import gbc_framework.utils.ByteUtils;
 
 public class CardDataConstants 
 {	

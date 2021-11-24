@@ -1,12 +1,15 @@
 package data.custom_card_effects;
 
+import java.util.Arrays;
+
+import compiler.CompilerUtils;
 import compiler.Instruction;
+import gbc_framework.rom_addressing.AssignedAddresses;
+import gbc_framework.rom_addressing.BankAddress;
+import gbc_framework.utils.ByteUtils;
+import gbc_framework.utils.RomUtils;
+
 import constants.DuelConstants.EffectFunctionTypes;
-import rom.Texts;
-import rom_addressing.AssignedAddresses;
-import rom_addressing.BankAddress;
-import util.ByteUtils;
-import util.RomUtils;
 
 public class EffectFunctionPointerInstruct implements Instruction
 {
@@ -20,11 +23,25 @@ public class EffectFunctionPointerInstruct implements Instruction
 		this.functionType = functionType;
 		this.functionLabel = functionLabel;
 	}
+	
+	public static EffectFunctionPointerInstruct create(String[] args)
+	{	
+		final String supportedArgs = "efp only supports (byte, string): ";	
 
-	@Override
-	public void extractText(Texts texts) 
-	{
-		// Nothing to do here
+		if (args.length != 2)
+		{
+			throw new IllegalArgumentException(supportedArgs + "given: " + Arrays.toString(args));
+		}
+		
+		try
+		{
+			return new EffectFunctionPointerInstruct(
+					EffectFunctionTypes.readFromByte(CompilerUtils.parseByteArg(args[0])), args[1]);
+		}
+		catch (IllegalArgumentException iae)
+		{
+			throw new IllegalArgumentException(supportedArgs + iae.getMessage());
+		}
 	}
 
 	@Override

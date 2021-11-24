@@ -9,7 +9,7 @@ import constants.CharMapConstants;
 import constants.DuelConstants.EffectFunctionTypes;
 import data.Card;
 import rom.Cards;
-import util.RomUtils;
+import gbc_framework.utils.RomUtils;
 
 public class HardcodedEffects 
 {

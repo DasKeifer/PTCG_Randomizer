@@ -8,17 +8,17 @@ import java.util.Map.Entry;
 
 import compiler.reference_instructs.Jump;
 import compiler.static_instructs.RawBytes;
-import datamanager.MoveableBlock;
-import datamanager.ReplacementBlock;
-import datamanager.UnconstrainedMoveBlock;
+import gbc_rom_packer.MoveableBlock;
+import gbc_rom_packer.ReplacementBlock;
+import gbc_rom_packer.UnconstrainedMoveBlock;
 import constants.DuelConstants.EffectFunctionTypes;
 import data.CardEffect;
 import rom.Blocks;
-import rom_addressing.AssignedAddresses;
-import rom_addressing.BankAddress;
-import rom_addressing.PrioritizedBankRange;
-import util.ByteUtils;
-import util.RomUtils;
+import gbc_framework.rom_addressing.AssignedAddresses;
+import gbc_framework.rom_addressing.BankAddress;
+import gbc_framework.rom_addressing.PrioritizedBankRange;
+import gbc_framework.utils.ByteUtils;
+import gbc_framework.utils.RomUtils;
 
 public class CustomCardEffect extends CardEffect
 {

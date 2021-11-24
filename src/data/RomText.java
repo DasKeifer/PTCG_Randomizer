@@ -5,8 +5,8 @@ import java.util.List;
 
 import constants.CharMapConstants;
 import rom.Texts;
-import util.ByteUtils;
-import util.StringUtils;
+import gbc_framework.utils.ByteUtils;
+import gbc_framework.utils.StringUtils;
 
 public class RomText
 {	

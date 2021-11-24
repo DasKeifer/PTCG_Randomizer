@@ -1,7 +1,7 @@
 package data;
 
-import rom_addressing.AssignedAddresses;
-import util.ByteUtils;
+import gbc_framework.rom_addressing.AssignedAddresses;
+import gbc_framework.utils.ByteUtils;
 
 public class UnchangedCardEffect extends CardEffect
 {

@@ -9,8 +9,8 @@ import data.romtexts.CardName;
 import rom.Blocks;
 import rom.Cards;
 import rom.Texts;
-import rom_addressing.AssignedAddresses;
-import util.ByteUtils;
+import gbc_framework.rom_addressing.AssignedAddresses;
+import gbc_framework.utils.ByteUtils;
 
 import java.security.InvalidParameterException;
 import java.util.Comparator;

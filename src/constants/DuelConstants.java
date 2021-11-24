@@ -1,6 +1,6 @@
 package constants;
 
-import util.ByteUtils;
+import gbc_framework.utils.ByteUtils;
 
 public class DuelConstants 
 {

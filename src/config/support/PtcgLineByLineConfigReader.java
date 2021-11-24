@@ -8,7 +8,7 @@ import java.io.IOException;
 
 import javax.swing.JOptionPane;
 
-import util.IOUtils;
+import gbc_framework.utils.IOUtils;
 
 public abstract class PtcgLineByLineConfigReader 
 {	

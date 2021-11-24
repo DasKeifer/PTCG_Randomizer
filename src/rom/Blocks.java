@@ -8,9 +8,9 @@ import java.util.Map.Entry;
 
 import compiler.DataBlock;
 import compiler.Segment;
-import datamanager.FixedBlock;
-import datamanager.MoveableBlock;
-import rom_addressing.AssignedAddresses;
+import gbc_rom_packer.FixedBlock;
+import gbc_rom_packer.MoveableBlock;
+import gbc_framework.rom_addressing.AssignedAddresses;
 
 public class Blocks 
 {

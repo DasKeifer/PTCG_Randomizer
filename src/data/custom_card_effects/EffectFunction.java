@@ -1,7 +1,7 @@
 package data.custom_card_effects;
 
 import compiler.CompilerUtils;
-import datamanager.MoveableBlock;
+import gbc_rom_packer.MoveableBlock;
 
 public class EffectFunction
 {

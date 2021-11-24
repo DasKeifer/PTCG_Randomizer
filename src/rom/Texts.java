@@ -5,9 +5,9 @@ import java.util.Map;
 
 import compiler.reference_instructs.BlockGlobalAddress;
 import compiler.static_instructs.RawBytes;
-import constants.RomConstants;
-import datamanager.MoveableBlock;
-import datamanager.ReplacementBlock;
+import constants.PtcgRomConstants;
+import gbc_rom_packer.MoveableBlock;
+import gbc_rom_packer.ReplacementBlock;
 
 public class Texts 
 {
@@ -83,7 +83,7 @@ public class Texts
 	public void convertAndAddBlocks(Blocks blocks)
 	{
 		// Write a null pointer to start because thats how it was in the original rom
-		ReplacementBlock textPtrs = new ReplacementBlock("internal_textPointers", RomConstants.TEXT_POINTERS_LOC);
+		ReplacementBlock textPtrs = new ReplacementBlock("internal_textPointers", PtcgRomConstants.TEXT_POINTERS_LOC);
 		blocks.addFixedBlock(textPtrs);
 		textPtrs.appendInstruction(new RawBytes((byte) 0, (byte) 0, (byte) 0));
 		
@@ -109,14 +109,14 @@ public class Texts
 					nullText.appendInstruction(new RawBytes("NULL TEXT".getBytes(), textTerminator));
 				}
 				
-				textPtrs.appendInstruction(new BlockGlobalAddress(nullTextLabel, RomConstants.TEXT_POINTER_OFFSET));
+				textPtrs.appendInstruction(new BlockGlobalAddress(nullTextLabel, PtcgRomConstants.TEXT_POINTER_OFFSET));
 				continue;
 			}
 
 			// Otherwise we have the key - add the text
 			String textLabel = "internal_romText" + textId;
 			byte[] stringBytes = getAtId(textId).getBytes();
-			textPtrs.appendInstruction(new BlockGlobalAddress(textLabel, RomConstants.TEXT_POINTER_OFFSET));
+			textPtrs.appendInstruction(new BlockGlobalAddress(textLabel, PtcgRomConstants.TEXT_POINTER_OFFSET));
 			
 			// Create the data block from the string bytes and add the trailing null and then add the block for it
 			// TODO later: determine/set actual range - needs to at least be larger than the text pointer offset
@@ -128,6 +128,6 @@ public class Texts
 
 		// Not -1 because we write the 0th id "000000" pointer
 		// TODO later: Make this or something overwrite any partial text that may have been leftover
-		textPtrs.setReplaceLength(textId * RomConstants.TEXT_POINTER_SIZE_IN_BYTES);  
+		textPtrs.setReplaceLength(textId * PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES);  
 	}
 }

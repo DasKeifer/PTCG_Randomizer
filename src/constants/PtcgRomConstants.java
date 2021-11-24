@@ -7,9 +7,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public final class RomConstants 
+public final class PtcgRomConstants 
 {
-	private RomConstants() {}
+	private PtcgRomConstants() {}
 	
 	//Counts
 	public static final int TOTAL_NUM_POKEMON_CARDS = 187;

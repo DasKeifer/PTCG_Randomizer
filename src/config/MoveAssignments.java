@@ -13,7 +13,7 @@ import constants.CardConstants.CardId;
 import data.Move;
 import data.PokemonCard;
 import rom.Cards;
-import util.IOUtils;
+import gbc_framework.utils.IOUtils;
 
 public class MoveAssignments extends PtcgLineByLineConfigReader
 {

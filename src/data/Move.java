@@ -6,18 +6,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import constants.RomConstants;
+import constants.PtcgRomConstants;
 import constants.CardDataConstants.*;
 import data.custom_card_effects.CustomCardEffect;
 import data.custom_card_effects.HardcodedEffects;
 import data.romtexts.EffectDescription;
 import data.romtexts.MoveName;
-import datamanager.MoveableBlock;
+import gbc_rom_packer.MoveableBlock;
 import rom.Blocks;
 import rom.Cards;
 import rom.Texts;
-import rom_addressing.AssignedAddresses;
-import util.ByteUtils;
+import gbc_framework.rom_addressing.AssignedAddresses;
+import gbc_framework.utils.ByteUtils;
 
 public class Move
 {
@@ -105,7 +105,7 @@ public class Move
 		{
 			// If its listed as doing damage or is one of the moves that does damage just doesn't
 			// have an associated damage number, this will return true
-			return damage > 0 || RomConstants.ZERO_DAMAGE_DAMAGING_MOVES.contains(name.toString());
+			return damage > 0 || PtcgRomConstants.ZERO_DAMAGE_DAMAGING_MOVES.contains(name.toString());
 		}
 		
 		return false;
@@ -261,9 +261,9 @@ public class Move
 		
 		index = name.readDataAndConvertIds(moveBytes, index, idToText);
 		
-		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
+		int[] descIndexes = {index, index + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES};
 		description.readDataAndConvertIds(moveBytes, descIndexes, cardName, idToText);
-		index += RomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
+		index += PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
 		
 		damage = moveBytes[index++];
 		category = MoveCategory.readFromByte(moveBytes[index++]);
@@ -295,7 +295,6 @@ public class Move
 			for (MoveableBlock block : effectBlocks)
 			{
 				blocks.addMoveableBlock(block);
-				block.extractTextsFromInstructions(texts);
 			}
 			
 			effect = custEffect;
@@ -317,11 +316,11 @@ public class Move
 		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.COLORLESS), getCost(EnergyType.UNUSED_TYPE));
 
 		name.writeTextId(moveBytes, index);
-		index += RomConstants.TEXT_ID_SIZE_IN_BYTES;
+		index += PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES;
 
-		int[] descIndexes = {index, index + RomConstants.TEXT_ID_SIZE_IN_BYTES};
+		int[] descIndexes = {index, index + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES};
 		description.writeTextId(moveBytes, descIndexes);
-		index += RomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
+		index += PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
 		
 		moveBytes[index++] = damage;
 		moveBytes[index++] = category.getValue();
