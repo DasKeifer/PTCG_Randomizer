@@ -6,24 +6,27 @@ import java.util.Map;
 import compiler.CodeBlock;
 import compiler.reference_instructs.BlockGlobalAddress;
 import compiler.static_instructs.RawBytes;
+import constants.CharMapConstants;
 import constants.PtcgRomConstants;
-import gbc_rom_packer.MoveableBlock;
-import gbc_rom_packer.ReplacementBlock;
+import rom_packer.Blocks;
+import rom_packer.HybridBlock;
+import rom_packer.MovableBlock;
+import rom_packer.ReplacementBlock;
 
 public class Texts 
 {
 	// TODO later: Add text labels here? Then we can treat everything as blocks?
 	// Or maybe just assume names and create a special class for/funct for
 	// getting the textLabel based on Id?
-	// TODO later: Add some snazzy logic to leave most texts in place and only move ones that
-	// would be overwritten by adding more pointers
 	private Map<Short, String> textMap;
 	private Map<String, Short> reverseMap;
+	private Map<Short, Integer> idToAddressMap;
 
 	public Texts()
 	{
 		textMap = new HashMap<>();
 		reverseMap = new HashMap<>();
+		idToAddressMap = new HashMap<>();
 		
 		// Put in the "null pointer" reservation at ID 0
 		textMap.put((short) 0, "");
@@ -34,13 +37,23 @@ public class Texts
 	{
 		textMap = new HashMap<>(toCopy.textMap);
 		reverseMap = new HashMap<>(toCopy.reverseMap);
+		idToAddressMap = new HashMap<>(toCopy.idToAddressMap);
+	}
+
+	public short insertTextAtNextId(String text)
+	{
+		return insertTextAtNextId(text, -1);
 	}
 	
-	public short insertTextAtNextId(String text)
+	public short insertTextAtNextId(String text, int defaultAddress)
 	{
 		short nextId = count();
 		textMap.put(nextId, text);
 		reverseMap.put(text, nextId);
+		if (defaultAddress >= 0)
+		{
+			idToAddressMap.put(nextId, defaultAddress);
+		}
 		return nextId;
 	}
 	
@@ -91,7 +104,6 @@ public class Texts
 		// We intentionally do it like this to ensure there are no gaps which would otherwise
 		// cause issues
 		String nullTextLabel = "";
-		byte[] textTerminator = new byte[] {0};
 		int usedCount = 1; // Because we wrote the null pointer already
 		short textId = 1;
 		for (; usedCount < count(); textId++)
@@ -103,10 +115,7 @@ public class Texts
 				if (nullTextLabel.isEmpty())
 				{
 					nullTextLabel = "internal_romTextNull";
-					// TODO later: determine/set actual range - needs to at least be larger than the text pointer offset
-					CodeBlock nullText = new CodeBlock(nullTextLabel);
-					blocks.addMoveableBlock(new MoveableBlock(nullText, 1, (byte)0xd, (byte)0x1c));
-					nullText.appendInstruction(new RawBytes("NULL TEXT".getBytes(), textTerminator));
+					createAndAddTextBlock(textId, nullTextLabel, blocks);
 				}
 				
 				textPtrs.appendInstruction(new BlockGlobalAddress(nullTextLabel, PtcgRomConstants.TEXT_POINTER_OFFSET));
@@ -115,19 +124,35 @@ public class Texts
 
 			// Otherwise we have the key - add the text
 			String textLabel = "internal_romText" + textId;
-			byte[] stringBytes = getAtId(textId).getBytes();
 			textPtrs.appendInstruction(new BlockGlobalAddress(textLabel, PtcgRomConstants.TEXT_POINTER_OFFSET));
 			
-			// Create the data block from the string bytes and add the trailing null and then add the block for it
-			// TODO later: determine/set actual range - needs to at least be larger than the text pointer offset
-			CodeBlock text = new CodeBlock(textLabel);
-			blocks.addMoveableBlock(new MoveableBlock(text, 1, (byte)0xd, (byte)0x1c));
-			text.appendInstruction(new RawBytes(stringBytes, textTerminator));
+			// Create and add the text as appropriate (i.e. a hybrid if it was read from the rom or a movable
+			// if its a new block)
+			createAndAddTextBlock(textId, textLabel, blocks);
 			usedCount++;
 		}
 
 		// Not -1 because we write the 0th id "000000" pointer
-		// TODO later: Make this or something overwrite any partial text that may have been leftover
 		blocks.addFixedBlock(new ReplacementBlock(textPtrs, PtcgRomConstants.TEXT_POINTERS_LOC, textId * PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES));
+	}
+	
+	private void createAndAddTextBlock(short textId, String textLabel, Blocks blocks)
+	{
+		byte[] stringBytes = getAtId(textId).getBytes();
+		
+		CodeBlock text = new CodeBlock(textLabel);
+		text.appendInstruction(new RawBytes(stringBytes));
+		text.appendInstruction(new RawBytes((byte) CharMapConstants.TEXT_END_CHAR));
+		MovableBlock block = new MovableBlock(text, 1, (byte)0xd, (byte)0x1c);
+		
+		int origAddress = idToAddressMap.getOrDefault(textId, -1); // TODO: Const?
+		if (origAddress >= 0)
+		{
+			blocks.addHybridBlock(new HybridBlock(block, origAddress));	
+		}
+		else
+		{
+			blocks.addMovableBlock(block);
+		}
 	}
 }

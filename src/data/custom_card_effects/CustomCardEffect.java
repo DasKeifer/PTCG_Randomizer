@@ -9,12 +9,12 @@ import java.util.Map.Entry;
 import compiler.CodeBlock;
 import compiler.reference_instructs.Jump;
 import compiler.static_instructs.RawBytes;
-import gbc_rom_packer.MoveableBlock;
-import gbc_rom_packer.ReplacementBlock;
-import gbc_rom_packer.UnconstrainedMoveBlock;
 import constants.DuelConstants.EffectFunctionTypes;
 import data.CardEffect;
-import rom.Blocks;
+import rom_packer.Blocks;
+import rom_packer.MovableBlock;
+import rom_packer.ReplacementBlock;
+import rom_packer.UnconstrainedMoveBlock;
 import gbc_framework.rom_addressing.AssignedAddresses;
 import gbc_framework.rom_addressing.BankAddress;
 import gbc_framework.rom_addressing.PrioritizedBankRange;
@@ -116,7 +116,7 @@ public class CustomCardEffect extends CardEffect
 				new CodeBlock(MORE_EFFECT_BANK_TWEAK_LOGIC_SEG_CODE),
 				0, (byte)0x0, (byte)0x1); //Try to fit it in home to avoid bankswaps
 		logicBlock.addAllowableBankRange(1, (byte)0xb, (byte)0xd);
-		blocks.addMoveableBlock(logicBlock);
+		blocks.addMovableBlock(logicBlock);
 
 		// Create the block to jump to our new logic and make sure it fits nicely into
 		// the existing instructions
@@ -137,14 +137,14 @@ public class CustomCardEffect extends CardEffect
 		effects.put(type, new EffectFunction(bankBAddress));
 	}
 
-	public List<MoveableBlock> convertToBlocks()
+	public List<MovableBlock> convertToBlocks()
 	{
-		List<MoveableBlock> blocks = new LinkedList<>();
+		List<MovableBlock> blocks = new LinkedList<>();
 		if (!effects.isEmpty())
 		{
 			// TODO later: For now they are constrained. Maybe make a tweak to allow more banks
 			effectCommand = new CodeBlock(id);
-			blocks.add(new MoveableBlock(effectCommand, effectCommandPref));
+			blocks.add(new MovableBlock(effectCommand, effectCommandPref));
 			for (Entry<EffectFunctionTypes, EffectFunction> effect : effects.entrySet())
 			{
 				if (effect.getValue().isExistingFunction())

@@ -6,9 +6,9 @@ import constants.CardDataConstants.CardRarity;
 import constants.CardDataConstants.CardSet;
 import constants.CardDataConstants.CardType;
 import data.romtexts.CardName;
-import rom.Blocks;
 import rom.Cards;
 import rom.Texts;
+import rom_packer.Blocks;
 import gbc_framework.rom_addressing.AssignedAddresses;
 import gbc_framework.utils.ByteUtils;
 

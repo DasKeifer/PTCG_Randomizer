@@ -12,10 +12,10 @@ import data.custom_card_effects.CustomCardEffect;
 import data.custom_card_effects.HardcodedEffects;
 import data.romtexts.EffectDescription;
 import data.romtexts.MoveName;
-import gbc_rom_packer.MoveableBlock;
-import rom.Blocks;
 import rom.Cards;
 import rom.Texts;
+import rom_packer.Blocks;
+import rom_packer.MovableBlock;
 import gbc_framework.rom_addressing.AssignedAddresses;
 import gbc_framework.utils.ByteUtils;
 
@@ -291,10 +291,10 @@ public class Move
 			}
 			
 			CustomCardEffect custEffect = HardcodedEffects.CallForFamily.createMoveEffect(/*cards,*/ basics);
-			List<MoveableBlock> effectBlocks = custEffect.convertToBlocks();
-			for (MoveableBlock block : effectBlocks)
+			List<MovableBlock> effectBlocks = custEffect.convertToBlocks();
+			for (MovableBlock block : effectBlocks)
 			{
-				blocks.addMoveableBlock(block);
+				blocks.addMovableBlock(block);
 			}
 			
 			effect = custEffect;

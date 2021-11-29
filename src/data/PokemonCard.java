@@ -7,9 +7,9 @@ import constants.CardDataConstants.*;
 import data.romtexts.CardName;
 import data.romtexts.PokeCategory;
 import data.romtexts.PokeDescription;
-import rom.Blocks;
 import rom.Cards;
 import rom.Texts;
+import rom_packer.Blocks;
 import gbc_framework.rom_addressing.AssignedAddresses;
 import gbc_framework.utils.ByteUtils;
 

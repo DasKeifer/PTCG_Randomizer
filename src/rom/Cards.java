@@ -18,6 +18,7 @@ import data.Card;
 import data.Move;
 import data.NonPokemonCard;
 import data.PokemonCard;
+import rom_packer.Blocks;
 
 public class Cards<T extends Card>
 {

@@ -11,6 +11,7 @@ import data.custom_card_effects.HardcodedEffects;
 import gbc_framework.rom_addressing.AssignedAddresses;
 import gbc_framework.utils.ByteUtils;
 import gbc_framework.utils.RomUtils;
+import rom_packer.Blocks;
 
 public class RomIO
 {
@@ -97,8 +98,9 @@ public class RomIO
 			textIndex = ptr;
 			while (rawBytes[++textIndex] != 0x00);
 			
-			// Read the string to the null char (but not including it)
-			textMap.insertTextAtNextId(new String(rawBytes, ptr, textIndex - ptr));
+			// Read the string to the null char (but not including it) and store where
+			// it was read from
+			textMap.insertTextAtNextId(new String(rawBytes, ptr, textIndex - ptr), ptr);
 
 			// Move our text pointer to the next pointer
 			ptrIndex += PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES;

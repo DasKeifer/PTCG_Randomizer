@@ -1,14 +1,14 @@
 package data.custom_card_effects;
 
 import compiler.CompilerUtils;
-import gbc_rom_packer.MoveableBlock;
+import rom_packer.MovableBlock;
 
 public class EffectFunction
 {
-	private MoveableBlock block;
+	private MovableBlock block;
 	private short address;
 	
-	EffectFunction(MoveableBlock block)
+	EffectFunction(MovableBlock block)
 	{
 		this.block = block;
 		this.address = CompilerUtils.UNASSIGNED_ADDRESS;
@@ -25,7 +25,7 @@ public class EffectFunction
 		return block == null;
 	}
 	
-	public MoveableBlock getBlock()
+	public MovableBlock getBlock()
 	{
 		return block;
 	}

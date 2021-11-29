@@ -7,8 +7,9 @@ import compiler.CodeBlock;
 import data.Card;
 import data.PtcgInstructionParser;
 import data.custom_card_effects.CustomCardEffect;
-import gbc_rom_packer.DataManager;
 import gbc_framework.rom_addressing.AssignedAddresses;
+import rom_packer.Blocks;
+import rom_packer.DataManager;
 
 public class Rom
 {
@@ -66,7 +67,7 @@ public class Rom
 		
 		// Now assign locations for the data
 		DataManager manager = new DataManager();
-		AssignedAddresses assignedAddresses = manager.allocateBlocks(rawBytes, blocks.getAllFixedBlocks(), blocks.getAllBlocksToAllocate());
+		AssignedAddresses assignedAddresses = manager.allocateBlocks(rawBytes, blocks);
 			
 		// Now save the cards - TODO later: move to blocks eventually?
 		RomIO.writeAllCards(rawBytes, allCards, assignedAddresses);
