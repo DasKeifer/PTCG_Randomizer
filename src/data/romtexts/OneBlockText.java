@@ -2,7 +2,6 @@ package data.romtexts;
 
 
 import constants.PtcgRomConstants;
-import data.RomText;
 import rom.Texts;
 
 public class OneBlockText extends RomText
@@ -35,5 +34,10 @@ public class OneBlockText extends RomText
 		int[] textIdIndexes = {textIdIndex};
 		writeTextId(bytes, textIdIndexes);
 		return textIdIndex + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES;
+	}
+
+	public short getTextId() 
+	{
+		return getTextIds().get(0);
 	}
 }

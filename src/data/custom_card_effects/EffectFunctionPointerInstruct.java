@@ -1,9 +1,11 @@
 package data.custom_card_effects;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import compiler.CompilerUtils;
 import compiler.Instruction;
+import gbc_framework.SegmentedWriter;
 import gbc_framework.rom_addressing.AssignedAddresses;
 import gbc_framework.rom_addressing.BankAddress;
 import gbc_framework.utils.ByteUtils;
@@ -71,34 +73,38 @@ public class EffectFunctionPointerInstruct implements Instruction
 	}
 
 	@Override
-	public int writeBytes(byte[] bytes, int addressToWriteAt, AssignedAddresses assignedAddresses) 
+	public int writeBytes(SegmentedWriter writer, BankAddress instructionAddress, AssignedAddresses assignedAddresses)
+			throws IOException 
 	{
-		BankAddress address = assignedAddresses.getThrow(functionLabel);
-		if (!address.isFullAddress())
+		BankAddress addressToWrite = assignedAddresses.getThrow(functionLabel);
+		if (!addressToWrite.isFullAddress())
 		{
 			throw new IllegalAccessError("EffectFunctionPointerInstruct tried to write address for " + 
-					functionLabel + " but it is not fully assigned: " + address.toString());
+					functionLabel + " but it is not fully assigned: " + addressToWrite.toString());
 		}
 		
 		// If its not in the bank we can't use the shortcut
 		// So we need to write the type with the multibank offset value then the bank it actually
 		// is in
-		int writeIdx = addressToWriteAt;
-		if (address.getBank() != CustomCardEffect.EFFECT_FUNCTION_SHORTCUT_BANK)
+		int writeSize = 1;
+		if (addressToWrite.getBank() != CustomCardEffect.EFFECT_FUNCTION_SHORTCUT_BANK)
 		{
-			bytes[writeIdx++] = (byte)(functionType.getValue() + CustomCardEffect.MULTIBANK_EFFECT_OFFSET);
-			bytes[writeIdx++] = address.getBank();
+			writeSize++;
+			writer.append(
+					(byte)(functionType.getValue() + CustomCardEffect.MULTIBANK_EFFECT_OFFSET),
+					addressToWrite.getBank()
+			);
 		}
 		else
 		{
 			// If it is in the shortcut bank, we just have to write the type
-			bytes[writeIdx++] = functionType.getValue();
+			writer.append(functionType.getValue());
 		}
 		
 		// Then we always write the loaded bank offset
-		ByteUtils.writeAsShort(RomUtils.convertFromBankOffsetToLoadedOffset(address), bytes, writeIdx);
-		writeIdx += 2;
+		writer.append(ByteUtils.shortToLittleEndianBytes(RomUtils.convertFromBankOffsetToLoadedOffset(addressToWrite)));
+		writeSize += 2;
 		
-		return writeIdx - addressToWriteAt;
+		return writeSize;
 	}
 }

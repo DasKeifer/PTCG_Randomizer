@@ -1,4 +1,4 @@
-package data;
+package data.romtexts;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -250,6 +250,18 @@ public class RomText
 		
 		// Set it back
 		processForInternalManaging(textBlocks);
+	}
+	
+	public List<Short> getTextIds()
+	{
+		if (textBlockIds.size() != textBlocks.size())
+		{
+			throw new IllegalArgumentException("Object not setup to write! The found number of ids (" + 
+					textBlockIds.size() + ") does not match the number of text blocks (" + textBlocks.size() + 
+					") for text \"" + StringUtils.createAbbreviation(toString(), 25) + "\"");
+		}
+		
+		return new ArrayList<Short>(textBlockIds);
 	}
 	
 	protected String getDeformattedAndMergedText()

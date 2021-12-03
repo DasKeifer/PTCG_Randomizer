@@ -3,13 +3,13 @@ package data;
 import java.util.LinkedList;
 import java.util.List;
 
+import bps_writer.BpsInstructionParser;
 import compiler.Instruction;
-import compiler.InstructionParser;
 import data.custom_card_effects.EffectFunctionPointerInstruct;
 import data.romtexts.LdtxInstruct;
 import rom.Texts;
 
-public class PtcgInstructionParser extends InstructionParser
+public class PtcgInstructionParser extends BpsInstructionParser
 {
 	private List<LdtxInstruct> ldtxInstructs;
 	

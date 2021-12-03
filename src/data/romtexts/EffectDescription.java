@@ -2,7 +2,6 @@ package data.romtexts;
 
 
 import constants.PtcgRomConstants;
-import data.RomText;
 import rom.Texts;
 import gbc_framework.utils.StringUtils;
 

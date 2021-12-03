@@ -3,13 +3,17 @@ package data.romtexts;
 
 import compiler.CompilerUtils;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import compiler.FixedLengthInstruct;
 import compiler.CompilerConstants.RegisterPair;
 import constants.PtcgRomConstants;
 import rom.Texts;
+import gbc_framework.SegmentedWriter;
 import gbc_framework.rom_addressing.AssignedAddresses;
+import gbc_framework.rom_addressing.BankAddress;
+import gbc_framework.utils.ByteUtils;
 
 public class LdtxInstruct extends FixedLengthInstruct
 {
@@ -50,12 +54,14 @@ public class LdtxInstruct extends FixedLengthInstruct
 		text.finalizeAndAddTexts(texts);
 	}
 
+
 	@Override
-	public void writeFixedSizeBytes(byte[] bytes, int indexToAddAt, AssignedAddresses unused) 
+	public void writeFixedSizeBytes(SegmentedWriter writer, BankAddress instructionAddress,
+			AssignedAddresses assignedAddresses) throws IOException
 	{
 		// Write the instruction value then the text id
-		bytes[indexToAddAt] = (byte) (0x01 | (pair.getValue() << 4));
-		text.writeTextId(bytes, indexToAddAt + 1);
+		writer.append((byte) (0x01 | (pair.getValue() << 4)));
+		writer.append(ByteUtils.shortToLittleEndianBytes(text.getTextId()));
 	}
 	
 	private static OneBlockText parseOneBlockTextArg(String arg)

@@ -12,6 +12,7 @@ import data.custom_card_effects.CustomCardEffect;
 import data.custom_card_effects.HardcodedEffects;
 import data.romtexts.EffectDescription;
 import data.romtexts.MoveName;
+import data.romtexts.RomText;
 import rom.Cards;
 import rom.Texts;
 import rom_packer.Blocks;

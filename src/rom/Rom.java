@@ -1,8 +1,10 @@
 package rom;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
+import bps_writer.BpsWriter;
 import compiler.CodeBlock;
 import data.Card;
 import data.PtcgInstructionParser;
@@ -43,6 +45,13 @@ public class Rom
 	{
 		// TODO merge with ROM?
 		
+		// TODO: How to handle this? Don't clear but need clear for DataManger. Designate it
+		// as free space as additional arg?
+		
+		// TODO: Check if bytes change when writing to determine how to handle the block. That
+		// or when the BPS is actually writing but that would be less "clean". Maybe check right
+		// before adding the hunk
+		
 		// Clear the old text from the bytes - the manager will
 		// take care of allocating the space as needed
 		// TODO later: clear unused move commands/effects as well?
@@ -69,15 +78,21 @@ public class Rom
 		DataManager manager = new DataManager();
 		AssignedAddresses assignedAddresses = manager.allocateBlocks(rawBytes, blocks);
 			
-		// Now save the cards - TODO later: move to blocks eventually?
+		// TODO: Move to blocks and do above data manager
 		RomIO.writeAllCards(rawBytes, allCards, assignedAddresses);
 			
 		// Now actually write to the bytes
-		// TODO: Move to different writing scheme
-		//blocks.writeData(rawBytes, assignedAddresses);
-		
-		// Write the bytes to the file
-		RomIO.writeRaw(rawBytes, romFile);
+		BpsWriter writer = new BpsWriter();
+		try 
+		{
+			blocks.writeBlocks(writer, assignedAddresses);
+			writer.writeBps(romFile, rawBytes);
+		} 
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public Rom(Rom toCopy)
