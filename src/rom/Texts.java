@@ -132,8 +132,8 @@ public class Texts
 			usedCount++;
 		}
 
-		// Not -1 because we write the 0th id "000000" pointer
-		blocks.addFixedBlock(new ReplacementBlock(textPtrs, PtcgRomConstants.TEXT_POINTERS_LOC, textId * PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES));
+		// Create the fixed block. Since its all fixed size, we can just pass the length of the block
+		blocks.addFixedBlock(new ReplacementBlock(textPtrs, PtcgRomConstants.TEXT_POINTERS_LOC, textPtrs.getWorstCaseSize(null)));
 	}
 	
 	private void createAndAddTextBlock(short textId, String textLabel, Blocks blocks)

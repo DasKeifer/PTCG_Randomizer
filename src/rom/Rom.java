@@ -1,12 +1,10 @@
 package rom;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import bps_writer.BpsWriter;
 import compiler.CodeBlock;
-import data.Card;
 import data.PtcgInstructionParser;
 import data.custom_card_effects.CustomCardEffect;
 import gbc_framework.rom_addressing.AssignedAddresses;
@@ -19,13 +17,13 @@ public class Rom
 	public byte[] rawBytes;
 	
 	// Make public - we will be modifying these
-	public Cards<Card> allCards;
+	public Cards allCards;
 	public Texts idsToText;
 	public Blocks blocks;
 	
 	public Rom(File romFile) throws IOException
 	{
-		allCards = new Cards<>();
+		allCards = new Cards();
 		idsToText = new Texts();
 		blocks = new Blocks();
 		
@@ -78,9 +76,6 @@ public class Rom
 		DataManager manager = new DataManager();
 		AssignedAddresses assignedAddresses = manager.allocateBlocks(rawBytes, blocks);
 			
-		// TODO: Move to blocks and do above data manager
-		RomIO.writeAllCards(rawBytes, allCards, assignedAddresses);
-			
 		// Now actually write to the bytes
 		BpsWriter writer = new BpsWriter();
 		try 
@@ -98,7 +93,7 @@ public class Rom
 	public Rom(Rom toCopy)
 	{
 		rawBytes = toCopy.rawBytes;
-		allCards = toCopy.allCards.copy(Card.class);
+		allCards = new Cards(toCopy.allCards);
 		idsToText = new Texts(toCopy.idsToText);
 		
 		// Don't copy - too complicated for now at least and wouldn't be used anyways

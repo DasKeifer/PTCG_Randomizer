@@ -251,8 +251,13 @@ public class RomText
 		// Set it back
 		processForInternalManaging(textBlocks);
 	}
-	
+
 	public List<Short> getTextIds()
+	{
+		return getTextIds(-1);
+	}
+	
+	public List<Short> getTextIds(int minNumberIds)
 	{
 		if (textBlockIds.size() != textBlocks.size())
 		{
@@ -261,7 +266,18 @@ public class RomText
 					") for text \"" + StringUtils.createAbbreviation(toString(), 25) + "\"");
 		}
 		
-		return new ArrayList<Short>(textBlockIds);
+		ArrayList<Short> ids = new ArrayList<>(textBlockIds);
+		if (minNumberIds > 0)
+		{
+			if (textBlockIds.size() < minNumberIds)
+			{
+				for (int i = textBlockIds.size(); i < minNumberIds; i++)
+				{
+					ids.add((short) 0);
+				}
+			}
+		}
+		return ids;
 	}
 	
 	protected String getDeformattedAndMergedText()

@@ -6,20 +6,25 @@ import constants.CardDataConstants.CardRarity;
 import constants.CardDataConstants.CardSet;
 import constants.CardDataConstants.CardType;
 import data.romtexts.CardName;
-import rom.Cards;
 import rom.Texts;
 import rom_packer.Blocks;
-import gbc_framework.rom_addressing.AssignedAddresses;
+import rom_packer.HybridBlock;
+import rom_packer.MovableBlock;
 import gbc_framework.utils.ByteUtils;
 
 import java.security.InvalidParameterException;
 import java.util.Comparator;
+
+import compiler.CodeBlock;
+import compiler.RawBytePacker;
 
 public abstract class Card
 {
 	public static final int CARD_COMMON_SIZE = 8;
 	public static final Comparator<Card> ID_SORTER = new IdSorter();
 	public static final Comparator<Card> ROM_SORTER = new RomSorter();
+	
+	private int readFromAddress;
 	
 	// TODO later: encapsulate these or make public?
 	public CardType type;
@@ -36,12 +41,14 @@ public abstract class Card
 	public Card()
 	{
 		name = createCardName(); 
+		readFromAddress = -1;
 	}
 	
 	protected abstract CardName createCardName();
 	
 	public Card(Card toCopy)
 	{
+		readFromAddress = toCopy.readFromAddress;
 		type = toCopy.type;
 		name = new CardName(toCopy.name);
 		gfx = toCopy.gfx;
@@ -53,7 +60,7 @@ public abstract class Card
 	
 	public abstract Card copy();
 	
-	public static int addCardFromBytes(byte[] cardBytes, int startIndex, Texts idToText, Cards<Card> toAddTo)
+	public static int addCardFromBytes(byte[] cardBytes, int startIndex, Texts idToText, CardGroup<Card> toAddTo)
 	{
 		CardType type = CardType.readFromByte(cardBytes[startIndex]);
 		
@@ -82,8 +89,8 @@ public abstract class Card
 	}
 	
 	public abstract int readAndConvertIds(byte[] cardBytes, int startIndex, Texts idsToText);
-	public abstract void finalizeDataForAllocating(Cards<Card> cards, Texts texts, Blocks blocks);
-	public abstract int writeData(byte[] cardBytes, int startIndex, AssignedAddresses assignedAddresses);
+	public abstract void finalizeAndAddData(CardGroup<Card> cards, Texts texts, Blocks blocks);
+	protected abstract CodeBlock convertToCodeBlock();
 
 	public String toString()
 	{
@@ -97,6 +104,8 @@ public abstract class Card
 	
 	protected int commonReadAndConvertIds(byte[] cardBytes, int startIndex, Texts idsToText) 
 	{
+		readFromAddress = startIndex;
+		
 		int index = startIndex;
 		
 		type = CardType.readFromByte(cardBytes[index++]);
@@ -115,28 +124,34 @@ public abstract class Card
 		return index;
 	}
 	
-	protected void commonFinalizeDataForAllocating(Texts texts)
+	protected void commonFinalizeAndAddData(Texts texts)
 	{
 		name.finalizeAndAddTexts(texts);
 	}
 	
-	protected int commonWriteData(byte[] cardBytes, int startIndex) 
+	public HybridBlock convertToHybridBlock()
 	{
-		int index = startIndex;
-		
-		cardBytes[index++] = type.getValue();
-		ByteUtils.writeAsShort(gfx, cardBytes, index);
-		index += 2;
-		
-		index = name.writeTextId(cardBytes, index);
-		
-		cardBytes[index++] = rarity.getValue();
+		return new HybridBlock(
+				new MovableBlock(convertToCodeBlock(), 0, (byte) 0xC, (byte) 0xD),
+				readFromAddress
+		);
+	}
+	
+	protected CodeBlock convertCommonDataToCodeBlock() 
+	{
+		RawBytePacker bytes = new RawBytePacker();
+		bytes.append(type.getValue());
+		bytes.append(ByteUtils.shortToLittleEndianBytes(gfx));
+		bytes.append(ByteUtils.shortToLittleEndianBytes(name.getTextId()));
+		bytes.append(
+				rarity.getValue(),
+				ByteUtils.packHexCharsToByte(pack.getValue(), set.getValue()),
+				id.getValue()
+		);
 
-		cardBytes[index++] = ByteUtils.packHexCharsToByte(pack.getValue(), set.getValue());
-		
-		cardBytes[index++] = id.getValue();
-		
-		return index;
+		CodeBlock block = new CodeBlock("internal_card_" + name.toString());
+		block.appendInstruction(bytes.createRawByteInsruct());
+		return block;
 	}
 
 	 public static class IdSorter implements Comparator<Card>

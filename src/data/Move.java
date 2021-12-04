@@ -6,6 +6,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import compiler.CodeBlock;
+import compiler.RawBytePacker;
+import compiler.static_instructs.RawBytes;
 import constants.PtcgRomConstants;
 import constants.CardDataConstants.*;
 import data.custom_card_effects.CustomCardEffect;
@@ -13,11 +16,9 @@ import data.custom_card_effects.HardcodedEffects;
 import data.romtexts.EffectDescription;
 import data.romtexts.MoveName;
 import data.romtexts.RomText;
-import rom.Cards;
 import rom.Texts;
 import rom_packer.Blocks;
 import rom_packer.MovableBlock;
-import gbc_framework.rom_addressing.AssignedAddresses;
 import gbc_framework.utils.ByteUtils;
 
 public class Move
@@ -44,7 +45,7 @@ public class Move
 		name = new MoveName();
 		description = new EffectDescription();
 		category = MoveCategory.DAMAGE_NORMAL;
-		effect = UnchangedCardEffect.NONE;
+		effect = ExistingCardEffect.NONE;
 		effect1 = new HashSet<>();
 		effect2 = new HashSet<>();
 		effect3 = new HashSet<>();
@@ -268,7 +269,7 @@ public class Move
 		
 		damage = moveBytes[index++];
 		category = MoveCategory.readFromByte(moveBytes[index++]);
-		effect = new UnchangedCardEffect(ByteUtils.readAsShort(moveBytes, index));
+		effect = new ExistingCardEffect(ByteUtils.readAsShort(moveBytes, index));
 		index += 2;
 		effect1 = MoveEffect1.readFromByte(moveBytes[index++]);
 		effect2 = MoveEffect2.readFromByte(moveBytes[index++]);
@@ -279,13 +280,13 @@ public class Move
 		return index;
 	}
 
-	public void finalizeDataForAllocating(Cards<Card> cards, Texts texts, Blocks blocks, PokemonCard hostCard)
+	public void finalizeAndAddData(CardGroup<Card> cards, Texts texts, Blocks blocks, PokemonCard hostCard)
 	{
 		name.finalizeAndAddTexts(texts);
 
 		if (name.toString().compareToIgnoreCase("call for family") == 0)
 		{
-			Cards<Card> basics = cards.getBasicEvolutionOfCard(hostCard);
+			CardGroup<Card> basics = cards.determineBasicEvolutionOfCard(hostCard);
 			if (basics.count() <= 0)
 			{
 				throw new IllegalArgumentException("Failed to find basic card for " + hostCard.name.toString());
@@ -299,7 +300,9 @@ public class Move
 			}
 			
 			effect = custEffect;
-			description.finalizeAndAddTexts(texts, basics.toListOrderedByCardId().get(0).name.toString());
+			// The effect description will only talk about the poke to search for so we
+			// replace it with the basic poke's name
+			description.finalizeAndAddTexts(texts, basics.listOrderedByCardId().get(0).name.toString());
 		}
 		else
 		{
@@ -307,35 +310,31 @@ public class Move
 		}
 	}
 
-	public int writeData(byte[] moveBytes, int startIndex, AssignedAddresses assignedAddresses) 
+	public void appendToCodeBlock(CodeBlock block)
 	{
-		int index = startIndex;
+		RawBytePacker bytes = new RawBytePacker();
+		bytes.append(
+				ByteUtils.packHexCharsToByte(getCost(EnergyType.FIRE), getCost(EnergyType.GRASS)),
+				ByteUtils.packHexCharsToByte(getCost(EnergyType.LIGHTNING), getCost(EnergyType.WATER)),
+				ByteUtils.packHexCharsToByte(getCost(EnergyType.FIGHTING), getCost(EnergyType.PSYCHIC)),
+				ByteUtils.packHexCharsToByte(getCost(EnergyType.COLORLESS), getCost(EnergyType.UNUSED_TYPE))
+		);
+		bytes.append(ByteUtils.shortToLittleEndianBytes(name.getTextId()));
+		bytes.append(ByteUtils.shortListToLittleEndianBytes(description.getTextIds(PtcgRomConstants.MAX_BLOCKS_EFFECT_DESC)));
+		bytes.append(
+				damage,
+				category.getValue()
+		);
+		block.appendInstruction(bytes.createRawByteInsruct());
 		
-		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.FIRE), getCost(EnergyType.GRASS));
-		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.LIGHTNING), getCost(EnergyType.WATER));
-		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.FIGHTING), getCost(EnergyType.PSYCHIC));
-		moveBytes[index++] = ByteUtils.packHexCharsToByte(getCost(EnergyType.COLORLESS), getCost(EnergyType.UNUSED_TYPE));
-
-		name.writeTextId(moveBytes, index);
-		index += PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES;
-
-		int[] descIndexes = {index, index + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES};
-		description.writeTextId(moveBytes, descIndexes);
-		index += PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
+		effect.appendToCodeBlock(block);
 		
-		moveBytes[index++] = damage;
-		moveBytes[index++] = category.getValue();
-		
-		
-		effect.writeEffectPointer(moveBytes, index, assignedAddresses);
-		index += 2;
-		
-		moveBytes[index++] = MoveEffect1.storeAsByte(effect1);
-		moveBytes[index++] = MoveEffect2.storeAsByte(effect2);
-		moveBytes[index++] = MoveEffect3.storeAsByte(effect3);
-		moveBytes[index++] = unknownByte;
-		moveBytes[index++] = animation;
-		
-		return index;
+		block.appendInstruction(new RawBytes(
+				MoveEffect1.storeAsByte(effect1),
+				MoveEffect2.storeAsByte(effect2),
+				MoveEffect3.storeAsByte(effect3),
+				unknownByte,
+				animation
+		));
 	}
 }

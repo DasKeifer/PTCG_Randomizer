@@ -3,14 +3,15 @@ package data;
 import java.util.ArrayList;
 import java.util.List;
 
+import compiler.CodeBlock;
+import compiler.RawBytePacker;
+import compiler.static_instructs.RawBytes;
 import constants.CardDataConstants.*;
 import data.romtexts.CardName;
 import data.romtexts.PokeCategory;
 import data.romtexts.PokeDescription;
-import rom.Cards;
 import rom.Texts;
 import rom_packer.Blocks;
-import gbc_framework.rom_addressing.AssignedAddresses;
 import gbc_framework.utils.ByteUtils;
 
 public class PokemonCard extends Card 
@@ -301,9 +302,9 @@ public class PokemonCard extends Card
 	}
 	
 	@Override
-	public void finalizeDataForAllocating(Cards<Card> cards, Texts texts, Blocks blocks)
+	public void finalizeAndAddData(CardGroup<Card> cards, Texts texts, Blocks blocks)
 	{
-		commonFinalizeDataForAllocating(texts);
+		commonFinalizeAndAddData(texts);
 		
 		prevEvoName.finalizeAndAddTexts(texts);
 		pokemonCategory.finalizeAndAddTexts(texts);
@@ -312,42 +313,48 @@ public class PokemonCard extends Card
 		sortMoves();
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
-			moves[moveIndex].finalizeDataForAllocating(cards, texts, blocks, this);
+			moves[moveIndex].finalizeAndAddData(cards, texts, blocks, this);
 		}
 	}
 
 	@Override
-	public int writeData(byte[] cardBytes, int startIndex, AssignedAddresses assignedAddresses) 
+	protected CodeBlock convertToCodeBlock() 
 	{
-		int index = commonWriteData(cardBytes, startIndex);
+		CodeBlock block = convertCommonDataToCodeBlock();
 		
-		cardBytes[index++] = hp;
-		cardBytes[index++] = stage.getValue();
-		
-		index = prevEvoName.writeTextId(cardBytes, index);
-
+		RawBytePacker bytes = new RawBytePacker();
+		bytes.append(
+				hp,
+				stage.getValue()
+		);
+		bytes.append(ByteUtils.shortToLittleEndianBytes(prevEvoName.getTextId()));
+		block.appendInstruction(bytes.createRawByteInsruct());
+				
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
-			index = moves[moveIndex].writeData(cardBytes, index, assignedAddresses);
+			moves[moveIndex].appendToCodeBlock(block);
 		}
-		
-		cardBytes[index++] = retreatCost;
-		cardBytes[index++] = weakness.getValue();
-		cardBytes[index++] = resistance.getValue();
 
-		index = pokemonCategory.writeTextId(cardBytes, index);
+		bytes = new RawBytePacker();
+		bytes.append(
+				retreatCost,
+				weakness.getValue(),
+				resistance.getValue()
+		);
+		bytes.append(ByteUtils.shortToLittleEndianBytes(pokemonCategory.getTextId()));
+		bytes.append(
+				pokedexNumber,
+				unknownByte1,
+				level
+		);
+		bytes.append(ByteUtils.shortToLittleEndianBytes(length));
+		bytes.append(ByteUtils.shortToLittleEndianBytes(weight));
+		bytes.append(ByteUtils.shortToLittleEndianBytes(description.getTextId()));
+		bytes.append(unknownByte2);
+		block.appendInstruction(bytes.createRawByteInsruct());
 		
-		cardBytes[index++] = pokedexNumber;
-		cardBytes[index++] = unknownByte1;
-		cardBytes[index++] = level;
-		ByteUtils.writeAsShort(length, cardBytes, index);
-		index += 2;
-		ByteUtils.writeAsShort(weight, cardBytes, index);
-		index += 2;
-
-		index = description.writeTextId(cardBytes, index);
+		block.appendInstruction(new RawBytes(unknownByte2));
 		
-		cardBytes[index++] = unknownByte2;
-		return index;
+		return block;
 	}
 }

@@ -7,6 +7,7 @@ import java.nio.file.Files;
 
 import constants.PtcgRomConstants;
 import data.Card;
+import data.CardGroup;
 import data.custom_card_effects.HardcodedEffects;
 import gbc_framework.rom_addressing.AssignedAddresses;
 import gbc_framework.utils.ByteUtils;
@@ -47,9 +48,9 @@ public class RomIO
 		}
 	}
 	
-	static Cards<Card> readAllCardsFromPointers(byte[] rawBytes, Texts allText)
+	static Cards readAllCardsFromPointers(byte[] rawBytes, Texts allText)
 	{
-		Cards<Card> allCards = new Cards<>();
+		Cards cards = new Cards();
 
 		// Read the text based on the pointer map in the rom
 		int ptrIndex = PtcgRomConstants.CARD_POINTERS_LOC;
@@ -61,13 +62,13 @@ public class RomIO
 				) != 0)
 		{
 			cardIndex += PtcgRomConstants.CARD_POINTER_OFFSET;
-			Card.addCardFromBytes(rawBytes, cardIndex, allText, allCards);
+			Card.addCardFromBytes(rawBytes, cardIndex, allText, cards.cards());
 
 			// Move our text pointer to the next pointer
 			ptrIndex += PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		}
 		
-		return allCards;
+		return cards;
 	}
 
 	// Note assumes that the first text in the pointer list is the first in the file as well. This is required
@@ -109,19 +110,20 @@ public class RomIO
 		return textMap;
 	}
 	
-	static void finalizeDataAndGenerateBlocks(Cards<Card> cards, Texts texts, Blocks blocks)
+	static void finalizeDataAndGenerateBlocks(Cards cards, Texts texts, Blocks blocks)
 	{
 		// Reset the singleton -- TODO later: Needed?
 		HardcodedEffects.reset();
 		
 		// Finalize the card data, texts and blocks
-		cards.finalizeDataForAllocating(texts, blocks);
+		cards.finalizeConvertAndAddData(texts, blocks);
 		
 		// Convert the text to blocks
 		texts.convertAndAddBlocks(blocks);
 	}
 	
-	static void writeAllCards(byte[] bytes, Cards<Card> cards, AssignedAddresses assignedAddresses)
+	// TODO: Change to determine what to exclude from data manager. Same for texts. Maybe combine with above?
+	static void clearAllCards(byte[] bytes)
 	{		
 		// First write the 0 index "null" card
 		int ptrIndex = PtcgRomConstants.CARD_POINTERS_LOC - PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES;
@@ -135,14 +137,14 @@ public class RomIO
 		// here but we still need to handle the last null pointer
 		int cardIndex = PtcgRomConstants.CARD_POINTERS_LOC + (cards.count() + 1) * PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		
-		for (Card card : cards.toListOrderedByCardId())
+		for (Card card : cards.listOrderedByCardId())
 		{
 			// Write the pointer
 			ByteUtils.writeLittleEndian(cardIndex - PtcgRomConstants.CARD_POINTER_OFFSET, bytes, ptrIndex, PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES);
 			ptrIndex += PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES;
 			
 			// Write the card
-			cardIndex = card.writeData(bytes, cardIndex, assignedAddresses);
+			//cardIndex = card.writeData(bytes, cardIndex, assignedAddresses);
 		}
 
 		// Write the null pointer at the end of the cards pointers

@@ -8,7 +8,7 @@ import java.util.Map;
 import constants.CharMapConstants;
 import constants.DuelConstants.EffectFunctionTypes;
 import data.Card;
-import rom.Cards;
+import data.CardGroup;
 import gbc_framework.utils.RomUtils;
 
 public class HardcodedEffects 
@@ -160,7 +160,7 @@ public class HardcodedEffects
 		static final int PUT_IN_PLAY_AREA_EFFECT_ADDRESS = 0x2ccc2; // Bellsprout's but they are all the same even for nidoran
 
 		// Basics may not always be pokemon cards - take mysterious fossil for example
-		public static CustomCardEffect createMoveEffect(/*Cards<Card> cards,*/ Cards<Card> basics) 
+		public static CustomCardEffect createMoveEffect(/*Cards<Card> cards,*/ CardGroup<Card> basics) 
 		{
 			// Just assume the first one for now. This probably won't work well for things like
 			// pikachu where there are versions of them
@@ -186,7 +186,7 @@ public class HardcodedEffects
 //			}
 			
 			// For now assume only one id
-			Card toFindBasicOf = basics.toListOrderedByCardId().get(0);
+			Card toFindBasicOf = basics.listOrderedByCardId().get(0);
 			
 			CustomCardEffect effect = HardcodedEffects.getInstance().tryGetCardNameUniqueEffect(EFFECT_NAME, toFindBasicOf.name.toString());
 			if (effect != null)

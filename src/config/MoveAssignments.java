@@ -10,16 +10,16 @@ import config.support.MoveAssignmentData;
 import config.support.PtcgAdditionalLineArgs;
 import config.support.PtcgLineByLineConfigReader;
 import constants.CardConstants.CardId;
+import data.CardGroup;
 import data.Move;
 import data.PokemonCard;
-import rom.Cards;
 import gbc_framework.utils.IOUtils;
 
 public class MoveAssignments extends PtcgLineByLineConfigReader
 {
 	Map<CardId, List<MoveAssignmentData>> assignmentsByCardId;
 	
-	public MoveAssignments(Cards<PokemonCard> allCards, Component toCenterPopupsOn)
+	public MoveAssignments(CardGroup<PokemonCard> allCards, Component toCenterPopupsOn)
 	{
 		super(toCenterPopupsOn);
 		
@@ -40,9 +40,9 @@ public class MoveAssignments extends PtcgLineByLineConfigReader
 		return CSV_CONFIG_FILE_EXTENSION;
 	}
 
-	public void assignSpecifiedMoves(Cards<PokemonCard> cardsToApplyTo, MoveExclusions exclusionsToAddTo)
+	public void assignSpecifiedMoves(CardGroup<PokemonCard> cardsToApplyTo, MoveExclusions exclusionsToAddTo)
 	{
-		Cards<PokemonCard> foundCards = cardsToApplyTo.getCardsWithIds(assignmentsByCardId.keySet());
+		CardGroup<PokemonCard> foundCards = cardsToApplyTo.withIds(assignmentsByCardId.keySet());
 		for (PokemonCard card : foundCards.iterable())
 		{
 			List<MoveAssignmentData> assigns = assignmentsByCardId.get(card.id);
@@ -124,7 +124,7 @@ public class MoveAssignments extends PtcgLineByLineConfigReader
 			int slot, 
 			String moveHostCardNameOrId, 
 			String moveNameOrIndexToAdd,
-			Cards<PokemonCard> allCards,
+			CardGroup<PokemonCard> allCards,
 			String line
 	)
 	{
@@ -170,14 +170,14 @@ public class MoveAssignments extends PtcgLineByLineConfigReader
 		}
 	}
 	
-	private PokemonCard getCardFromString(String cardNameOrId, Cards<PokemonCard> allCards, String line)
+	private PokemonCard getCardFromString(String cardNameOrId, CardGroup<PokemonCard> allCards, String line)
 	{
 		PokemonCard foundCard = null;
 				
     	// Assume its a card ID
     	try
     	{
-    		return allCards.getCardWithId(CardId.readFromByte(Byte.parseByte(cardNameOrId)));
+    		return allCards.withId(CardId.readFromByte(Byte.parseByte(cardNameOrId)));
     	}
     	// Otherwise assume its a name which means it could apply to a number of
     	// cards
@@ -187,7 +187,7 @@ public class MoveAssignments extends PtcgLineByLineConfigReader
     	}
     	
 		// Get the cards that match the name
-		Cards<PokemonCard> foundCards = allCards.getCardsWithNameIgnoringNumber(cardNameOrId);
+		CardGroup<PokemonCard> foundCards = allCards.withNameIgnoringNumber(cardNameOrId);
 		
 		// Ensure we found at least one
 		if (foundCards.count() < 1)
@@ -204,7 +204,7 @@ public class MoveAssignments extends PtcgLineByLineConfigReader
 		else
 		{
     		// See if we have a specific card and if so return its ID
-			foundCard = Cards.getCardFromNameSetBasedOnNumber(foundCards, cardNameOrId);
+			foundCard = CardGroup.fromNameSetBasedOnNumber(foundCards, cardNameOrId);
     		if (foundCard == null)
     		{
     			// No number is an expected case since if there is only one with that name

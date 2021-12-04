@@ -13,10 +13,10 @@ import config.support.MoveExclusionData;
 import config.support.PtcgAdditionalLineArgs;
 import config.support.PtcgLineByLineConfigReader;
 import constants.CardConstants.CardId;
+import data.CardGroup;
 import data.Move;
 import data.PokemonCard;
 import data.romtexts.CardName;
-import rom.Cards;
 import gbc_framework.utils.IOUtils;
 
 public class MoveExclusions extends PtcgLineByLineConfigReader
@@ -26,7 +26,7 @@ public class MoveExclusions extends PtcgLineByLineConfigReader
 	
 
 	
-	public MoveExclusions(Cards<PokemonCard> allCards, Component toCenterPopupsOn)
+	public MoveExclusions(CardGroup<PokemonCard> allCards, Component toCenterPopupsOn)
 	{
 		super(toCenterPopupsOn);
 		
@@ -239,7 +239,7 @@ public class MoveExclusions extends PtcgLineByLineConfigReader
 			boolean excludeFromRandomization, 
 			String cardNameOrId, 
 			String moveName, 
-			Cards<PokemonCard> allPokes, 
+			CardGroup<PokemonCard> allPokes, 
 			String line
 	)
 	{
@@ -253,7 +253,7 @@ public class MoveExclusions extends PtcgLineByLineConfigReader
     	// cards
     	catch (IllegalArgumentException e) // Includes number format exception
     	{
-    		Cards<PokemonCard> foundCards = allPokes.getCardsWithNameIgnoringNumber(cardNameOrId);
+    		CardGroup<PokemonCard> foundCards = allPokes.withNameIgnoringNumber(cardNameOrId);
     		if (foundCards.count() < 1)
     		{
     			// Add a message to the warning string
@@ -288,11 +288,11 @@ public class MoveExclusions extends PtcgLineByLineConfigReader
 			boolean excludeFromRandomization, 
 			String cardNameWithNumber, 
 			String moveName, 
-			Cards<PokemonCard> foundCards,
+			CardGroup<PokemonCard> foundCards,
 			String line
 	)
 	{
-		PokemonCard specificCard = Cards.getCardFromNameSetBasedOnNumber(foundCards, cardNameWithNumber);
+		PokemonCard specificCard = CardGroup.fromNameSetBasedOnNumber(foundCards, cardNameWithNumber);
 		if (specificCard == null)
 		{
 			// Add a message to the warning string
@@ -340,12 +340,12 @@ public class MoveExclusions extends PtcgLineByLineConfigReader
 			boolean excludeFromRandomization, 
 			String cardName, 
 			String moveName, 
-			Cards<PokemonCard> foundCards, 
+			CardGroup<PokemonCard> foundCards, 
 			String line
 	)
 	{
 		boolean foundAMove = false;
-		for (PokemonCard card : foundCards.toListOrderedByCardId())
+		for (PokemonCard card : foundCards.listOrderedByCardId())
 		{
 			if (moveName.isEmpty() || card.getMoveWithName(moveName) != null)
 			{

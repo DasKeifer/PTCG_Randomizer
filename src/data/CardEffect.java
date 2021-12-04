@@ -1,11 +1,11 @@
 package data;
 
-import gbc_framework.rom_addressing.AssignedAddresses;
+import compiler.CodeBlock;
 
 public abstract class CardEffect 
 {
 	public abstract CardEffect copy();
-	public abstract void writeEffectPointer(byte[] moveBytes, int startIndex, AssignedAddresses assignedAddresses);
+	public abstract void appendToCodeBlock(CodeBlock block);
 	@Override
 	public abstract String toString();
 }

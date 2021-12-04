@@ -1,12 +1,13 @@
 package data;
 
+
+import compiler.CodeBlock;
+import compiler.static_instructs.RawBytes;
 import constants.PtcgRomConstants;
 import data.romtexts.CardName;
 import data.romtexts.EffectDescription;
-import rom.Cards;
 import rom.Texts;
 import rom_packer.Blocks;
-import gbc_framework.rom_addressing.AssignedAddresses;
 import gbc_framework.utils.ByteUtils;
 
 public class NonPokemonCard extends Card
@@ -59,24 +60,23 @@ public class NonPokemonCard extends Card
 	}
 	
 	@Override
-	public void finalizeDataForAllocating(Cards<Card> cards, Texts texts, Blocks blocks)
+	public void finalizeAndAddData(CardGroup<Card> cards, Texts texts, Blocks blocks)
 	{
-		commonFinalizeDataForAllocating(texts);
+		commonFinalizeAndAddData(texts);
 		
 		description.finalizeAndAddTexts(texts, name.toString());
 	}
-	
-	@Override
-	public int writeData(byte[] cardBytes, int startIndex, AssignedAddresses unused) 
-	{
-		int index = commonWriteData(cardBytes, startIndex);
-		
-		// write non pokemon specific data
-		ByteUtils.writeAsShort(effectPtr, cardBytes, index);
-		index += 2;
 
-		int[] descIndexes = {index, index + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES};
-		description.writeTextId(cardBytes, descIndexes);
-		return index + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
+	@Override
+	protected CodeBlock convertToCodeBlock() 
+	{
+		CodeBlock block = convertCommonDataToCodeBlock();
+
+		block.appendInstruction(new RawBytes(
+				ByteUtils.shortToLittleEndianBytes(effectPtr),
+				ByteUtils.shortListToLittleEndianBytes(description.getTextIds(PtcgRomConstants.MAX_BLOCKS_EFFECT_DESC))
+		));
+		
+		return block;
 	}
 }

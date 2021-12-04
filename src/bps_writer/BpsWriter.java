@@ -78,7 +78,7 @@ public class BpsWriter implements SegmentedWriter
 		}
 	}
 	
-	// TODO: Take filename? also metadata?
+	// TODO: Take metadata?
 	public void writeBps(File file, byte[] originalBytes)
 	{
 		// Set the offsets for writing

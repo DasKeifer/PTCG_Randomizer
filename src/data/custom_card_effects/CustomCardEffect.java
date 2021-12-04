@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import compiler.CodeBlock;
+import compiler.reference_instructs.BlockBankLoadedAddress;
 import compiler.reference_instructs.Jump;
 import compiler.static_instructs.RawBytes;
 import constants.DuelConstants.EffectFunctionTypes;
@@ -15,11 +16,8 @@ import rom_packer.Blocks;
 import rom_packer.MovableBlock;
 import rom_packer.ReplacementBlock;
 import rom_packer.UnconstrainedMoveBlock;
-import gbc_framework.rom_addressing.AssignedAddresses;
-import gbc_framework.rom_addressing.BankAddress;
 import gbc_framework.rom_addressing.PrioritizedBankRange;
 import gbc_framework.utils.ByteUtils;
-import gbc_framework.utils.RomUtils;
 
 public class CustomCardEffect extends CardEffect
 {
@@ -169,10 +167,9 @@ public class CustomCardEffect extends CardEffect
 	}
 
 	@Override
-	public void writeEffectPointer(byte[] moveBytes, int startIndex, AssignedAddresses assignedAddresses)
+	public void appendToCodeBlock(CodeBlock block)
 	{
-		BankAddress pointerAddress = assignedAddresses.getThrow(effectCommand.getId());
-		ByteUtils.writeAsShort(RomUtils.convertFromBankOffsetToLoadedOffset(pointerAddress), moveBytes, startIndex);
+		block.appendInstruction(new BlockBankLoadedAddress(effectCommand.getId(), false));
 	}
 
 	@Override

@@ -7,9 +7,9 @@ import java.io.IOException;
 
 import config.Configs;
 import data.Card;
+import data.CardGroup;
 import rom.Texts;
 import gbc_framework.utils.Logger;
-import rom.Cards;
 import rom.Rom;
 
 public class Randomizer 
@@ -98,8 +98,8 @@ public class Randomizer
 		// when they are created
 		MoveSetRandomizer moveSetRand = new MoveSetRandomizer(randomizedData, logger);
 		
-		Cards<Card> venus = randomizedData.allCards.getCardsWithNameIgnoringNumber("Venusaur");
-		Cards.getCardBasedOnIndex(venus, 1).name.setText("Test-a-saur"); // Quick check to see if we ran and saved successfully
+		CardGroup<Card> venus = randomizedData.allCards.cards().withNameIgnoringNumber("Venusaur");
+		CardGroup.basedOnIndex(venus, 1).name.setText("Test-a-saur"); // Quick check to see if we ran and saved successfully
 	
 		// Randomize Evolutions (either within current types or completely random)
 		// If randomizing evos and types but keeping lines consistent, completely 
@@ -161,7 +161,7 @@ public class Randomizer
 		return randomizedData;
 	}
 	
-	public static void test(Cards<Card> cards)
+	public static void test(CardGroup<Card> cards)
 	{
 		for (Card card : cards.iterable())
 		{

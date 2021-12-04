@@ -1,19 +1,19 @@
 package config.support;
 
+import data.CardGroup;
 import data.PokemonCard;
-import rom.Cards;
 
 public class PtcgAdditionalLineArgs 
 {
-	private Cards<PokemonCard> allPokes;
+	private CardGroup<PokemonCard> allPokes;
 	
-	public PtcgAdditionalLineArgs(Cards<PokemonCard> allPokes) 
+	public PtcgAdditionalLineArgs(CardGroup<PokemonCard> allPokes) 
 	{
 		this.allPokes = allPokes;
 	}
 
 
-	public Cards<PokemonCard> getAllPokes() 
+	public CardGroup<PokemonCard> getAllPokes() 
 	{
 		return allPokes;
 	}

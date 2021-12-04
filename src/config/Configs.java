@@ -3,8 +3,8 @@ package config;
 
 import java.awt.Component;
 
+import data.CardGroup;
 import data.PokemonCard;
-import rom.Cards;
 import rom.Rom;
 
 public class Configs 
@@ -14,7 +14,7 @@ public class Configs
 	
 	public Configs(Rom romData, Component toCenterPopupsOn)
 	{
-		Cards<PokemonCard> allPokes = romData.allCards.getPokemonCards();
+		CardGroup<PokemonCard> allPokes = romData.allCards.cards().pokemonCards();
 
 		moveExclusions = new MoveExclusions(allPokes, toCenterPopupsOn);
 		moveAssignments = new MoveAssignments(allPokes, toCenterPopupsOn);
