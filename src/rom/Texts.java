@@ -133,7 +133,7 @@ public class Texts
 		}
 
 		// Create the fixed block. Since its all fixed size, we can just pass the length of the block
-		blocks.addFixedBlock(new ReplacementBlock(textPtrs, PtcgRomConstants.TEXT_POINTERS_LOC, textPtrs.getWorstCaseSize(null)));
+		blocks.addFixedBlock(new ReplacementBlock(textPtrs, PtcgRomConstants.TEXT_POINTERS_LOC, textPtrs.getWorstCaseSize()));
 	}
 	
 	private void createAndAddTextBlock(short textId, String textLabel, Blocks blocks)
@@ -145,7 +145,7 @@ public class Texts
 		text.appendInstruction(new RawBytes((byte) CharMapConstants.TEXT_END_CHAR));
 		MovableBlock block = new MovableBlock(text, 1, (byte)0xd, (byte)0x1c);
 		
-		int origAddress = idToAddressMap.getOrDefault(textId, -1); // TODO: Const?
+		int origAddress = idToAddressMap.getOrDefault(textId, -1); // TODO: Minor Const?
 		if (origAddress >= 0)
 		{
 			blocks.addHybridBlock(new HybridBlock(block, origAddress));	

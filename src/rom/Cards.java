@@ -1,7 +1,7 @@
 package rom;
 
 import compiler.CodeBlock;
-import compiler.reference_instructs.BlockGlobalAddress;
+import compiler.reference_instructs.BlockBankLoadedAddress;
 import compiler.static_instructs.RawBytes;
 import constants.PtcgRomConstants;
 import data.Card;
@@ -48,10 +48,11 @@ public class Cards
 		{
 			HybridBlock cardBlock = card.convertToHybridBlock();
 			blocks.addHybridBlock(cardBlock);
-			cardPtrs.appendInstruction(new BlockGlobalAddress(cardBlock.getMovableBlock().getId(), PtcgRomConstants.CARD_POINTER_OFFSET));
+			cardPtrs.appendInstruction(new BlockBankLoadedAddress(cardBlock.getMovableBlock().getId(), false));
 		}
 
-		// Create the fixed block. Since its all fixed size, we can just pass the length of the block
-		blocks.addFixedBlock(new ReplacementBlock(cardPtrs, PtcgRomConstants.CARD_POINTERS_LOC, cardPtrs.getWorstCaseSize(null)));
+		// Add the trailing null and create the fixed block. Since its all fixed size, we can just pass the length of the block
+		cardPtrs.appendInstruction(new RawBytes((byte) 0, (byte) 0));
+		blocks.addFixedBlock(new ReplacementBlock(cardPtrs, PtcgRomConstants.CARD_POINTERS_LOC, cardPtrs.getWorstCaseSize()));
 	}
 }

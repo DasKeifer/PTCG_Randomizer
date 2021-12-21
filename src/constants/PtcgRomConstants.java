@@ -68,8 +68,6 @@ public final class PtcgRomConstants
 	public static final int CARD_POINTERS_LOC = 0x30c5c;
 	public static final int CARD_POINTER_OFFSET = 0x2c000; // Don't ask my why its this an not 0x30000... It just is
 	
-	public static final int CARD_EFFECT_POINTER_OFFSET = 0;
-	
 	// Starts with a null pointer
 	public static final int TEXT_ID_SIZE_IN_BYTES = 2;
 	public static final int TEXT_POINTER_SIZE_IN_BYTES = 3;

@@ -2,8 +2,10 @@ package bps_writer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map.Entry;
 
 import bps_writer.BpsHunk.BpsHunkType;
@@ -11,10 +13,10 @@ import bps_writer.BpsHunk.BpsHunkType;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import gbc_framework.SegmentedWriter;
-import gbc_framework.utils.ByteUtils;
+import gbc_framework.QueuedWriter;
+import gbc_framework.rom_addressing.AddressRange;
 
-public class BpsWriter implements SegmentedWriter
+public class BpsWriter implements QueuedWriter
 {	
 	public enum BpsHunkCopyType
 	{
@@ -36,70 +38,110 @@ public class BpsWriter implements SegmentedWriter
 	
 	// The target address and the hunk that starts at the target address
 	SortedMap<Integer, BpsHunk> hunks;
+	SortedMap<Integer, Integer> spacesToBlank;
 	
-	int patchReadBeingCreatedAddress;
-	ByteArrayOutputStream patchReadBeingCreated;
+	int selfReadBeingCreatedAddress;
+	ByteArrayOutputStream selfReadBeingCreated;
 	
 	public BpsWriter() 
 	{
 		hunks = new TreeMap<>();
+		spacesToBlank = new TreeMap<>();
 		
-		patchReadBeingCreatedAddress = -1;
-		patchReadBeingCreated = new ByteArrayOutputStream();
+		selfReadBeingCreatedAddress = -1;
+		selfReadBeingCreated = new ByteArrayOutputStream();
 	}
 
 	@Override
 	public void append(byte... bytes) throws IOException
 	{
-		patchReadBeingCreated.write(bytes);
+		selfReadBeingCreated.write(bytes);
 	}
 
 	@Override
-	public void newSegment(int segmentStartAddress)
+	public void startNewBlock(int segmentStartAddress)
 	{
-		finalizePatchBeingCreated();
-		patchReadBeingCreatedAddress = segmentStartAddress;
+		finalizeSelfReadBeingCreated();
+		selfReadBeingCreatedAddress = segmentStartAddress;
+	}
+
+	@Override
+	public void startNewBlock(int segmentStartAddress, List<AddressRange> reuseHints)
+	{
+		// TODO: Optimization Use hints to reduce patch size. For now its fine to just ignore
+		startNewBlock(segmentStartAddress);
+		
+		// Create a self read patch but store the existing start address and length? Then we
+		// can blank the previous spot if it was moved or do a source read or source copy
+		// if its unchanged?
+	}
+
+	@Override
+	public void blankUnusedSpace(AddressRange range) 
+	{
+		spacesToBlank.put(range.getStart(), range.getStopExclusive());
 	}
 
 	public void newCopyHunk(int targetAddress, BpsHunkCopyType type, int size, int copyFromStartIndex)  
 	{
-		finalizePatchBeingCreated();
+		finalizeSelfReadBeingCreated();
 		hunks.put(targetAddress, new BpsHunkCopy(type, size, copyFromStartIndex));
 	}
 	
-	private void finalizePatchBeingCreated()
+	private void finalizeSelfReadBeingCreated()
 	{
-		if (patchReadBeingCreatedAddress > 0 && patchReadBeingCreated.size() > 0)
+		if (selfReadBeingCreatedAddress > 0 && selfReadBeingCreated.size() > 0)
 		{
-			// TODO: Check against the source to see if its actually needed or if we can just freeride
-			hunks.put(patchReadBeingCreatedAddress, new BpsHunkSelfRead(patchReadBeingCreated.toByteArray()));
-			patchReadBeingCreated.reset();
-			patchReadBeingCreatedAddress = -1;
+			// TODO: Optimization possibly elsewhere... Check against the source to see if its actually needed or if we can just freeride
+			hunks.put(selfReadBeingCreatedAddress, new BpsHunkSelfRead(selfReadBeingCreated.toByteArray()));
+			selfReadBeingCreated.reset();
+			selfReadBeingCreatedAddress = -1;
 		}
 	}
 	
-	// TODO: Take metadata?
+	public void createBlanksAndFillEmptyHunksWithSourceRead(int sourceLength)
+	{
+		// TODO: BPS implement
+		
+		// TODO: BPS Check for overlaps and spaces too
+	}
+	
+	// TODO: Minor Take metadata?
 	public void writeBps(File file, byte[] originalBytes)
 	{
 		// Set the offsets for writing
 		BpsHunkCopy.setOffsetsForWriting();
-		
-		FileOutputStream fos = new FileOutputStream(file);
-		
-		// First go through and apply the patches so we can find out target crc
-		// Start with a copy of the original so we don't have to do the
-		// SOURCE_READ hunks here
+
 		byte[] targetBytes = originalBytes.clone();
-		for (Entry<Integer, BpsHunk> entry : hunks.entrySet())
+		
+		try (FileOutputStream fos = new FileOutputStream(file))
 		{
-			entry.getValue().apply(targetBytes, entry.getKey(), originalBytes);
+			// First go through and apply the patches so we can find out target crc
+			// Start with a copy of the original so we don't have to do the
+			// SOURCE_READ hunks here
+			for (Entry<Integer, BpsHunk> entry : hunks.entrySet())
+			{
+				entry.getValue().apply(targetBytes, entry.getKey(), originalBytes);
+			}
+			
+			// TODO: BPS temp
+			fos.write(targetBytes);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
+		// Now fill any empty spaces for the sourceRead
+		
+		// TODO: BPSFor now just save the whole rom until we are sure the
+		// changes to saving works
+		/*
+		 * 
 		// Now Calculate the destination CRC
 		long destinationCrc = ByteUtils.computeCrc32(targetBytes);
-		
-		// Now fill any empty spaces for the sourceRead
-
 		
 		// Start writing the bytes for the BPS and the header
 		ByteArrayOutputStream bpsOs = new ByteArrayOutputStream();
@@ -111,7 +153,7 @@ public class BpsWriter implements SegmentedWriter
 		// Write the sizes
 		bpsOs.write(ByteUtils.sevenBitEncode(originalBytes.length));
 		bpsOs.write(ByteUtils.sevenBitEncode(targetBytes.length));
-		bpsOs.write(ByteUtils.sevenBitEncode(0)); // TODO: For now no metadata
+		bpsOs.write(ByteUtils.sevenBitEncode(0)); // TODO: Minor For now no metadata
 		
 		// Write the hunks
 		for (BpsHunk hunk : hunks.values())
@@ -130,12 +172,7 @@ public class BpsWriter implements SegmentedWriter
 		fos.write(bpsBytes);
 		fos.write(ByteUtils.toLittleEndianBytes(ByteUtils.computeCrc32(bpsBytes), 4));
 		fos.close();
+		*/
 	}
-	
-	public void fillEmptyHunksWithSourceRead(int sourceLength)
-	{
-		// TODO: implement
-		
-		// TODO: Check for overlaps and spaces too
-	}
+
 }

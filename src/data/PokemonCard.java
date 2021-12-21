@@ -5,7 +5,6 @@ import java.util.List;
 
 import compiler.CodeBlock;
 import compiler.RawBytePacker;
-import compiler.static_instructs.RawBytes;
 import constants.CardDataConstants.*;
 import data.romtexts.CardName;
 import data.romtexts.PokeCategory;
@@ -297,8 +296,8 @@ public class PokemonCard extends Card
 		index = description.readDataAndConvertIds(cardBytes, index, idToText);
 		
 		unknownByte2 = cardBytes[index++];
-		
-		return index;
+
+		return TOTAL_SIZE_IN_BYTES;
 	}
 	
 	@Override
@@ -352,8 +351,6 @@ public class PokemonCard extends Card
 		bytes.append(ByteUtils.shortToLittleEndianBytes(description.getTextId()));
 		bytes.append(unknownByte2);
 		block.appendInstruction(bytes.createRawByteInsruct());
-		
-		block.appendInstruction(new RawBytes(unknownByte2));
 		
 		return block;
 	}

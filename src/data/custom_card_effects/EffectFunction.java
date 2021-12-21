@@ -1,6 +1,6 @@
 package data.custom_card_effects;
 
-import compiler.CompilerUtils;
+import gbc_framework.rom_addressing.BankAddress;
 import rom_packer.MovableBlock;
 
 public class EffectFunction
@@ -11,7 +11,7 @@ public class EffectFunction
 	EffectFunction(MovableBlock block)
 	{
 		this.block = block;
-		this.address = CompilerUtils.UNASSIGNED_ADDRESS;
+		this.address = BankAddress.UNASSIGNED_ADDRESS;
 	}
 
 	EffectFunction(short address)

@@ -38,6 +38,11 @@ public class OneBlockText extends RomText
 
 	public short getTextId() 
 	{
+		if (getTextIds().isEmpty())
+		{
+			return 0;
+		}
+		
 		return getTextIds().get(0);
 	}
 }

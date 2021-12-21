@@ -56,7 +56,7 @@ public class NonPokemonCard extends Card
 
 		int[] descIndexes = {index, index + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES};
 		description.readDataAndConvertIds(cardBytes, descIndexes, name, idToText);
-		return index + PtcgRomConstants.TEXT_ID_SIZE_IN_BYTES * descIndexes.length;
+		return TOTAL_SIZE_IN_BYTES;
 	}
 	
 	@Override

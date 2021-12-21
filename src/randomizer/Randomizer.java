@@ -98,8 +98,8 @@ public class Randomizer
 		// when they are created
 		MoveSetRandomizer moveSetRand = new MoveSetRandomizer(randomizedData, logger);
 		
-		CardGroup<Card> venus = randomizedData.allCards.cards().withNameIgnoringNumber("Venusaur");
-		CardGroup.basedOnIndex(venus, 1).name.setText("Test-a-saur"); // Quick check to see if we ran and saved successfully
+//		CardGroup<Card> venus = randomizedData.allCards.cards().withNameIgnoringNumber("Venusaur");
+//		CardGroup.basedOnIndex(venus, 1).name.setText("Test-a-saur"); // Quick check to see if we ran and saved successfully
 	
 		// Randomize Evolutions (either within current types or completely random)
 		// If randomizing evos and types but keeping lines consistent, completely 

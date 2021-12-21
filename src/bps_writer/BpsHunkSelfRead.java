@@ -12,6 +12,7 @@ public class BpsHunkSelfRead extends BpsHunk
 	public BpsHunkSelfRead(byte[] data) 
 	{
 		super(BpsHunkType.SELF_READ, data.length);
+		this.data = data;
 	}
 	
 	@Override

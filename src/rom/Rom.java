@@ -2,19 +2,23 @@ package rom;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 import bps_writer.BpsWriter;
 import compiler.CodeBlock;
 import data.PtcgInstructionParser;
 import data.custom_card_effects.CustomCardEffect;
+import gbc_framework.rom_addressing.AddressRange;
 import gbc_framework.rom_addressing.AssignedAddresses;
 import rom_packer.Blocks;
 import rom_packer.DataManager;
 
 public class Rom
 {
-	// Make package so we don't change it unintentionally
+	// TODO: Minor Make private
 	public byte[] rawBytes;
+	private List<AddressRange> rangesToConsiderFree;
 	
 	// Make public - we will be modifying these
 	public Cards allCards;
@@ -23,6 +27,8 @@ public class Rom
 	
 	public Rom(File romFile) throws IOException
 	{
+		rangesToConsiderFree = new LinkedList<>();
+		
 		allCards = new Cards();
 		idsToText = new Texts();
 		blocks = new Blocks();
@@ -35,25 +41,14 @@ public class Rom
 		rawBytes = RomIO.readRaw(romFile);
 		RomIO.verifyRom(rawBytes);
 		
-		idsToText = RomIO.readAllTextFromPointers(rawBytes);
-		allCards = RomIO.readAllCardsFromPointers(rawBytes, idsToText);
+		idsToText = RomIO.readTextFromData(rawBytes, rangesToConsiderFree);
+		allCards = RomIO.readCardsFromData(rawBytes, idsToText, rangesToConsiderFree);
+		int i = 0;
 	}
 	
 	public void writeRom(File romFile)
 	{
-		// TODO merge with ROM?
-		
-		// TODO: How to handle this? Don't clear but need clear for DataManger. Designate it
-		// as free space as additional arg?
-		
-		// TODO: Check if bytes change when writing to determine how to handle the block. That
-		// or when the BPS is actually writing but that would be less "clean". Maybe check right
-		// before adding the hunk
-		
-		// Clear the old text from the bytes - the manager will
-		// take care of allocating the space as needed
-		// TODO later: clear unused move commands/effects as well?
-		RomIO.clearAllText(rawBytes);
+		// TODO: minor merge with ROM?
 		
 		// Create the custom parser and set the data blocks to use it
 		PtcgInstructionParser parser = new PtcgInstructionParser();
@@ -74,13 +69,18 @@ public class Rom
 		
 		// Now assign locations for the data
 		DataManager manager = new DataManager();
-		AssignedAddresses assignedAddresses = manager.allocateBlocks(rawBytes, blocks);
+		List<AddressRange> spacesToBlank = new LinkedList<>();
+		
+		// TODO: Check for null
+		AssignedAddresses assignedAddresses = manager.allocateBlocks(rawBytes, blocks, rangesToConsiderFree, spacesToBlank);
 			
 		// Now actually write to the bytes
 		BpsWriter writer = new BpsWriter();
 		try 
 		{
 			blocks.writeBlocks(writer, assignedAddresses);
+			writer.blankUnusedSpace(spacesToBlank);
+			writer.createBlanksAndFillEmptyHunksWithSourceRead(rawBytes.length);
 			writer.writeBps(romFile, rawBytes);
 		} 
 		catch (IOException e)
@@ -90,9 +90,11 @@ public class Rom
 		}
 	}
 	
+	// TODO: remove copy?
 	public Rom(Rom toCopy)
 	{
 		rawBytes = toCopy.rawBytes;
+		rangesToConsiderFree = new LinkedList<>(toCopy.rangesToConsiderFree);
 		allCards = new Cards(toCopy.allCards);
 		idsToText = new Texts(toCopy.idsToText);
 		

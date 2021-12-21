@@ -10,7 +10,7 @@ import compiler.FixedLengthInstruct;
 import compiler.CompilerConstants.RegisterPair;
 import constants.PtcgRomConstants;
 import rom.Texts;
-import gbc_framework.SegmentedWriter;
+import gbc_framework.QueuedWriter;
 import gbc_framework.rom_addressing.AssignedAddresses;
 import gbc_framework.rom_addressing.BankAddress;
 import gbc_framework.utils.ByteUtils;
@@ -56,7 +56,7 @@ public class LdtxInstruct extends FixedLengthInstruct
 
 
 	@Override
-	public void writeFixedSizeBytes(SegmentedWriter writer, BankAddress instructionAddress,
+	public void writeFixedSizeBytes(QueuedWriter writer, BankAddress instructionAddress,
 			AssignedAddresses assignedAddresses) throws IOException
 	{
 		// Write the instruction value then the text id

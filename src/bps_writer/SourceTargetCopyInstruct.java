@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 import bps_writer.BpsWriter.BpsHunkCopyType;
 import compiler.FixedLengthInstruct;
-import gbc_framework.SegmentedWriter;
+import gbc_framework.QueuedWriter;
 import gbc_framework.rom_addressing.AssignedAddresses;
 import gbc_framework.rom_addressing.BankAddress;
 import gbc_framework.utils.RomUtils;
@@ -60,14 +60,14 @@ public class SourceTargetCopyInstruct extends FixedLengthInstruct
 	}
 	
 	@Override
-	public void writeFixedSizeBytes(SegmentedWriter writer, BankAddress instructionAddress, AssignedAddresses assignedAddresses) throws IOException 
+	public void writeFixedSizeBytes(QueuedWriter writer, BankAddress instructionAddress, AssignedAddresses assignedAddresses) throws IOException 
 	{
 		if (writer instanceof BpsWriter)
 		{
 			// We need to add a new hunk for the copy and then another new one for the next read segment
 			int instructAddr = RomUtils.convertToGlobalAddress(instructionAddress);
 			((BpsWriter)writer).newCopyHunk(instructAddr, type, copyFromStartIndex, getSize());
-			((BpsWriter)writer).newSegment(instructAddr + getSize());
+			((BpsWriter)writer).startNewBlock(instructAddr + getSize());
 		}
 		else
 		{

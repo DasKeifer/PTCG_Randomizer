@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 import compiler.CompilerUtils;
 import compiler.Instruction;
-import gbc_framework.SegmentedWriter;
+import gbc_framework.QueuedWriter;
 import gbc_framework.rom_addressing.AssignedAddresses;
 import gbc_framework.rom_addressing.BankAddress;
 import gbc_framework.utils.ByteUtils;
@@ -53,13 +53,7 @@ public class EffectFunctionPointerInstruct implements Instruction
 			AssignedAddresses tempAssigns) 
 	{
 		// First try to get it from the temp ones
-		BankAddress address = tempAssigns.getTry(functionLabel);
-		
-		// If it was unassigned, then try from the assigned ones
-		if (address == BankAddress.UNASSIGNED)
-		{
-			address = assignedAddresses.getTry(functionLabel);
-		}
+		BankAddress address = Instruction.tryGetAddress(functionLabel, assignedAddresses, tempAssigns);
 		
 		// If its in b we can use the default logic that only needs the function type and the loaded bank b offset
 		if (address.getBank() == CustomCardEffect.EFFECT_FUNCTION_SHORTCUT_BANK)
@@ -73,7 +67,7 @@ public class EffectFunctionPointerInstruct implements Instruction
 	}
 
 	@Override
-	public int writeBytes(SegmentedWriter writer, BankAddress instructionAddress, AssignedAddresses assignedAddresses)
+	public int writeBytes(QueuedWriter writer, BankAddress instructionAddress, AssignedAddresses assignedAddresses)
 			throws IOException 
 	{
 		BankAddress addressToWrite = assignedAddresses.getThrow(functionLabel);
