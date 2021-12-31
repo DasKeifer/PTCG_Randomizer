@@ -202,7 +202,7 @@ public class HardcodedEffects
 						"ld a, $ff",
 						"ldh [$ffa0], a",
 						"call " + FUNC_CREATE_DECK_CARD_LIST_ADDR,
-						"ldtx hl, halfTextBox:Choose a " + cardName + " from the deck",
+						"ldtx hl, halfTextBox:Choose a " + cardName + " from the deck", // TODO: should have period...
 						"ldtx bc, cardName:" + cardName,
 						"lb de, " + CONST_SEARCHEFFECT_CARD_ID_VAL + ", " + cardId,
 						"call " + FUNC_LOOK_FOR_CARDS_IN_DECK_ADDR,

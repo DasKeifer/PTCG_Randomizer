@@ -55,12 +55,16 @@ public class BpsWriter implements QueuedWriter
 	@Override
 	public void append(byte... bytes) throws IOException
 	{
+		// TODO: add overwrite detection
+		
 		selfReadBeingCreated.write(bytes);
 	}
 
 	@Override
 	public void startNewBlock(int segmentStartAddress)
 	{
+		// TODO: add overwrite detection
+		
 		finalizeSelfReadBeingCreated();
 		selfReadBeingCreatedAddress = segmentStartAddress;
 	}
@@ -68,6 +72,8 @@ public class BpsWriter implements QueuedWriter
 	@Override
 	public void startNewBlock(int segmentStartAddress, List<AddressRange> reuseHints)
 	{
+		// TODO: add overwrite detection
+		
 		// TODO: Optimization Use hints to reduce patch size. For now its fine to just ignore
 		startNewBlock(segmentStartAddress);
 		

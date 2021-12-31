@@ -43,7 +43,6 @@ public class Rom
 		
 		idsToText = RomIO.readTextFromData(rawBytes, rangesToConsiderFree);
 		allCards = RomIO.readCardsFromData(rawBytes, idsToText, rangesToConsiderFree);
-		int i = 0;
 	}
 	
 	public void writeRom(File romFile)

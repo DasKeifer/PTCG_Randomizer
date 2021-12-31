@@ -94,6 +94,7 @@ public class Texts
 		return (short) textMap.size();
 	}
 	
+	// TODO: Not correctly adding new blocks -- see call for family period issue
 	public void convertAndAddBlocks(Blocks blocks)
 	{
 		// Write a null pointer to start because thats how it was in the original rom
