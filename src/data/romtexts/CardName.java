@@ -1,6 +1,7 @@
 package data.romtexts;
 
 import constants.PtcgRomConstants;
+import constants.CharMapConstants.CharSetPrefix;
 
 public class CardName extends OneLineText
 {
@@ -15,6 +16,12 @@ public class CardName extends OneLineText
 	{
 		this(isPokeCard);
 		setText(text);
+	}
+	
+	public CardName(CharSetPrefix charSet, boolean isPokeCard, String text)
+	{
+		this(isPokeCard);
+		setText(charSet, text);
 	}
 	
 	public CardName(CardName toCopy)

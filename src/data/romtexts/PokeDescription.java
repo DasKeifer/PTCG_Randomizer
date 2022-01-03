@@ -2,6 +2,7 @@ package data.romtexts;
 
 
 import constants.PtcgRomConstants;
+import constants.CharMapConstants.CharSetPrefix;
 
 public class PokeDescription extends OneBlockText
 {		
@@ -14,6 +15,12 @@ public class PokeDescription extends OneBlockText
 	{
 		this();
 		setText(text);
+	}
+	
+	public PokeDescription(CharSetPrefix charSet, String text)
+	{
+		this();
+		setText(charSet, text);
 	}
 	
 	public PokeDescription(PokeDescription toCopy) 

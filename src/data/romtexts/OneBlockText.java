@@ -1,6 +1,7 @@
 package data.romtexts;
 
 
+import constants.CharMapConstants.CharSetPrefix;
 import constants.PtcgRomConstants;
 import rom.Texts;
 
@@ -15,6 +16,12 @@ public class OneBlockText extends RomText
 	{
 		this(maxCharsPerLine, maxLines);
 		setText(text);
+	}
+	
+	public OneBlockText(CharSetPrefix charSet, String text, int maxCharsPerLine, int maxLines)
+	{
+		this(maxCharsPerLine, maxLines);
+		setText(charSet, text);
 	}
 	
 	public OneBlockText(OneBlockText toCopy) 

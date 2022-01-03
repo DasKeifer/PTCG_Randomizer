@@ -67,8 +67,9 @@ public class SourceTargetCopyInstruct extends FixedLengthInstruct
 		{
 			// We need to add a new hunk for the copy and then another new one for the next read segment
 			int instructAddr = RomUtils.convertToGlobalAddress(instructionAddress);
-			((BpsWriter)writer).newCopyHunk(instructAddr, type, copyFromStartIndex, getSize());
-			((BpsWriter)writer).startNewBlock(instructAddr + getSize());
+			String currBlockName = writer.getCurrentBlockName();
+			((BpsWriter)writer).newCopyHunk(currBlockName + "SourceTargetCopyInstructHunk", instructAddr, type, copyFromStartIndex, getSize());
+			((BpsWriter)writer).startNewBlock(instructAddr + getSize(), currBlockName + "_continued");
 		}
 		else
 		{

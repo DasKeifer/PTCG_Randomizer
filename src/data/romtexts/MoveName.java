@@ -1,6 +1,7 @@
 package data.romtexts;
 
 import constants.PtcgRomConstants;
+import constants.CharMapConstants.CharSetPrefix;
 
 public class MoveName extends OneLineText
 {
@@ -13,6 +14,12 @@ public class MoveName extends OneLineText
 	{
 		this();
 		setText(text);
+	}
+	
+	public MoveName(CharSetPrefix charSet, String text)
+	{
+		this();
+		setText(charSet, text);
 	}
 	
 	public MoveName(MoveName toCopy)

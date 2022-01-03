@@ -4,10 +4,59 @@ import gbc_framework.utils.ByteUtils;
 
 public class CharMapConstants
 {
+	public enum CharSetPrefix
+	{
+		Empty     		(0x00),
+		FullWidth1     	(0x01),
+		FullWidth2     	(0x02),
+		FullWidth3	 	(0x03),
+		FullWidth4     	(0x04),
+		HalfWidth      	(0x06),
+		Hiragana      	(0x0e),
+		Katakana       	(0x0f),
+		FullWidth0     	(0xff);
+
+		private char value;
+		private String valueAsString;
+		private CharSetPrefix(int inChar)
+		{
+			if (inChar > ByteUtils.MAX_BYTE_VALUE || inChar < ByteUtils.MIN_BYTE_VALUE)
+			{
+				throw new IllegalArgumentException("Invalid constant input for "
+						+ "CharSetPrefix enum: " + inChar);
+			}
+			value = (char) inChar;
+			valueAsString = "" + value;
+		}
+
+		public char getChar()
+		{
+			return (char) value;
+		}
+
+		public String getCharAsString()
+		{
+			return valueAsString;
+		}
+
+	    public static CharSetPrefix readFromByte(byte b)
+	    {
+	    	for (CharSetPrefix num : CharSetPrefix.values())
+	    	{
+	    		if (b == num.getChar())
+	    		{
+	    			return num;
+	    		}
+	    	}
+	    	// Full width 0 is the default and does not have a specific
+	    	// byte so if its not one of the others, its full width 0
+	    	return FullWidth0;
+	    }
+	}
+	
 	// Reserved/Special chars
 	public static final char TEXT_END_CHAR = 0x0;
 	public static final char SYMBOL_PREFIX_CHAR = 0x5;
-	public static final char HALFWIDTH_TEXT_PREFIX_CHAR = 0x6;
 	public static final char RAMNAME = 0x9;
 	public static final char RAMTEXT = 0xb;
 	public static final char RAMNUM = 0xc;

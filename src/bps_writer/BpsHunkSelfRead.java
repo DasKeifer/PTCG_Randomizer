@@ -7,11 +7,18 @@ import gbc_framework.utils.ByteUtils;
 
 public class BpsHunkSelfRead extends BpsHunk
 {
+	public static final String DEFAULT_NAME = "UNNAMED_SELF_READ_HUNK";
+	
 	byte[] data;
 	
 	public BpsHunkSelfRead(byte[] data) 
 	{
-		super(BpsHunkType.SELF_READ, data.length);
+		this(DEFAULT_NAME, data);
+	}
+	
+	public BpsHunkSelfRead(String name, byte[] data) 
+	{
+		super(name, BpsHunkType.SELF_READ, data.length);
 		this.data = data;
 	}
 	

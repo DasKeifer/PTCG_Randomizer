@@ -27,12 +27,14 @@ public abstract class BpsHunk
 			return value;
 		}
 	}
-	
+
+	private String name;
 	private BpsHunkType type;
 	private int length;
 	
-	protected BpsHunk(BpsHunkType type, int length)
+	protected BpsHunk(String name, BpsHunkType type, int length)
 	{
+		this.name = name;
 		this.type = type;
 		this.length = length;
 	}
@@ -47,6 +49,10 @@ public abstract class BpsHunk
 		bpsOs.write(ByteUtils.sevenBitEncode(lengthAndType));
 	}
 
+	public String getName()
+	{
+		return name;
+	}
 	
 	public int getLength() 
 	{

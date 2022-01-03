@@ -9,9 +9,9 @@ import compiler.static_instructs.RawBytes;
 import constants.CharMapConstants;
 import constants.PtcgRomConstants;
 import rom_packer.Blocks;
+import rom_packer.FixedBlock;
 import rom_packer.HybridBlock;
 import rom_packer.MovableBlock;
-import rom_packer.ReplacementBlock;
 
 public class Texts 
 {
@@ -124,7 +124,7 @@ public class Texts
 			}
 
 			// Otherwise we have the key - add the text
-			String textLabel = "internal_romText" + textId;
+			String textLabel = "internal_romText_" + textId;
 			textPtrs.appendInstruction(new BlockGlobalAddress(textLabel, PtcgRomConstants.TEXT_POINTER_OFFSET));
 			
 			// Create and add the text as appropriate (i.e. a hybrid if it was read from the rom or a movable
@@ -134,7 +134,7 @@ public class Texts
 		}
 
 		// Create the fixed block. Since its all fixed size, we can just pass the length of the block
-		blocks.addFixedBlock(new ReplacementBlock(textPtrs, PtcgRomConstants.TEXT_POINTERS_LOC, textPtrs.getWorstCaseSize()));
+		blocks.addFixedBlock(new FixedBlock(textPtrs, PtcgRomConstants.TEXT_POINTERS_LOC));
 	}
 	
 	private void createAndAddTextBlock(short textId, String textLabel, Blocks blocks)
@@ -142,7 +142,10 @@ public class Texts
 		byte[] stringBytes = getAtId(textId).getBytes();
 		
 		CodeBlock text = new CodeBlock(textLabel);
-		text.appendInstruction(new RawBytes(stringBytes));
+		if (stringBytes.length > 0)
+		{
+			text.appendInstruction(new RawBytes(stringBytes));
+		}
 		text.appendInstruction(new RawBytes((byte) CharMapConstants.TEXT_END_CHAR));
 		MovableBlock block = new MovableBlock(text, 1, (byte)0xd, (byte)0x1c);
 		

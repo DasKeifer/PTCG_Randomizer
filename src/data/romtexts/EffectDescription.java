@@ -31,28 +31,30 @@ public class EffectDescription extends RomText
 		throw new IllegalArgumentException("Must pass the name of the pokemon when finalizing effect descriptions");
 	}
 	
-	public void finalizeAndAddTexts(Texts idToText, String owningCardName)
+	public void finalizeAndAddTexts(Texts idToText, String descriptionCardName)
 	{
 		// Get the flattened text
 		boolean changedText = false;
 		String deformatted = getDeformattedAndMergedText();
 		
+		// TODO later: This isn't quite right or sufficient for what is needed
+		// Replace with a method to read changes from a file?
 		if (!isEmpty())
 		{
 			// Some descriptions have misspelled names. Check if this is one and if so, replace it
-			if (PtcgRomConstants.MISPELLED_CARD_NAMES.containsKey(sourceCardName))
+			if (PtcgRomConstants.MISSPELLED_CARD_NAMES.containsKey(sourceCardName))
 			{
-				if (deformatted.contains(PtcgRomConstants.MISPELLED_CARD_NAMES.get(sourceCardName)))
+				if (deformatted.contains(PtcgRomConstants.MISSPELLED_CARD_NAMES.get(sourceCardName)))
 				{
-					StringUtils.replaceAll(deformatted, PtcgRomConstants.MISPELLED_CARD_NAMES.get(sourceCardName), owningCardName);
+					StringUtils.replaceAll(deformatted, PtcgRomConstants.MISSPELLED_CARD_NAMES.get(sourceCardName), descriptionCardName);
 					changedText = true;
 				}
 			}
 			
 			// Now check if we need to change other references to the card's name
-			if (!sourceCardName.equals(owningCardName))
+			if (!sourceCardName.equals(descriptionCardName))
 			{
-				deformatted = StringUtils.replaceAll(deformatted, sourceCardName, owningCardName);
+				deformatted = StringUtils.replaceAll(deformatted, sourceCardName, descriptionCardName);
 				changedText = true;
 			}
 		}

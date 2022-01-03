@@ -149,7 +149,8 @@ public abstract class Card
 				id.getValue()
 		);
 
-		CodeBlock block = new CodeBlock("internal_card_" + name.toString() + "_" + id.getValue());
+		CodeBlock block = new CodeBlock("internal_card_" + name.toString() + "_" + 
+				ByteUtils.unsignedByteAsShort(id.getValue()));
 		block.appendInstruction(bytes.createRawByteInsruct());
 		return block;
 	}

@@ -54,7 +54,6 @@ public class LdtxInstruct extends FixedLengthInstruct
 		text.finalizeAndAddTexts(texts);
 	}
 
-
 	@Override
 	public void writeFixedSizeBytes(QueuedWriter writer, BankAddress instructionAddress,
 			AssignedAddresses assignedAddresses) throws IOException

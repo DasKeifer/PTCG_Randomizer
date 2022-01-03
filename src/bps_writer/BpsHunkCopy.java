@@ -9,6 +9,8 @@ import gbc_framework.utils.ByteUtils;
 
 public class BpsHunkCopy extends BpsHunk
 {
+	public static final String DEFAULT_NAME = "UNNAMED_COPY_HUNK";
+	
 	// Do this as an enum map for future proofing
 	private static EnumMap<BpsHunkType, Integer> prevVals = new EnumMap<>(BpsHunkType.class);
 	
@@ -16,7 +18,12 @@ public class BpsHunkCopy extends BpsHunk
 	
 	public BpsHunkCopy(BpsHunkCopyType type, int length, int fromIndex) 
 	{
-		super(type.asBpsHunkType(), length);
+		this(DEFAULT_NAME, type, length, fromIndex);
+	}
+	
+	public BpsHunkCopy(String name, BpsHunkCopyType type, int length, int fromIndex) 
+	{
+		super(name, type.asBpsHunkType(), length);
 		this.fromIndex = fromIndex;
 	}
 	

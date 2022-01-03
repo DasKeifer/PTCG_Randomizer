@@ -9,6 +9,7 @@ import bps_writer.BpsWriter;
 import compiler.CodeBlock;
 import data.PtcgInstructionParser;
 import data.custom_card_effects.CustomCardEffect;
+import data.custom_card_effects.HardcodedEffects;
 import gbc_framework.rom_addressing.AddressRange;
 import gbc_framework.rom_addressing.AssignedAddresses;
 import rom_packer.Blocks;
@@ -61,10 +62,7 @@ public class Rom
 		CustomCardEffect.addTweakToAllowEffectsInMoreBanks(blocks);
 		
 		// Finalize all the data to prepare for writing
-		RomIO.finalizeDataAndGenerateBlocks(allCards, idsToText, blocks);
-		
-		// Now add all the text from the custom parser instructions
-		parser.finalizeAndAddTexts(idsToText);
+		finalizeDataAndGenerateBlocks(parser);
 		
 		// Now assign locations for the data
 		DataManager manager = new DataManager();
@@ -87,6 +85,21 @@ public class Rom
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	private void finalizeDataAndGenerateBlocks(PtcgInstructionParser parser)
+	{
+		// Reset the singleton -- TODO later: Needed?
+		HardcodedEffects.reset();
+		
+		// Finalize the card data, texts and blocks
+		allCards.finalizeConvertAndAddData(idsToText, blocks);
+		
+		// Now add all the text from the custom parser instructions
+		parser.finalizeAndAddTexts(idsToText);
+		
+		// Convert the text to blocks
+		idsToText.convertAndAddBlocks(blocks);
 	}
 	
 	// TODO: remove copy?

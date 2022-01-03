@@ -7,9 +7,16 @@ import gbc_framework.utils.ByteUtils;
 
 public class BpsHunkSourceRead extends BpsHunk
 {
+	public static final String DEFAULT_NAME = "UNNAMED_SOURCE_READ_HUNK";
+	
 	public BpsHunkSourceRead(int length)
 	{
-		super(BpsHunkType.SOURCE_READ, length);
+		this(DEFAULT_NAME, length);
+	}
+	
+	public BpsHunkSourceRead(String name, int length)
+	{
+		super(name, BpsHunkType.SOURCE_READ, length);
 	}
 
 	@Override

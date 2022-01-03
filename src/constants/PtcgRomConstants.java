@@ -81,11 +81,11 @@ public final class PtcgRomConstants
 	public static final int LAST_TEXT_BYTE = 0x67fff; // Used for padding data as needed
 	
 	// Misspelled card names
-	public static final Map<String, String> MISPELLED_CARD_NAMES;
+	public static final Map<String, String> MISSPELLED_CARD_NAMES;
     static {
         Map<String, String> tempMap = new HashMap<>();
         tempMap.put("Ninetails", "Ninetales");
-        MISPELLED_CARD_NAMES = Collections.unmodifiableMap(tempMap);
+        MISSPELLED_CARD_NAMES = Collections.unmodifiableMap(tempMap);
     }
     
     // "Damaging" attacks that have no damage number associated with them

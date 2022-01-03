@@ -1,5 +1,6 @@
 package data.romtexts;
 
+import constants.CharMapConstants.CharSetPrefix;
 
 public class OneLineText extends OneBlockText
 {
@@ -12,6 +13,12 @@ public class OneLineText extends OneBlockText
 	{
 		this(maxChars);
 		setText(text);
+	}
+	
+	public OneLineText(CharSetPrefix charSet, String text, int maxChars)
+	{
+		this(maxChars);
+		setText(charSet, text);
 	}
 	
 	public OneLineText(OneLineText toCopy)

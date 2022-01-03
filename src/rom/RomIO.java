@@ -6,12 +6,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 
+import constants.CharMapConstants;
 import constants.PtcgRomConstants;
+import constants.CharMapConstants.CharSetPrefix;
 import data.Card;
-import data.custom_card_effects.HardcodedEffects;
 import gbc_framework.rom_addressing.AddressRange;
 import gbc_framework.utils.ByteUtils;
-import rom_packer.Blocks;
 
 public class RomIO
 {
@@ -77,7 +77,14 @@ public class RomIO
 			
 			// Find the ending null byte
 			textIndex = ptr;
-			while (rawBytes[++textIndex] != 0x00);
+			
+			// Ensure its either null or starts with the prefix char
+			CharSetPrefix charSet = CharSetPrefix.readFromByte(rawBytes[textIndex]);
+			if (charSet != CharSetPrefix.Empty)
+			{
+				// Loop until we find the ending character if its not an empty text
+				while (rawBytes[++textIndex] != CharMapConstants.TEXT_END_CHAR);
+			}
 			
 			// Read the string to the null char (but not including it) and store where
 			// it was read from
@@ -141,17 +148,5 @@ public class RomIO
 		}
 		
 		return cards;
-	}
-	
-	static void finalizeDataAndGenerateBlocks(Cards cards, Texts texts, Blocks blocks)
-	{
-		// Reset the singleton -- TODO later: Needed?
-		HardcodedEffects.reset();
-		
-		// Finalize the card data, texts and blocks
-		cards.finalizeConvertAndAddData(texts, blocks);
-		
-		// Convert the text to blocks
-		texts.convertAndAddBlocks(blocks);
 	}
 }

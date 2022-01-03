@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import constants.CharMapConstants;
+import constants.CharMapConstants.CharSetPrefix;
 import rom.Texts;
 import gbc_framework.utils.ByteUtils;
 import gbc_framework.utils.StringUtils;
@@ -11,15 +12,22 @@ import gbc_framework.utils.StringUtils;
 public class RomText
 {	
 	public static final char SPECIAL_SYM_RESERVE_SPACE_CHAR = 0x11; // Device control 1 for no particular reason
+	private CharSetPrefix charSet;
 	private int maxCharsPerLine;
 	private int preferredLinesPerBlock;
 	private int maxLinesPerBlock;
 	private int maxBlocks;
 	private List<String> textBlocks;
 	private List<Short> textBlockIds;
-	
+
 	public RomText(int maxCharsPerLine, int preferredLinesPerBlock, int maxLinesPerBlock, int maxBlocks)
 	{
+		this(CharSetPrefix.HalfWidth, maxCharsPerLine, preferredLinesPerBlock, maxLinesPerBlock, maxBlocks);
+	}
+	
+	public RomText(CharSetPrefix charSet, int maxCharsPerLine, int preferredLinesPerBlock, int maxLinesPerBlock, int maxBlocks)
+	{
+		this.charSet = charSet;
 		this.maxCharsPerLine = maxCharsPerLine;
 		this.preferredLinesPerBlock = preferredLinesPerBlock;
 		this.maxLinesPerBlock = maxLinesPerBlock;
@@ -32,6 +40,7 @@ public class RomText
 	
 	public RomText(RomText toCopy)
 	{
+		charSet = toCopy.charSet;
 		maxCharsPerLine = toCopy.maxCharsPerLine;
 		preferredLinesPerBlock = toCopy.preferredLinesPerBlock;
 		maxLinesPerBlock = toCopy.maxLinesPerBlock;
@@ -44,10 +53,31 @@ public class RomText
 	{
 		textBlocks.clear();
 		textBlockIds.clear();
+		detectCharSet(newText);
+		textBlocks.add(processForInternalManaging(newText));
+	}
+	
+	public void setText(CharSetPrefix charSet, String newText)
+	{
+		textBlocks.clear();
+		textBlockIds.clear();
+		this.charSet = charSet;
 		textBlocks.add(processForInternalManaging(newText));
 	}
 	
 	public void setTextBlocks(List<String> newText)
+	{		
+		textBlocks = new ArrayList<>(newText);
+		if (textBlocks.isEmpty())
+		{
+			textBlocks.add("");
+		}
+		textBlockIds.clear();
+		detectCharSet(textBlocks.get(0));
+		processForInternalManaging(newText);
+	}
+	
+	public void setTextBlocks(CharSetPrefix charSet, List<String> newText)
 	{
 		textBlocks = new ArrayList<>(newText);
 		if (textBlocks.isEmpty())
@@ -55,7 +85,21 @@ public class RomText
 			textBlocks.add("");
 		}
 		textBlockIds.clear();
+		this.charSet = charSet;
 		processForInternalManaging(newText);
+	}
+	
+	private void detectCharSet(String text)
+	{
+		// See if we can detect the character set.
+		// If its full width 0, that just means there was no prefix
+		// so we don't set it and instead leave it as is since we
+		// don't assume that it always has a prefix if it needs one
+		CharSetPrefix foundPref = CharSetPrefix.readFromByte((byte) text.charAt(0));
+		if (foundPref != CharSetPrefix.FullWidth0)
+		{
+			charSet = foundPref;
+		}
 	}
 	
 	public List<String> getTextBlocks()
@@ -308,7 +352,7 @@ public class RomText
 	{		
 		if (!text.isEmpty())
 		{
-			return reserveSpaceForSpecialChars(removeHalfwidthTextPrefix(text));
+			return reserveSpaceForSpecialChars(removeTextPrefixIfPresent(text));
 		}
 		return "";
 	}
@@ -325,7 +369,7 @@ public class RomText
 	{
 		if (!text.isEmpty())
 		{
-			return removeReserveSpaceForSpecialChars(addHalfwidthTextPrefixIfNeeded(text));
+			return removeReserveSpaceForSpecialChars(adTextPrefixIfNeeded(text));
 		}
 		return "";
 	}
@@ -338,18 +382,18 @@ public class RomText
 		}
 	}
 			
-	private static String addHalfwidthTextPrefixIfNeeded(String text)
+	private String adTextPrefixIfNeeded(String text)
 	{
-		if (!text.startsWith("" + CharMapConstants.HALFWIDTH_TEXT_PREFIX_CHAR))
+		if (!text.startsWith(charSet.getCharAsString()))
 		{
-			return CharMapConstants.HALFWIDTH_TEXT_PREFIX_CHAR + text;
+			return charSet.getChar() + text;
 		}
 		return text;
 	}
 	
-	private static String removeHalfwidthTextPrefix(String text)
+	private String removeTextPrefixIfPresent(String text)
 	{
-		if (text.startsWith("" + CharMapConstants.HALFWIDTH_TEXT_PREFIX_CHAR))
+		if (text.startsWith(charSet.getCharAsString()))
 		{
 			return text.substring(1);
 		}
