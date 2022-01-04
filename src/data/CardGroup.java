@@ -131,7 +131,8 @@ public class CardGroup<T extends Card>
 		return found;
 	}
 	
-	// TODO Move to Cards?
+	// TODO later: Move this and some other more logic specific/search
+	// functions to a separate class?
 	public CardGroup<Card> determineBasicEvolutionOfCard(PokemonCard card)
 	{
 		CardGroup<Card> basics = new CardGroup<>();

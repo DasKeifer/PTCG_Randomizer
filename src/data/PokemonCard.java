@@ -9,6 +9,7 @@ import constants.CardDataConstants.*;
 import data.romtexts.CardName;
 import data.romtexts.PokeCategory;
 import data.romtexts.PokeDescription;
+import rom.Cards;
 import rom.Texts;
 import rom_packer.Blocks;
 import gbc_framework.utils.ByteUtils;
@@ -301,7 +302,7 @@ public class PokemonCard extends Card
 	}
 	
 	@Override
-	public void finalizeAndAddData(CardGroup<Card> cards, Texts texts, Blocks blocks)
+	public void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks)
 	{
 		commonFinalizeAndAddData(texts);
 		

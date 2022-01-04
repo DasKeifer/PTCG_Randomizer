@@ -6,6 +6,7 @@ import compiler.static_instructs.RawBytes;
 import constants.PtcgRomConstants;
 import data.romtexts.CardName;
 import data.romtexts.EffectDescription;
+import rom.Cards;
 import rom.Texts;
 import rom_packer.Blocks;
 import gbc_framework.utils.ByteUtils;
@@ -60,7 +61,7 @@ public class NonPokemonCard extends Card
 	}
 	
 	@Override
-	public void finalizeAndAddData(CardGroup<Card> cards, Texts texts, Blocks blocks)
+	public void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks)
 	{
 		commonFinalizeAndAddData(texts);
 		

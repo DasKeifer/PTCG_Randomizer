@@ -11,6 +11,7 @@ import data.CardGroup;
 import rom.Texts;
 import gbc_framework.utils.Logger;
 import rom.Rom;
+import rom.RomIO;
 
 public class Randomizer 
 {
@@ -30,7 +31,7 @@ public class Randomizer
 	{
 		try 
 		{
-			romData = new Rom(romFile);
+			romData = new Rom(RomIO.readRaw(romFile));
 		} 
 		catch (IOException e)
 		{
@@ -75,28 +76,30 @@ public class Randomizer
 			logger.open(romBasePath + LOG_FILE_EXTENSION);
 		}
 		
-		Rom randomized = randomize(settings);
+		randomize(settings);
 
 		logger.close();
 		
 		// TODO later: Due to an error, the same data was being written more than once
 		// and when this happened, the text for some cards compoundly got worse.
 		// Need to look into why this is happening and if it still is
-		randomized.writeRom(romFile);
+		romData.writePatch(romFile);
 	}
 	
 	//public static void main(String[] args) throws IOException //Temp
-	public Rom randomize(Settings settings)
+	public void randomize(Settings settings)
 	{		
 		// get and store the base seed as the next one to use
 		int nextSeed = settings.getSeedValue();
 		
-		// Make a copy of the data to modify and return
-		Rom randomizedData = new Rom(romData);
+		// Ensure the rom data is back to the original data (for multiple randomizations
+		// without reloading) and prepare it to be modified so we know that
+		// it will need to be reset
+		romData.resetAndPrepareForModification();
 		
 		// Create sub randomizers. If they need to original data, they can save off a copy
 		// when they are created
-		MoveSetRandomizer moveSetRand = new MoveSetRandomizer(randomizedData, logger);
+		MoveSetRandomizer moveSetRand = new MoveSetRandomizer(romData, logger);
 		
 //		CardGroup<Card> venus = randomizedData.allCards.cards().withNameIgnoringNumber("Venusaur");
 //		CardGroup.basedOnIndex(venus, 1).name.setText("Test-a-saur"); // Quick check to see if we ran and saved successfully
@@ -142,23 +145,21 @@ public class Randomizer
 		{
 			if (i % 4 == 1)
 			{
-				randomizedData.rawBytes[0x1e4d4 + i] = 5;
+				romData.rawBytes[0x1e4d4 + i] = 5;
 			}
 			else if (i % 4 == 2)
 			{
-				randomizedData.rawBytes[0x1e4d4 + i] = 4;
+				romData.rawBytes[0x1e4d4 + i] = 4;
 			}
 			else if (i % 4 == 3)
 			{
-				randomizedData.rawBytes[0x1e4d4 + i] = 2;
+				romData.rawBytes[0x1e4d4 + i] = 2;
 			}
 			else
 			{
-				randomizedData.rawBytes[0x1e4d4 + i] = 0;
+				romData.rawBytes[0x1e4d4 + i] = 0;
 			}
 		}
-		
-		return randomizedData;
 	}
 	
 	public static void test(CardGroup<Card> cards)

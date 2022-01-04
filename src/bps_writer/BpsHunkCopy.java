@@ -39,7 +39,7 @@ public class BpsHunkCopy extends BpsHunk
 				ByteUtils.copyBytes(targetBytes, targetIndex, targetBytes, fromIndex, getLength());
 				break;
 			default:
-				throw new IllegalArgumentException("TODO:");
+				throw new IllegalArgumentException("Internal error: Invalid type for copy BPS Hunk was found:" + getType());
 		}
 	}
 	

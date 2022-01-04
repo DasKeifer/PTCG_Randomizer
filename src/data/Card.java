@@ -6,6 +6,7 @@ import constants.CardDataConstants.CardRarity;
 import constants.CardDataConstants.CardSet;
 import constants.CardDataConstants.CardType;
 import data.romtexts.CardName;
+import rom.Cards;
 import rom.Texts;
 import rom_packer.Blocks;
 import rom_packer.HybridBlock;
@@ -89,7 +90,7 @@ public abstract class Card
 	}
 	
 	public abstract int readAndConvertIds(byte[] cardBytes, int startIndex, Texts idsToText);
-	public abstract void finalizeAndAddData(CardGroup<Card> cards, Texts texts, Blocks blocks);
+	public abstract void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks);
 	protected abstract CodeBlock convertToCodeBlock();
 
 	public String toString()

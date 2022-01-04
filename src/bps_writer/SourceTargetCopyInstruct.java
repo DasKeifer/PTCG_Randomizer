@@ -62,7 +62,6 @@ public class SourceTargetCopyInstruct extends FixedLengthInstruct
 	@Override
 	public void writeFixedSizeBytes(QueuedWriter writer, BankAddress instructionAddress, AssignedAddresses assignedAddresses) throws IOException 
 	{
-		// TODO: Change to template? Oddly recurring inheritance pattern or whatever its called?
 		if (writer instanceof BpsWriter)
 		{
 			// We need to add a new hunk for the copy and then another new one for the next read segment
@@ -73,7 +72,7 @@ public class SourceTargetCopyInstruct extends FixedLengthInstruct
 		}
 		else
 		{
-			throw new IllegalArgumentException("TODO:");
+			throw new IllegalArgumentException("SourceTargetCopyInstruct is only intended to be used with BpsWriter");
 		}
 	}
 }

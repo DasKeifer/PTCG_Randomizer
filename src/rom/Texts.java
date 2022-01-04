@@ -32,13 +32,6 @@ public class Texts
 		textMap.put((short) 0, "");
 		reverseMap.put("", (short) 0);
 	}
-	
-	public Texts(Texts toCopy)
-	{
-		textMap = new HashMap<>(toCopy.textMap);
-		reverseMap = new HashMap<>(toCopy.reverseMap);
-		idToAddressMap = new HashMap<>(toCopy.idToAddressMap);
-	}
 
 	public short insertTextAtNextId(String text)
 	{
@@ -94,7 +87,6 @@ public class Texts
 		return (short) textMap.size();
 	}
 	
-	// TODO: Not correctly adding new blocks -- see call for family period issue
 	public void convertAndAddBlocks(Blocks blocks)
 	{
 		// Write a null pointer to start because thats how it was in the original rom
@@ -149,7 +141,7 @@ public class Texts
 		text.appendInstruction(new RawBytes((byte) CharMapConstants.TEXT_END_CHAR));
 		MovableBlock block = new MovableBlock(text, 1, (byte)0xd, (byte)0x1c);
 		
-		int origAddress = idToAddressMap.getOrDefault(textId, -1); // TODO: Minor Const?
+		int origAddress = idToAddressMap.getOrDefault(textId, -1);
 		if (origAddress >= 0)
 		{
 			blocks.addHybridBlock(new HybridBlock(block, origAddress));	

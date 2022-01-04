@@ -16,6 +16,7 @@ import data.custom_card_effects.HardcodedEffects;
 import data.romtexts.EffectDescription;
 import data.romtexts.MoveName;
 import data.romtexts.RomText;
+import rom.Cards;
 import rom.Texts;
 import rom_packer.Blocks;
 import rom_packer.MovableBlock;
@@ -280,13 +281,13 @@ public class Move
 		return index;
 	}
 
-	public void finalizeAndAddData(CardGroup<Card> cards, Texts texts, Blocks blocks, PokemonCard hostCard)
+	public void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks, PokemonCard hostCard)
 	{
 		name.finalizeAndAddTexts(texts);
 
 		if (name.toString().compareToIgnoreCase("call for family") == 0)
 		{
-			CardGroup<Card> basics = cards.determineBasicEvolutionOfCard(hostCard);
+			CardGroup<Card> basics = cards.cards().determineBasicEvolutionOfCard(hostCard);
 			if (basics.count() <= 0)
 			{
 				throw new IllegalArgumentException("Failed to find basic card for " + hostCard.name.toString());

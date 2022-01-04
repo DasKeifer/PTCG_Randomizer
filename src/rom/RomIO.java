@@ -6,35 +6,38 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 
+import bps_writer.BpsWriter;
 import constants.CharMapConstants;
 import constants.PtcgRomConstants;
 import constants.CharMapConstants.CharSetPrefix;
 import data.Card;
 import gbc_framework.rom_addressing.AddressRange;
+import gbc_framework.rom_addressing.AssignedAddresses;
 import gbc_framework.utils.ByteUtils;
+import rom_packer.Blocks;
 
 public class RomIO
 {
 	private RomIO() {}
 	
-	static boolean verifyRom(byte[] rawBytes)
+	private static void verifyRom(byte[] rawBytes)
 	{
-		// TODO later: Do a CRC instead? Maybe if we go with the BPS patch format
+		// TODO later: Do a CRC instead/in additon to? Maybe if we go with the BPS patch format
 		int index = PtcgRomConstants.HEADER_LOCATION;
 		for (byte headerByte : PtcgRomConstants.HEADER)
 		{
 			if (headerByte != rawBytes[index++])
 			{
-				return false;
+				throw new IllegalArgumentException("Failed to verify the rom: Header is incorrect!");
 			}
 		}
-		
-		return true;
 	}
 	
-	static byte[] readRaw(File romFile) throws IOException 
+	public static byte[] readRaw(File romFile) throws IOException 
 	{
-		return Files.readAllBytes(romFile.toPath());
+		byte[] rawBytes = Files.readAllBytes(romFile.toPath());
+		RomIO.verifyRom(rawBytes);
+		return rawBytes;
 	}
 	
 	static void writeRaw(byte[] rawBytes, File romFile)
@@ -47,10 +50,9 @@ public class RomIO
 		}
 	}
 
-	// TODO: Minor rename this and cards version
 	// Note assumes that the first text in the pointer list is the first in the file as well. This is required
 	// since there is no null between the text pointer map and the texts themselves
-	static Texts readTextFromData(byte[] rawBytes, List<AddressRange> addressesRead)
+	static Texts readTextsFromData(byte[] rawBytes, List<AddressRange> addressesRead)
 	{		 
 		// TODO: Optimize address range adding since they will mostly be in order
 		
@@ -148,5 +150,24 @@ public class RomIO
 		}
 		
 		return cards;
+	}
+
+	public static void writeBpsPatch(File patchFile, byte[] rawBytes, Blocks blocks, AssignedAddresses assignedAddresses,
+			List<AddressRange> spacesToBlank) 
+	{
+		// Now actually write to the bytes
+		BpsWriter writer = new BpsWriter();
+		try 
+		{
+			blocks.writeBlocks(writer, assignedAddresses);
+			writer.blankUnusedSpace(spacesToBlank);
+			writer.createBlanksAndFillEmptyHunksWithSourceRead(rawBytes.length);
+			writer.writeBps(patchFile, rawBytes);
+		} 
+		catch (IOException e)
+		{
+			// TODO later: Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

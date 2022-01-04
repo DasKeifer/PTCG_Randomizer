@@ -64,7 +64,6 @@ public class BpsWriter implements QueuedWriter
 		return selfReadBeingCreatedName;
 	}
 	
-	// TODO: add names
 	@Override
 	public void startNewBlock(int segmentStartAddress)
 	{

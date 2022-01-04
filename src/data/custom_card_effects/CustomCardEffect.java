@@ -101,7 +101,9 @@ public class CustomCardEffect extends CardEffect
 		* We add an empty block because the replacement block will handle placing in nops for us to 
 		* get it to the correct size
 		*/
-		blocks.addFixedBlock(new ReplacementBlock(new CodeBlock("MoreEffectBanksTweak_removeSeg"), 0x300d, 5));
+		blocks.addFixedBlock(new ReplacementBlock(
+				new CodeBlock("MoreEffectBanksTweak_removeSeg").allowNopJrOptimizationInline(),
+				0x300d, 5));
 		
 		/* replace
 		 cp c
@@ -112,16 +114,16 @@ public class CustomCardEffect extends CardEffect
 		 */	
 		UnconstrainedMoveBlock logicBlock = new UnconstrainedMoveBlock(
 				new CodeBlock(MORE_EFFECT_BANK_TWEAK_LOGIC_SEG_CODE),
-				0, (byte)0x0, (byte)0x1); //Try to fit it in home to avoid bankswaps
+				0, (byte) 0x0, (byte) 0x1); //Try to fit it in home to avoid bankswaps
 		logicBlock.addAllowableBankRange(1, (byte)0xb, (byte)0xd);
 		blocks.addMovableBlock(logicBlock);
 
 		// Create the block to jump to our new logic and make sure it fits nicely into
 		// the existing instructions
-		CodeBlock callLogic = new CodeBlock("MoreEffectBanksTweak_jumpToLogicSeg");
-		callLogic.appendInstruction(new Jump(logicBlock.getId()));
-		ReplacementBlock callLogicBlock = new ReplacementBlock(callLogic, 0x3016, 5);
-		blocks.addFixedBlock(callLogicBlock);
+		blocks.addFixedBlock(new ReplacementBlock(
+				new CodeBlock("MoreEffectBanksTweak_jumpToLogicSeg")
+				.appendInstructionInline(new Jump(logicBlock.getId())),
+			0x3016, 5));
 	}
 	
 	public void addEffectFunction(EffectFunctionTypes type, List<String> sourceLines)

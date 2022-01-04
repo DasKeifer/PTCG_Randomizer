@@ -1,11 +1,9 @@
 package rom;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import bps_writer.BpsWriter;
 import compiler.CodeBlock;
 import data.PtcgInstructionParser;
 import data.custom_card_effects.CustomCardEffect;
@@ -17,7 +15,7 @@ import rom_packer.DataManager;
 
 public class Rom
 {
-	// TODO: Minor Make private
+	// TODO later: with tweak to allow 11 cards in pack, make this private
 	public byte[] rawBytes;
 	private List<AddressRange> rangesToConsiderFree;
 	
@@ -26,30 +24,47 @@ public class Rom
 	public Texts idsToText;
 	public Blocks blocks;
 	
-	public Rom(File romFile) throws IOException
+	private boolean dirtyBit;
+	
+	public Rom(byte[] romRaw)
 	{
-		rangesToConsiderFree = new LinkedList<>();
-		
-		allCards = new Cards();
-		idsToText = new Texts();
-		blocks = new Blocks();
-		
-		readRom(romFile);
+		rawBytes = romRaw;
+		dirtyBit = true;
+		resetRom();
 	}
 
-	public void readRom(File romFile) throws IOException
+	public void resetRom()
 	{
-		rawBytes = RomIO.readRaw(romFile);
-		RomIO.verifyRom(rawBytes);
-		
-		idsToText = RomIO.readTextFromData(rawBytes, rangesToConsiderFree);
+		if (dirtyBit)
+		{
+			dirtyBit = false;
+			rangesToConsiderFree = new LinkedList<>();
+			
+			allCards = new Cards();
+			idsToText = new Texts();
+			blocks = new Blocks();
+			
+			readRomData();
+		}
+	}
+	
+	public void resetAndPrepareForModification()
+	{
+		if (dirtyBit)
+		{
+			resetRom();
+		}
+		dirtyBit = true;
+	}
+
+	private void readRomData()
+	{	
+		idsToText = RomIO.readTextsFromData(rawBytes, rangesToConsiderFree);
 		allCards = RomIO.readCardsFromData(rawBytes, idsToText, rangesToConsiderFree);
 	}
 	
-	public void writeRom(File romFile)
+	public void writePatch(File patchFile)
 	{
-		// TODO: minor merge with ROM?
-		
 		// Create the custom parser and set the data blocks to use it
 		PtcgInstructionParser parser = new PtcgInstructionParser();
 		CodeBlock.setInstructionParserSingleton(parser);
@@ -68,23 +83,9 @@ public class Rom
 		DataManager manager = new DataManager();
 		List<AddressRange> spacesToBlank = new LinkedList<>();
 		
-		// TODO: Check for null
 		AssignedAddresses assignedAddresses = manager.allocateBlocks(rawBytes, blocks, rangesToConsiderFree, spacesToBlank);
 			
-		// Now actually write to the bytes
-		BpsWriter writer = new BpsWriter();
-		try 
-		{
-			blocks.writeBlocks(writer, assignedAddresses);
-			writer.blankUnusedSpace(spacesToBlank);
-			writer.createBlanksAndFillEmptyHunksWithSourceRead(rawBytes.length);
-			writer.writeBps(romFile, rawBytes);
-		} 
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		RomIO.writeBpsPatch(patchFile, rawBytes, blocks, assignedAddresses, spacesToBlank);
 	}
 	
 	private void finalizeDataAndGenerateBlocks(PtcgInstructionParser parser)
@@ -100,17 +101,5 @@ public class Rom
 		
 		// Convert the text to blocks
 		idsToText.convertAndAddBlocks(blocks);
-	}
-	
-	// TODO: remove copy?
-	public Rom(Rom toCopy)
-	{
-		rawBytes = toCopy.rawBytes;
-		rangesToConsiderFree = new LinkedList<>(toCopy.rangesToConsiderFree);
-		allCards = new Cards(toCopy.allCards);
-		idsToText = new Texts(toCopy.idsToText);
-		
-		// Don't copy - too complicated for now at least and wouldn't be used anyways
-		blocks = new Blocks();
 	}
 }

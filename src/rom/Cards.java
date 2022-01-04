@@ -19,11 +19,6 @@ public class Cards
 		allCards = new CardGroup<>();
 	}
 	
-	public Cards(Cards toCopy) 
-	{
-		allCards = toCopy.allCards.copy(Card.class);
-	}
-	
 	public CardGroup<Card> cards()
 	{
 		return allCards;
@@ -36,7 +31,7 @@ public class Cards
 		// as needed
 		for (Card card : allCards.listOrderedByCardId())
 		{
-			card.finalizeAndAddData(allCards, texts, blocks);
+			card.finalizeAndAddData(this, texts, blocks);
 		}
 		
 		// Now add the cards themselves as blocks
