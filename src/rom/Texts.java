@@ -12,6 +12,7 @@ import rom_packer.Blocks;
 import rom_packer.FixedBlock;
 import rom_packer.HybridBlock;
 import rom_packer.MovableBlock;
+import rom_packer.ReadInHybridBlock;
 
 public class Texts 
 {
@@ -21,12 +22,14 @@ public class Texts
 	private Map<Short, String> textMap;
 	private Map<String, Short> reverseMap;
 	private Map<Short, Integer> idToAddressMap;
+	private Map<Short, Integer> idToOriginalSize;
 
 	public Texts()
 	{
 		textMap = new HashMap<>();
 		reverseMap = new HashMap<>();
 		idToAddressMap = new HashMap<>();
+		idToOriginalSize = new HashMap<>();
 		
 		// Put in the "null pointer" reservation at ID 0
 		textMap.put((short) 0, "");
@@ -46,6 +49,7 @@ public class Texts
 		if (defaultAddress >= 0)
 		{
 			idToAddressMap.put(nextId, defaultAddress);
+			idToOriginalSize.put(nextId, text.length() + 1); // +1 for the null termination char
 		}
 		return nextId;
 	}
@@ -144,7 +148,8 @@ public class Texts
 		int origAddress = idToAddressMap.getOrDefault(textId, -1);
 		if (origAddress >= 0)
 		{
-			blocks.addHybridBlock(new HybridBlock(block, origAddress));	
+			// Make sure to use the original size of the string in case it changed
+			blocks.addHybridBlock(new ReadInHybridBlock(block, origAddress, idToOriginalSize.get(textId)));	
 		}
 		else
 		{

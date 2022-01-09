@@ -355,4 +355,10 @@ public class PokemonCard extends Card
 		
 		return block;
 	}
+	
+	@Override
+	public int getSize()
+	{
+		return TOTAL_SIZE_IN_BYTES;
+	}
 }
