@@ -1,8 +1,6 @@
 package rom;
 
 import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
 
 import compiler.CodeBlock;
 import data.PtcgInstructionParser;
@@ -17,7 +15,6 @@ public class Rom
 {
 	// TODO later: with tweak to allow 11 cards in pack, make this private
 	public byte[] rawBytes;
-	private List<AddressRange> rangesToConsiderFree;
 	
 	// Make public - we will be modifying these
 	public Cards allCards;
@@ -38,7 +35,6 @@ public class Rom
 		if (dirtyBit)
 		{
 			dirtyBit = false;
-			rangesToConsiderFree = new LinkedList<>();
 			
 			allCards = new Cards();
 			idsToText = new Texts();
@@ -59,8 +55,8 @@ public class Rom
 
 	private void readRomData()
 	{	
-		idsToText = RomIO.readTextsFromData(rawBytes, rangesToConsiderFree);
-		allCards = RomIO.readCardsFromData(rawBytes, idsToText, rangesToConsiderFree);
+		idsToText = RomIO.readTextsFromData(rawBytes, blocks);
+		allCards = RomIO.readCardsFromData(rawBytes, idsToText, blocks);
 	}
 	
 	public void writePatch(File patchFile)
@@ -80,12 +76,10 @@ public class Rom
 		finalizeDataAndGenerateBlocks(parser);
 		
 		// Now assign locations for the data
-		DataManager manager = new DataManager();
-		List<AddressRange> spacesToBlank = new LinkedList<>();
-		
-		AssignedAddresses assignedAddresses = manager.allocateBlocks(rawBytes, blocks, rangesToConsiderFree, spacesToBlank);
+		DataManager manager = new DataManager();		
+		AssignedAddresses assignedAddresses = manager.allocateBlocks(rawBytes, blocks);
 			
-		RomIO.writeBpsPatch(patchFile, rawBytes, blocks, assignedAddresses, spacesToBlank);
+		RomIO.writeBpsPatch(patchFile, rawBytes, blocks, assignedAddresses);
 	}
 	
 	private void finalizeDataAndGenerateBlocks(PtcgInstructionParser parser)
@@ -101,5 +95,9 @@ public class Rom
 		
 		// Convert the text to blocks
 		idsToText.convertAndAddBlocks(blocks);
+		
+		// Sort them and combine values to make things easier elsewhere in the code
+		// TODO later: if adding custom blanking, we should call this afterwards
+		AddressRange.sortAndCombine(blocks.getAllBlankedBlocks());
 	}
 }

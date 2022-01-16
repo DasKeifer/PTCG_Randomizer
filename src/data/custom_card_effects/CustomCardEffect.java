@@ -14,8 +14,9 @@ import constants.DuelConstants.EffectFunctionTypes;
 import data.CardEffect;
 import rom_packer.Blocks;
 import rom_packer.MovableBlock;
-import rom_packer.ReplacementBlock;
+import rom_packer.FixedBlock;
 import rom_packer.UnconstrainedMoveBlock;
+import gbc_framework.rom_addressing.AddressRange;
 import gbc_framework.rom_addressing.PrioritizedBankRange;
 import gbc_framework.utils.ByteUtils;
 
@@ -101,9 +102,7 @@ public class CustomCardEffect extends CardEffect
 		* We add an empty block because the replacement block will handle placing in nops for us to 
 		* get it to the correct size
 		*/
-		blocks.addFixedBlock(new ReplacementBlock(
-				new CodeBlock("MoreEffectBanksTweak_removeSeg").allowNopJrOptimizationInline(),
-				0x300d, 5));
+		blocks.addBlankedBlock(new AddressRange(0x300d, 0x300d + 5));
 		
 		/* replace
 		 cp c
@@ -120,10 +119,12 @@ public class CustomCardEffect extends CardEffect
 
 		// Create the block to jump to our new logic and make sure it fits nicely into
 		// the existing instructions
-		blocks.addFixedBlock(new ReplacementBlock(
+		FixedBlock jumpToLogicBlock = new FixedBlock(
 				new CodeBlock("MoreEffectBanksTweak_jumpToLogicSeg")
-				.appendInstructionInline(new Jump(logicBlock.getId())),
-			0x3016, 5));
+					.appendInstructionInline(new Jump(logicBlock.getId())),
+				0x3016);
+		blocks.addFixedBlock(jumpToLogicBlock);
+		blocks.addBlankedBlock(jumpToLogicBlock.createBlankedRangeForBlock(5));
 	}
 	
 	public void addEffectFunction(EffectFunctionTypes type, List<String> sourceLines)

@@ -11,7 +11,8 @@ public final class PtcgRomConstants
 {
 	private PtcgRomConstants() {}
 	
-	//Counts
+	// Counts
+	// TODO: Needed? If so move to a config file? applies to many in here
 	public static final int TOTAL_NUM_POKEMON_CARDS = 187;
 	public static final int TOTAL_NUM_ENERGY_CARDS = 7;
 	public static final int TOTAL_NUM_TRAINER_CARDS = 34;

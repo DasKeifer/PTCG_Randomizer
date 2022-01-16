@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.List;
 
 import bps_writer.BpsWriter;
 import constants.CharMapConstants;
@@ -22,7 +21,7 @@ public class RomIO
 	
 	private static void verifyRom(byte[] rawBytes)
 	{
-		// TODO later: Do a CRC instead/in additon to? Maybe if we go with the BPS patch format
+		// TODO later: Do a CRC instead/in addition to? Maybe if we go with the BPS patch format
 		int index = PtcgRomConstants.HEADER_LOCATION;
 		for (byte headerByte : PtcgRomConstants.HEADER)
 		{
@@ -52,11 +51,13 @@ public class RomIO
 
 	// Note assumes that the first text in the pointer list is the first in the file as well. This is required
 	// since there is no null between the text pointer map and the texts themselves
-	static Texts readTextsFromData(byte[] rawBytes, List<AddressRange> addressesRead)
+	static Texts readTextsFromData(byte[] rawBytes, Blocks toBlankSpaceIn)
 	{		 
 		// TODO: Optimize address range adding since they will mostly be in order
 		
 		Texts texts = new Texts();
+		// Intentionally not clearing addressesReadToAddTo to support chaining calls/adding
+		// to it via other functions
 		
 		 // Read the text based on the pointer map in the rom
 		// First pointer is a null pointer so we skip it
@@ -93,35 +94,34 @@ public class RomIO
 			texts.insertTextAtNextId(new String(rawBytes, ptr, textIndex - ptr), ptr);
 			
 			// Add it to the list of spaces for the text itself
-			if (addressesRead != null)
-			{
-				// + 1 because end is exclusive
-				addressesRead.add(new AddressRange(ptr, textIndex + 1));
-			}
+			toBlankSpaceIn.addBlankedBlock(new AddressRange(ptr, textIndex + 1));
 
 			// Move our text pointer to the next pointer
 			ptrIndex += PtcgRomConstants.TEXT_POINTER_SIZE_IN_BYTES;
 		}
+
+		// Note that the texts for whatever reason doesn't end with a nullptr so
+		// that's why we don't add the pointer size one last time like done for
+		// reading in the cards
 		
 		// Add the space for the pointers. The ptrIndex will end at the first text
-		if (addressesRead != null)
-		{
-			// + 1 because end is exclusive
-			addressesRead.add(new AddressRange(PtcgRomConstants.TEXT_POINTERS_LOC, ptrIndex + 1));
-		}
+		// + 1 because end is exclusive
+		toBlankSpaceIn.addBlankedBlock(new AddressRange(PtcgRomConstants.TEXT_POINTERS_LOC, ptrIndex + 1));
 		
 		return texts;
 	}
 	
-	static Cards readCardsFromData(byte[] rawBytes, Texts allText, List<AddressRange> addresses)
+	static Cards readCardsFromData(byte[] rawBytes, Texts allText, Blocks toBlankSpaceIn)
 	{
 		// TODO: Optimize address range adding since they will mostly be in order
 		
 		Cards cards = new Cards();
+		// Intentionally not clearing addressesReadToAddTo to support chaining calls/adding
+		// to it via other functions
 
 		// Read the cards based on the pointer map in the rom
 		// Skip the first null pointer
-		int ptrIndex = PtcgRomConstants.CARD_POINTERS_LOC + PtcgRomConstants.DECK_POINTER_SIZE_IN_BYTES;
+		int ptrIndex = PtcgRomConstants.CARD_POINTERS_LOC + PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		int cardIndex = 0;
 
 		// Read each pointer one at a time until we reach the ending null pointer
@@ -133,34 +133,30 @@ public class RomIO
 			int size = Card.addCardFromBytes(rawBytes, cardIndex, allText, cards.cards());
 
 			// Add the space for the card itself
-			if (addresses != null)
-			{
-				addresses.add(new AddressRange(cardIndex, cardIndex + size));
-			}
+			toBlankSpaceIn.addBlankedBlock(new AddressRange(cardIndex, cardIndex + size));
 
 			// Move our text pointer to the next pointer
 			ptrIndex += PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES;
 		}
 		
+		// Move it one last time for the trailing nullptr that finishes the list
+		ptrIndex += PtcgRomConstants.CARD_POINTER_SIZE_IN_BYTES;
+		
 		// Add the space for the pointers. The ptrIndex will end at the first text
-		if (addresses != null)
-		{
-			// + 1 because end is exclusive
-			addresses.add(new AddressRange(PtcgRomConstants.CARD_POINTERS_LOC, ptrIndex + 1));
-		}
+		// + 1 because end is exclusive
+		toBlankSpaceIn.addBlankedBlock(new AddressRange(PtcgRomConstants.CARD_POINTERS_LOC, ptrIndex + 1));
 		
 		return cards;
 	}
 
-	public static void writeBpsPatch(File patchFile, byte[] rawBytes, Blocks blocks, AssignedAddresses assignedAddresses,
-			List<AddressRange> spacesToBlank) 
+	public static void writeBpsPatch(File patchFile, byte[] rawBytes, Blocks blocks, AssignedAddresses assignedAddresses) 
 	{
 		// Now actually write to the bytes
 		BpsWriter writer = new BpsWriter();
 		try 
 		{
 			blocks.writeBlocks(writer, assignedAddresses);
-			writer.blankUnusedSpace(spacesToBlank);
+			writer.blankUnusedSpace(blocks.getAllBlankedBlocks());
 			writer.createBlanksAndFillEmptyHunksWithSourceRead(rawBytes.length);
 			writer.writeBps(patchFile, rawBytes);
 		} 

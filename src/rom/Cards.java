@@ -7,8 +7,8 @@ import constants.PtcgRomConstants;
 import data.Card;
 import data.CardGroup;
 import rom_packer.Blocks;
+import rom_packer.FixedBlock;
 import rom_packer.HybridBlock;
-import rom_packer.ReplacementBlock;
 
 public class Cards 
 {
@@ -48,6 +48,6 @@ public class Cards
 
 		// Add the trailing null and create the fixed block. Since its all fixed size, we can just pass the length of the block
 		cardPtrs.appendInstruction(new RawBytes((byte) 0, (byte) 0));
-		blocks.addFixedBlock(new ReplacementBlock(cardPtrs, PtcgRomConstants.CARD_POINTERS_LOC, cardPtrs.getWorstCaseSize()));
+		blocks.addFixedBlock(new FixedBlock(cardPtrs, PtcgRomConstants.CARD_POINTERS_LOC));
 	}
 }

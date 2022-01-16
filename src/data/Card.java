@@ -11,7 +11,6 @@ import rom.Texts;
 import rom_packer.Blocks;
 import rom_packer.HybridBlock;
 import rom_packer.MovableBlock;
-import rom_packer.ReadInHybridBlock;
 import gbc_framework.utils.ByteUtils;
 
 import java.security.InvalidParameterException;
@@ -134,10 +133,9 @@ public abstract class Card
 	
 	public HybridBlock convertToHybridBlock()
 	{
-		return new ReadInHybridBlock(
+		return new HybridBlock(
 				new MovableBlock(convertToCodeBlock(), 0, (byte) 0xC, (byte) 0xD),
-				readFromAddress, getSize() // Size is always a constant for the card type
-		);
+				readFromAddress);
 	}
 	
 	protected CodeBlock convertCommonDataToCodeBlock() 
