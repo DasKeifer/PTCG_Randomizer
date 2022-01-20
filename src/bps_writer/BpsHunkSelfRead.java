@@ -11,6 +11,21 @@ public class BpsHunkSelfRead extends BpsHunk
 	
 	byte[] data;
 	
+	public BpsHunkSelfRead(byte toRepeat, int numRepeats) 
+	{
+		this(DEFAULT_NAME, createRepeatedByteArray(toRepeat, numRepeats));
+	}
+	
+	private static byte[] createRepeatedByteArray(byte toRepeat, int numRepeats) 
+	{
+		byte[] repeatData = new byte[numRepeats];
+		for (int i = 0; i < numRepeats; i++)
+		{
+			repeatData[i] = toRepeat;
+		}
+		return repeatData;
+	}
+	
 	public BpsHunkSelfRead(byte[] data) 
 	{
 		this(DEFAULT_NAME, data);

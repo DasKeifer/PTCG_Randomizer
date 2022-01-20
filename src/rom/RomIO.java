@@ -19,6 +19,8 @@ public class RomIO
 {
 	private RomIO() {}
 	
+	// TODO: Merge back into Rom class and others as appropriate?
+	
 	private static void verifyRom(byte[] rawBytes)
 	{
 		// TODO later: Do a CRC instead/in addition to? Maybe if we go with the BPS patch format
@@ -156,8 +158,8 @@ public class RomIO
 		try 
 		{
 			blocks.writeBlocks(writer, assignedAddresses);
-			writer.blankUnusedSpace(blocks.getAllBlankedBlocks());
-			writer.createBlanksAndFillEmptyHunksWithSourceRead(rawBytes.length);
+			// We aren't making the rom longer so we pass the same length twice
+			writer.createBlanksAndFillEmptyHunksWithSourceRead(rawBytes.length, rawBytes.length, blocks.getAllBlankedBlocks());
 			writer.writeBps(patchFile, rawBytes);
 		} 
 		catch (IOException e)

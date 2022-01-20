@@ -45,7 +45,7 @@ public abstract class BpsHunk
 	protected void writeHunkHeader(ByteArrayOutputStream bpsOs) throws IOException
 	{
 	    // We know the length is at least 1
-		long lengthAndType = (getLength() - 1) << 2 + getType().getValue();
+		long lengthAndType = ((getLength() - 1) << 2) + getType().getValue();
 		bpsOs.write(ByteUtils.sevenBitEncode(lengthAndType));
 	}
 

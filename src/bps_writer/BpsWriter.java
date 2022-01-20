@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -14,6 +15,7 @@ import java.util.TreeMap;
 
 import gbc_framework.QueuedWriter;
 import gbc_framework.rom_addressing.AddressRange;
+import gbc_framework.utils.ByteUtils;
 
 public class BpsWriter implements QueuedWriter
 {	
@@ -98,7 +100,7 @@ public class BpsWriter implements QueuedWriter
 	}
 
 	@Override
-	public void blankUnusedSpace(AddressRange range) 
+	public void queueBlankedBlock(AddressRange range) 
 	{
 		spacesToBlank.put(range.getStart(), range.getStopExclusive());
 	}
@@ -167,39 +169,185 @@ public class BpsWriter implements QueuedWriter
 		}
 	}
 	
-	public void createBlanksAndFillEmptyHunksWithSourceRead(int sourceLength)
+	public void createBlanksAndFillEmptyHunksWithSourceRead(int targetLength, int sourceLength, List<AddressRange> toBlank)
+	{
+		queueBlankedBlocks(toBlank);
+		createBlanksAndFillEmptyHunksWithSourceRead(targetLength, sourceLength);
+	}
+
+	public void createBlanksAndFillEmptyHunksWithSourceRead(int targetLength, int sourceLength)
 	{
 		// Ensure any pending ones are finalized prior to filling gaps
 		finalizeSelfReadBeingCreated();
 		
-		// TODO: BPS implement
+		// Handle if the target is longer than the source
+		if (targetLength > sourceLength)
+		{
+			spacesToBlank.put(sourceLength, targetLength);
+		}
 		
-		// TODO: BPS Check for overlaps and spaces too
+		// Go through the existing hunks in order filling in any gaps until we reach
+		// the end of the file
+		TreeMap<Integer, BpsHunk> fillerHunks = new TreeMap<>();
+		int lastEndAddressExclusive = 0;
+		Iterator<Entry<Integer, Integer>> nextBlankItr = spacesToBlank.entrySet().iterator();
+		Entry<Integer, Integer> nextBlank = getNextOrNull(nextBlankItr);
+		for (Entry<Integer, BpsHunk> hunk : hunks.entrySet())
+		{
+			int hunkStart = hunk.getKey();
+			
+			// There is a gap we need to fill
+			if (hunkStart > lastEndAddressExclusive)
+			{
+				fillSpaceWithSourceReadOrBlanks(lastEndAddressExclusive, hunkStart, nextBlank, nextBlankItr, fillerHunks);
+			}
+			// We filled too much of a gap or we have overlap between hunks
+			else if (hunkStart < lastEndAddressExclusive)
+			{
+				// TODO: error
+				throw new IllegalArgumentException("Ovelapping hunks detected! TODO");
+			}
+			// else the space matches up to the end of the previous hunk - we don't need to do anything
+			
+			// Now that we are done processing this hunk, set the last address to the end of this hunk
+			// and move to the next one
+			lastEndAddressExclusive = hunkStart + hunk.getValue().getLength();
+		}
+		
+		// Ensure the target wasn't too short
+		if (targetLength < lastEndAddressExclusive)
+		{
+			throw new IllegalArgumentException("TODO");
+		}
+		
+		// Add the final reads to the end of the file
+		fillSpaceWithSourceReadOrBlanks(lastEndAddressExclusive, targetLength, nextBlank, nextBlankItr, fillerHunks);
+		
+		// Now add any added hunks to the map
+		hunks.putAll(fillerHunks);
 	}
 	
-	// TODO: Minor Take metadata?
+	private void fillSpaceWithSourceReadOrBlanks(
+			int fillFrom, 
+			int fillTo, Entry<Integer, Integer> nextBlank,
+			Iterator<Entry<Integer, Integer>> nextBlankItr,
+			TreeMap<Integer, BpsHunk> fillerHunks
+	)
+	{
+		// TODO: Arg?
+		final byte fillByte = 0;
+
+		while (fillTo > fillFrom)
+		{
+			// While the next blank is already passed, get the next one
+			while (nextBlank != null && nextBlank.getValue() <= fillFrom)
+			{
+				nextBlank = getNextOrNull(nextBlankItr);
+			}
+			
+			// See if the blank starts after this hunk or there are no more blanks. If so, we have no
+			// blanks in this gap and can finish filling in with source reads
+			if (nextBlank == null || nextBlank.getKey() >= fillTo)
+			{
+				// Fill to the next hunk with source reads
+				fillerHunks.put(fillFrom, new BpsHunkSourceRead(fillTo - fillFrom));
+				fillFrom = fillTo;
+			}
+			// Otherwise the next blank overlaps with the space we are filling and we need to see how
+			// to split it up
+			else
+			{
+				// If the blank starts after the last end address, we need to do some source reads to the start of
+				// the next blank
+				if (nextBlank.getKey() > fillFrom)
+				{
+					// Fill to the blank with source reads
+					fillerHunks.put(fillFrom, new BpsHunkSourceRead(nextBlank.getKey() - fillFrom));
+					fillFrom = nextBlank.getKey(); // Causes the else to be hit in the next loop if not start of next hunk
+				}
+				// If it starts at or before this fill segment, go ahead and do a blank hunk to the
+				// end of the blank/next hunk whichever is first
+				else
+				{
+					int blankEnd = nextBlank.getValue();
+					if (blankEnd >= fillTo)
+					{
+						blankEnd = fillTo;
+					}
+					fillerHunks.put(fillFrom, new BpsHunkSelfRead(fillByte, blankEnd - fillFrom));
+					fillFrom = blankEnd;
+				}
+			}
+		}
+	}
+	
+	private <T> T getNextOrNull(Iterator<T> itr)
+	{
+		if (itr.hasNext())
+		{
+			return itr.next();
+		}
+		else
+		{
+			return null;
+		}
+	}
+	
+	// TODO: Minor Take metadata?	
 	public void writeBps(File file, byte[] originalBytes)
 	{
 		// Ensure any pending ones are finalized prior to writing
 		finalizeSelfReadBeingCreated();
 		
+		// TODO: Try to combine hunks?
+		// TODO: Overlap & gap (target final length) checking?
+		
 		// Set the offsets for writing
 		BpsHunkCopy.setOffsetsForWriting();
 
+		// TODO: Support differing sizes
 		byte[] targetBytes = originalBytes.clone();
 		
-		try (FileOutputStream fos = new FileOutputStream(file))
+		// Start writing the bytes for the BPS and the header
+		try (ByteArrayOutputStream bpsOs = new ByteArrayOutputStream(); 
+				FileOutputStream fos = new FileOutputStream(file))
 		{
-			// First go through and apply the patches so we can find out target crc
-			// Start with a copy of the original so we don't have to do the
-			// SOURCE_READ hunks here
+			bpsOs.write('B');
+			bpsOs.write('P');
+			bpsOs.write('S');
+			bpsOs.write('1');
+			
+			// Write the sizes in four byte sizes
+			bpsOs.write(ByteUtils.sevenBitEncode(originalBytes.length));
+			bpsOs.write(ByteUtils.sevenBitEncode(targetBytes.length));
+			bpsOs.write(ByteUtils.sevenBitEncode(0)); // TODO: Minor For now no metadata
+			
+			// Write the hunks to the patch output stream
+			for (BpsHunk hunk : hunks.values())
+			{
+				hunk.write(bpsOs);
+			}
+			
+			// Write the source CRC
+			bpsOs.write(ByteUtils.toLittleEndianBytes(ByteUtils.computeCrc32(originalBytes), 4));
+			
+			// Next we need to determine the target CRC by applying the patch and computing
+			// the CRC on the patch bytes and then write that
 			for (Entry<Integer, BpsHunk> entry : hunks.entrySet())
 			{
 				entry.getValue().apply(targetBytes, entry.getKey(), originalBytes);
 			}
+			bpsOs.write(ByteUtils.toLittleEndianBytes(ByteUtils.computeCrc32(targetBytes), 4));
 			
+
+			// Finally we need to put the CRC of the patch itself
+			// So we get the BPS bytes written, write them, calculate the CRC
+			// then write that
+			byte[] bpsBytes = bpsOs.toByteArray();
 			// TODO: BPS temp
-			fos.write(targetBytes);
+//			fos.write(targetBytes);
+			fos.write(bpsBytes);
+			fos.write(ByteUtils.toLittleEndianBytes(ByteUtils.computeCrc32(bpsBytes), 4));
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -207,46 +355,5 @@ public class BpsWriter implements QueuedWriter
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		// Now fill any empty spaces for the sourceRead
-		
-		// TODO: BPSFor now just save the whole rom until we are sure the
-		// changes to saving works
-		/*
-		 * 
-		// Now Calculate the destination CRC
-		long destinationCrc = ByteUtils.computeCrc32(targetBytes);
-		
-		// Start writing the bytes for the BPS and the header
-		ByteArrayOutputStream bpsOs = new ByteArrayOutputStream();
-		bpsOs.write('B');
-		bpsOs.write('P');
-		bpsOs.write('S');
-		bpsOs.write('1');
-		
-		// Write the sizes
-		bpsOs.write(ByteUtils.sevenBitEncode(originalBytes.length));
-		bpsOs.write(ByteUtils.sevenBitEncode(targetBytes.length));
-		bpsOs.write(ByteUtils.sevenBitEncode(0)); // TODO: Minor For now no metadata
-		
-		// Write the hunks
-		for (BpsHunk hunk : hunks.values())
-		{
-			hunk.write(bpsOs);
-		}
-		
-		// Write the source and destination CRCs
-		bpsOs.write(ByteUtils.toLittleEndianBytes(ByteUtils.computeCrc32(originalBytes), 4));
-		bpsOs.write(ByteUtils.toLittleEndianBytes(destinationCrc, 4));
-		
-		// Now get the BPS bytes written
-		byte[] bpsBytes = bpsOs.toByteArray();
-		
-		// Write them to the file then append the CRC32 for the BPS to the file
-		fos.write(bpsBytes);
-		fos.write(ByteUtils.toLittleEndianBytes(ByteUtils.computeCrc32(bpsBytes), 4));
-		fos.close();
-		*/
 	}
-
 }

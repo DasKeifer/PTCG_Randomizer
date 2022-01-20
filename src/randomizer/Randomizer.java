@@ -141,25 +141,26 @@ public class Randomizer
 		
 		// Temp hack to add more value cards to a pack. In the future this will be more formalized
 		// 11 is the most we can do
-		for (int i = 0; i < 16; i ++)
-		{
-			if (i % 4 == 1)
-			{
-				romData.rawBytes[0x1e4d4 + i] = 5;
-			}
-			else if (i % 4 == 2)
-			{
-				romData.rawBytes[0x1e4d4 + i] = 4;
-			}
-			else if (i % 4 == 3)
-			{
-				romData.rawBytes[0x1e4d4 + i] = 2;
-			}
-			else
-			{
-				romData.rawBytes[0x1e4d4 + i] = 0;
-			}
-		}
+		// TODO: Move to tweak
+//		for (int i = 0; i < 16; i ++)
+//		{
+//			if (i % 4 == 1)
+//			{
+//				romData.rawBytes[0x1e4d4 + i] = 5;
+//			}
+//			else if (i % 4 == 2)
+//			{
+//				romData.rawBytes[0x1e4d4 + i] = 4;
+//			}
+//			else if (i % 4 == 3)
+//			{
+//				romData.rawBytes[0x1e4d4 + i] = 2;
+//			}
+//			else
+//			{
+//				romData.rawBytes[0x1e4d4 + i] = 0;
+//			}
+//		}
 	}
 	
 	public static void test(CardGroup<Card> cards)
@@ -180,7 +181,7 @@ public class Randomizer
 
 	public String getFileExtension() 
 	{
-		return ".gbc";
+		return ".bps";
 	}
 }
 

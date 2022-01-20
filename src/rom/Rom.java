@@ -14,7 +14,7 @@ import rom_packer.DataManager;
 public class Rom
 {
 	// TODO later: with tweak to allow 11 cards in pack, make this private
-	public byte[] rawBytes;
+	private byte[] rawBytes;
 	
 	// Make public - we will be modifying these
 	public Cards allCards;
