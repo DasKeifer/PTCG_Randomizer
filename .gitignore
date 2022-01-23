@@ -5,3 +5,5 @@
 *.sgm
 *.log.txt
 *.seed.txt
+*.bps
+*.exe

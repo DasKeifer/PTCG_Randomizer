@@ -8,6 +8,7 @@ import compiler.reference_instructs.BlockGlobalAddress;
 import compiler.static_instructs.RawBytes;
 import constants.CharMapConstants;
 import constants.PtcgRomConstants;
+import gbc_framework.rom_addressing.AddressRange;
 import rom_packer.Blocks;
 import rom_packer.FixedBlock;
 import rom_packer.HybridBlock;
@@ -20,32 +21,39 @@ public class Texts
 	// getting the textLabel based on Id?
 	private Map<Short, String> textMap;
 	private Map<String, Short> reverseMap;
-	private Map<Short, Integer> idToAddressMap;
+	private Map<Short, AddressRange> idToRangeMap;
+	private AddressRange origPtrsRange;
 
 	public Texts()
 	{
 		textMap = new HashMap<>();
 		reverseMap = new HashMap<>();
-		idToAddressMap = new HashMap<>();
+		idToRangeMap = new HashMap<>();
+		origPtrsRange = null;
 		
 		// Put in the "null pointer" reservation at ID 0
 		textMap.put((short) 0, "");
 		reverseMap.put("", (short) 0);
 	}
+	
+	public void setOrigPtrsRange(AddressRange range)
+	{
+		origPtrsRange = range;
+	}
 
 	public short insertTextAtNextId(String text)
 	{
-		return insertTextAtNextId(text, -1);
+		return insertTextAtNextId(text, null);
 	}
 	
-	public short insertTextAtNextId(String text, int defaultAddress)
+	public short insertTextAtNextId(String text, AddressRange defaultRange)
 	{
 		short nextId = count();
 		textMap.put(nextId, text);
 		reverseMap.put(text, nextId);
-		if (defaultAddress >= 0)
+		if (defaultRange != null)
 		{
-			idToAddressMap.put(nextId, defaultAddress);
+			idToRangeMap.put(nextId, defaultRange);
 		}
 		return nextId;
 	}
@@ -91,6 +99,10 @@ public class Texts
 	{
 		// Write a null pointer to start because thats how it was in the original rom
 		CodeBlock textPtrs = new CodeBlock("internal_textPointers");
+		if (origPtrsRange != null)
+		{
+			textPtrs.addByteSourceHint(origPtrsRange);
+		}
 		textPtrs.appendInstruction(new RawBytes((byte) 0, (byte) 0, (byte) 0));
 		
 		// Create the rest of the text blocks and pointers
@@ -141,11 +153,12 @@ public class Texts
 		text.appendInstruction(new RawBytes((byte) CharMapConstants.TEXT_END_CHAR));
 		MovableBlock block = new MovableBlock(text, 1, (byte)0xd, (byte)0x1c);
 		
-		int origAddress = idToAddressMap.getOrDefault(textId, -1);
-		if (origAddress >= 0)
+		AddressRange origRange = idToRangeMap.getOrDefault(textId, null);
+		if (origRange != null)
 		{
 			// Make sure to use the original size of the string in case it changed
-			blocks.addHybridBlock(new HybridBlock(block, origAddress));	
+			blocks.addHybridBlock(new HybridBlock(block, origRange.getStart()));	
+			text.addByteSourceHint(origRange);
 		}
 		else
 		{

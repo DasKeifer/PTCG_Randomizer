@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -38,15 +39,18 @@ public class BpsWriter implements QueuedWriter
 	}
 	
 	// The target address and the hunk that starts at the target address
+	byte[] sourceBytes;
 	TreeMap<Integer, BpsHunk> hunks;
 	TreeMap<Integer, Integer> spacesToBlank;
 	
 	int selfReadBeingCreatedAddress;
 	String selfReadBeingCreatedName;
 	ByteArrayOutputStream selfReadBeingCreated;
+	List<AddressRange> selfReadBeingCreatedReuse;
 	
-	public BpsWriter() 
+	public BpsWriter(byte[] originalBytes) 
 	{
+		sourceBytes = originalBytes;
 		hunks = new TreeMap<>();
 		spacesToBlank = new TreeMap<>();
 		
@@ -85,14 +89,19 @@ public class BpsWriter implements QueuedWriter
 	@Override
 	public void startNewBlock(int segmentStartAddress, List<AddressRange> reuseHints)
 	{		
-		startNewBlock(segmentStartAddress, reuseHints, BpsHunkSelfRead.DEFAULT_NAME);
+		startNewBlock(segmentStartAddress, BpsHunkSelfRead.DEFAULT_NAME, reuseHints);
 	}
 	
 	@Override
-	public void startNewBlock(int segmentStartAddress, List<AddressRange> reuseHints, String segmentName)
+	public void startNewBlock(int segmentStartAddress, String segmentName, List<AddressRange> reuseHints)
 	{	
 		// TODO: Optimization Use hints to reduce patch size. For now its fine to just ignore
 		startNewBlock(segmentStartAddress, segmentName);
+		selfReadBeingCreatedReuse = new ArrayList<>();
+		if (reuseHints != null)
+		{
+			selfReadBeingCreatedReuse.addAll(reuseHints);
+		}
 		
 		// Create a self read patch but store the existing start address and length? Then we
 		// can blank the previous spot if it was moved or do a source read or source copy
@@ -134,12 +143,127 @@ public class BpsWriter implements QueuedWriter
 			// Check for overflow of the current hunk into next one
 			checkForNextHunkOverwrite(selfReadBeingCreatedAddress, selfReadBeingCreated.size(), selfReadBeingCreatedName);
 			
-			// TODO: Optimization possibly elsewhere... Check against the source to see if its actually needed or if we can just freeride
-			hunks.put(selfReadBeingCreatedAddress, new BpsHunkSelfRead(selfReadBeingCreatedName, selfReadBeingCreated.toByteArray()));
+			// If there are reuse hints, check now to see if we can reuse the source
+			// Possibly in the future we could add target/inter-patch reuse but for now just
+			// worry about source reuse as its the more problematic one
+			if (!selfReadBeingCreatedReuse.isEmpty())
+			{
+				createHunksBasedOnHints();
+			}
+			else
+			{
+				hunks.put(selfReadBeingCreatedAddress, new BpsHunkSelfRead(selfReadBeingCreatedName, selfReadBeingCreated.toByteArray()));
+			}
+			
 			selfReadBeingCreated.reset();
 			selfReadBeingCreatedAddress = -1;
 			selfReadBeingCreatedName = "INTERNAL_NAME_ERROR";
+			selfReadBeingCreatedReuse.clear();
 		}
+	}
+	
+	private void createHunksBasedOnHints()
+	{
+		byte[] hunkDesiredBytes = selfReadBeingCreated.toByteArray();
+		// Until we have processed the entire hunk
+		int hunkSpot = 0;
+		int lastMatchSpot = 0;
+		while (hunkSpot < hunkDesiredBytes.length)
+		{
+			// Look for a segment match starting with this byte in the hunk
+			AddressRange bestMatch = getBestMatch(hunkDesiredBytes, hunkSpot);
+			
+			int endOfRangeSpot = hunkSpot + bestMatch.size(); 
+			if (bestMatch.size() > 3) // TODO: Make option
+			{
+				// Write the self copy if needed
+				if (lastMatchSpot != hunkSpot)
+				{
+					// Write from the last match spot to the current spot
+					hunks.put(selfReadBeingCreatedAddress + lastMatchSpot, 
+							new BpsHunkSelfRead(selfReadBeingCreatedName, 
+									ByteUtils.subArray(sourceBytes, selfReadBeingCreatedAddress + lastMatchSpot, hunkSpot - lastMatchSpot)));
+				}
+				
+				// Now update the last match spot and write from the current spot to there
+				lastMatchSpot = endOfRangeSpot;
+				hunks.put(selfReadBeingCreatedAddress + hunkSpot,
+						new BpsHunkCopy(BpsHunkCopyType.SOURCE_COPY, bestMatch.size(), bestMatch.getStart()));
+				
+			}
+			
+			// + 1 to move past the end of the match
+			hunkSpot = endOfRangeSpot + 1;
+		}
+		
+		// Write the trailing self read if needed
+		if (lastMatchSpot > hunkSpot)
+		{
+			// Write from the last match spot to the current spot
+			hunks.put(selfReadBeingCreatedAddress + lastMatchSpot, 
+					new BpsHunkSelfRead(selfReadBeingCreatedName, 
+							ByteUtils.subArray(sourceBytes, selfReadBeingCreatedAddress + lastMatchSpot, lastMatchSpot - hunkSpot)));
+		}
+	}
+	
+	private AddressRange getBestMatch(byte[] hunkDesiredBytes, int hunkSpot)
+	{
+		// For each reuse hint, we will search for matching strings
+		int bestAddress = 0;
+		int bestLength = 0;
+		for (AddressRange range : selfReadBeingCreatedReuse)
+		{
+			int hintSpot = range.getStart();
+			
+			// While we haven't checked each option that could be
+			// larger for this spot (- best length)
+			while (hintSpot < range.getStopExclusive() - bestLength)
+			{
+				// Look for the next match to the hunks spot that could be
+				// larger than the current best
+				while (hintSpot < range.getStopExclusive() - bestLength &&
+						hunkDesiredBytes[hunkSpot] != sourceBytes[hintSpot])
+				{
+					System.out.println(hunkDesiredBytes[hunkSpot] + " - " + sourceBytes[hintSpot]);
+					hintSpot++;
+				}
+				
+				// If we ran out of bytes, then we are done with this reuse hint
+				if (hintSpot >= range.getStopExclusive() - bestLength)
+				{
+					break;
+				}
+				
+				// Otherwise, we have a match that could be better
+				
+				// Create a temp spot in the hunk so that we can step it through to see how
+				// far the match goes
+				System.out.println(hunkDesiredBytes[hunkSpot] + " - " + sourceBytes[hintSpot]);
+				int matchStartAddress = hintSpot;
+				int matchEndAddress = matchStartAddress + 1; // Since we know there is at least one match
+				int attemptHunkSpot = hunkSpot + 1; // Keep in step
+				while (hintSpot < range.getStopExclusive() && attemptHunkSpot < hunkDesiredBytes.length
+						&& hunkDesiredBytes[attemptHunkSpot] == sourceBytes[matchEndAddress])
+				{
+					System.out.println(hunkDesiredBytes[attemptHunkSpot] + " - " + sourceBytes[matchEndAddress]);
+					matchEndAddress++;
+					attemptHunkSpot++;
+				}
+				
+				// See if the match was larger than our last attempt
+				if (attemptHunkSpot - hunkSpot > bestLength)
+				{
+					bestLength = matchEndAddress - matchStartAddress; // +1 since end is inclusive
+					bestAddress = matchStartAddress;
+				}
+				
+				// Increment the spot in the hint so we progress and keep going
+				// until we run out of bytes
+				hintSpot++;
+			}
+		}
+		
+		return new AddressRange(bestAddress, bestAddress + bestLength);
 	}
 	
 	private void checkForPrevHunkOverwrite(int hunkStartAddress, String hunkName)
@@ -294,7 +418,7 @@ public class BpsWriter implements QueuedWriter
 	}
 	
 	// TODO: Minor Take metadata?	
-	public void writeBps(File file, byte[] originalBytes)
+	public void writeBps(File file)
 	{
 		// Ensure any pending ones are finalized prior to writing
 		finalizeSelfReadBeingCreated();
@@ -306,7 +430,7 @@ public class BpsWriter implements QueuedWriter
 		BpsHunkCopy.setOffsetsForWriting();
 
 		// TODO: Support differing sizes
-		byte[] targetBytes = originalBytes.clone();
+		byte[] targetBytes = sourceBytes.clone();
 		
 		// Start writing the bytes for the BPS and the header
 		try (ByteArrayOutputStream bpsOs = new ByteArrayOutputStream(); 
@@ -318,7 +442,7 @@ public class BpsWriter implements QueuedWriter
 			bpsOs.write('1');
 			
 			// Write the sizes in four byte sizes
-			bpsOs.write(ByteUtils.sevenBitEncode(originalBytes.length));
+			bpsOs.write(ByteUtils.sevenBitEncode(sourceBytes.length));
 			bpsOs.write(ByteUtils.sevenBitEncode(targetBytes.length));
 			bpsOs.write(ByteUtils.sevenBitEncode(0)); // TODO: Minor For now no metadata
 			
@@ -329,13 +453,13 @@ public class BpsWriter implements QueuedWriter
 			}
 			
 			// Write the source CRC
-			bpsOs.write(ByteUtils.toLittleEndianBytes(ByteUtils.computeCrc32(originalBytes), 4));
+			bpsOs.write(ByteUtils.toLittleEndianBytes(ByteUtils.computeCrc32(sourceBytes), 4));
 			
 			// Next we need to determine the target CRC by applying the patch and computing
 			// the CRC on the patch bytes and then write that
 			for (Entry<Integer, BpsHunk> entry : hunks.entrySet())
 			{
-				entry.getValue().apply(targetBytes, entry.getKey(), originalBytes);
+				entry.getValue().apply(targetBytes, entry.getKey(), sourceBytes);
 			}
 			bpsOs.write(ByteUtils.toLittleEndianBytes(ByteUtils.computeCrc32(targetBytes), 4));
 			

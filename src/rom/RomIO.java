@@ -93,7 +93,7 @@ public class RomIO
 			
 			// Read the string to the null char (but not including it) and store where
 			// it was read from
-			texts.insertTextAtNextId(new String(rawBytes, ptr, textIndex - ptr), ptr);
+			texts.insertTextAtNextId(new String(rawBytes, ptr, textIndex - ptr), new AddressRange(ptr, textIndex));
 			
 			// Add it to the list of spaces for the text itself
 			toBlankSpaceIn.addBlankedBlock(new AddressRange(ptr, textIndex + 1));
@@ -108,8 +108,9 @@ public class RomIO
 		
 		// Add the space for the pointers. The ptrIndex will end at the first text
 		// + 1 because end is exclusive
-		toBlankSpaceIn.addBlankedBlock(new AddressRange(PtcgRomConstants.TEXT_POINTERS_LOC, ptrIndex + 1));
-		
+		AddressRange textPtrsRange = new AddressRange(PtcgRomConstants.TEXT_POINTERS_LOC, ptrIndex + 1);
+		texts.setOrigPtrsRange(textPtrsRange);
+		toBlankSpaceIn.addBlankedBlock(textPtrsRange);
 		return texts;
 	}
 	
@@ -146,7 +147,9 @@ public class RomIO
 		
 		// Add the space for the pointers. The ptrIndex will end at the first text
 		// + 1 because end is exclusive
-		toBlankSpaceIn.addBlankedBlock(new AddressRange(PtcgRomConstants.CARD_POINTERS_LOC, ptrIndex + 1));
+		AddressRange cardPtrsRange = new AddressRange(PtcgRomConstants.CARD_POINTERS_LOC, ptrIndex + 1);
+		cards.setOrigPtrsRange(cardPtrsRange);
+		toBlankSpaceIn.addBlankedBlock(cardPtrsRange);
 		
 		return cards;
 	}
@@ -154,13 +157,13 @@ public class RomIO
 	public static void writeBpsPatch(File patchFile, byte[] rawBytes, Blocks blocks, AssignedAddresses assignedAddresses) 
 	{
 		// Now actually write to the bytes
-		BpsWriter writer = new BpsWriter();
+		BpsWriter writer = new BpsWriter(rawBytes);
 		try 
 		{
 			blocks.writeBlocks(writer, assignedAddresses);
 			// We aren't making the rom longer so we pass the same length twice
 			writer.createBlanksAndFillEmptyHunksWithSourceRead(rawBytes.length, rawBytes.length, blocks.getAllBlankedBlocks());
-			writer.writeBps(patchFile, rawBytes);
+			writer.writeBps(patchFile);
 		} 
 		catch (IOException e)
 		{

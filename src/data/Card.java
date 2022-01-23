@@ -11,6 +11,7 @@ import rom.Texts;
 import rom_packer.Blocks;
 import rom_packer.HybridBlock;
 import rom_packer.MovableBlock;
+import gbc_framework.rom_addressing.AddressRange;
 import gbc_framework.utils.ByteUtils;
 
 import java.security.InvalidParameterException;
@@ -152,6 +153,7 @@ public abstract class Card
 
 		CodeBlock block = new CodeBlock("internal_card_" + name.toString() + "_" + 
 				ByteUtils.unsignedByteAsShort(id.getValue()));
+		block.addByteSourceHint(new AddressRange(readFromAddress, readFromAddress + getSize()));
 		block.appendInstruction(bytes.createRawByteInsruct());
 		return block;
 	}
