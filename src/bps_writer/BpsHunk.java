@@ -7,6 +7,8 @@ import gbc_framework.utils.ByteUtils;
 
 public abstract class BpsHunk
 {
+	public static final String DEFAULT_NAME = "UNNAMED_HUNK";
+	
 	public enum BpsHunkType
 	{
 		SOURCE_READ(0), SELF_READ(1), SOURCE_COPY(2), TARGET_COPY(3);
@@ -27,20 +29,46 @@ public abstract class BpsHunk
 			return value;
 		}
 	}
+	
+    public int compare(BpsHunk lhs, BpsHunk rhs) 
+    {
+        return lhs.destinationIndex - rhs.destinationIndex;
+    }  
 
 	private String name;
+	private int destinationIndex;
 	private BpsHunkType type;
 	private int length;
 	
-	protected BpsHunk(String name, BpsHunkType type, int length)
+	protected BpsHunk(String name, int destinationIndex, BpsHunkType type, int length)
 	{
 		this.name = name;
+		this.destinationIndex = destinationIndex;
+		this.type = type;
+		this.length = length;
+	}
+	
+	protected BpsHunk(int destinationIndex, BpsHunkType type, int length)
+	{
+		this.name = DEFAULT_NAME;
+		this.destinationIndex = destinationIndex;
 		this.type = type;
 		this.length = length;
 	}
 
-	public abstract void apply(byte[] targetBytes, int targetIndex, byte[] originalBytes);	
+	public abstract void apply(byte[] targetBytes, byte[] originalBytes);	
 	public abstract void write(ByteArrayOutputStream bpsOs) throws IOException;
+	
+	protected void checkDestinationIndex(ByteArrayOutputStream bpsOs)
+	{
+		if (bpsOs.size() != destinationIndex)
+		{
+			throw new IllegalArgumentException("Internal error: Destination Index "
+					+ "mismatch in byte array output stream while writting BPS. Expected "
+					+ "index " + destinationIndex + " but output stream is at " +
+					bpsOs.size());
+		}
+	}
 	
 	protected void writeHunkHeader(ByteArrayOutputStream bpsOs) throws IOException
 	{
@@ -52,6 +80,11 @@ public abstract class BpsHunk
 	public String getName()
 	{
 		return name;
+	}
+	
+	public int getDestinationIndex() 
+	{
+		return destinationIndex;
 	}
 	
 	public int getLength() 

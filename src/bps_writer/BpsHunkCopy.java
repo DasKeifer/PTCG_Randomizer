@@ -14,29 +14,38 @@ public class BpsHunkCopy extends BpsHunk
 	// Do this as an enum map for future proofing
 	private static EnumMap<BpsHunkType, Integer> prevVals = new EnumMap<>(BpsHunkType.class);
 	
-	private int fromIndex;
+	private int copyFromIndex;
 	
-	public BpsHunkCopy(BpsHunkCopyType type, int length, int fromIndex) 
+	public BpsHunkCopy(int destinationIndex, BpsHunkCopyType type, int length, int copyFromIndex) 
 	{
-		this(DEFAULT_NAME, type, length, fromIndex);
+		this(DEFAULT_NAME, destinationIndex, type, length, copyFromIndex);
 	}
 	
-	public BpsHunkCopy(String name, BpsHunkCopyType type, int length, int fromIndex) 
+	public BpsHunkCopy(String name, int destinationIndex, BpsHunkCopyType type, int length, int copyFromIndex) 
 	{
-		super(name, type.asBpsHunkType(), length);
-		this.fromIndex = fromIndex;
+		super(name, destinationIndex, type.asBpsHunkType(), length);
+
+		// Check if it is a target copy that it doesn't try to read from a 
+		// future, unwritten location
+		if (type == BpsHunkCopyType.TARGET_COPY && copyFromIndex >= destinationIndex)
+		{
+			throw new IllegalArgumentException("BPS hunk target copy has a copy from index of " + 
+					copyFromIndex + " which is after or equal to the destination index of " + 
+					destinationIndex + ". Target hunks cannot target unwritten data");
+		}
+		this.copyFromIndex = copyFromIndex;
 	}
 	
 	@Override
-	public void apply(byte[] targetBytes, int targetIndex, byte[] originalBytes) 
+	public void apply(byte[] targetBytes, byte[] originalBytes) 
 	{
 		switch (getType())
 		{
 			case SOURCE_COPY:
-				ByteUtils.copyBytes(targetBytes, targetIndex, originalBytes, fromIndex, getLength());
+				ByteUtils.copyBytes(targetBytes, getDestinationIndex(), originalBytes, copyFromIndex, getLength());
 				break;
 			case TARGET_COPY:
-				ByteUtils.copyBytes(targetBytes, targetIndex, targetBytes, fromIndex, getLength());
+				ByteUtils.copyBytes(targetBytes, getDestinationIndex(), targetBytes, copyFromIndex, getLength());
 				break;
 			default:
 				throw new IllegalArgumentException("Internal error: Invalid type for copy BPS Hunk was found:" + getType());
@@ -46,13 +55,14 @@ public class BpsHunkCopy extends BpsHunk
 	@Override
 	public void write(ByteArrayOutputStream bpsOs) throws IOException 
 	{
+		checkDestinationIndex(bpsOs);
 		writeHunkHeader(bpsOs);
 		
 		// These are stored as offsets from the last used value
 		// instead of absolute values. Convert the absolute value
 		// to the offset then update the last used value
-		int offset = fromIndex - prevVals.get(getType());
-		prevVals.put(getType(), fromIndex);
+		int offset = copyFromIndex - prevVals.get(getType());
+		prevVals.put(getType(), copyFromIndex + getLength()); // Increments offset while it reads
 		
 		bpsOs.write(ByteUtils.sevenBitEncodeSigned(offset));
 	}
@@ -64,5 +74,10 @@ public class BpsHunkCopy extends BpsHunk
 		{
 			prevVals.put(type.asBpsHunkType(), 0);
 		}
+	}
+	
+	public int getCopyFromIndex() 
+	{
+		return copyFromIndex;
 	}
 }

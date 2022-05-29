@@ -11,9 +11,9 @@ public class BpsHunkSelfRead extends BpsHunk
 	
 	byte[] data;
 	
-	public BpsHunkSelfRead(byte toRepeat, int numRepeats) 
+	public BpsHunkSelfRead(int destinationIndex, byte toRepeat, int numRepeats) 
 	{
-		this(DEFAULT_NAME, createRepeatedByteArray(toRepeat, numRepeats));
+		this(DEFAULT_NAME, destinationIndex, createRepeatedByteArray(toRepeat, numRepeats));
 	}
 	
 	private static byte[] createRepeatedByteArray(byte toRepeat, int numRepeats) 
@@ -26,26 +26,27 @@ public class BpsHunkSelfRead extends BpsHunk
 		return repeatData;
 	}
 	
-	public BpsHunkSelfRead(byte[] data) 
+	public BpsHunkSelfRead(int destinationIndex, byte[] data) 
 	{
-		this(DEFAULT_NAME, data);
+		this(DEFAULT_NAME, destinationIndex, data);
 	}
 	
-	public BpsHunkSelfRead(String name, byte[] data) 
+	public BpsHunkSelfRead(String name, int destinationIndex, byte[] data) 
 	{
-		super(name, BpsHunkType.SELF_READ, data.length);
+		super(name, destinationIndex, BpsHunkType.SELF_READ, data.length);
 		this.data = data;
 	}
 	
 	@Override
-	public void apply(byte[] targetBytes, int targetIndex, byte[] originalBytes) 
+	public void apply(byte[] targetBytes,byte[] originalBytes) 
 	{
-		ByteUtils.copyBytes(targetBytes, targetIndex, data);
+		ByteUtils.copyBytes(targetBytes, getDestinationIndex(), data);
 	}
 	
 	@Override
 	public void write(ByteArrayOutputStream bpsOs) throws IOException 
 	{
+		checkDestinationIndex(bpsOs);
 		writeHunkHeader(bpsOs);
 		bpsOs.write(data);
 	}
