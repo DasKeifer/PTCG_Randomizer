@@ -54,7 +54,7 @@ public class Move
 	
 	public Move(Move toCopy) 
 	{
-		energyCost = toCopy.energyCost;
+		energyCost = new EnumMap<>(toCopy.energyCost);
 		name = new MoveName(toCopy.name);
 		description = new EffectDescription(toCopy.description);
 		damage = toCopy.damage;

@@ -3,7 +3,7 @@ package data;
 import java.util.LinkedList;
 import java.util.List;
 
-import bps_writer.BpsInstructionParser;
+import bps_queued_writer.BpsInstructionParser;
 import compiler.Instruction;
 import data.custom_card_effects.EffectFunctionPointerInstruct;
 import data.romtexts.LdtxInstruct;

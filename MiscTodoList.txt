@@ -3,6 +3,7 @@ Change saving to BPS or similar
 	smart text replacement & loose fixedBlocks
 Effects replacement framework (i.e. call for family fixing/generation)
 Move some constants to config files (zero damaging moves, card name changes/fixed, etc.)
+Don't reorder moves when not changing moves
 
 Reformat code - create style file for repo
 Add tool tips for implemented interface items

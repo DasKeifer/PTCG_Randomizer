@@ -5,5 +5,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/GbcRomPacker"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/GbZ80Compiler"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/GbcFramework"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/BpsQueuedWriter"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

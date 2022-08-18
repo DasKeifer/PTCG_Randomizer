@@ -5,7 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import bps_writer.BpsWriter;
+import bps_queued_writer.BpsWriter;
 import constants.CharMapConstants;
 import constants.PtcgRomConstants;
 import constants.CharMapConstants.CharSetPrefix;
@@ -93,7 +93,8 @@ public class RomIO
 			
 			// Read the string to the null char (but not including it) and store where
 			// it was read from
-			texts.insertTextAtNextId(new String(rawBytes, ptr, textIndex - ptr), new AddressRange(ptr, textIndex));
+			// +1 to include the null term since address range end is exclusive
+			texts.insertTextAtNextId(new String(rawBytes, ptr, textIndex - ptr), new AddressRange(ptr, textIndex + 1));
 			
 			// Add it to the list of spaces for the text itself
 			toBlankSpaceIn.addBlankedBlock(new AddressRange(ptr, textIndex + 1));
@@ -161,9 +162,7 @@ public class RomIO
 		try 
 		{
 			blocks.writeBlocks(writer, assignedAddresses);
-			// We aren't making the rom longer so we pass the same length twice
-			writer.createBlanksAndFillEmptyHunksWithSourceRead(rawBytes.length, rawBytes.length, blocks.getAllBlankedBlocks());
-			writer.writeBps(patchFile);
+			writer.writeBps(patchFile, blocks.getAllBlankedBlocks());
 		} 
 		catch (IOException e)
 		{

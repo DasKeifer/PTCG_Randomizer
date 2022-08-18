@@ -85,7 +85,7 @@ public final class PtcgRomConstants
 	public static final Map<String, String> MISSPELLED_CARD_NAMES;
     static {
         Map<String, String> tempMap = new HashMap<>();
-        tempMap.put("Ninetails", "Ninetales");
+       // tempMap.put("Ninetails", "Ninetales");
         MISSPELLED_CARD_NAMES = Collections.unmodifiableMap(tempMap);
     }
     
