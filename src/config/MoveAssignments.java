@@ -12,14 +12,14 @@ import config.support.PtcgLineByLineConfigReader;
 import constants.CardConstants.CardId;
 import data.CardGroup;
 import data.Move;
-import data.PokemonCard;
+import data.MonsterCard;
 import gbc_framework.utils.IOUtils;
 
 public class MoveAssignments extends PtcgLineByLineConfigReader
 {
 	Map<CardId, List<MoveAssignmentData>> assignmentsByCardId;
 	
-	public MoveAssignments(CardGroup<PokemonCard> allCards, Component toCenterPopupsOn)
+	public MoveAssignments(CardGroup<MonsterCard> allCards, Component toCenterPopupsOn)
 	{
 		super(toCenterPopupsOn);
 		
@@ -40,10 +40,10 @@ public class MoveAssignments extends PtcgLineByLineConfigReader
 		return CSV_CONFIG_FILE_EXTENSION;
 	}
 
-	public void assignSpecifiedMoves(CardGroup<PokemonCard> cardsToApplyTo, MoveExclusions exclusionsToAddTo)
+	public void assignSpecifiedMoves(CardGroup<MonsterCard> cardsToApplyTo, MoveExclusions exclusionsToAddTo)
 	{
-		CardGroup<PokemonCard> foundCards = cardsToApplyTo.withIds(assignmentsByCardId.keySet());
-		for (PokemonCard card : foundCards.iterable())
+		CardGroup<MonsterCard> foundCards = cardsToApplyTo.withIds(assignmentsByCardId.keySet());
+		for (MonsterCard card : foundCards.iterable())
 		{
 			List<MoveAssignmentData> assigns = assignmentsByCardId.get(card.id);
 			for (MoveAssignmentData assign : assigns)
@@ -100,7 +100,7 @@ public class MoveAssignments extends PtcgLineByLineConfigReader
 				warningsFoundParsing.append("Failed to parse the move slot number to put the move at on the specified card from \"");
 				warningsFoundParsing.append(args[1]);
 				warningsFoundParsing.append("\" so the line will be skipped. It must be a valid number from 1 to ");
-				warningsFoundParsing.append(PokemonCard.MAX_NUM_MOVES);
+				warningsFoundParsing.append(MonsterCard.MAX_NUM_MOVES);
 				warningsFoundParsing.append(": ");
 				warningsFoundParsing.append(IOUtils.NEWLINE);
 				warningsFoundParsing.append("\t");
@@ -124,16 +124,16 @@ public class MoveAssignments extends PtcgLineByLineConfigReader
 			int slot, 
 			String moveHostCardNameOrId, 
 			String moveNameOrIndexToAdd,
-			CardGroup<PokemonCard> allCards,
+			CardGroup<MonsterCard> allCards,
 			String line
 	)
 	{
 		// Get the card to add the move to - already will add errors if not found
-		PokemonCard toAddTo = getCardFromString(cardNameOrIdToAdd, allCards, line);
+		MonsterCard toAddTo = getCardFromString(cardNameOrIdToAdd, allCards, line);
 		if (toAddTo != null)
 		{
 			// Get the host card to get the move from - already will add errors if not found
-			PokemonCard hostCard = getCardFromString(moveHostCardNameOrId, allCards, line);
+			MonsterCard hostCard = getCardFromString(moveHostCardNameOrId, allCards, line);
 			if (hostCard != null)
 			{				
 				// Try to get the move slot number from the string
@@ -157,7 +157,7 @@ public class MoveAssignments extends PtcgLineByLineConfigReader
 						// Add a message to the warning string
 						warningsFoundParsing.append(IOUtils.NEWLINE);
 						warningsFoundParsing.append("Failed to find move on the host card with the given name or failed to parse the slot number of the move (must be a valid number from 1 to ");
-						warningsFoundParsing.append(PokemonCard.MAX_NUM_MOVES);
+						warningsFoundParsing.append(MonsterCard.MAX_NUM_MOVES);
 						warningsFoundParsing.append(") to add to the specified card from \"");
 						warningsFoundParsing.append(moveNameOrIndexToAdd);
 						warningsFoundParsing.append("\" so the line will be skipped: ");
@@ -170,9 +170,9 @@ public class MoveAssignments extends PtcgLineByLineConfigReader
 		}
 	}
 	
-	private PokemonCard getCardFromString(String cardNameOrId, CardGroup<PokemonCard> allCards, String line)
+	private MonsterCard getCardFromString(String cardNameOrId, CardGroup<MonsterCard> allCards, String line)
 	{
-		PokemonCard foundCard = null;
+		MonsterCard foundCard = null;
 				
     	// Assume its a card ID
     	try
@@ -187,7 +187,7 @@ public class MoveAssignments extends PtcgLineByLineConfigReader
     	}
     	
 		// Get the cards that match the name
-		CardGroup<PokemonCard> foundCards = allCards.withNameIgnoringNumber(cardNameOrId);
+		CardGroup<MonsterCard> foundCards = allCards.withNameIgnoringNumber(cardNameOrId);
 		
 		// Ensure we found at least one
 		if (foundCards.count() < 1)
@@ -241,7 +241,7 @@ public class MoveAssignments extends PtcgLineByLineConfigReader
 		try
 		{
 			cardSlot = Integer.parseInt(moveSlot);
-			if (cardSlot < 1 || cardSlot > PokemonCard.MAX_NUM_MOVES)
+			if (cardSlot < 1 || cardSlot > MonsterCard.MAX_NUM_MOVES)
 			{
 				// change it back to -1 to indicate failure
 				cardSlot = -1;

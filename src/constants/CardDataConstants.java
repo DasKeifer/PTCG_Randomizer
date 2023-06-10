@@ -87,14 +87,14 @@ public class CardDataConstants
 
 	public enum CardType
 	{
-		POKEMON_FIRE            (EnergyType.FIRE.getValue()),
-		POKEMON_GRASS           (EnergyType.GRASS.getValue()),
-		POKEMON_LIGHTNING       (EnergyType.LIGHTNING.getValue()),
-		POKEMON_WATER           (EnergyType.WATER.getValue()),
-		POKEMON_FIGHTING        (EnergyType.FIGHTING.getValue()),
-		POKEMON_PSYCHIC         (EnergyType.PSYCHIC.getValue()),
-		POKEMON_COLORLESS       (EnergyType.COLORLESS.getValue()),
-		POKEMON_UNUSED          (EnergyType.UNUSED_TYPE.getValue()),
+		MONSTER_FIRE            (EnergyType.FIRE.getValue()),
+		MONSTER_GRASS           (EnergyType.GRASS.getValue()),
+		MONSTER_LIGHTNING       (EnergyType.LIGHTNING.getValue()),
+		MONSTER_WATER           (EnergyType.WATER.getValue()),
+		MONSTER_FIGHTING        (EnergyType.FIGHTING.getValue()),
+		MONSTER_PSYCHIC         (EnergyType.PSYCHIC.getValue()),
+		MONSTER_COLORLESS       (EnergyType.COLORLESS.getValue()),
+		MONSTER_UNUSED          (EnergyType.UNUSED_TYPE.getValue()),
 		ENERGY_FIRE             (0x08),
 		ENERGY_GRASS            (0x09),
 		ENERGY_LIGHTNING        (0x0a),
@@ -105,13 +105,8 @@ public class CardDataConstants
 		ENERGY_UNUSED           (0x0f),
 		TRAINER                 (0x10),
 		TRAINER_UNUSED          (0x11);
-
-		//Suspect these are unneeded but can be implemented as functions/constants
-		//TYPE_PKMN      EQU %111
-		//TYPE_ENERGY_F  EQU 3
-		//TYPE_TRAINER_F EQU 4
 		
-		private static List<CardType> pokes = new ArrayList<>();
+		private static List<CardType> mons = new ArrayList<>();
 		private static List<CardType> energies = new ArrayList<>();
 		private static List<CardType> trainers = new ArrayList<>();
 
@@ -143,20 +138,20 @@ public class CardDataConstants
 	    	throw new IllegalArgumentException("Invalid CardType value " + b + " was passed");
 	    }
 	    
-	    public static final List<CardType> pokemonValues()
+	    public static final List<CardType> monsterValues()
 	    {
-	    	if (pokes.isEmpty())
+	    	if (mons.isEmpty())
 	    	{
-	    		pokes.add(POKEMON_FIRE);
-	    		pokes.add(POKEMON_GRASS);
-	    		pokes.add(POKEMON_LIGHTNING);
-		    	pokes.add(POKEMON_WATER);
-		    	pokes.add(POKEMON_FIGHTING);
-		    	pokes.add(POKEMON_PSYCHIC);
-		    	pokes.add(POKEMON_COLORLESS);
-		    	pokes.add(POKEMON_UNUSED);
+	    		mons.add(MONSTER_FIRE);
+	    		mons.add(MONSTER_GRASS);
+	    		mons.add(MONSTER_LIGHTNING);
+		    	mons.add(MONSTER_WATER);
+		    	mons.add(MONSTER_FIGHTING);
+		    	mons.add(MONSTER_PSYCHIC);
+		    	mons.add(MONSTER_COLORLESS);
+		    	mons.add(MONSTER_UNUSED);
 	    	}
-			return pokes;
+			return mons;
 	    }
 	    
 	    public static final List<CardType> energyValues()
@@ -185,9 +180,9 @@ public class CardDataConstants
 			return trainers;
 	    }
 	    
-		public boolean isPokemonCard() 
+		public boolean isMonsterCard() 
 		{
-			return pokemonValues().contains(this);
+			return monsterValues().contains(this);
 		}
 
 		public boolean isEnergyCard() 
@@ -202,7 +197,7 @@ public class CardDataConstants
 		
 		public EnergyType convertToEnergyType()
 		{
-			if (!isPokemonCard())
+			if (!isMonsterCard())
 			{
 				return EnergyType.UNUSED_TYPE;
 			}
@@ -248,12 +243,12 @@ public class CardDataConstants
 	
 	public enum BoosterPack
 	{
-		COLOSSEUM   (0x0),
-		EVOLUTION   (0x1),
-		MYSTERY     (0x2),
-		LABORATORY  (0x3),
-		PROMOTIONAL (0x4),
-		ENERGY      (0x5);
+		PACK_C      (0x0),
+		PACK_E      (0x1),
+		PACK_M      (0x2),
+		PACK_L      (0x3),
+		PACK_PROMO  (0x4),
+		PACK_ENERGY (0x5);
 		
 		private byte value;
 		
@@ -289,11 +284,11 @@ public class CardDataConstants
 
 	public enum CardSet
 	{
-		NONE   (0x0),
-		JUNGLE (0x1),
-		FOSSIL (0x2),
-		GB     (0x7),
-		PRO    (0x8);
+		SET_B     (0x0),
+		SET_J     (0x1),
+		SET_F     (0x2),
+		SET_G     (0x7),
+		SET_PROMO (0x8);
 
 		private byte value;
 		
@@ -328,9 +323,9 @@ public class CardDataConstants
 
 	public enum EvolutionStage
 	{
-		BASIC  (0x00),
-		STAGE1 (0x01),
-		STAGE2 (0x02);
+		BASIC   (0x00),
+		STAGE_1 (0x01),
+		STAGE_2 (0x02);
 
 		private byte value;
 		private EvolutionStage(int inValue)
@@ -430,7 +425,7 @@ public class CardDataConstants
 		DAMAGE_PLUS   (0x01),
 		DAMAGE_MINUS  (0x02),
 		DAMAGE_X      (0x03),
-		POKEMON_POWER (0x04),
+		POWER         (0x04),
 		RESIDUAL      (1 << 7);
 
 		private byte value;
@@ -464,13 +459,13 @@ public class CardDataConstants
 
 	public enum MoveEffect1
 	{
-		INFLICT_POISON           (1 << 0),
-		INFLICT_SLEEP            (1 << 1),
-		INFLICT_PARALYSIS        (1 << 2),
-		INFLICT_CONFUSION        (1 << 3),
-		LOW_RECOIL               (1 << 4),
+		POISON           (1 << 0),
+		SLEEP            (1 << 1),
+		PARALYSIS        (1 << 2),
+		CONFUSION                (1 << 3),
+		RECOIL_SMALL               (1 << 4),
 		DAMAGE_TO_OPPONENT_BENCH (1 << 5),
-		HIGH_RECOIL              (1 << 6),
+		RECOIL_LARGE              (1 << 6),
 		DRAW_CARD                (1 << 7);
 		
 		private byte value;
@@ -519,8 +514,8 @@ public class CardDataConstants
 	public enum MoveEffect2
 	{
 		// TODO later: bits 5, 6 and 7 cover a wide variety of effects. See if we can figure something out for them
-		SWITCH_OPPONENT_POKEMON  (1 << 0),
-		HEAL_USER                (1 << 1),
+		SWITCH_OPPONENT_MONSTER  (1 << 0),
+		HEAL_SELF                (1 << 1),
 		NULLIFY_OR_WEAKEN_ATTACK (1 << 2),
 		DISCARD_ENERGY           (1 << 3),
 		ATTACHED_ENERGY_BOOST    (1 << 4),
@@ -621,5 +616,5 @@ public class CardDataConstants
 	    }
 	}
 
-	static final byte RETREAT_COST_UNABLE_RETREAT = 0x64;
+	static final byte RETREAT_COST_UNABLE_TO_RETREAT = 0x64;
 }

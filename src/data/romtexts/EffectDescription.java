@@ -28,7 +28,7 @@ public class EffectDescription extends RomText
 	@Override
 	public void finalizeAndAddTexts(Texts idToText)
 	{
-		throw new IllegalArgumentException("Must pass the name of the pokemon when finalizing effect descriptions");
+		throw new IllegalArgumentException("Must pass the name of the Monster when finalizing effect descriptions");
 	}
 	
 	public void finalizeAndAddTexts(Texts idToText, String descriptionCardName)

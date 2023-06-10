@@ -9,7 +9,7 @@ public class CardName extends OneLineText
 	
 	public CardName(boolean isPokeCard)
 	{
-		super(isPokeCard ? PtcgRomConstants.MAX_CHARS_POKE_NAME :PtcgRomConstants.MAX_CHARS_CARD_NAME);
+		super(isPokeCard ? PtcgRomConstants.MAX_CHARS_MONSTER_NAME :PtcgRomConstants.MAX_CHARS_CARD_NAME);
 	}
 	
 	public CardName(boolean isPokeCard, String text)

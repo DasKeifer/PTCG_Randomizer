@@ -68,10 +68,10 @@ public class HardcodedEffects
 	// then have more files that define the datablocks - i.e. their preferences/required locations and
 	// the code itself
 	
-	// TODO later: Have a move effect class that contains a uniqueness aspect of globally, type, pokemonname, etc.
+	// TODO later: Have a move effect class that contains a uniqueness aspect of globally, type, name, etc.
 	// In that class have an effect command and effect pointers
 	//
-	// Have a higher level move effect tracker class that will pull out all the rom's move effects based on pokemon
+	// Have a higher level move effect tracker class that will pull out all the rom's move effects based on
 	// card and move name. Add in/replace the custom ones with that. Then if we allow file based tweaking/specifying
 	// of moves, we can refer to the ones already in the base rom
 	// Then when we save, we can check the move name against our custom set of moves and write the data if needed
@@ -127,8 +127,8 @@ public class HardcodedEffects
 //	public static final String FUNC_ADD_CARD_TO_HAND = CompilerUtils.createPlaceholder("AddCardToHand");
 	public static final String FUNC_ADD_CARD_TO_HAND_ADDR = "$1123";
 
-//	public static final String FUNC_PUT_HAND_POKEMON_IN_PLAY = CompilerUtils.createPlaceholder("PutHandPokemonCardInPlayArea");
-	public static final String FUNC_PUT_HAND_POKEMON_IN_PLAY_ADDR = "$1485";
+//	public static final String FUNC_PUT_HAND_MONSTER_IN_PLAY_ADDR = CompilerUtils.createPlaceholder("PutHandMonsterCardInPlayArea");
+	public static final String FUNC_PUT_HAND_MONSTER_IN_PLAY_ADDR = "$1485";
 
 //	public static final String FUNC_IS_PLAYER_TURN = CompilerUtils.createPlaceholder("IsPlayerTurn");
 	public static final String FUNC_IS_PLAYER_TURN_ADDR = "$2c0c7";
@@ -159,12 +159,11 @@ public class HardcodedEffects
 		static final int INITIAL_EFFECT_ADDRESS = 0x2cc40; // Bellsprout's but they are all the same even for nidoran
 		static final int PUT_IN_PLAY_AREA_EFFECT_ADDRESS = 0x2ccc2; // Bellsprout's but they are all the same even for nidoran
 
-		// Basics may not always be pokemon cards - take mysterious fossil for example
+		// Basics may not always be monster cards - take the fossil trainer for example
 		public static CustomCardEffect createMoveEffect(/*Cards<Card> cards,*/ CardGroup<Card> basics) 
 		{
-			// Just assume the first one for now. This probably won't work well for things like
-			// pikachu where there are versions of them
-			// TODO later: can flying pikachu evolve into raichu? Looks like no since it is comparing
+			// Just assume the first one for now. This probably won't work well for cards where there are versions of them
+			// TODO later: can flying 25 evolve into 26? Looks like no since it is comparing
 			// the pointer and not the text
 //			List<CardId> basicIds = new LinkedList<>();
 //			String basicNames = "";
@@ -222,7 +221,7 @@ public class HardcodedEffects
 						"call $3090", // compare DE to BC
 						"jr nz, .play_sfx",
 
-					// Pokemon was selected
+					// Monster was selected
 						"ldh a, [$ff98]", 
 						"ldh [$ffa0], a",
 						"or a",
@@ -277,10 +276,10 @@ public class HardcodedEffects
 			);
 
 			effect = new CustomCardEffect(EFFECT_NAME + toFindBasicOf.name.toString());
-			effect.addEffectFunction(EffectFunctionTypes.InitialEffect1, RomUtils.convertToLoadedBankOffset(INITIAL_EFFECT_ADDRESS));
-			effect.addEffectFunction(EffectFunctionTypes.AfterDamage, RomUtils.convertToLoadedBankOffset(PUT_IN_PLAY_AREA_EFFECT_ADDRESS));
-			effect.addEffectFunction(EffectFunctionTypes.RequireSelection, playerSelectCode);
-			effect.addEffectFunction(EffectFunctionTypes.AiSelection, aiSelectCode);
+			effect.addEffectFunction(EffectFunctionTypes.INITIAL_EFFECT_1, RomUtils.convertToLoadedBankOffset(INITIAL_EFFECT_ADDRESS));
+			effect.addEffectFunction(EffectFunctionTypes.AFTER_DAMAGE, RomUtils.convertToLoadedBankOffset(PUT_IN_PLAY_AREA_EFFECT_ADDRESS));
+			effect.addEffectFunction(EffectFunctionTypes.REQUIRE_SELECTION, playerSelectCode);
+			effect.addEffectFunction(EffectFunctionTypes.AI_SELECTION, aiSelectCode);
 			
 			HardcodedEffects.getInstance().addCardNameUniqueEffect(EFFECT_NAME, toFindBasicOf.name.toString(), effect);
 			return effect;

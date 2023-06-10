@@ -13,23 +13,23 @@ public final class PtcgRomConstants
 	
 	// Counts
 	// TODO: Needed? If so move to a config file? applies to many in here
-	public static final int TOTAL_NUM_POKEMON_CARDS = 187;
+	public static final int TOTAL_NUM_MONSTER_CARDS = 187;
 	public static final int TOTAL_NUM_ENERGY_CARDS = 7;
 	public static final int TOTAL_NUM_TRAINER_CARDS = 34;
-	public static final int TOTAL_NUM_CARDS = TOTAL_NUM_POKEMON_CARDS + TOTAL_NUM_ENERGY_CARDS + TOTAL_NUM_TRAINER_CARDS;
+	public static final int TOTAL_NUM_CARDS = TOTAL_NUM_MONSTER_CARDS + TOTAL_NUM_ENERGY_CARDS + TOTAL_NUM_TRAINER_CARDS;
 
 	public static final int EFFECT_FUNCTION_POINTER_OFFSET = 0x28000;
 
 	// Text info
-	public static final int MAX_CHARS_POKE_NAME = 20; // not including starting char. For reasons poke names have to be shorter
+	public static final int MAX_CHARS_MONSTER_NAME = 20; // not including starting char. For reasons monster names have to be shorter
 	public static final int MAX_CHARS_CARD_NAME = 25; // not including starting char
-	public static final int MAX_CHARS_POKE_CATEGORY = 20; // not including starting char // TODO later: figure out
+	public static final int MAX_CHARS_MONSTER_CATEGORY = 20; // not including starting char // TODO later: figure out
 	public static final int MAX_CHARS_MOVE_NAME = 20; // not including starting char // TODO later: figure out
 	public static final int MAX_CHARS_PER_LINE_CARD = 36; // Not including newline or starting char 
 	public static final int MAX_CHARS_PER_LINE_TEXTBOX = 36; // Not including newline or starting char // TODO later: figure out
 	public static final int MAX_CHARS_PER_LINE_HALF_TEXTBOX = 20; // Not including newline or starting char // TODO later: figure out
 	
-	public static final int MAX_LINES_POKE_DESC = 4;
+	public static final int MAX_LINES_MONSTER_DESC = 4;
 	public static final int MAX_LINES_HALF_TEXTBOX = 2;
 	public static final int PREFERRED_LINES_PER_BLOCK_EFFECT_DESC = 6;
 	public static final int MAX_LINES_PER_BLOCK_EFFECT_DESC = 7;
@@ -80,7 +80,8 @@ public final class PtcgRomConstants
 	// TODO later: used?
 	public static final int FIRST_TEXT_BYTE = 0x3630a;
 	public static final int LAST_TEXT_BYTE = 0x67fff; // Used for padding data as needed
-	
+
+    //TODO: Config?
 	// Misspelled card names
 	public static final Map<String, String> MISSPELLED_CARD_NAMES;
     static {
@@ -89,22 +90,23 @@ public final class PtcgRomConstants
         MISSPELLED_CARD_NAMES = Collections.unmodifiableMap(tempMap);
     }
     
+    //TODO: Config?
     // "Damaging" attacks that have no damage number associated with them
 	public static final Set<String> ZERO_DAMAGE_DAMAGING_MOVES;
     static {
     	Set<String> tempSet = new HashSet<>();
-    	tempSet.add("Ice Breath"); // Does 40 damage to 1 of your opponent's Pok`mon chosen at random. Don't apply Weakness and Resistance for this attack...
-    	tempSet.add("Big Thunder"); // Choose a Pok`mon other than  at random. This attack does 70 damage to that Pok`mon. Don't apply Weakness and Resistance for this attack. (Any other effects that would happen after applying Weakness and Resistance still happen.)
-    	tempSet.add("Stretch Kick"); // If your opponent has any Benched Pok`mon, choose 1 of them and this attack does 20 damage to it. (Don't apply Weakness and Resistance for Benched Pok`mon.)
-    	tempSet.add("Mystery Attack"); // Does a random amount of damage to the Defending Pok`mon and may cause a random effect to the Defending Pok`mon.
-    	tempSet.add("Slicing Wind"); // Does 30 damage to 1 of your opponent's Pok`mon chosen at random. Don't apply Weakness and Resistance for this attack... 
-    	tempSet.add("Super Fang"); //  Does damage to the Defending Pok`mon equal to half the Defending Pok`mon's remaining HP (rounded up to the nearest 10).
-    	tempSet.add("Metronome"); // Choose 1 of the Defending Pok`mon's attacks. Metronome copies that attack except for its Energy costs. (No matter what type the Defending Pokemon is, 's type is still Colorless.)
-    	tempSet.add("Cat Punch"); // Does 20 damage to 1 of your opponent's Pok`mon chosen at random. Don't apply Weakness and Resistance for this attack...
+    	tempSet.add("Ice Breath");
+    	tempSet.add("Big Thunder"); 
+    	tempSet.add("Stretch Kick");
+    	tempSet.add("Mystery Attack");
+    	tempSet.add("Slicing Wind"); 
+    	tempSet.add("Super Fang"); 
+    	tempSet.add("Metronome");
+    	tempSet.add("Cat Punch");
     	
     	// Status that can inflict damage
-    	tempSet.add("Spit Poison"); // Flip a coin. If heads, the Defending Pok`mon is now Poisoned.
-    	tempSet.add("Poisonpowder"); // The Defending Pok`mon is now Poisoned.
+    	tempSet.add("Spit Poison");
+    	tempSet.add("Poisonpowder");
 
     	// Possibilities not added to the list
     	// tempSet.put("Supersonic"); // Flip a coin. If heads, the Defending Pok`mon is now Confused.

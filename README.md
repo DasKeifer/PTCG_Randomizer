@@ -1,5 +1,5 @@
 # The Pokemon Trading Card Game Randomizer
-A randomizer in the works for the pokemon trading card game. No official release yet as I'm still setting up infrastructure to support all the planned features to make things go smoother in the future.
+A randomizer in the works for the GBC Pokemon Trading Card Game. No official release yet as I'm still setting up infrastructure to support all the planned features to make things go smoother in the future.
 
 ## Backstory
 I recently got into randomizers for Pokemon mainline games. I've always loved the PTCG on GBC so I looked for a randomizer for it but didn't find any with a  wide breadth of options so I decided to tackle the challenge myself.
@@ -22,12 +22,12 @@ Features that end with a "?" are ones that may or may not be feasible to do that
 ```
 🟢 Create a basic friendly GUI to expand upon as features are added
 🟢 Selecting Rom input and output names/paths </br>
-🔵 Card Attacks/Poke Powers/Effects
-    🟢 Update/Replace Pokemon names in attacks/powers </br>
+🔵 Card Attacks/Powers/Effects
+    🟢 Update/Replace card names in attacks/powers </br>
         🟢 Fully random/shuffle attacks
 	    🟢 Within types
 	    🟢 Change type energies to card type
-	🟢 Fully random/shuffle Poke Powers
+	🟢 Fully random/shuffle powers
 	    🟢 Include with moves
 	    🟢 Within types
  	🟢 Randomize number of attacks for cards (based on original average moves per card)
@@ -36,10 +36,10 @@ Features that end with a "?" are ones that may or may not be feasible to do that
     🟢 Log seed
     🟢 Optionally log changes
 🟡 Advance Move Tweaks
-    🟡 Update/Replace energy type specific effects (e.g. ember (Charmander), energy trans (Venusaur))
-    🟡 Update/Replace pokemon specific effects (e.g. call for family (nidoran))
-    🟡 Update/Replace boyfriends (attack of nidoqueen) with random, same type, 3rd stage evo
-    🟡 Randomize trainer effects with poke Powers?
+    🟡 Update/Replace energy type specific effects (e.g. ember, energy trans)
+    🟡 Update/Replace specific effects (e.g. call for family))
+    🟡 Update/Replace boyfriends with random, same type, 3rd stage evo
+    🟡 Randomize trainer effects with powers?
 ⚪ HP, Retreat Cost 
     ⚪ Fully random/shuffle
     ⚪ Evo chain progressing - swap stats to make higher evos more powerful/higher retreat cost
@@ -55,30 +55,30 @@ Features that end with a "?" are ones that may or may not be feasible to do that
     ⚪ Assign moves based on card power levels
     ⚪ Randomize power levels of cards based on stage, apply appropriate rarities
     ⚪ Semi order (weight) through evo chains so later evos have higher powered moved
-⚪ Randomize Pokemon Types
+⚪ Randomize Card Types
     ⚪ Fully random
     ⚪ Consistent in evo lines (done after randomizing evo lines)
-⚪ Randomize Pokemon Evolutions
+⚪ Randomize Evolutions
     ⚪  Fully random/shuffle
-        ⚪ Only change poke with existing Evos
+        ⚪ Include only multistage evolutions
         ⚪ Shuffle within stages
         ⚪ Force changes
-    ⚪ Reassigning pokedex numbers to group them correctly in deck editor
+    ⚪ Reassigning dex numbers to group them correctly in deck editor
     ⚪ Remove evolutions (all basic)
 ⚪ Decks
     ⚪ Random "type"/energy themed
     ⚪ Random multitype/energy themed
-    ⚪ Random Keep same number of card categories (energies, trainers, pokes)
+    ⚪ Random Keep same number of card categories (energies, trainers, monsters)
     ⚪ Evolution sanity
 ⚪ Advance & Customizable General Randomizations
     ⚪ Additional knobs for forcing damaging moves
     ⚪ User specifyable "types" - weakness/resistance pairs
     ⚪ User specified HP & retreat cost ranges
-    ⚪ Per energy percentage based, user inputtable Pokemon types distributions
+    ⚪ Per energy percentage based, user inputtable Card types distributions
     ⚪ Per stage percentage based, user input-able evolutions distributions 
     ⚪ Per stage/evos left & per HP value percentage based, user input-able HP distributions 
     ⚪ Per stage/evos left & per retreat cost percentage based, user input-able retreat cost distributions 
-    ⚪ Per stage/evos left percentage based, user input-able number of attacks/Poke Powers distributions
+    ⚪ Per stage/evos left percentage based, user input-able number of attacks/Powers distributions
     ⚪ Per "type" percentage based, user inputtable weakness/resistance distributions
     ⚪ Percentage based/user inputtable decks (knobs TBD)
 ⚪ Move Generation
@@ -103,8 +103,3 @@ Features that end with a "?" are ones that may or may not be feasible to do that
         ⚪ Exclude 4 legendary cards from packs
     ⚪ Unlimited trades?
 ```
-## Credits: 
-This code heavily draws from past work by the following projects particularly pret's poketcg decompilation and annotations of the game files:
-* [pocketcg](https://github.com/pret/poketcg)
-* [TCGRandomizer](https://github.com/xCrystal/TCGRandomizer)
-* [UniversalCardGameRandomizer](https://github.com/anmart/UniversalCardGameRandomizer)

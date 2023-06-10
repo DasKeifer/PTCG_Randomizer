@@ -22,7 +22,7 @@ public class RomText
 
 	public RomText(int maxCharsPerLine, int preferredLinesPerBlock, int maxLinesPerBlock, int maxBlocks)
 	{
-		this(CharSetPrefix.HalfWidth, maxCharsPerLine, preferredLinesPerBlock, maxLinesPerBlock, maxBlocks);
+		this(CharSetPrefix.HALF_WIDTH, maxCharsPerLine, preferredLinesPerBlock, maxLinesPerBlock, maxBlocks);
 	}
 	
 	public RomText(CharSetPrefix charSet, int maxCharsPerLine, int preferredLinesPerBlock, int maxLinesPerBlock, int maxBlocks)
@@ -96,7 +96,7 @@ public class RomText
 		// so we don't set it and instead leave it as is since we
 		// don't assume that it always has a prefix if it needs one
 		CharSetPrefix foundPref = CharSetPrefix.readFromByte((byte) text.charAt(0));
-		if (foundPref != CharSetPrefix.FullWidth0)
+		if (foundPref != CharSetPrefix.FULL_WIDTH_0)
 		{
 			charSet = foundPref;
 		}

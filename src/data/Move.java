@@ -116,7 +116,7 @@ public class Move
 	
 	public boolean isPokePower()
 	{
-		return !isEmpty() && MoveCategory.POKEMON_POWER == category;
+		return !isEmpty() && MoveCategory.POWER == category;
 	}
 	
 	public boolean hasEffect()
@@ -281,7 +281,7 @@ public class Move
 		return index;
 	}
 
-	public void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks, PokemonCard hostCard)
+	public void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks, MonsterCard hostCard)
 	{
 		name.finalizeAndAddTexts(texts);
 

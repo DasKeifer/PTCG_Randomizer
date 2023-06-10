@@ -7,14 +7,14 @@ import compiler.CodeBlock;
 import compiler.RawBytePacker;
 import constants.CardDataConstants.*;
 import data.romtexts.CardName;
-import data.romtexts.PokeCategory;
+import data.romtexts.MonsterCategory;
 import data.romtexts.PokeDescription;
 import rom.Cards;
 import rom.Texts;
 import rom_packer.Blocks;
 import gbc_framework.utils.ByteUtils;
 
-public class PokemonCard extends Card 
+public class MonsterCard extends Card 
 {
 	public static final int TOTAL_SIZE_IN_BYTES = 65;
 	public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
@@ -29,8 +29,8 @@ public class PokemonCard extends Card
 	byte retreatCost; // TODO later: max allowed?
 	WeaknessResistanceType weakness; // Allows multiple
 	WeaknessResistanceType resistance; // Allows multiple
-	public PokeCategory pokemonCategory; // TODO later: Investigate? Any gameplay impact?
-	public byte pokedexNumber;
+	public MonsterCategory monsterCategory; // TODO later: Investigate? Any gameplay impact?
+	public byte dexNumber;
 	byte unknownByte1; // TODO later: Always 0?
 	byte level; // TODO later: Investigate No gameplay impact?
 	short length; //TODO later: One byte is feet, another is inches - separate them? // TODO later: Investigate No gameplay impact?
@@ -38,7 +38,7 @@ public class PokemonCard extends Card
 	PokeDescription description;
 	byte unknownByte2; // TODO later: At least somewhat tracks with evo stage in asm files - 19 for first stage, 16 for second stage, 0 for final stage?
 
-	public PokemonCard()
+	public MonsterCard()
 	{
 		super();
 		
@@ -48,11 +48,11 @@ public class PokemonCard extends Card
 		{
 			moves[moveIndex] = new Move();
 		}
-		pokemonCategory = new PokeCategory();
+		monsterCategory = new MonsterCategory();
 		description = new PokeDescription();
 	}
 	
-	public PokemonCard(PokemonCard toCopy)
+	public MonsterCard(MonsterCard toCopy)
 	{
 		super(toCopy);
 		
@@ -67,8 +67,8 @@ public class PokemonCard extends Card
 		retreatCost = toCopy.retreatCost;
 		weakness = toCopy.weakness;
 		resistance = toCopy.resistance;
-		pokemonCategory = new PokeCategory(toCopy.pokemonCategory);
-		pokedexNumber = toCopy.pokedexNumber;
+		monsterCategory = new MonsterCategory(toCopy.monsterCategory);
+		dexNumber = toCopy.dexNumber;
 		unknownByte1 = toCopy.unknownByte1;
 		level = toCopy.level;
 		length = toCopy.length;
@@ -83,9 +83,9 @@ public class PokemonCard extends Card
 		return new CardName(true); // a pokename
 	}
 	
-	public PokemonCard copy()
+	public MonsterCard copy()
 	{
-		return new PokemonCard(this);
+		return new MonsterCard(this);
 	}
 
 	public List<Move> getAllMovesIncludingEmptyOnes()
@@ -246,7 +246,7 @@ public class PokemonCard extends Card
 	{
 		StringBuilder builder = new StringBuilder();
 		builder.append(super.toString() + 
-				"\nPokedex Number = " + pokedexNumber + 
+				"\nPokedex Number = " + dexNumber + 
 				"\nDesciption = " + description.toString() + 
 				"\nHP = " + hp +
 				"\nStage = " + stage + 
@@ -284,9 +284,9 @@ public class PokemonCard extends Card
 		weakness = WeaknessResistanceType.readFromByte(cardBytes[index++]);
 		resistance = WeaknessResistanceType.readFromByte(cardBytes[index++]);
 
-		index = pokemonCategory.readDataAndConvertIds(cardBytes, index, idToText);
+		index = monsterCategory.readDataAndConvertIds(cardBytes, index, idToText);
 		
-		pokedexNumber = cardBytes[index++];
+		dexNumber = cardBytes[index++];
 		unknownByte1 = cardBytes[index++];
 		level = cardBytes[index++];
 		length = ByteUtils.readAsShort(cardBytes, index);
@@ -307,7 +307,7 @@ public class PokemonCard extends Card
 		commonFinalizeAndAddData(texts);
 		
 		prevEvoName.finalizeAndAddTexts(texts);
-		pokemonCategory.finalizeAndAddTexts(texts);
+		monsterCategory.finalizeAndAddTexts(texts);
 		description.finalizeAndAddTexts(texts);
 
 		sortMoves();
@@ -341,9 +341,9 @@ public class PokemonCard extends Card
 				weakness.getValue(),
 				resistance.getValue()
 		);
-		bytes.append(ByteUtils.shortToLittleEndianBytes(pokemonCategory.getTextId()));
+		bytes.append(ByteUtils.shortToLittleEndianBytes(monsterCategory.getTextId()));
 		bytes.append(
-				pokedexNumber,
+				dexNumber,
 				unknownByte1,
 				level
 		);

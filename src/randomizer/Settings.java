@@ -177,7 +177,7 @@ public class Settings
 	public void setAttacks(AttacksData attacks) {
 		this.attacks = attacks;
 	}
-	public PokePowersData getPokePowers() {
+	public PokePowersData getPowers() {
 		return pokePowers;
 	}
 	public void setPokePowers(PokePowersData pokePowers) {

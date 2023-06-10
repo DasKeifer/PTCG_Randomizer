@@ -11,7 +11,7 @@ import rom.Texts;
 import rom_packer.Blocks;
 import gbc_framework.utils.ByteUtils;
 
-public class NonPokemonCard extends Card
+public class NonMonsterCard extends Card
 {
 	public static final int TOTAL_SIZE_IN_BYTES = 14;
 	public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
@@ -19,14 +19,14 @@ public class NonPokemonCard extends Card
 	private short effectPtr;
 	private EffectDescription description;
 
-	public NonPokemonCard() 
+	public NonMonsterCard() 
 	{
 		super();
 		
 		description = new EffectDescription();
 	}
 	
-	public NonPokemonCard(NonPokemonCard toCopy) 
+	public NonMonsterCard(NonMonsterCard toCopy) 
 	{
 		super(toCopy);
 		
@@ -34,9 +34,9 @@ public class NonPokemonCard extends Card
 		description = new EffectDescription(toCopy.description);
 	}
 	
-	public NonPokemonCard copy()
+	public NonMonsterCard copy()
 	{
-		return new NonPokemonCard(this);
+		return new NonMonsterCard(this);
 	}
 	
 	@Override
@@ -51,7 +51,7 @@ public class NonPokemonCard extends Card
 		commonReadAndConvertIds(cardBytes, startIndex, idToText);
 		int index = startIndex + Card.CARD_COMMON_SIZE;
 		
-		// reading non pokemon specific data
+		// reading non monster specific data
 		effectPtr = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 

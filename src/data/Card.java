@@ -67,17 +67,17 @@ public abstract class Card
 		CardType type = CardType.readFromByte(cardBytes[startIndex]);
 		
 		Card card;
-		if(type.isPokemonCard())
+		if(type.isMonsterCard())
 		{
-			card = new PokemonCard();
+			card = new MonsterCard();
 		}
 		else if (type.isEnergyCard())
 		{
-			card = new NonPokemonCard();
+			card = new NonMonsterCard();
 		}
 		else if (type.isTrainerCard())
 		{
-			card = new NonPokemonCard();
+			card = new NonMonsterCard();
 		}
 		else
 		{
@@ -178,11 +178,11 @@ public abstract class Card
 	    		 return ByteUtils.unsignedCompareBytes(c1.id.getValue(), c2.id.getValue());
 	    	 }
 	    	 
-	    	 // Otherwise both are pokemon - sort by pokedex id then cardId if they are the same.
-	    	 // This will allow us to  reorder the pokemon as we want
-	    	 PokemonCard pc1 = (PokemonCard) c1;
-	    	 PokemonCard pc2 = (PokemonCard) c2;
-	    	 int pokedexCompare = ByteUtils.unsignedCompareBytes(pc1.pokedexNumber, pc2.pokedexNumber);
+	    	 // Otherwise both are monsters - sort by dex id then cardId if they are the same.
+	    	 // This will allow us to  reorder the monsters as we want
+	    	 MonsterCard pc1 = (MonsterCard) c1;
+	    	 MonsterCard pc2 = (MonsterCard) c2;
+	    	 int pokedexCompare = ByteUtils.unsignedCompareBytes(pc1.dexNumber, pc2.dexNumber);
 	    	 if (pokedexCompare == 0)
 	    	 {
 	    		 return ByteUtils.unsignedCompareBytes(c1.id.getValue(), c2.id.getValue());

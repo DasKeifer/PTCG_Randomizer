@@ -15,7 +15,7 @@ import config.support.PtcgLineByLineConfigReader;
 import constants.CardConstants.CardId;
 import data.CardGroup;
 import data.Move;
-import data.PokemonCard;
+import data.MonsterCard;
 import data.romtexts.CardName;
 import gbc_framework.utils.IOUtils;
 
@@ -26,7 +26,7 @@ public class MoveExclusions extends PtcgLineByLineConfigReader
 	
 
 	
-	public MoveExclusions(CardGroup<PokemonCard> allCards, Component toCenterPopupsOn)
+	public MoveExclusions(CardGroup<MonsterCard> allCards, Component toCenterPopupsOn)
 	{
 		super(toCenterPopupsOn);
 		
@@ -239,7 +239,7 @@ public class MoveExclusions extends PtcgLineByLineConfigReader
 			boolean excludeFromRandomization, 
 			String cardNameOrId, 
 			String moveName, 
-			CardGroup<PokemonCard> allPokes, 
+			CardGroup<MonsterCard> allPokes, 
 			String line
 	)
 	{
@@ -253,7 +253,7 @@ public class MoveExclusions extends PtcgLineByLineConfigReader
     	// cards
     	catch (IllegalArgumentException e) // Includes number format exception
     	{
-    		CardGroup<PokemonCard> foundCards = allPokes.withNameIgnoringNumber(cardNameOrId);
+    		CardGroup<MonsterCard> foundCards = allPokes.withNameIgnoringNumber(cardNameOrId);
     		if (foundCards.count() < 1)
     		{
     			// Add a message to the warning string
@@ -288,11 +288,11 @@ public class MoveExclusions extends PtcgLineByLineConfigReader
 			boolean excludeFromRandomization, 
 			String cardNameWithNumber, 
 			String moveName, 
-			CardGroup<PokemonCard> foundCards,
+			CardGroup<MonsterCard> foundCards,
 			String line
 	)
 	{
-		PokemonCard specificCard = CardGroup.fromNameSetBasedOnNumber(foundCards, cardNameWithNumber);
+		MonsterCard specificCard = CardGroup.fromNameSetBasedOnNumber(foundCards, cardNameWithNumber);
 		if (specificCard == null)
 		{
 			// Add a message to the warning string
@@ -340,12 +340,12 @@ public class MoveExclusions extends PtcgLineByLineConfigReader
 			boolean excludeFromRandomization, 
 			String cardName, 
 			String moveName, 
-			CardGroup<PokemonCard> foundCards, 
+			CardGroup<MonsterCard> foundCards, 
 			String line
 	)
 	{
 		boolean foundAMove = false;
-		for (PokemonCard card : foundCards.listOrderedByCardId())
+		for (MonsterCard card : foundCards.listOrderedByCardId())
 		{
 			if (moveName.isEmpty() || card.getMoveWithName(moveName) != null)
 			{

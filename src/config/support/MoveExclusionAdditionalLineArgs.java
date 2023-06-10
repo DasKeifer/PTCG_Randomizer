@@ -4,13 +4,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import data.CardGroup;
-import data.PokemonCard;
+import data.MonsterCard;
 
 public class MoveExclusionAdditionalLineArgs extends PtcgAdditionalLineArgs
 {
 	private Set<String> allMovesNames;
 	
-	public MoveExclusionAdditionalLineArgs(CardGroup<PokemonCard> allCards)
+	public MoveExclusionAdditionalLineArgs(CardGroup<MonsterCard> allCards)
 	{
 		super (allCards);
 		

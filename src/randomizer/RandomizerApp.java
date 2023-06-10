@@ -32,7 +32,7 @@ import javax.swing.SwingConstants;
 
 public class RandomizerApp {
 
-	private JFrame frmPokemonTradingCard;
+	private JFrame frmTradingCard;
     private JFileChooser openRomChooser;
     private JFileChooser saveRomChooser;
 
@@ -59,7 +59,7 @@ public class RandomizerApp {
 			public void run() {
 				try {
 					RandomizerApp window = new RandomizerApp();
-					window.frmPokemonTradingCard.setVisible(true);
+					window.frmTradingCard.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -88,15 +88,15 @@ public class RandomizerApp {
 		saveRomChooser.setCurrentDirectory(new File(".")); // Jar location by default
 		saveRomChooser.setSelectedFile(null);
 		
-		frmPokemonTradingCard = new JFrame();
-		frmPokemonTradingCard.setTitle("Pokemon Trading Card Game Randomizer");
-		frmPokemonTradingCard.setBounds(100, 100, 550, 500);
-		frmPokemonTradingCard.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frmPokemonTradingCard.getContentPane().setLayout(new BorderLayout(0, 0));
+		frmTradingCard = new JFrame();
+		frmTradingCard.setTitle("Pokemon Trading Card Game Randomizer");
+		frmTradingCard.setBounds(100, 100, 550, 500);
+		frmTradingCard.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmTradingCard.getContentPane().setLayout(new BorderLayout(0, 0));
 		
 		JPanel saveRomPanel = new JPanel();
 		saveRomPanel.setBorder(new EmptyBorder(4, 7, 4, 7));
-		frmPokemonTradingCard.getContentPane().add(saveRomPanel, BorderLayout.SOUTH);
+		frmTradingCard.getContentPane().add(saveRomPanel, BorderLayout.SOUTH);
 		saveRomPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 7, 0));
 		
 		saveLogDetailsBox = new JCheckBox("Log Randomizations");
@@ -131,7 +131,7 @@ public class RandomizerApp {
 				event ->
 				{
 					try {
-					    int returnVal = saveRomChooser.showSaveDialog(frmPokemonTradingCard);
+					    int returnVal = saveRomChooser.showSaveDialog(frmTradingCard);
 					    if (returnVal == JFileChooser.APPROVE_OPTION) 
 					    {
 					    	Settings settings = createSettingsFromState();
@@ -150,21 +150,21 @@ public class RandomizerApp {
 				});
 		
 		JPanel openRomPanel = new JPanel();
-		frmPokemonTradingCard.getContentPane().add(openRomPanel, BorderLayout.NORTH);
+		frmTradingCard.getContentPane().add(openRomPanel, BorderLayout.NORTH);
 		
 		JButton openRomButton = new JButton("Open ROM");
 		openRomButton.addActionListener(
 				event ->
 				{
-				    int returnVal = openRomChooser.showOpenDialog(frmPokemonTradingCard);
+				    int returnVal = openRomChooser.showOpenDialog(frmTradingCard);
 				    if (returnVal == JFileChooser.APPROVE_OPTION) {
-				    	randomizer.openRom(openRomChooser.getSelectedFile(), frmPokemonTradingCard);
+				    	randomizer.openRom(openRomChooser.getSelectedFile(), frmTradingCard);
 				    }
 				});
 		openRomPanel.add(openRomButton);
 		
 		JTabbedPane movesEffectsTab = new JTabbedPane(JTabbedPane.TOP);
-		frmPokemonTradingCard.getContentPane().add(movesEffectsTab, BorderLayout.CENTER);
+		frmTradingCard.getContentPane().add(movesEffectsTab, BorderLayout.CENTER);
 		
 		JPanel movesEffectsPanel = new JPanel();
 		movesEffectsTab.addTab("Move Set", null, movesEffectsPanel, null);

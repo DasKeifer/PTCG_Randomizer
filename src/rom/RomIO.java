@@ -85,7 +85,7 @@ public class RomIO
 			
 			// Ensure its either null or starts with the prefix char
 			CharSetPrefix charSet = CharSetPrefix.readFromByte(rawBytes[textIndex]);
-			if (charSet != CharSetPrefix.Empty)
+			if (charSet != CharSetPrefix.EMPTY)
 			{
 				// Loop until we find the ending character if its not an empty text
 				while (rawBytes[++textIndex] != CharMapConstants.TEXT_END_CHAR);

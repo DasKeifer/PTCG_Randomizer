@@ -8,7 +8,7 @@ public class PokeDescription extends OneBlockText
 {		
 	public PokeDescription() 
 	{
-		super(PtcgRomConstants.MAX_CHARS_PER_LINE_CARD, PtcgRomConstants.MAX_LINES_POKE_DESC);
+		super(PtcgRomConstants.MAX_CHARS_PER_LINE_CARD, PtcgRomConstants.MAX_LINES_MONSTER_DESC);
 	}
 	
 	public PokeDescription(String text)

@@ -133,7 +133,7 @@ public class CardGroup<T extends Card>
 	
 	// TODO later: Move this and some other more logic specific/search
 	// functions to a separate class?
-	public CardGroup<Card> determineBasicEvolutionOfCard(PokemonCard card)
+	public CardGroup<Card> determineBasicEvolutionOfCard(MonsterCard card)
 	{
 		CardGroup<Card> basics = new CardGroup<>();
 		if (card.stage == EvolutionStage.BASIC)
@@ -151,41 +151,41 @@ public class CardGroup<T extends Card>
 				}
 				
 				// If its not a poke, its probably a trainer like mysterious fossil. Assume
-				// this is the "basic" pokemon
-				if (!card.type.isPokemonCard())
+				// this is the "basic" monsters
+				if (!card.type.isMonsterCard())
 				{
 					break;
 				}
 				
 				// TODO later: Doesn't work with mysterious fossil - we only check the parent not the child
 				// is a poke card
-				card = (PokemonCard) basics.listOrderedByCardId().get(0);
+				card = (MonsterCard) basics.listOrderedByCardId().get(0);
 			}
 		}
 		return basics;
 	}
 	
-	public CardGroup<NonPokemonCard> energyCards()
+	public CardGroup<NonMonsterCard> energyCards()
 	{
 		return new CardGroup<>(cardsById.values().stream()
 				.filter(card -> card.type.isEnergyCard())
-				.map(card -> (NonPokemonCard)card)
+				.map(card -> (NonMonsterCard)card)
 				.collect(Collectors.toList()));
 	}
 
-	public CardGroup<PokemonCard> pokemonCards()
+	public CardGroup<MonsterCard> monsterCards()
 	{
 		return new CardGroup<>(cardsById.values().stream()
-				.filter(card -> card.type.isPokemonCard())
-				.map(card -> (PokemonCard)card)
+				.filter(card -> card.type.isMonsterCard())
+				.map(card -> (MonsterCard)card)
 				.collect(Collectors.toList()));
 	}
 
-	public CardGroup<NonPokemonCard> trainerCards()
+	public CardGroup<NonMonsterCard> trainerCards()
 	{
 		return new CardGroup<>(cardsById.values().stream()
 				.filter(card -> card.type.isTrainerCard())
-				.map(card -> (NonPokemonCard)card)
+				.map(card -> (NonMonsterCard)card)
 				.collect(Collectors.toList()));
 	}
 	
@@ -202,9 +202,9 @@ public class CardGroup<T extends Card>
 	
 	public List<Move> allMovesForRandomization(MoveExclusions movesToExclude)
 	{
-		CardGroup<PokemonCard> pokeCards = pokemonCards();
+		CardGroup<MonsterCard> pokeCards = monsterCards();
 		List<Move> moves = new ArrayList<>();
-		for (PokemonCard card : pokeCards.iterable())
+		for (MonsterCard card : pokeCards.iterable())
 		{
 			for (Move move : card.getAllMovesIncludingEmptyOnes())
 			{
