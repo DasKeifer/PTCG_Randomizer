@@ -1,34 +1,36 @@
-package data.romtexts;
+package compiler;
 
 
-import compiler.CompilerUtils;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 
-import compiler.FixedLengthInstruct;
 import compiler.CompilerConstants.RegisterPair;
 import constants.PtcgRomConstants;
+import data.romtexts.CardName;
+import data.romtexts.OneBlockText;
+import data.romtexts.PokeDescription;
 import rom.Texts;
 import gbc_framework.QueuedWriter;
 import gbc_framework.rom_addressing.AssignedAddresses;
 import gbc_framework.rom_addressing.BankAddress;
 import gbc_framework.utils.ByteUtils;
 
-public class LdtxInstruct extends FixedLengthInstruct
+public class Ldtx extends FixedLengthInstruct
 {
 	public static final int SIZE = 3;
 	RegisterPair pair;
 	OneBlockText text;
 	
-	public LdtxInstruct(RegisterPair pair, OneBlockText text)
+	public Ldtx(RegisterPair pair, OneBlockText text)
 	{
 		super(SIZE);
 		this.pair = pair;
 		this.text = text;
 	}
 	
-	public static LdtxInstruct create(String arg)
+	public static Ldtx create(String arg)
 	{	
 		final String supportedArgs = "ldtx only supports (RegisterPair, String): ";	
 
@@ -41,12 +43,24 @@ public class LdtxInstruct extends FixedLengthInstruct
 		
 		try
 		{
-			return new LdtxInstruct(CompilerUtils.parseRegisterPairArg(args[0]), parseOneBlockTextArg(args[1]));
+			return new Ldtx(CompilerUtils.parseRegisterPairArg(args[0]), parseOneBlockTextArg(args[1]));
 		}
 		catch (IllegalArgumentException iae)
 		{
 			throw new IllegalArgumentException(supportedArgs + iae.getMessage());
 		}
+	}
+
+	@Override
+	public boolean containsPlaceholder() 
+	{
+		return false;
+	}
+
+	@Override
+	public void replacePlaceholderIfPresent(Map<String, String> placeholderToArgs) 
+	{
+		// Nothing to do
 	}
 	
 	public void finalizeAndAddTexts(Texts texts)

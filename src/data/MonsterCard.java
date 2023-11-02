@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import compiler.CodeBlock;
+import compiler.InstructionParser;
 import compiler.RawBytePacker;
 import constants.CardDataConstants.*;
 import data.romtexts.CardName;
@@ -20,7 +21,7 @@ public class MonsterCard extends Card
 	public static final int SIZE_OF_PAYLOAD_IN_BYTES = TOTAL_SIZE_IN_BYTES - CARD_COMMON_SIZE;
 	public static final int MAX_NUM_MOVES = 2;
 	
-	byte hp; // TODO later: non multiples of 10?
+	private byte hp; // TODO later: non multiples of 10?
 	public EvolutionStage stage; // TODO later: Encaspsulate?
 	public CardName prevEvoName; // TODO later: Encaspsulate?
 	
@@ -56,7 +57,7 @@ public class MonsterCard extends Card
 	{
 		super(toCopy);
 		
-		hp = toCopy.hp;
+		setHp(toCopy.getHp());
 		stage = toCopy.stage;
 		prevEvoName = new CardName(toCopy.prevEvoName);
 		moves = new Move[MAX_NUM_MOVES];
@@ -150,16 +151,14 @@ public class MonsterCard extends Card
 		return null;
 	}
 	
-	public void setMove(Move move, int moveSlot)
+	public boolean setMove(Move move, int moveSlot)
 	{
-		try
+		boolean okay = moveSlot > moves.length;
+		if (okay)
 		{
 			moves[moveSlot] = new Move(move);
 		}
-		catch (IndexOutOfBoundsException ioobe)
-		{
-			throw new IllegalArgumentException("Bad move slot " + moveSlot + "was passed!");
-		}
+		return okay;
 	}
 	
 	public void setMoves(List<Move> newMoves)
@@ -248,7 +247,7 @@ public class MonsterCard extends Card
 		builder.append(super.toString() + 
 				"\nPokedex Number = " + dexNumber + 
 				"\nDesciption = " + description.toString() + 
-				"\nHP = " + hp +
+				"\nHP = " + getHp() +
 				"\nStage = " + stage + 
 				"\nPrevEvolution = " + prevEvoName.toString() +
 				"\nRetreatCost = " + retreatCost +
@@ -269,7 +268,7 @@ public class MonsterCard extends Card
 		commonReadAndConvertIds(cardBytes, startIndex, idToText);
 		
 		int index = startIndex + Card.CARD_COMMON_SIZE;
-		hp = cardBytes[index++];
+		setHp(cardBytes[index++]);
 		stage = EvolutionStage.readFromByte(cardBytes[index++]);
 		
 		// Read the prev evolution
@@ -302,7 +301,7 @@ public class MonsterCard extends Card
 	}
 	
 	@Override
-	public void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks)
+	public void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks, InstructionParser parser)
 	{
 		commonFinalizeAndAddData(texts);
 		
@@ -313,7 +312,7 @@ public class MonsterCard extends Card
 		sortMoves();
 		for (int moveIndex = 0; moveIndex < MAX_NUM_MOVES; moveIndex++)
 		{
-			moves[moveIndex].finalizeAndAddData(cards, texts, blocks, this);
+			moves[moveIndex].finalizeAndAddData(cards, texts, blocks, this, parser);
 		}
 	}
 
@@ -324,7 +323,7 @@ public class MonsterCard extends Card
 		
 		RawBytePacker bytes = new RawBytePacker();
 		bytes.append(
-				hp,
+				getHp(),
 				stage.getValue()
 		);
 		bytes.append(ByteUtils.shortToLittleEndianBytes(prevEvoName.getTextId()));
@@ -360,5 +359,17 @@ public class MonsterCard extends Card
 	public int getSize()
 	{
 		return TOTAL_SIZE_IN_BYTES;
+	}
+
+	public byte getHp() 
+	{
+		return hp;
+	}
+
+	public boolean setHp(int hp) 
+	{
+		// TODO: Enforce multiple of 10 and not too large (<= 120?)
+		this.hp = (byte)hp;
+		return true;
 	}
 }

@@ -3,10 +3,13 @@ package randomizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import config.Configs;
 import config.MoveExclusions;
@@ -15,6 +18,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 
 import constants.CardDataConstants.CardType;
 import constants.CardDataConstants.EnergyType;
@@ -25,6 +29,17 @@ import data.MonsterCard;
 import randomizer.Settings.MoveTypeChanges;
 import randomizer.Settings.RandomizationStrategy;
 import rom.Rom;
+import universal_randomizer.randomize.SingleRandomizer;
+import universal_randomizer.user_object_apis.MultiSetter;
+import universal_randomizer.user_object_apis.Setter;
+import universal_randomizer.utils.ConversionUtils;
+import universal_randomizer.utils.CreationUtils;
+import universal_randomizer.utils.StreamUtils;
+import universal_randomizer.randomize.MultiRandomizer;
+import universal_randomizer.randomize.SetRandomizer;
+import universal_randomizer.pool.MultiPool;
+import universal_randomizer.pool.PeekPool;
+import universal_randomizer.pool.RandomizerPool;
 import gbc_framework.utils.Logger;
 import gbc_framework.utils.MathUtils;
 
@@ -487,6 +502,166 @@ public class MoveSetRandomizer {
 		
 		return -1;
 	}
+	
+	public PeekPool<Move> getPool(Supplier<Stream<MonsterCard>> mcs)
+	{
+		// Option for remove vs reuse
+		// Option for number of moves? Probably don't care
+		
+		// If randomize within type, it will be passed in split.
+		// Need to handle that case
+		
+		Stream<Move> moves = StreamUtils.fieldCollection(mcs.get(), c -> c.getAllMovesIncludingEmptyOnes());
+		boolean removeEmptyMoves = false;
+		if (removeEmptyMoves)
+		{
+			moves = moves.filter(m -> !m.isEmpty());
+		}
+		
+		// Option for poke powers separately
+		boolean separatePowers = true;
+		boolean powersNotAttack = true;
+		if (separatePowers)
+		{
+			moves = moves.filter(powersNotAttack ? Move::isPokePower : m -> !m.isPokePower());
+		}
+		
+		// Option for duplicate vs even distro
+		boolean evenDistro = false;
+		return PeekPool.create(evenDistro, moves);
+	}
+	
+	public void assignNumMoves(Supplier<Stream<MonsterCardRandomizerWrapper>> mcs)
+	{
+		boolean keepNumMoves = false;
+		boolean randNumMoves = false;
+		int percent0Moves = 0;
+		int percent1Moves = 50;
+		int percent2Moves = 100 - percent1Moves - percent0Moves;
+		boolean shuffleNumMoves = false;
+		boolean maxMoves = true;
+		
+		if (keepNumMoves)
+		{
+			mcs.get().forEach(c -> c.setNumMoves(c.getMonsterCard().getNumMoves()));
+		}
+		else if (randNumMoves)
+		{
+			SingleRandomizer.createNoEnforce(MonsterCardRandomizerWrapper::setNumMoves)
+				.perform(mcs.get(),
+						PeekPool.create(false, CreationUtils.weightedCollection(
+								Map.entry(percent0Moves, 0), 
+								Map.entry(percent1Moves, 1), 
+								Map.entry(percent2Moves, 2))));
+		}
+		else if (shuffleNumMoves)
+		{
+			SingleRandomizer.createNoEnforce(MonsterCardRandomizerWrapper::setNumMoves)
+				.perform(mcs.get(), 
+						PeekPool.create(false, StreamUtils.field(mcs.get(),
+								c -> c.getMonsterCard().getNumMoves())));
+		}
+		else if (maxMoves)
+		{
+			mcs.get().forEach(c -> c.setNumMoves(MonsterCard.MAX_NUM_MOVES));
+		}
+	}
+	
+	public void assignMoveTypes(Map<EnergyType, List<MonsterCardRandomizerWrapper>> byType)
+	{
+		//Map<EnergyType, List<MonsterCardRandomizerWrapper>> byType = mcs.group(mcw -> mcw.getMonsterCard().type.convertToEnergyType());
+		Iterator<Entry<EnergyType, List<MonsterCardRandomizerWrapper>>> byTypeItr = byType.entrySet().iterator();
+		EnergyType prevType = EnergyType.UNUSED_TYPE;
+		while (byTypeItr.hasNext())
+		{
+			EnergyType type = byTypeItr.next().getKey();
+			if (prevType != EnergyType.COLORLESS)
+			{
+				prevType = type;
+			}
+		}
+		
+		byTypeItr = byType.entrySet().iterator();
+		while (byTypeItr.hasNext())
+		{
+			Entry<EnergyType, List<MonsterCardRandomizerWrapper>> currEntry = byTypeItr.next();
+			EnergyType type = currEntry.getKey();
+			
+			if (type != EnergyType.COLORLESS)
+			{
+				Map<Integer, RandomizerPool<List<EnergyType>>> poolMap = new HashMap<>();
+				poolMap.put(0, PeekPool.create(false, List.of()));
+				poolMap.put(1, PeekPool.create(false, CreationUtils.weightedCollection(
+						Map.entry(15, List.of(type)), 
+						Map.entry(4, List.of(EnergyType.COLORLESS)), 
+						Map.entry(1, List.of(prevType)))));
+				poolMap.put(1, PeekPool.create(false, CreationUtils.weightedCollection(
+						Map.entry(6, List.of(type, type)),
+						Map.entry(3, List.of(type, EnergyType.COLORLESS)), 
+						Map.entry(1, List.of(type, prevType)))));
+				MultiPool<MonsterCardRandomizerWrapper, Integer, List<EnergyType>> mp = 
+						new MultiPool<>(poolMap, (mcw, count) -> mcw.getNumMoves());
+				
+				MultiRandomizer<MonsterCardRandomizerWrapper, List<EnergyType>, EnergyType> randomizer = 
+						MultiRandomizer.createNoEnforce(
+								MonsterCardRandomizerWrapper::setMoveType);
+				randomizer.perform(currEntry.getValue().stream(), mp);
+				
+				prevType = type;
+			}
+		}
+	}
+
+	public void assignMoves(Stream<MonsterCardRandomizerWrapper> mcs,
+			Map<EnergyType, RandomizerPool<Move>> movesByType)
+	{
+		MultiPool<MonsterCardRandomizerWrapper, EnergyType, Move> movesPool = 
+				new MultiPool<MonsterCardRandomizerWrapper, EnergyType, Move>(movesByType, (mcw, count) -> mcw.getMoveTypes()[count]);
+		
+		SingleRandomizer<MonsterCardRandomizerWrapper, Move> movesRand =
+				SingleRandomizer.createNoEnforce(
+						(mcw, move, index) -> mcw.getMonsterCard().setMove(move, index),
+						MonsterCardRandomizerWrapper::getNumMoves);
+		
+		movesRand.perform(mcs, movesPool);
+	}
+	
+	public void getMonsters(Supplier<Stream<MonsterCardRandomizerWrapper>> mcs)
+	{
+		// If randomize within type, it will be passed in split.
+//		boolean byType = false;
+//		if (byType)
+//		{
+//			mcs = mcs.group(m -> m.getMonsterCard().type);
+//		}
+//		
+//		PeekPool<Move> movePool = getPool(mcs);
+		
+
+		// Option for number of moves
+		// options for num of damaging moves
+		
+		// option for num poke powers
+		
+		// option for poke powers separate
+	}
+	
+	public void randomizeHealth(Supplier<Stream<MonsterCardRandomizerWrapper>> mcs)
+	{
+		Map<Integer, RandomizerPool<List<Integer>>> poolMap = new HashMap<>();
+		poolMap.put(1, PeekPool.create(false, Arrays.asList(50),Arrays.asList(70)));
+		poolMap.put(2, PeekPool.create(false, Arrays.asList(30,60),Arrays.asList(40,80)));
+		poolMap.put(3, PeekPool.create(false, Arrays.asList(30,50,80),Arrays.asList(40,70,100)));
+		MultiPool<List<MonsterCardRandomizerWrapper>, Integer, List<Integer>> multiPool = 
+				new MultiPool<>(poolMap, (mcwl, count) -> mcwl.size());
+		
+		MonsterCardRandomizerWrapper.setEvoLineIds(mcs.get());
+
+		SetRandomizer<List<MonsterCardRandomizerWrapper>, MonsterCardRandomizerWrapper, List<Integer>, Integer> randomizer = 
+				SetRandomizer.createNoEnforce(
+						(mcw, hp) -> mcw.getMonsterCard().setHp(hp));
+		randomizer.perform(StreamUtils.group(mcs.get(), MonsterCardRandomizerWrapper::getEvolutionLineId).values().stream(), multiPool);
+	}
 
 	/************************** Generate Movesets ****************************************/
 	public void shuffleOrRandomizeMonsterMoves(
@@ -495,7 +670,11 @@ public class MoveSetRandomizer {
 			Settings settings,
 			Configs configs
 	)
-	{						
+	{
+		Supplier<Stream<MonsterCardRandomizerWrapper>> cards = () -> 
+				cardMovesMap.keySet().stream().map(c -> new MonsterCardRandomizerWrapper(c));
+
+		
 		// Perform a first pass through the moves assigning at least the attacks (both forced damaging and others) and possible
 		// the pokepowers if set that way
 		firstPassMoveAssignment(nextSeed, cardMovesMap, pokeToGetAttacksFrom, settings, configs);

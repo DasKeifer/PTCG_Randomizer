@@ -7,8 +7,11 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import compiler.CodeBlock;
+import compiler.EffectFunctionPointer;
+import compiler.InstructionParser;
+import compiler.ParserCodeBlock;
 import compiler.reference_instructs.BlockBankLoadedAddress;
-import compiler.reference_instructs.Jump;
+import compiler.reference_instructs.Jp;
 import compiler.static_instructs.RawBytes;
 import constants.DuelConstants.EffectFunctionTypes;
 import data.CardEffect;
@@ -94,7 +97,7 @@ public class CustomCardEffect extends CardEffect
 		return copy;
 	}
 	
-	public static void addTweakToAllowEffectsInMoreBanks(Blocks blocks)
+	public static void addTweakToAllowEffectsInMoreBanks(Blocks blocks, InstructionParser parser)
 	{
 		/* Skip over 
 		ld a, BANK("Effect Functions")		(2 bytes)
@@ -112,7 +115,7 @@ public class CustomCardEffect extends CardEffect
 		 with our custom logic that handles other banks
 		 */	
 		UnconstrainedMoveBlock logicBlock = new UnconstrainedMoveBlock(
-				new CodeBlock(MORE_EFFECT_BANK_TWEAK_LOGIC_SEG_CODE),
+				new ParserCodeBlock(MORE_EFFECT_BANK_TWEAK_LOGIC_SEG_CODE, parser),
 				0, (byte) 0x0, (byte) 0x1); //Try to fit it in home to avoid bankswaps
 		logicBlock.addAllowableBankRange(1, (byte)0xb, (byte)0xd);
 		blocks.addMovableBlock(logicBlock);
@@ -121,15 +124,15 @@ public class CustomCardEffect extends CardEffect
 		// the existing instructions
 		FixedBlock jumpToLogicBlock = new FixedBlock(
 				new CodeBlock("MoreEffectBanksTweak_jumpToLogicSeg")
-					.appendInstructionInline(new Jump(logicBlock.getId())),
+					.appendInstructionInline(new Jp(logicBlock.getId())),
 				0x3016);
 		blocks.addFixedBlock(jumpToLogicBlock);
 		blocks.addBlankedBlock(jumpToLogicBlock.createBlankedRangeForBlock(5));
 	}
 	
-	public void addEffectFunction(EffectFunctionTypes type, List<String> sourceLines)
+	public void addEffectFunction(EffectFunctionTypes type, List<String> sourceLines, InstructionParser parser)
 	{
-		effects.put(type, new EffectFunction(new UnconstrainedMoveBlock(new CodeBlock(sourceLines), effectFunctionPrefs)));
+		effects.put(type, new EffectFunction(new UnconstrainedMoveBlock(new ParserCodeBlock(sourceLines, parser), effectFunctionPrefs)));
 	}
 
 	// For referencing existing functions in the game
@@ -160,7 +163,7 @@ public class CustomCardEffect extends CardEffect
 					// Add the block containing the custom effect
 					blocks.add(effect.getValue().getBlock());
 					// Now add the instruction to this effect command for pointing to it
-					effectCommand.appendInstruction(new EffectFunctionPointerInstruct(effect.getKey(), effect.getValue().getBlock().getId()));
+					effectCommand.appendInstruction(new EffectFunctionPointer(effect.getKey(), effect.getValue().getBlock().getId()));
 				}
 			}
 			// Append a null at the end so we know its finished

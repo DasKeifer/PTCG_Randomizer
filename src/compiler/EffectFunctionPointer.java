@@ -1,10 +1,8 @@
-package data.custom_card_effects;
+package compiler;
 
 import java.io.IOException;
 import java.util.Arrays;
 
-import compiler.CompilerUtils;
-import compiler.Instruction;
 import gbc_framework.QueuedWriter;
 import gbc_framework.rom_addressing.AssignedAddresses;
 import gbc_framework.rom_addressing.BankAddress;
@@ -12,21 +10,21 @@ import gbc_framework.utils.ByteUtils;
 import gbc_framework.utils.RomUtils;
 
 import constants.DuelConstants.EffectFunctionTypes;
+import data.custom_card_effects.CustomCardEffect;
 
-public class EffectFunctionPointerInstruct implements Instruction
+public class EffectFunctionPointer extends LabelReferenceInstruction
 {
 	EffectFunctionTypes functionType;
-	String functionLabel;
 	
 	// No version that takes an address because thats only use in the case where we
 	// use an address from the rom which will always use the default logic
-	public EffectFunctionPointerInstruct(EffectFunctionTypes functionType, String functionLabel) 
+	public EffectFunctionPointer(EffectFunctionTypes functionType, String functionLabel) 
 	{
+		super(functionLabel);
 		this.functionType = functionType;
-		this.functionLabel = functionLabel;
 	}
 	
-	public static EffectFunctionPointerInstruct create(String[] args)
+	public static EffectFunctionPointer create(String[] args)
 	{	
 		final String supportedArgs = "efp only supports (byte, string): ";	
 
@@ -37,7 +35,7 @@ public class EffectFunctionPointerInstruct implements Instruction
 		
 		try
 		{
-			return new EffectFunctionPointerInstruct(
+			return new EffectFunctionPointer(
 					EffectFunctionTypes.readFromByte(CompilerUtils.parseByteArg(args[0])), args[1]);
 		}
 		catch (IllegalArgumentException iae)
@@ -53,7 +51,7 @@ public class EffectFunctionPointerInstruct implements Instruction
 			AssignedAddresses tempAssigns) 
 	{
 		// First try to get it from the temp ones
-		BankAddress address = Instruction.tryGetAddress(functionLabel, assignedAddresses, tempAssigns);
+		BankAddress address = Instruction.tryGetAddress(getLabel(), assignedAddresses, tempAssigns);
 		
 		// If its in b we can use the default logic that only needs the function type and the loaded bank b offset
 		if (address.getBank() == CustomCardEffect.EFFECT_FUNCTION_SHORTCUT_BANK)
@@ -70,11 +68,11 @@ public class EffectFunctionPointerInstruct implements Instruction
 	public int writeBytes(QueuedWriter writer, BankAddress instructionAddress, AssignedAddresses assignedAddresses)
 			throws IOException 
 	{
-		BankAddress addressToWrite = assignedAddresses.getThrow(functionLabel);
+		BankAddress addressToWrite = assignedAddresses.getThrow(getLabel());
 		if (!addressToWrite.isFullAddress())
 		{
 			throw new IllegalAccessError("EffectFunctionPointerInstruct tried to write address for " + 
-					functionLabel + " but it is not fully assigned: " + addressToWrite.toString());
+					getLabel() + " but it is not fully assigned: " + addressToWrite.toString());
 		}
 		
 		// If its not in the bank we can't use the shortcut

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import compiler.CodeBlock;
+import compiler.InstructionParser;
 import compiler.RawBytePacker;
 import compiler.static_instructs.RawBytes;
 import constants.PtcgRomConstants;
@@ -281,7 +282,7 @@ public class Move
 		return index;
 	}
 
-	public void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks, MonsterCard hostCard)
+	public void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks, MonsterCard hostCard, InstructionParser parser)
 	{
 		name.finalizeAndAddTexts(texts);
 
@@ -293,7 +294,7 @@ public class Move
 				throw new IllegalArgumentException("Failed to find basic card for " + hostCard.name.toString());
 			}
 			
-			CustomCardEffect custEffect = HardcodedEffects.CallForFamily.createMoveEffect(/*cards,*/ basics);
+			CustomCardEffect custEffect = HardcodedEffects.CallForFamily.createMoveEffect(/*cards,*/ basics, parser);
 			List<MovableBlock> effectBlocks = custEffect.convertToBlocks();
 			for (MovableBlock block : effectBlocks)
 			{

@@ -1,6 +1,7 @@
 package rom;
 
 import compiler.CodeBlock;
+import compiler.InstructionParser;
 import compiler.reference_instructs.BlockBankLoadedAddress;
 import compiler.static_instructs.RawBytes;
 import constants.PtcgRomConstants;
@@ -33,13 +34,13 @@ public class Cards
 	}
 
 	// TODO later: Maybe move out of here since its a bit awkward here?
-	public void finalizeConvertAndAddData(Texts texts, Blocks blocks)
+	public void finalizeConvertAndAddData(Texts texts, Blocks blocks, InstructionParser parser)
 	{
 		// First go through and finalize all the data, adding effect blocks
 		// as needed
 		for (Card card : allCards.listOrderedByCardId())
 		{
-			card.finalizeAndAddData(this, texts, blocks);
+			card.finalizeAndAddData(this, texts, blocks, parser);
 		}
 		
 		// Now add the cards themselves as blocks

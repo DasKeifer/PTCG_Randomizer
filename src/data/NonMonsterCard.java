@@ -2,6 +2,7 @@ package data;
 
 
 import compiler.CodeBlock;
+import compiler.InstructionParser;
 import compiler.static_instructs.RawBytes;
 import constants.PtcgRomConstants;
 import data.romtexts.CardName;
@@ -61,7 +62,7 @@ public class NonMonsterCard extends Card
 	}
 	
 	@Override
-	public void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks)
+	public void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks, InstructionParser unused)
 	{
 		commonFinalizeAndAddData(texts);
 		

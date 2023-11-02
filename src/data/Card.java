@@ -18,6 +18,7 @@ import java.security.InvalidParameterException;
 import java.util.Comparator;
 
 import compiler.CodeBlock;
+import compiler.InstructionParser;
 import compiler.RawBytePacker;
 
 public abstract class Card
@@ -91,7 +92,7 @@ public abstract class Card
 	}
 	
 	public abstract int readAndConvertIds(byte[] cardBytes, int startIndex, Texts idsToText);
-	public abstract void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks);
+	public abstract void finalizeAndAddData(Cards cards, Texts texts, Blocks blocks, InstructionParser parser);
 	protected abstract CodeBlock convertToCodeBlock();
 	public abstract int getSize();
 

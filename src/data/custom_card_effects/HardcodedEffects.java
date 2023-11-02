@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import compiler.InstructionParser;
 import constants.CharMapConstants;
 import constants.DuelConstants.EffectFunctionTypes;
 import data.Card;
@@ -160,7 +161,7 @@ public class HardcodedEffects
 		static final int PUT_IN_PLAY_AREA_EFFECT_ADDRESS = 0x2ccc2; // Bellsprout's but they are all the same even for nidoran
 
 		// Basics may not always be monster cards - take the fossil trainer for example
-		public static CustomCardEffect createMoveEffect(/*Cards<Card> cards,*/ CardGroup<Card> basics) 
+		public static CustomCardEffect createMoveEffect(/*Cards<Card> cards,*/ CardGroup<Card> basics, InstructionParser parser) 
 		{
 			// Just assume the first one for now. This probably won't work well for cards where there are versions of them
 			// TODO later: can flying 25 evolve into 26? Looks like no since it is comparing
@@ -278,8 +279,8 @@ public class HardcodedEffects
 			effect = new CustomCardEffect(EFFECT_NAME + toFindBasicOf.name.toString());
 			effect.addEffectFunction(EffectFunctionTypes.INITIAL_EFFECT_1, RomUtils.convertToLoadedBankOffset(INITIAL_EFFECT_ADDRESS));
 			effect.addEffectFunction(EffectFunctionTypes.AFTER_DAMAGE, RomUtils.convertToLoadedBankOffset(PUT_IN_PLAY_AREA_EFFECT_ADDRESS));
-			effect.addEffectFunction(EffectFunctionTypes.REQUIRE_SELECTION, playerSelectCode);
-			effect.addEffectFunction(EffectFunctionTypes.AI_SELECTION, aiSelectCode);
+			effect.addEffectFunction(EffectFunctionTypes.REQUIRE_SELECTION, playerSelectCode, parser);
+			effect.addEffectFunction(EffectFunctionTypes.AI_SELECTION, aiSelectCode, parser);
 			
 			HardcodedEffects.getInstance().addCardNameUniqueEffect(EFFECT_NAME, toFindBasicOf.name.toString(), effect);
 			return effect;

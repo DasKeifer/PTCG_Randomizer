@@ -1,9 +1,12 @@
 package rom;
 
 import java.io.File;
+import java.util.List;
 
-import compiler.CodeBlock;
-import data.PtcgInstructionParser;
+import bps_queued_writer.compiler.BpsInstructionSetParser;
+import compiler.GbZ80InstructionSetParser;
+import compiler.InstructionParser;
+import compiler.PtcgInstructionSetParser;
 import data.custom_card_effects.CustomCardEffect;
 import data.custom_card_effects.HardcodedEffects;
 import gbc_framework.rom_addressing.AddressRange;
@@ -62,18 +65,22 @@ public class Rom
 	public void writePatch(File patchFile)
 	{
 		// Create the custom parser and set the data blocks to use it
-		PtcgInstructionParser parser = new PtcgInstructionParser();
-		CodeBlock.setInstructionParserSingleton(parser);
+		PtcgInstructionSetParser ptcgParser = new PtcgInstructionSetParser();
+		InstructionParser parser = new InstructionParser(List.of(
+				ptcgParser,
+				new BpsInstructionSetParser(),
+				new GbZ80InstructionSetParser()
+				));
 		
 		// TODO later: Need to handle tweak blocks somehow. Should these all be
 		// file defined and selected via a menu? could also include if they default
 		// to on or not. Also for now we can handle these after the other blocks
 		// are generated but we arbitrarily do it before. Is there any reason to
 		// do one or the other?
-		CustomCardEffect.addTweakToAllowEffectsInMoreBanks(blocks);
+		CustomCardEffect.addTweakToAllowEffectsInMoreBanks(blocks, parser);
 		
 		// Finalize all the data to prepare for writing
-		finalizeDataAndGenerateBlocks(parser);
+		finalizeDataAndGenerateBlocks(parser, ptcgParser);
 		
 		// Now assign locations for the data
 		DataManager manager = new DataManager();		
@@ -83,16 +90,16 @@ public class Rom
 		RomIO.writeBpsPatch(patchFile, rawBytes, blocks, assignedAddresses);
 	}
 	
-	private void finalizeDataAndGenerateBlocks(PtcgInstructionParser parser)
+	private void finalizeDataAndGenerateBlocks(InstructionParser parser, PtcgInstructionSetParser ptcgParser)
 	{
 		// Reset the singleton -- TODO later: Needed?
 		HardcodedEffects.reset();
 		
 		// Finalize the card data, texts and blocks
-		allCards.finalizeConvertAndAddData(idsToText, blocks);
+		allCards.finalizeConvertAndAddData(idsToText, blocks, parser);
 		
 		// Now add all the text from the custom parser instructions
-		parser.finalizeAndAddTexts(idsToText);
+		ptcgParser.finalizeAndAddTexts(idsToText);
 		
 		// Convert the text to blocks
 		idsToText.convertAndAddBlocks(blocks);
