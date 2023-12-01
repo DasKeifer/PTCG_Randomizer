@@ -30,9 +30,6 @@ import randomizer.Settings.MoveTypeChanges;
 import randomizer.Settings.RandomizationStrategy;
 import rom.Rom;
 import universal_randomizer.randomize.SingleRandomizer;
-import universal_randomizer.user_object_apis.MultiSetter;
-import universal_randomizer.user_object_apis.Setter;
-import universal_randomizer.utils.ConversionUtils;
 import universal_randomizer.utils.CreationUtils;
 import universal_randomizer.utils.StreamUtils;
 import universal_randomizer.randomize.MultiRandomizer;
@@ -131,34 +128,30 @@ public class MoveSetRandomizer {
 	{
 		CardGroup<MonsterCard> pokes = romData.allCards.cards().monsterCards();
 		
-		// Do one energy type at a time
-		for (CardType monType : CardType.monsterValues())
-		{				
-			// Determine the number of moves per monster for this type
-			changeAllMovesTypes(pokes.ofCardType(monType), 
-					monType.convertToEnergyType());
-		}	
+//		// Do one energy type at a time
+//		for (CardType monType : CardType.monsterValues())
+//		{				
+//			// Determine the number of moves per monster for this type
+//			changeAllMovesTypes(pokes.ofCardType(monType), 
+//					monType.convertToEnergyType());
+//		}	
 	}
 	
 	public void makeAllMovesColorless()
 	{
 		CardGroup<MonsterCard> pokes = romData.allCards.cards().monsterCards();
-		changeAllMovesTypes(pokes, EnergyType.COLORLESS);
+//		changeAllMovesTypes(pokes, EnergyType.COLORLESS);
 	}
 
-	private void changeAllMovesTypes(CardGroup<MonsterCard> pokes, EnergyType type)
+	public static void changeAllMovesTypes(Stream<MonsterCardRandomizerWrapper> pokes, EnergyType type)
 	{
-		List<Move> moves;
-		byte nonColorlessCost;
-		byte colorlessCost;
-		for (MonsterCard poke : pokes.iterable())
-		{
-			moves = poke.getAllMovesIncludingEmptyOnes();
+		pokes.forEach(poke -> {
+			List<Move> moves = poke.getMonsterCard().getAllMovesIncludingEmptyOnes();
 			for (Move move : moves)
 			{
 				// Get the current data and then clear it
-				colorlessCost = move.getCost(EnergyType.COLORLESS);
-				nonColorlessCost = move.getNonColorlessEnergyCosts();
+				byte colorlessCost = move.getCost(EnergyType.COLORLESS);
+				byte nonColorlessCost = move.getNonColorlessEnergyCosts();
 				move.clearCosts();
 				
 				// If we are setting to colorless, we need to add the
@@ -177,8 +170,8 @@ public class MoveSetRandomizer {
 			}
 			
 			// Copy the moves back over
-			poke.setMoves(moves);
-		}
+			poke.getMonsterCard().setMoves(moves);
+		});
 	}
 
 	/***************** Determine Number an categories of Moves ****************************/
@@ -528,7 +521,7 @@ public class MoveSetRandomizer {
 		
 		// Option for duplicate vs even distro
 		boolean evenDistro = false;
-		return PeekPool.create(evenDistro, moves);
+		return PeekPool.create(evenDistro, moves.toList());
 	}
 	
 	public void assignNumMoves(Supplier<Stream<MonsterCardRandomizerWrapper>> mcs)
@@ -556,10 +549,10 @@ public class MoveSetRandomizer {
 		}
 		else if (shuffleNumMoves)
 		{
+			Stream<Integer> numMovesStream = StreamUtils.field(mcs.get(),
+					c -> c.getMonsterCard().getNumMoves());
 			SingleRandomizer.createNoEnforce(MonsterCardRandomizerWrapper::setNumMoves)
-				.perform(mcs.get(), 
-						PeekPool.create(false, StreamUtils.field(mcs.get(),
-								c -> c.getMonsterCard().getNumMoves())));
+				.perform(mcs.get(), PeekPool.create(true, numMovesStream.toList()));
 		}
 		else if (maxMoves)
 		{
@@ -595,7 +588,7 @@ public class MoveSetRandomizer {
 						Map.entry(15, List.of(type)), 
 						Map.entry(4, List.of(EnergyType.COLORLESS)), 
 						Map.entry(1, List.of(prevType)))));
-				poolMap.put(1, PeekPool.create(false, CreationUtils.weightedCollection(
+				poolMap.put(2, PeekPool.create(false, CreationUtils.weightedCollection(
 						Map.entry(6, List.of(type, type)),
 						Map.entry(3, List.of(type, EnergyType.COLORLESS)), 
 						Map.entry(1, List.of(type, prevType)))));
@@ -655,7 +648,7 @@ public class MoveSetRandomizer {
 		MultiPool<List<MonsterCardRandomizerWrapper>, Integer, List<Integer>> multiPool = 
 				new MultiPool<>(poolMap, (mcwl, count) -> mcwl.size());
 		
-		MonsterCardRandomizerWrapper.setEvoLineIds(mcs.get());
+//		MonsterCardRandomizerWrapper.setEvoLineIds(mcs.get());
 
 		SetRandomizer<List<MonsterCardRandomizerWrapper>, MonsterCardRandomizerWrapper, List<Integer>, Integer> randomizer = 
 				SetRandomizer.createNoEnforce(
@@ -674,7 +667,6 @@ public class MoveSetRandomizer {
 		Supplier<Stream<MonsterCardRandomizerWrapper>> cards = () -> 
 				cardMovesMap.keySet().stream().map(c -> new MonsterCardRandomizerWrapper(c));
 
-		
 		// Perform a first pass through the moves assigning at least the attacks (both forced damaging and others) and possible
 		// the pokepowers if set that way
 		firstPassMoveAssignment(nextSeed, cardMovesMap, pokeToGetAttacksFrom, settings, configs);

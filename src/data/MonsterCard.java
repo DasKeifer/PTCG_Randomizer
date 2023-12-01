@@ -37,8 +37,8 @@ public class MonsterCard extends Card
 	short length; //TODO later: One byte is feet, another is inches - separate them? // TODO later: Investigate No gameplay impact?
 	short weight; // TODO later: Investigate No gameplay impact?
 	PokeDescription description;
-	byte unknownByte2; // TODO later: At least somewhat tracks with evo stage in asm files - 19 for first stage, 16 for second stage, 0 for final stage?
-
+	byte unknownByte2; // TODO later: At least somewhat tracks with evo stage in asm files - 19 for first stage, 16 for second stage, 0 for final stage?	
+	
 	public MonsterCard()
 	{
 		super();

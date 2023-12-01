@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import config.MoveExclusions;
 import constants.CardConstants.CardId;
@@ -221,6 +222,11 @@ public class CardGroup<T extends Card>
 	public Collection<T> iterable()
 	{
 		return cardsById.values();
+	}
+	
+	public Stream<T> stream()
+	{
+		return cardsById.values().stream();
 	}
 
 	// No sort needed

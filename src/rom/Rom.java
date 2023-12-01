@@ -77,7 +77,7 @@ public class Rom
 		// to on or not. Also for now we can handle these after the other blocks
 		// are generated but we arbitrarily do it before. Is there any reason to
 		// do one or the other?
-		CustomCardEffect.addTweakToAllowEffectsInMoreBanks(blocks, parser);
+//		CustomCardEffect.addTweakToAllowEffectsInMoreBanks(blocks, parser);
 		
 		// Finalize all the data to prepare for writing
 		finalizeDataAndGenerateBlocks(parser, ptcgParser);

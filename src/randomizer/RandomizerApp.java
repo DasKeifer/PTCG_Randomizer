@@ -18,10 +18,12 @@ import java.awt.GridLayout;
 import javax.swing.JRadioButton;
 import javax.swing.JLabel;
 import javax.swing.ButtonGroup;
+import javax.swing.DropMode;
 import javax.swing.JCheckBox;
 import javax.swing.border.TitledBorder;
 
 import randomizer.Settings.*;
+import randomizer.actions.Action;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -29,6 +31,14 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.TransferHandler;
+import javax.swing.JTree;
+import javax.swing.JTable;
+import javax.swing.border.BevelBorder;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.JComboBox;
+import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 
 public class RandomizerApp {
 
@@ -50,6 +60,8 @@ public class RandomizerApp {
 	private JCheckBox pokePowerIncludeWithMovesBox;
 	private final ButtonGroup moveRandTypeGroup = new ButtonGroup();
 	private JTextField saveSetSeedVal;
+	private JTable table_1;
+	private JTable table;
 	
 	/**
 	 * Launch the application.
@@ -82,11 +94,11 @@ public class RandomizerApp {
 		
 		openRomChooser = new JFileChooser();
 		openRomChooser.setCurrentDirectory(new File(".")); // Jar location by default
-	    openRomChooser.setSelectedFile(null);
+	    openRomChooser.setSelectedFile(new File("ptcg.gbc"));
 		
 		saveRomChooser = new JFileChooser();
 		saveRomChooser.setCurrentDirectory(new File(".")); // Jar location by default
-		saveRomChooser.setSelectedFile(null);
+		saveRomChooser.setSelectedFile(new File("ptcg_randomized.bps"));
 		
 		frmTradingCard = new JFrame();
 		frmTradingCard.setTitle("Pokemon Trading Card Game Randomizer");
@@ -431,6 +443,65 @@ public class RandomizerApp {
 		moveTypeRandPreventWrongTypeBox.setSelected(true);
 		moveTypeRandPreventWrongTypeBox.setEnabled(false);
 		moveTypesRandomOptionsPanel.add(moveTypeRandPreventWrongTypeBox);
+		
+		JPanel panel = new JPanel();
+		movesEffectsTab.addTab("Actions", null, panel, null);
+		panel.setLayout(new GridLayout(2, 1, 0, 0));
+		
+		JPanel panel_1 = new JPanel();
+		panel.add(panel_1);
+		panel_1.setLayout(new BorderLayout(0, 0));
+		
+		JPanel panel_2 = new JPanel();
+		FlowLayout flowLayout = (FlowLayout) panel_2.getLayout();
+		panel_1.add(panel_2, BorderLayout.NORTH);
+		
+		JComboBox comboBox_2 = new JComboBox();
+		panel_2.add(comboBox_2);
+		
+		JComboBox comboBox = new JComboBox();
+		panel_2.add(comboBox);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		panel_1.add(scrollPane, BorderLayout.CENTER);
+		
+		table_1 = new JTable();
+		table_1.setDropMode(DropMode.INSERT_ROWS);
+		table_1.setDragEnabled(true);
+		table_1.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		table_1.setTransferHandler(new ActionSourceCopyHandler());
+		ActionTableModel ate = new ActionTableModel(randomizer.getAvailableActions());
+		for(Action a : randomizer.getAvailableActions().values())
+		{
+			ate.addRow(a);
+		}
+		table_1.setModel(ate);
+		table_1.getColumnModel().getColumn(0).setPreferredWidth(25);
+		table_1.getColumnModel().getColumn(0).setMinWidth(20);
+		table_1.getColumnModel().getColumn(1).setPreferredWidth(120);
+		table_1.getColumnModel().getColumn(2).setPreferredWidth(300);
+		scrollPane.setViewportView(table_1);
+		
+		JScrollPane scrollPane_1 = new JScrollPane();
+		panel.add(scrollPane_1);
+		
+		table = new JTable();
+		table.setDropMode(DropMode.INSERT_ROWS);
+		table.setDragEnabled(true);
+		table.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		table.setSize(100, 200);
+		table.setTransferHandler(new ActionTransferHandler());
+		ate = new ActionTableModel(randomizer.getAvailableActions());
+//		for(Action a : randomizer.getAvailableActions().values())
+//		{
+//			ate.addRow(a);
+//		}
+		table.setModel(ate);
+		table.getColumnModel().getColumn(0).setPreferredWidth(25);
+		table.getColumnModel().getColumn(0).setMinWidth(20);
+		table.getColumnModel().getColumn(1).setPreferredWidth(120);
+		table.getColumnModel().getColumn(2).setPreferredWidth(300);
+		scrollPane_1.setViewportView(table);
 	}
 
 	private Settings createSettingsFromState() 

@@ -11,18 +11,19 @@ public class CardDataConstants
 {	
 	public enum EnergyType
 	{
-		FIRE		(0x00, "Fr"),
-		GRASS		(0x01, "G"),
-		LIGHTNING	(0x02, "L"),
-		WATER		(0x03, "W"),
-		FIGHTING	(0x04, "Fg"),
-		PSYCHIC	    (0x05, "P"),
-		COLORLESS   (0x06, "C"),
-		UNUSED_TYPE (0x07, "Err");
+		FIRE		(0x00, "Fir", "R"), // "R" for "Red" or "fiRe"
+		GRASS		(0x01, "Grs", "G"),
+		LIGHTNING	(0x02, "Ltn", "L"),
+		WATER		(0x03, "Wtr", "W"),
+		FIGHTING	(0x04, "Fgt", "B"), // "B" for "Brown"
+		PSYCHIC	    (0x05, "Psy", "P"),
+		COLORLESS   (0x06, "Col", "C"),
+		UNUSED_TYPE (0x07, "Err", "E");
 
 		private byte value;
 		private String abbrev;
-		private EnergyType(int inValue, String inAbbrev)
+		private String charAbbrev;
+		private EnergyType(int inValue, String inAbbrev, String inCharAbbrev)
 		{
 			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
@@ -31,6 +32,7 @@ public class CardDataConstants
 			}
 			value = (byte) inValue;
 			abbrev = inAbbrev;
+			charAbbrev = inCharAbbrev;
 		}
 
 		public byte getValue()
@@ -41,6 +43,11 @@ public class CardDataConstants
 		public String getAbbreviation()
 		{
 			return abbrev;
+		}
+		
+		public String getCharAbbreviation()
+		{
+			return charAbbrev;
 		}
 		
 	    public static EnergyType readFromByte(byte b)
@@ -139,6 +146,21 @@ public class CardDataConstants
 	    }
 	    
 	    public static final List<CardType> monsterValues()
+	    {
+	    	if (mons.isEmpty())
+	    	{
+	    		mons.add(MONSTER_FIRE);
+	    		mons.add(MONSTER_GRASS);
+	    		mons.add(MONSTER_LIGHTNING);
+		    	mons.add(MONSTER_WATER);
+		    	mons.add(MONSTER_FIGHTING);
+		    	mons.add(MONSTER_PSYCHIC);
+		    	mons.add(MONSTER_COLORLESS);
+	    	}
+			return mons;
+	    }
+	    
+	    public static final List<CardType> monsterValuesWithUnused()
 	    {
 	    	if (mons.isEmpty())
 	    	{

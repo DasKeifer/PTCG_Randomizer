@@ -4,12 +4,28 @@ import java.awt.Component;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Stream;
 
 import config.Configs;
+import constants.CardDataConstants.CardType;
 import data.Card;
 import data.CardGroup;
 import rom.Texts;
+import universal_randomizer.pool.EliminatePoolSet;
+import universal_randomizer.pool.PeekPool;
+import universal_randomizer.randomize.EnforceParams;
+import universal_randomizer.randomize.SingleRandomizer;
+import universal_randomizer.user_object_apis.SetterNoReturn;
+import universal_randomizer.utils.StreamUtils;
 import gbc_framework.utils.Logger;
+import randomizer.actions.Action;
+import randomizer.actions.DebugPrintAction;
+import randomizer.actions.LambdaAction;
+import randomizer.actions.PerformLambda;
+import randomizer.actions.SetEvoLineIdsAction;
 import rom.Rom;
 import rom.RomIO;
 
@@ -21,10 +37,21 @@ public class Randomizer
 	private Logger logger;
 	private Rom romData;
 	private Configs configs;
+	private HashMap<Integer, Action> allActions;
 	
 	public Randomizer()
 	{
 		logger = new Logger();
+		allActions = new HashMap<>();
+		Action a = new DebugPrintAction(logger);
+		allActions.put(a.getId(), a);
+		a = new SetEvoLineIdsAction();
+		allActions.put(a.getId(), a);
+	}
+	
+	public HashMap<Integer, Action> getAvailableActions()
+	{
+		return allActions;
 	}
 	
 	public void openRom(File romFile, Component toCenterPopupsOn)
@@ -89,6 +116,34 @@ public class Randomizer
 	//public static void main(String[] args) throws IOException //Temp
 	public void randomize(Settings settings)
 	{		
+		List<Action> actions = new LinkedList<>();
+//		actions.add(new DebugPrintAction(logger));
+		actions.add(new SetEvoLineIdsAction());
+		
+    	PerformLambda typeRando = s -> {
+    		Stream<List<MonsterCardRandomizerWrapper>> byEvoLine = 
+    				StreamUtils.group(s.get(), mc -> mc.getEvolutionLineId()).values().stream();
+        	SetterNoReturn<List<MonsterCardRandomizerWrapper>, CardType> setter = (l, t) -> { 
+        		for (MonsterCardRandomizerWrapper mc : l) 
+        		{
+        			mc.getMonsterCard().type = t;
+        		}
+        	};
+        	SingleRandomizer<List<MonsterCardRandomizerWrapper>, CardType> randomizer =
+        			SingleRandomizer.create(setter.asSetter(), EnforceParams.createNoEnforce());
+        	randomizer.perform(byEvoLine, EliminatePoolSet.create(
+        			PeekPool.create(true, CardType.monsterValues()), EliminatePoolSet.UNLIMITED_DEPTH));
+    	};
+		actions.add(new LambdaAction(
+				"Even Rando Evo Line Types",
+				"Randomize the energy type per evolution line for all monsters to have a balanced number of cards of each type",
+				typeRando));
+		
+		
+		
+		actions.add(new DebugPrintAction(logger));
+		
+		
 		// get and store the base seed as the next one to use
 		int nextSeed = settings.getSeedValue();
 		
@@ -97,9 +152,16 @@ public class Randomizer
 		// it will need to be reset
 		romData.resetAndPrepareForModification();
 		
+		List<MonsterCardRandomizerWrapper> mcs = romData.allCards.cards().monsterCards().stream().map(
+				mc -> new MonsterCardRandomizerWrapper(mc)).toList();
+		for (Action action : actions)
+		{
+			action.Perform(() -> mcs.stream());
+		}
+		
 		// Create sub randomizers. If they need to original data, they can save off a copy
 		// when they are created
-		MoveSetRandomizer moveSetRand = new MoveSetRandomizer(romData, logger);
+//		MoveSetRandomizer moveSetRand = new MoveSetRandomizer(romData, logger);
 		
 		CardGroup<Card> venus = romData.allCards.cards().withNameIgnoringNumber("Venusaur");
 		CardGroup.basedOnIndex(venus, 1).name.setText("Test-a-saur"); // Quick check to see if we ran and saved successfully
@@ -128,8 +190,8 @@ public class Randomizer
 		nextSeed += 100;
 		
 		// Randomize movesets (full random or match to type)
-		moveSetRand.randomize(nextSeed, settings, configs);
-		nextSeed += 100;
+//		moveSetRand.randomize(nextSeed, settings, configs);
+//		nextSeed += 100;
 		
 		// Non card randomizations
 		

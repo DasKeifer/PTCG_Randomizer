@@ -286,7 +286,7 @@ public class Move
 	{
 		name.finalizeAndAddTexts(texts);
 
-		if (name.toString().compareToIgnoreCase("call for family") == 0)
+		if (name.toString().compareToIgnoreCase("call for family") == 0 && false)
 		{
 			CardGroup<Card> basics = cards.cards().determineBasicEvolutionOfCard(hostCard);
 			if (basics.count() <= 0)
