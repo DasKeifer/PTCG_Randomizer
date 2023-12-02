@@ -12,7 +12,7 @@ public class DebugPrintAction extends Action {
 	
 	public DebugPrintAction(Logger log)
 	{
-		super("Print Card Info", "Shouldn't see this...");
+		super(ActionCategories.CATEGORY_TWEAKS, "Print Card Info", "Shouldn't see this...");
 		this.log = log;
 	}
 	

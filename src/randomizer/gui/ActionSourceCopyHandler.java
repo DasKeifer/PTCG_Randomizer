@@ -1,4 +1,4 @@
-package randomizer;
+package randomizer.gui;
 
 import java.awt.Cursor;
 import java.awt.datatransfer.DataFlavor;

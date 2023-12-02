@@ -4,8 +4,6 @@ import java.awt.Component;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -22,14 +20,17 @@ import universal_randomizer.user_object_apis.SetterNoReturn;
 import universal_randomizer.utils.StreamUtils;
 import gbc_framework.utils.Logger;
 import randomizer.actions.Action;
+import randomizer.actions.ActionCategories;
+import randomizer.actions.ActionBank;
 import randomizer.actions.DebugPrintAction;
 import randomizer.actions.LambdaAction;
 import randomizer.actions.PerformLambda;
-import randomizer.actions.SetEvoLineIdsAction;
+import randomizer.categories.CardsRandomizer;
+import randomizer.categories.MovesRandomizer;
 import rom.Rom;
 import rom.RomIO;
 
-public class Randomizer 
+public class RandomizerCore 
 {
 	static final String SEED_LOG_EXTENSION = ".seed.txt";
 	static final String LOG_FILE_EXTENSION = ".log.txt";
@@ -37,21 +38,25 @@ public class Randomizer
 	private Logger logger;
 	private Rom romData;
 	private Configs configs;
-	private HashMap<Integer, Action> allActions;
+	private ActionBank actionBank;
 	
-	public Randomizer()
+	public RandomizerCore()
 	{
 		logger = new Logger();
-		allActions = new HashMap<>();
-		Action a = new DebugPrintAction(logger);
-		allActions.put(a.getId(), a);
-		a = new SetEvoLineIdsAction();
-		allActions.put(a.getId(), a);
+		setupActionBank();
 	}
 	
-	public HashMap<Integer, Action> getAvailableActions()
+	public ActionBank getActionBank()
 	{
-		return allActions;
+		return actionBank;
+	}
+	
+	private void setupActionBank()
+	{
+		actionBank = new ActionBank();
+		actionBank.add(new DebugPrintAction(logger));
+		CardsRandomizer.addActions(actionBank);
+		MovesRandomizer.addActions(actionBank);
 	}
 	
 	public void openRom(File romFile, Component toCenterPopupsOn)
@@ -71,7 +76,7 @@ public class Randomizer
 		configs = new Configs(romData, toCenterPopupsOn);		
 	}
 	
-	public void randomizeAndSaveRom(File romFile, Settings settings) throws IOException
+	public void randomizeAndSaveRom(File romFile, Settings settings, List<Action> actionBank) throws IOException
 	{				
 		String romBasePath = romFile.getPath();
 		romBasePath = romBasePath.substring(0, romBasePath.lastIndexOf('.'));
@@ -103,7 +108,7 @@ public class Randomizer
 			logger.open(romBasePath + LOG_FILE_EXTENSION);
 		}
 		
-		randomize(settings);
+		randomize(settings, actionBank);
 
 		logger.close();
 		
@@ -114,36 +119,8 @@ public class Randomizer
 	}
 	
 	//public static void main(String[] args) throws IOException //Temp
-	public void randomize(Settings settings)
-	{		
-		List<Action> actions = new LinkedList<>();
-//		actions.add(new DebugPrintAction(logger));
-		actions.add(new SetEvoLineIdsAction());
-		
-    	PerformLambda typeRando = s -> {
-    		Stream<List<MonsterCardRandomizerWrapper>> byEvoLine = 
-    				StreamUtils.group(s.get(), mc -> mc.getEvolutionLineId()).values().stream();
-        	SetterNoReturn<List<MonsterCardRandomizerWrapper>, CardType> setter = (l, t) -> { 
-        		for (MonsterCardRandomizerWrapper mc : l) 
-        		{
-        			mc.getMonsterCard().type = t;
-        		}
-        	};
-        	SingleRandomizer<List<MonsterCardRandomizerWrapper>, CardType> randomizer =
-        			SingleRandomizer.create(setter.asSetter(), EnforceParams.createNoEnforce());
-        	randomizer.perform(byEvoLine, EliminatePoolSet.create(
-        			PeekPool.create(true, CardType.monsterValues()), EliminatePoolSet.UNLIMITED_DEPTH));
-    	};
-		actions.add(new LambdaAction(
-				"Even Rando Evo Line Types",
-				"Randomize the energy type per evolution line for all monsters to have a balanced number of cards of each type",
-				typeRando));
-		
-		
-		
-		actions.add(new DebugPrintAction(logger));
-		
-		
+	public void randomize(Settings settings, List<Action> actions)
+	{	
 		// get and store the base seed as the next one to use
 		int nextSeed = settings.getSeedValue();
 		

@@ -1,14 +1,16 @@
-package randomizer;
+package randomizer.gui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
 import randomizer.actions.Action;
+import randomizer.actions.ActionBank;
 
+// TODO: Split between tables?
 public class ActionTableModel extends AbstractTableModel
 {
 	private static final long serialVersionUID = 1L;
@@ -18,13 +20,18 @@ public class ActionTableModel extends AbstractTableModel
 	};
 	
 	List<Action> data;
-	private HashMap<Integer, Action> allActions;
+	private ActionBank actionBank;
 	
-	public ActionTableModel(HashMap<Integer, Action> allActions)
+	public ActionTableModel(ActionBank actionBank)
 	{
 		data = new ArrayList<>();
 		data.add(null);
-		this.allActions = allActions;
+		this.actionBank = actionBank;
+	}
+	
+	public ActionBank getActionBank()
+	{
+		return actionBank;
 	}
 
 	@Override
@@ -77,6 +84,16 @@ public class ActionTableModel extends AbstractTableModel
     	}
     	return null;
     }
+    
+    public Action getRow(int index)
+    {
+    	return data.get(index);
+    }
+	
+	public List<Action> getRows()
+	{
+		return data.subList(0, data.size() - 1);
+	}
 	
 	public void removeRow(int index)
 	{
@@ -107,7 +124,7 @@ public class ActionTableModel extends AbstractTableModel
 	
 	public void insertRowById(int index, int id)
 	{
-		insertRow(index, allActions.get(id));
+		insertRow(index, actionBank.get(id));
 	}
 	
 	public void insertRow(int index, Action a)
@@ -124,5 +141,17 @@ public class ActionTableModel extends AbstractTableModel
 	public void addRow(Action a)
 	{
 		insertRow(0, a);
+	}
+	
+	public void setRows(Collection<Action> actionBank)
+	{
+		data.clear();
+		data.addAll(actionBank);
+		fireTableDataChanged();
+	}
+
+	public void setRowsByCategory(String category) 
+	{
+		setRows(actionBank.get(category));
 	}
 }

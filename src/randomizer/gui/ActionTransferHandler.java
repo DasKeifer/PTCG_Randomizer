@@ -1,4 +1,4 @@
-package randomizer;
+package randomizer.gui;
 
 import java.awt.Cursor;
 import java.awt.datatransfer.DataFlavor;
@@ -33,10 +33,11 @@ public class ActionTransferHandler extends TransferHandler
 			JTable table = (JTable) c;
 			if (table.getModel() instanceof ActionTableModel)
 			{
+				ActionTableModel ate = (ActionTableModel) table.getModel();
 				int[] rows = table.getSelectedRows();
 				for (int row : rows)
 				{
-					sb.append(table.getValueAt(row, 0)).append(",");
+					sb.append(ate.getRow(row).getId()).append(",");
 				}
 			}
 		}

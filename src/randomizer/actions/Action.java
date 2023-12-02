@@ -7,15 +7,18 @@ import randomizer.MonsterCardRandomizerWrapper;
 
 public abstract class Action {
 	private static int nextId = 0;
-	public static final Action BLANK = new LambdaAction("", "", o -> {});
 	
 	private int id;
+	private String category;
+	private String subcategory;
 	private String name;
 	private String description;
 	
-	protected Action(String name, String description)
+	protected Action(String category, String name, String description)
 	{
 		this.id = nextId++;
+		this.category = category;
+		this.subcategory = "";
 		this.name = name;
 		this.description = description;
 	}
@@ -25,6 +28,11 @@ public abstract class Action {
 	public int getId()
 	{
 		return id;
+	}
+
+	public String getCategory()
+	{
+		return category;
 	}
 	
 	public String getName()
@@ -36,5 +44,4 @@ public abstract class Action {
 	{
 		return description;
 	}
-
 }

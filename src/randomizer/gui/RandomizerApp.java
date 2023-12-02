@@ -1,4 +1,4 @@
-package randomizer;
+package randomizer.gui;
 
 import java.awt.EventQueue;
 
@@ -22,8 +22,11 @@ import javax.swing.DropMode;
 import javax.swing.JCheckBox;
 import javax.swing.border.TitledBorder;
 
+import randomizer.RandomizerCore;
+import randomizer.Settings;
 import randomizer.Settings.*;
 import randomizer.actions.Action;
+import randomizer.actions.ActionCategories;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -39,6 +42,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.JComboBox;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class RandomizerApp {
 
@@ -46,7 +51,7 @@ public class RandomizerApp {
     private JFileChooser openRomChooser;
     private JFileChooser saveRomChooser;
 
-	private Randomizer randomizer;
+	private RandomizerCore randomizer;
 	private final ButtonGroup moveRandStrategyGoup = new ButtonGroup();
 	private final ButtonGroup pokePowersStrategyGroup = new ButtonGroup();
 	private JCheckBox saveLogSeedBox;
@@ -90,7 +95,8 @@ public class RandomizerApp {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		randomizer = new Randomizer();
+		randomizer = new RandomizerCore();
+		ActionTableModel actionsModel = new ActionTableModel(randomizer.getActionBank());
 		
 		openRomChooser = new JFileChooser();
 		openRomChooser.setCurrentDirectory(new File(".")); // Jar location by default
@@ -153,7 +159,7 @@ public class RandomizerApp {
 					        {
 					        	saveFile = new File(saveFile.getPath().concat(randomizer.getFileExtension()));
 					        }
-					    	randomizer.randomizeAndSaveRom(saveFile, settings);
+					    	randomizer.randomizeAndSaveRom(saveFile, settings, actionsModel.getRows());
 					    }
 					} catch (IOException e1) {
 						// TODO later: Auto-generated catch block
@@ -455,12 +461,19 @@ public class RandomizerApp {
 		JPanel panel_2 = new JPanel();
 		FlowLayout flowLayout = (FlowLayout) panel_2.getLayout();
 		panel_1.add(panel_2, BorderLayout.NORTH);
+		JComboBox<String> categoryComboBox = new JComboBox<>();
+
+		ActionTableModel ate = new ActionTableModel(randomizer.getActionBank());
+		for (String category : ActionCategories.getCategoriesWithAll())
+		{
+			categoryComboBox.addItem(category);
+		}
+		categoryComboBox.addActionListener(new CategoryChangedCBListener(ate));
+		categoryComboBox.setSelectedIndex(0);
+		panel_2.add(categoryComboBox);
 		
 		JComboBox comboBox_2 = new JComboBox();
 		panel_2.add(comboBox_2);
-		
-		JComboBox comboBox = new JComboBox();
-		panel_2.add(comboBox);
 		
 		JScrollPane scrollPane = new JScrollPane();
 		panel_1.add(scrollPane, BorderLayout.CENTER);
@@ -470,11 +483,6 @@ public class RandomizerApp {
 		table_1.setDragEnabled(true);
 		table_1.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		table_1.setTransferHandler(new ActionSourceCopyHandler());
-		ActionTableModel ate = new ActionTableModel(randomizer.getAvailableActions());
-		for(Action a : randomizer.getAvailableActions().values())
-		{
-			ate.addRow(a);
-		}
 		table_1.setModel(ate);
 		table_1.getColumnModel().getColumn(0).setPreferredWidth(25);
 		table_1.getColumnModel().getColumn(0).setMinWidth(20);
@@ -491,12 +499,7 @@ public class RandomizerApp {
 		table.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		table.setSize(100, 200);
 		table.setTransferHandler(new ActionTransferHandler());
-		ate = new ActionTableModel(randomizer.getAvailableActions());
-//		for(Action a : randomizer.getAvailableActions().values())
-//		{
-//			ate.addRow(a);
-//		}
-		table.setModel(ate);
+		table.setModel(actionsModel);
 		table.getColumnModel().getColumn(0).setPreferredWidth(25);
 		table.getColumnModel().getColumn(0).setMinWidth(20);
 		table.getColumnModel().getColumn(1).setPreferredWidth(120);

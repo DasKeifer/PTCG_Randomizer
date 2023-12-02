@@ -9,9 +9,9 @@ public class LambdaAction  extends Action {
 	
 	PerformLambda perform;
 	
-	public LambdaAction(String name, String description, PerformLambda perform)
+	public LambdaAction(String category, String name, String description, PerformLambda perform)
 	{
-		super (name, description);
+		super (category, name, description);
 		this.perform = perform;
 	}
 

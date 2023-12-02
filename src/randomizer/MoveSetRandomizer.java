@@ -143,36 +143,7 @@ public class MoveSetRandomizer {
 //		changeAllMovesTypes(pokes, EnergyType.COLORLESS);
 	}
 
-	public static void changeAllMovesTypes(Stream<MonsterCardRandomizerWrapper> pokes, EnergyType type)
-	{
-		pokes.forEach(poke -> {
-			List<Move> moves = poke.getMonsterCard().getAllMovesIncludingEmptyOnes();
-			for (Move move : moves)
-			{
-				// Get the current data and then clear it
-				byte colorlessCost = move.getCost(EnergyType.COLORLESS);
-				byte nonColorlessCost = move.getNonColorlessEnergyCosts();
-				move.clearCosts();
-				
-				// If we are setting to colorless, we need to add the
-				// two together
-				if (type == EnergyType.COLORLESS)
-				{
-					move.setCost(EnergyType.COLORLESS, (byte) (colorlessCost + nonColorlessCost));
-				}
-				// Otherwise set the colorless back and set the non colorless
-				// to the new type
-				else
-				{
-					move.setCost(EnergyType.COLORLESS, colorlessCost);
-					move.setCost(type, nonColorlessCost);
-				}
-			}
-			
-			// Copy the moves back over
-			poke.getMonsterCard().setMoves(moves);
-		});
-	}
+
 
 	/***************** Determine Number an categories of Moves ****************************/
 	public Map<MonsterCard, List<RandomizerMoveCategory>> getMoveTypesPerMonster(
