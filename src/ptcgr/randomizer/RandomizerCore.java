@@ -21,7 +21,7 @@ import ptcgr.data.CardGroup;
 import ptcgr.randomizer.actions.Action;
 import ptcgr.randomizer.actions.ActionBank;
 import ptcgr.randomizer.actions.ActionCategories;
-import ptcgr.randomizer.actions.DebugPrintAction;
+import ptcgr.randomizer.actions.LogInfoAction;
 import ptcgr.randomizer.actions.LambdaAction;
 import ptcgr.randomizer.actions.PerformLambda;
 import ptcgr.randomizer.categories.CardsRandomizer;
@@ -54,9 +54,8 @@ public class RandomizerCore
 	private void setupActionBank()
 	{
 		actionBank = new ActionBank();
-		actionBank.add(new DebugPrintAction(logger));
-		CardsRandomizer.addActions(actionBank);
-		MovesRandomizer.addActions(actionBank);
+		CardsRandomizer.addActions(actionBank, logger);
+		MovesRandomizer.addActions(actionBank, logger);
 	}
 	
 	public void openRom(File romFile, Component toCenterPopupsOn)

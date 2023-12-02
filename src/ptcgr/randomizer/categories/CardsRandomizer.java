@@ -1,17 +1,25 @@
 package ptcgr.randomizer.categories;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import gbc_framework.utils.Logger;
 import ptcgr.constants.CardDataConstants.CardType;
 import ptcgr.constants.CardDataConstants.EvolutionStage;
 import ptcgr.randomizer.MonsterCardRandomizerWrapper;
 import ptcgr.randomizer.actions.ActionBank;
 import ptcgr.randomizer.actions.ActionCategories;
 import ptcgr.randomizer.actions.LambdaAction;
+import ptcgr.randomizer.actions.LogInfoAction;
+import ptcgr.randomizer.actions.LogInfoAction.Column;
+import ptcgr.randomizer.actions.LogInfoAction.ColumnFormat;
 import universal_randomizer.pool.EliminatePoolSet;
 import universal_randomizer.pool.MultiPool;
 import universal_randomizer.pool.PeekPool;
@@ -20,23 +28,24 @@ import universal_randomizer.randomize.EnforceParams;
 import universal_randomizer.randomize.SingleRandomizer;
 import universal_randomizer.user_object_apis.Getter;
 import universal_randomizer.user_object_apis.SetterNoReturn;
-import universal_randomizer.utils.CreationUtils;
 import universal_randomizer.utils.StreamUtils;
 
 public class CardsRandomizer
 {
-	public static void addActions(ActionBank actionBank) 
+	public static void addActions(ActionBank actionBank, Logger logger) 
 	{
+		actionBank.add(new LogInfoAction(
+				ActionCategories.CATEGORY_CARDS, "Log Card Info", 
+				"Log info related to card randomizations", logger,
+				new ColumnFormat(Column.CARD_NAME, "-"), new ColumnFormat(Column.CARD_TYPE_SHORT, ""), 
+				new ColumnFormat(Column.CARD_HP, ""), new ColumnFormat(Column.CARD_PREV_EVO, "-"), 
+				new ColumnFormat(Column.CARD_EVO_ID, ""), new ColumnFormat(Column.CARD_MAX_EVO_STAGE, "")));
+		
 		actionBank.add(new LambdaAction(
 				ActionCategories.CATEGORY_CARDS,
 		        "Set Evo Line Metadata", 
 		        "Sets the evoLineId and maxEvoStage for the cards based on the current prevEvoName fields",
-				cards -> {
-					setEvoLineDataSecondPass(StreamUtils.group(cards.get(),
-							mc -> mc.getMonsterCard().name.toString()));
-					setEvoLineDataSecondPass(StreamUtils.group(cards.get(),
-							mc -> mc.getMonsterCard().name.toString()));
-				}));
+				cards -> setEvoLineData(StreamUtils.group(cards.get(), mc -> mc.getMonsterCard().name.toString()))));
 		
 		actionBank.add(new LambdaAction(
 				ActionCategories.CATEGORY_CARDS,
@@ -59,47 +68,145 @@ public class CardsRandomizer
 
 		actionBank.add(new LambdaAction(
 				ActionCategories.CATEGORY_CARDS,
+				"HP by Stage from ROM",
+				"Randomize the HP of cards based on their stage and max stage in the evo line weighting values based on the data in the rom",
+				cards -> {
+					Map<Integer, RandomizerPool<Integer>> poolMap = new HashMap<>();
+					Map<EvolutionStage, List<MonsterCardRandomizerWrapper>> byMaxStage = 
+							StreamUtils.group(cards.get(), MonsterCardRandomizerWrapper::getEvoLineMaxStage);
+					for (Entry<EvolutionStage, List<MonsterCardRandomizerWrapper>> maxStageEntry : byMaxStage.entrySet())
+					{
+						Map<EvolutionStage, List<MonsterCardRandomizerWrapper>> byStage = 
+								StreamUtils.group(maxStageEntry.getValue().stream(), mc -> mc.getMonsterCard().stage);
+						for (Entry<EvolutionStage, List<MonsterCardRandomizerWrapper>> stageEntry : byStage.entrySet())
+						{
+							poolMap.put(stageAndMaxStageHash(stageEntry.getKey(), maxStageEntry.getKey()), 
+									PeekPool.create(false,stageEntry.getValue().stream().map(
+											mc -> Integer.valueOf(mc.getMonsterCard().getHp())).toList()));
+						}
+					}
+					randomizeHpByStageMaxStageWithPool(cards, poolMap);
+		    	}));
+		
+		actionBank.add(new LambdaAction(
+				ActionCategories.CATEGORY_CARDS,
 				"HP by Stage",
 				"Randomize the HP of cards based on their stage and max stage in the evo line",
 				cards -> {
 					Map<Integer, RandomizerPool<Integer>> poolMap = new HashMap<>();
-					poolMap.put(0, PeekPool.create(false, 
-							50, 50, 60, 60, 60, 70, 70, 70, 80, 90, 100, 120));
+					poolMap.put(stageAndMaxStageHash(EvolutionStage.BASIC, EvolutionStage.BASIC), 
+							PeekPool.create(false, 50, 50, 60, 60, 60, 70, 70, 70, 80, 90, 100, 120));
 
-					poolMap.put(3, PeekPool.create(false, 
-							30, 40, 40, 50, 50, 60, 70, 80));
-					poolMap.put(4, PeekPool.create(false, 
-							50, 60, 70, 70, 80, 90, 100));
+					poolMap.put(stageAndMaxStageHash(EvolutionStage.BASIC, EvolutionStage.STAGE_1),
+							PeekPool.create(false, 30, 40, 40, 50, 50, 60, 70, 80));
+					poolMap.put(stageAndMaxStageHash(EvolutionStage.STAGE_1, EvolutionStage.STAGE_1),
+							PeekPool.create(false, 50, 60, 70, 70, 80, 90, 100));
 					
-					poolMap.put(6, PeekPool.create(false, 
-							30, 30, 40, 40, 50, 50, 60));
-					poolMap.put(7, PeekPool.create(false, 
-							50, 60, 60, 70, 70, 80, 90));
-					poolMap.put(8, PeekPool.create(false, 
-							80, 90, 100, 100, 110, 120));
+					poolMap.put(stageAndMaxStageHash(EvolutionStage.BASIC, EvolutionStage.STAGE_2),
+							PeekPool.create(false, 30, 30, 40, 40, 50, 50, 60));
+					poolMap.put(stageAndMaxStageHash(EvolutionStage.STAGE_1, EvolutionStage.STAGE_2),
+							PeekPool.create(false, 50, 60, 60, 70, 70, 80, 90));
+					poolMap.put(stageAndMaxStageHash(EvolutionStage.STAGE_2, EvolutionStage.STAGE_2),
+							PeekPool.create(false, 80, 90, 100, 100, 110, 120));
 				
-					Getter<MonsterCardRandomizerWrapper, Integer> hpIndexGetter = 
-							mc -> mc.getEvoLineMaxStage().getValue() * 3 + mc.getMonsterCard().stage.getValue();
-					MultiPool<MonsterCardRandomizerWrapper, Integer, Integer> hpPool = 
-							MultiPool.create(poolMap, hpIndexGetter.asMultiGetter());
-					
-					// TODO Here
-		    		Stream<List<MonsterCardRandomizerWrapper>> byEvoLine = 
-		    				StreamUtils.group(cards.get(), mc -> mc.getMonsterCard()).values().stream();
-		        	SetterNoReturn<List<MonsterCardRandomizerWrapper>, CardType> setter = (l, t) -> { 
-		        		for (MonsterCardRandomizerWrapper mc : l) 
-		        		{
-		        			mc.getMonsterCard().type = t;
-		        		}
-		        	};
-		        	SingleRandomizer<List<MonsterCardRandomizerWrapper>, CardType> randomizer =
-		        			SingleRandomizer.create(setter.asSetter(), EnforceParams.createNoEnforce());
-		        	randomizer.perform(byEvoLine, EliminatePoolSet.create(
-		        			PeekPool.create(true, CardType.monsterValues()), EliminatePoolSet.UNLIMITED_DEPTH));
+					randomizeHpByStageMaxStageWithPool(cards, poolMap);
 		    	}));
 	}
 	
-	private static int setEvoLineDataFirstPass(Map<String, List<MonsterCardRandomizerWrapper>> cards)
+	private static int stageAndMaxStageHash(EvolutionStage stage, EvolutionStage maxStage)
+	{
+		return maxStage.getValue() * 3 + stage.getValue();
+	}
+	
+	private static void randomizeHpByStageMaxStageWithPool(
+			Supplier<Stream<MonsterCardRandomizerWrapper>> cards, 
+			Map<Integer, RandomizerPool<Integer>> poolMap)
+	{
+		Getter<MonsterCardRandomizerWrapper, Integer> hpIndexGetter = 
+				mc -> stageAndMaxStageHash(mc.getMonsterCard().stage, mc.getEvoLineMaxStage());
+		MultiPool<MonsterCardRandomizerWrapper, Integer, Integer> hpPool = 
+				MultiPool.create(poolMap, hpIndexGetter.asMultiGetter());
+		
+    	SetterNoReturn<MonsterCardRandomizerWrapper, Integer> setter = (mc, hp) -> mc.getMonsterCard().setHp(hp);
+    	SingleRandomizer<MonsterCardRandomizerWrapper, Integer> randomizer =
+    			SingleRandomizer.create(setter.asSetter(), EnforceParams.createNoEnforce());
+    	randomizer.perform(cards.get(), hpPool);
+    	
+    	enforceEvoLineHpConsistency(cards);
+	}
+	
+	private static final Comparator<MonsterCardRandomizerWrapper> SORT_BY_HP = 
+			(l, r) -> Byte.compare(l.getMonsterCard().getHp(), r.getMonsterCard().getHp());
+	
+	private static void enforceEvoLineHpConsistency(Supplier<Stream<MonsterCardRandomizerWrapper>> cards)
+	{
+		// Group by evo Id
+		Collection<List<MonsterCardRandomizerWrapper>> byEvoLine = 
+				StreamUtils.group(cards.get(), mc -> mc.getEvoLineId()).values();
+		for (List<MonsterCardRandomizerWrapper> evoLine : byEvoLine)
+		{
+			// Then group by stage
+			Map<EvolutionStage, List<MonsterCardRandomizerWrapper>> byStage = 
+					StreamUtils.group(evoLine.stream(), mc -> mc.getMonsterCard().stage);
+
+			// Sort each stage by hp
+			for (List<MonsterCardRandomizerWrapper> stage : byStage.values())
+			{
+				stage.sort(SORT_BY_HP);
+			}
+			
+			for (int i = 0; i < EvolutionStage.values().length - 1; i++)
+			{
+				// Get this evo stage. If we don't find it, skip to the next
+				List<MonsterCardRandomizerWrapper> currEvoStage = byStage.get(EvolutionStage.values()[i]);
+				if (currEvoStage == null)
+				{
+					continue;
+				}
+				
+				// and now get the next one (skipping any missing stages)
+				int nextIdx = i + 1;
+				List<MonsterCardRandomizerWrapper> nextEvoStage = null;
+				do
+				{
+					nextEvoStage = byStage.get(EvolutionStage.values()[nextIdx++]);
+				}
+				while (nextEvoStage == null && nextIdx < EvolutionStage.values().length);
+				// If we didn't find a next stage we are done early
+				if (nextEvoStage == null)
+				{
+					break;
+				}
+			
+				// see if this highest is higher than the lowest of the next and if so, swap and resort the lists
+				MonsterCardRandomizerWrapper highest = currEvoStage.get(currEvoStage.size() - 1);
+				MonsterCardRandomizerWrapper lowest = nextEvoStage.get(0);
+				while (highest.getMonsterCard().getHp() > lowest.getMonsterCard().getHp())
+				{
+					byte highestHp = highest.getMonsterCard().getHp();
+					highest.getMonsterCard().setHp(lowest.getMonsterCard().getHp());
+					lowest.getMonsterCard().setHp(highestHp);
+
+					resort(currEvoStage, currEvoStage.size() - 1);
+					resort(nextEvoStage, 0);
+				}
+			}
+		}
+	}
+	
+	private static void resort(List<MonsterCardRandomizerWrapper> list, int index)
+	{
+		MonsterCardRandomizerWrapper modified = list.remove(index);
+		int insert = Collections.binarySearch(list, modified, SORT_BY_HP);
+		// If key was not found, convert it to where it should be inserted
+	    if (insert < 0) 
+	    {
+	    	insert = -insert - 1;
+	    }
+	    list.add(insert, modified);
+	}
+	
+	private static void setEvoLineData(Map<String, List<MonsterCardRandomizerWrapper>> cards)
 	{
 		int nextEvoId = 1;
 		for (Entry<String, List<MonsterCardRandomizerWrapper>> mcs : cards.entrySet())
@@ -121,10 +228,10 @@ public class CardsRandomizer
 				mc.setEvoLineMaxStage(mc.getMonsterCard().stage);
 			}
 		}
-		return nextEvoId;
+		setEvoLineData_SecondPass(cards);
 	}
 	
-	private static void setEvoLineDataSecondPass(Map<String, List<MonsterCardRandomizerWrapper>> cards)
+	private static void setEvoLineData_SecondPass(Map<String, List<MonsterCardRandomizerWrapper>> cards)
 	{
 		for (Entry<String, List<MonsterCardRandomizerWrapper>> mcs : cards.entrySet())
 		{

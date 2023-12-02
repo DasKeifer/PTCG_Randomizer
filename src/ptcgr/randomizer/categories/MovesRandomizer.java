@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 
+import gbc_framework.utils.Logger;
 import ptcgr.constants.CardDataConstants.CardType;
 import ptcgr.constants.CardDataConstants.EnergyType;
 import ptcgr.data.Move;
@@ -16,7 +17,7 @@ import universal_randomizer.utils.StreamUtils;
 
 public class MovesRandomizer
 {
-	public static void addActions(ActionBank actionBank) 
+	public static void addActions(ActionBank actionBank, Logger logger) 
 	{
 		actionBank.add(new LambdaAction(ActionCategories.CATEGORY_MOVES, 
 				"All Moves Colorless", 
