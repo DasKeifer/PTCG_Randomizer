@@ -17,13 +17,15 @@ import ptcgr.randomizer.MonsterCardRandomizerWrapper;
 import ptcgr.randomizer.actions.ActionBank;
 import ptcgr.randomizer.actions.ActionCategories;
 import ptcgr.randomizer.actions.LambdaAction;
-import ptcgr.randomizer.actions.LogInfoAction;
-import ptcgr.randomizer.actions.LogInfoAction.Column;
-import ptcgr.randomizer.actions.LogInfoAction.ColumnFormat;
+import ptcgr.randomizer.actions.logActions.CardsLogAction;
+import ptcgr.randomizer.actions.logActions.CardsLogAction.Column;
+import ptcgr.randomizer.actions.logActions.CardsLogAction.ColumnFormat;
+import ptcgr.randomizer.actions.logActions.CardsLogAction.TypeToPrint;
 import universal_randomizer.pool.EliminatePoolSet;
 import universal_randomizer.pool.MultiPool;
 import universal_randomizer.pool.PeekPool;
 import universal_randomizer.pool.RandomizerPool;
+import universal_randomizer.randomize.DependentRandomizer;
 import universal_randomizer.randomize.EnforceParams;
 import universal_randomizer.randomize.SingleRandomizer;
 import universal_randomizer.user_object_apis.Getter;
@@ -34,12 +36,12 @@ public class CardsRandomizer
 {
 	public static void addActions(ActionBank actionBank, Logger logger) 
 	{
-		actionBank.add(new LogInfoAction(
+		actionBank.add(new CardsLogAction(
 				ActionCategories.CATEGORY_CARDS, "Log Card Info", 
-				"Log info related to card randomizations", logger,
-				new ColumnFormat(Column.CARD_NAME, "-"), new ColumnFormat(Column.CARD_TYPE_SHORT, ""), 
-				new ColumnFormat(Column.CARD_HP, ""), new ColumnFormat(Column.CARD_PREV_EVO, "-"), 
-				new ColumnFormat(Column.CARD_EVO_ID, ""), new ColumnFormat(Column.CARD_MAX_EVO_STAGE, "")));
+				"Log info related to card randomizations", logger, TypeToPrint.MONSTERS,
+				new ColumnFormat(Column.C_NAME, "-"), new ColumnFormat(Column.C_TYPE_SHORT, ""), 
+				new ColumnFormat(Column.MC_HP, ""), new ColumnFormat(Column.MC_PREV_EVO, "-"), 
+				new ColumnFormat(Column.MC_EVO_ID, ""), new ColumnFormat(Column.MC_MAX_EVO_STAGE, "")));
 		
 		actionBank.add(new LambdaAction(
 				ActionCategories.CATEGORY_CARDS,
@@ -122,17 +124,23 @@ public class CardsRandomizer
 			Supplier<Stream<MonsterCardRandomizerWrapper>> cards, 
 			Map<Integer, RandomizerPool<Integer>> poolMap)
 	{
+		// DO a pre pass for hp "trend" to keep evo lines more consistent
+		// assign "high" "med" and "low" for more multipools
 		Getter<MonsterCardRandomizerWrapper, Integer> hpIndexGetter = 
 				mc -> stageAndMaxStageHash(mc.getMonsterCard().stage, mc.getEvoLineMaxStage());
 		MultiPool<MonsterCardRandomizerWrapper, Integer, Integer> hpPool = 
 				MultiPool.create(poolMap, hpIndexGetter.asMultiGetter());
 		
     	SetterNoReturn<MonsterCardRandomizerWrapper, Integer> setter = (mc, hp) -> mc.getMonsterCard().setHp(hp);
-    	SingleRandomizer<MonsterCardRandomizerWrapper, Integer> randomizer =
-    			SingleRandomizer.create(setter.asSetter(), EnforceParams.createNoEnforce());
-    	randomizer.perform(cards.get(), hpPool);
+    	DependentRandomizer<List<MonsterCardRandomizerWrapper>, MonsterCardRandomizerWrapper, Integer, EvolutionStage> randomizer =
+    			DependentRandomizer.create(
+    					setter.asSetter(), 
+    					Integer::compare,
+    					mc -> mc.getMonsterCard().stage,
+    					EvolutionStage::compareTo,
+    					EnforceParams.createNoEnforce());
     	
-    	enforceEvoLineHpConsistency(cards);
+    	randomizer.perform(StreamUtils.group(cards.get(), MonsterCardRandomizerWrapper::getEvoLineId).values().stream(), hpPool);
 	}
 	
 	private static final Comparator<MonsterCardRandomizerWrapper> SORT_BY_HP = 
@@ -243,6 +251,17 @@ public class CardsRandomizer
 			if (baseCard.getMonsterCard().prevEvoName.isEmpty()) 
 			{
 				continue;
+			}
+			
+			// If we have a higher stage in the chain update 
+			// only if higher though in case we process the 2nd
+			// stage before the first stage
+			if (baseCard.getEvoLineMaxStage().compareTo(cardEvoStage) < 0)
+			{
+				for (MonsterCardRandomizerWrapper mc : mcs.getValue())
+				{
+					mc.setEvoLineMaxStage(cardEvoStage);
+				}
 			}
 			
 			while (!baseCard.getMonsterCard().prevEvoName.isEmpty())

@@ -32,13 +32,13 @@ public abstract class Card
 	// TODO later: encapsulate these or make public?
 	public CardType type;
 	public CardName name;
-	short gfx; // Card art
-	CardRarity rarity;
+	public short gfx; // Card art
+	public CardRarity rarity;
 
 	// IMPORTANT! in the data the set and pack are stored in one byte:
 	// bits 0-3 are the set, bits 4-7 are the booster pack they can be found in
-	CardSet set;
-	BoosterPack pack;
+	public CardSet set;
+	public BoosterPack pack;
 	public CardId id;
 	
 	public Card()

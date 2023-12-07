@@ -87,4 +87,14 @@ public class NonMonsterCard extends Card
 	{
 		return TOTAL_SIZE_IN_BYTES;
 	}
+	
+	public short getEffectPtr() 
+	{
+		return effectPtr;
+	}
+
+	public EffectDescription getDescription() 
+	{
+		return description;
+	}
 }

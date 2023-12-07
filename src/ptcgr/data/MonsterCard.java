@@ -27,17 +27,18 @@ public class MonsterCard extends Card
 	
 	private Move[] moves;
 	
-	byte retreatCost; // TODO later: max allowed?
-	WeaknessResistanceType weakness; // Allows multiple
-	WeaknessResistanceType resistance; // Allows multiple
+	public byte retreatCost; // TODO later: max allowed?
+	public WeaknessResistanceType weakness; // Allows multiple
+	public WeaknessResistanceType resistance; // Allows multiple
 	public MonsterCategory monsterCategory; // TODO later: Investigate? Any gameplay impact?
 	public byte dexNumber;
-	byte unknownByte1; // TODO later: Always 0?
-	byte level; // TODO later: Investigate No gameplay impact?
-	short length; //TODO later: One byte is feet, another is inches - separate them? // TODO later: Investigate No gameplay impact?
-	short weight; // TODO later: Investigate No gameplay impact?
-	PokeDescription description;
-	byte unknownByte2; // TODO later: At least somewhat tracks with evo stage in asm files - 19 for first stage, 16 for second stage, 0 for final stage?	
+	public byte unknownByte1; // TODO later: Always 0?
+	public byte level; // TODO later: Investigate No gameplay impact?
+	public byte lengthFt; // TODO later: Investigate No gameplay impact?
+	public byte lengthIn; // TODO later: Investigate No gameplay impact?
+	public short weight; // TODO later: Investigate No gameplay impact?
+	public PokeDescription description;
+	public byte unknownByte2; // TODO later: At least somewhat tracks with evo stage in asm files - 19 for first stage, 16 for second stage, 0 for final stage?	
 	
 	public MonsterCard()
 	{
@@ -72,7 +73,8 @@ public class MonsterCard extends Card
 		dexNumber = toCopy.dexNumber;
 		unknownByte1 = toCopy.unknownByte1;
 		level = toCopy.level;
-		length = toCopy.length;
+		lengthFt = toCopy.lengthFt;
+		lengthIn = toCopy.lengthIn;
 		weight = toCopy.weight;
 		description = new PokeDescription(toCopy.description);
 		unknownByte2 = toCopy.unknownByte2;
@@ -288,8 +290,8 @@ public class MonsterCard extends Card
 		dexNumber = cardBytes[index++];
 		unknownByte1 = cardBytes[index++];
 		level = cardBytes[index++];
-		length = ByteUtils.readAsShort(cardBytes, index);
-		index += 2;
+		lengthFt = cardBytes[index++];
+		lengthIn = cardBytes[index++];
 		weight = ByteUtils.readAsShort(cardBytes, index);
 		index += 2;
 		
@@ -346,7 +348,10 @@ public class MonsterCard extends Card
 				unknownByte1,
 				level
 		);
-		bytes.append(ByteUtils.shortToLittleEndianBytes(length));
+		bytes.append(
+				lengthFt, 
+				lengthIn
+		);
 		bytes.append(ByteUtils.shortToLittleEndianBytes(weight));
 		bytes.append(ByteUtils.shortToLittleEndianBytes(description.getTextId()));
 		bytes.append(unknownByte2);

@@ -229,13 +229,15 @@ public class CardDataConstants
 
 	public enum CardRarity
 	{
-		CIRCLE    (0x0),
-		DIAMOND   (0x1),
-		STAR      (0x2),
-		PROMOSTAR (0xff);
+		CIRCLE    (0x0,  "C"),
+		DIAMOND   (0x1,  "D"),
+		STAR      (0x2,  "S"),
+		PROMOSTAR (0xff, "P");
 
 		private byte value;
-		private CardRarity(int inValue)
+		private String abbrev;
+		
+		private CardRarity(int inValue, String abbrev)
 		{
 			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
@@ -243,11 +245,17 @@ public class CardDataConstants
 						+ "CardRarity enum: " + inValue);
 			}
 			value = (byte) inValue;
+			this.abbrev = abbrev;
 		}
 
 		public byte getValue()
 		{
 			return value;
+		}
+
+		public String getAbbreviation()
+		{
+			return abbrev;
 		}
 		
 	    public static CardRarity readFromByte(byte b)
@@ -265,16 +273,17 @@ public class CardDataConstants
 	
 	public enum BoosterPack
 	{
-		PACK_C      (0x0),
-		PACK_E      (0x1),
-		PACK_M      (0x2),
-		PACK_L      (0x3),
-		PACK_PROMO  (0x4),
-		PACK_ENERGY (0x5);
+		PACK_C      (0x0, "Colo"),
+		PACK_E      (0x1, "Evol"),
+		PACK_M      (0x2, "Myst"),
+		PACK_L      (0x3, "Lab"),
+		PACK_PROMO  (0x4, "Prmo"),
+		PACK_ENERGY (0x5, "Engy");
 		
 		private byte value;
+		private String abbrev;
 		
-		private BoosterPack(int inValue)
+		private BoosterPack(int inValue, String abbrev)
 		{
 			// stored in upper half of byte with set in the lower half but we treat it as the lower 
 			// half to make things make more sense in this code
@@ -284,11 +293,17 @@ public class CardDataConstants
 						+ "BoosterPack enum " + inValue + " (" + (inValue << 4) + " )");
 			}
 			value = (byte) inValue;
+			this.abbrev = abbrev;
 		}
 
 		public byte getValue()
 		{
 			return value;
+		}
+
+		public String getAbbreviation()
+		{
+			return abbrev;
 		}
 		
 	    public static BoosterPack readFromHexChar(byte hexChar)
@@ -306,15 +321,16 @@ public class CardDataConstants
 
 	public enum CardSet
 	{
-		SET_B     (0x0),
-		SET_J     (0x1),
-		SET_F     (0x2),
-		SET_G     (0x7),
-		SET_PROMO (0x8);
+		SET_N     (0x0, "None"),
+		SET_J     (0x1, "Jngl"),
+		SET_F     (0x2, "Fosl"),
+		SET_G     (0x7, "GB"),
+		SET_PROMO (0x8, "Prmo");
 
 		private byte value;
+		private String abbrev;
 		
-		private CardSet(int inValue)
+		private CardSet(int inValue, String abbrev)
 		{
 			// stored in lower half of byte with pack in the upper half
 			if (inValue > ByteUtils.MAX_HEX_CHAR_VALUE  || inValue < ByteUtils.MIN_HEX_CHAR_VALUE)
@@ -323,11 +339,17 @@ public class CardDataConstants
 						+ "CardSet enum: " + inValue);
 			}
 			value = (byte) inValue;
+			this.abbrev = abbrev;
 		}
 
 		public byte getValue()
 		{
 			return value;
+		}
+
+		public String getAbbreviation()
+		{
+			return abbrev;
 		}
 		
 	    public static CardSet readFromHexChar(byte hexChar)
@@ -345,12 +367,14 @@ public class CardDataConstants
 
 	public enum EvolutionStage
 	{
-		BASIC   (0x00),
-		STAGE_1 (0x01),
-		STAGE_2 (0x02);
+		BASIC   (0x00, "B"),
+		STAGE_1 (0x01, "1"),
+		STAGE_2 (0x02, "2");
 
 		private byte value;
-		private EvolutionStage(int inValue)
+		private String abbrev;
+		
+		private EvolutionStage(int inValue, String abbrev)
 		{
 			if (inValue > ByteUtils.MAX_BYTE_VALUE || inValue < ByteUtils.MIN_BYTE_VALUE)
 			{
@@ -358,11 +382,17 @@ public class CardDataConstants
 						+ "EvolutionStage enum: " + inValue);
 			}
 			value = (byte) inValue;
+			this.abbrev = abbrev;
 		}
 
 		public byte getValue()
 		{
 			return value;
+		}
+
+		public String getAbbreviation()
+		{
+			return abbrev;
 		}
 		
 	    public static EvolutionStage readFromByte(byte b)
