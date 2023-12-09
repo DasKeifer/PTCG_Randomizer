@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import ptcgr.randomizer.MonsterCardRandomizerWrapper;
+import ptcgr.rom.Rom;
 
 public class LambdaAction  extends Action {
 	
@@ -16,7 +17,7 @@ public class LambdaAction  extends Action {
 	}
 
 	@Override
-	public void Perform(Supplier<Stream<MonsterCardRandomizerWrapper>> cards) {
-		perform.perform(cards);
+	public void Perform(Rom rom) {
+		perform.perform(rom);
 	}
 }

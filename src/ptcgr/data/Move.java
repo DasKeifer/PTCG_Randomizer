@@ -12,6 +12,7 @@ import compiler.RawBytePacker;
 import compiler.static_instructs.RawBytes;
 import rom_packer.Blocks;
 import rom_packer.MovableBlock;
+import universal_randomizer.wrappers.ExtendableObject;
 import gbc_framework.utils.ByteUtils;
 import ptcgr.constants.PtcgRomConstants;
 import ptcgr.constants.CardDataConstants.*;
@@ -23,7 +24,7 @@ import ptcgr.data.romtexts.RomText;
 import ptcgr.rom.Cards;
 import ptcgr.rom.Texts;
 
-public class Move
+public class Move extends ExtendableObject
 {
 	public static final int TOTAL_SIZE_IN_BYTES = 19;
 	public static final Move EMPTY_MOVE = new Move();

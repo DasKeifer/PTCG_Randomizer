@@ -22,7 +22,7 @@ import universal_randomizer.utils.StreamUtils;
 import universal_randomizer.randomize.MultiRandomizer;
 import universal_randomizer.randomize.SetRandomizer;
 import universal_randomizer.pool.MultiPool;
-import universal_randomizer.pool.PeekPool;
+import universal_randomizer.pool.ReusePool;
 import universal_randomizer.pool.RandomizerPool;
 import gbc_framework.utils.Logger;
 import gbc_framework.utils.MathUtils;
@@ -465,7 +465,7 @@ public class MoveSetRandomizer {
 		return -1;
 	}
 	
-	public PeekPool<Move> getPool(Supplier<Stream<MonsterCard>> mcs)
+	public ReusePool<Move> getPool(Supplier<Stream<MonsterCard>> mcs)
 	{
 		// Option for remove vs reuse
 		// Option for number of moves? Probably don't care
@@ -490,7 +490,7 @@ public class MoveSetRandomizer {
 		
 		// Option for duplicate vs even distro
 		boolean evenDistro = false;
-		return PeekPool.create(evenDistro, moves.toList());
+		return ReusePool.create(moves.toList());
 	}
 	
 	public void assignNumMoves(Supplier<Stream<MonsterCardRandomizerWrapper>> mcs)
@@ -509,9 +509,9 @@ public class MoveSetRandomizer {
 		}
 		else if (randNumMoves)
 		{
-			SingleRandomizer.createNoEnforce(MonsterCardRandomizerWrapper::setNumMoves)
+			SingleRandomizer.create(MonsterCardRandomizerWrapper::setNumMoves)
 				.perform(mcs.get(),
-						PeekPool.create(false, CreationUtils.weightedCollection(
+						ReusePool.create(CreationUtils.weightedCollection(
 								Map.entry(percent0Moves, 0), 
 								Map.entry(percent1Moves, 1), 
 								Map.entry(percent2Moves, 2))));
@@ -520,8 +520,8 @@ public class MoveSetRandomizer {
 		{
 			Stream<Integer> numMovesStream = StreamUtils.field(mcs.get(),
 					c -> c.getMonsterCard().getNumMoves());
-			SingleRandomizer.createNoEnforce(MonsterCardRandomizerWrapper::setNumMoves)
-				.perform(mcs.get(), PeekPool.create(true, numMovesStream.toList()));
+			SingleRandomizer.create(MonsterCardRandomizerWrapper::setNumMoves)
+				.perform(mcs.get(), ReusePool.create(numMovesStream.toList()));
 		}
 		else if (maxMoves)
 		{
@@ -552,12 +552,12 @@ public class MoveSetRandomizer {
 			if (type != EnergyType.COLORLESS)
 			{
 				Map<Integer, RandomizerPool<List<EnergyType>>> poolMap = new HashMap<>();
-				poolMap.put(0, PeekPool.create(false, List.of()));
-				poolMap.put(1, PeekPool.create(false, CreationUtils.weightedCollection(
+				poolMap.put(0, ReusePool.create(List.of()));
+				poolMap.put(1, ReusePool.create(CreationUtils.weightedCollection(
 						Map.entry(15, List.of(type)), 
 						Map.entry(4, List.of(EnergyType.COLORLESS)), 
 						Map.entry(1, List.of(prevType)))));
-				poolMap.put(2, PeekPool.create(false, CreationUtils.weightedCollection(
+				poolMap.put(2, ReusePool.create(CreationUtils.weightedCollection(
 						Map.entry(6, List.of(type, type)),
 						Map.entry(3, List.of(type, EnergyType.COLORLESS)), 
 						Map.entry(1, List.of(type, prevType)))));
@@ -565,7 +565,7 @@ public class MoveSetRandomizer {
 						new MultiPool<>(poolMap, (mcw, count) -> mcw.getNumMoves());
 				
 				MultiRandomizer<MonsterCardRandomizerWrapper, List<EnergyType>, EnergyType> randomizer = 
-						MultiRandomizer.createNoEnforce(
+						MultiRandomizer.create(
 								MonsterCardRandomizerWrapper::setMoveType);
 				randomizer.perform(currEntry.getValue().stream(), mp);
 				
@@ -581,7 +581,7 @@ public class MoveSetRandomizer {
 				new MultiPool<MonsterCardRandomizerWrapper, EnergyType, Move>(movesByType, (mcw, count) -> mcw.getMoveTypes()[count]);
 		
 		SingleRandomizer<MonsterCardRandomizerWrapper, Move> movesRand =
-				SingleRandomizer.createNoEnforce(
+				SingleRandomizer.create(
 						(mcw, move, index) -> mcw.getMonsterCard().setMove(move, index),
 						MonsterCardRandomizerWrapper::getNumMoves);
 		
@@ -611,16 +611,16 @@ public class MoveSetRandomizer {
 	public void randomizeHealth(Supplier<Stream<MonsterCardRandomizerWrapper>> mcs)
 	{
 		Map<Integer, RandomizerPool<List<Integer>>> poolMap = new HashMap<>();
-		poolMap.put(1, PeekPool.create(false, Arrays.asList(50),Arrays.asList(70)));
-		poolMap.put(2, PeekPool.create(false, Arrays.asList(30,60),Arrays.asList(40,80)));
-		poolMap.put(3, PeekPool.create(false, Arrays.asList(30,50,80),Arrays.asList(40,70,100)));
+		poolMap.put(1, ReusePool.create(Arrays.asList(50),Arrays.asList(70)));
+		poolMap.put(2, ReusePool.create(Arrays.asList(30,60),Arrays.asList(40,80)));
+		poolMap.put(3, ReusePool.create(Arrays.asList(30,50,80),Arrays.asList(40,70,100)));
 		MultiPool<List<MonsterCardRandomizerWrapper>, Integer, List<Integer>> multiPool = 
 				new MultiPool<>(poolMap, (mcwl, count) -> mcwl.size());
 		
 //		MonsterCardRandomizerWrapper.setEvoLineIds(mcs.get());
 
 		SetRandomizer<List<MonsterCardRandomizerWrapper>, MonsterCardRandomizerWrapper, List<Integer>, Integer> randomizer = 
-				SetRandomizer.createNoEnforce(
+				SetRandomizer.create(
 						(mcw, hp) -> mcw.getMonsterCard().setHp(hp));
 		randomizer.perform(StreamUtils.group(mcs.get(), MonsterCardRandomizerWrapper::getEvoLineId).values().stream(), multiPool);
 	}

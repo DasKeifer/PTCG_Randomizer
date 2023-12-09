@@ -5,25 +5,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Stream;
 
-import universal_randomizer.pool.EliminatePoolSet;
-import universal_randomizer.pool.PeekPool;
-import universal_randomizer.randomize.EnforceParams;
-import universal_randomizer.randomize.SingleRandomizer;
-import universal_randomizer.user_object_apis.SetterNoReturn;
-import universal_randomizer.utils.StreamUtils;
 import gbc_framework.utils.Logger;
 import ptcgr.config.Configs;
-import ptcgr.constants.CardDataConstants.CardType;
 import ptcgr.data.Card;
 import ptcgr.data.CardGroup;
 import ptcgr.randomizer.actions.Action;
 import ptcgr.randomizer.actions.ActionBank;
-import ptcgr.randomizer.actions.ActionCategories;
-import ptcgr.randomizer.actions.LambdaAction;
-import ptcgr.randomizer.actions.PerformLambda;
-import ptcgr.randomizer.actions.logActions.CardsLogAction;
 import ptcgr.randomizer.categories.CardsRandomizer;
 import ptcgr.randomizer.categories.MovesRandomizer;
 import ptcgr.rom.Rom;
@@ -128,11 +116,9 @@ public class RandomizerCore
 		// it will need to be reset
 		romData.resetAndPrepareForModification();
 		
-		List<MonsterCardRandomizerWrapper> mcs = romData.allCards.cards().monsterCards().stream().map(
-				mc -> new MonsterCardRandomizerWrapper(mc)).toList();
 		for (Action action : actions)
 		{
-			action.Perform(() -> mcs.stream());
+			action.Perform(romData);
 		}
 		
 		// Create sub randomizers. If they need to original data, they can save off a copy

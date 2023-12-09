@@ -3,6 +3,7 @@ package ptcgr.data;
 import rom_packer.Blocks;
 import rom_packer.HybridBlock;
 import rom_packer.MovableBlock;
+import universal_randomizer.wrappers.ExtendableObject;
 import gbc_framework.rom_addressing.AddressRange;
 import gbc_framework.utils.ByteUtils;
 import ptcgr.constants.CardConstants.CardId;
@@ -21,7 +22,7 @@ import compiler.CodeBlock;
 import compiler.InstructionParser;
 import compiler.RawBytePacker;
 
-public abstract class Card
+public abstract class Card extends ExtendableObject
 {
 	public static final int CARD_COMMON_SIZE = 8;
 	public static final Comparator<Card> ID_SORTER = new IdSorter();

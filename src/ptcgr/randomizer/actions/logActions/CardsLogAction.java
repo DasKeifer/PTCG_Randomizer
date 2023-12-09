@@ -5,9 +5,12 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import gbc_framework.utils.Logger;
+import ptcgr.constants.CardDataConstants.EvolutionStage;
+import ptcgr.data.MonsterCard;
 import ptcgr.data.NonMonsterCard;
 import ptcgr.randomizer.MonsterCardRandomizerWrapper;
 import ptcgr.randomizer.actions.Action;
+import ptcgr.rom.Rom;
 
 public class CardsLogAction extends Action 
 {
@@ -84,8 +87,10 @@ public class CardsLogAction extends Action
 	}
 	
 	@Override
-	public void Perform(Supplier<Stream<MonsterCardRandomizerWrapper>> cards)
+	public void Perform(Rom rom)
 	{
+		Supplier<Stream<MonsterCard>> mcs = () -> rom.allCards.cards().monsterCards().stream();
+		
 		// Start size at separators between columns and add each columns length
 		int totalSize = columnFormats.length + 1;
 		String[] formats = new String[columnFormats.length];
@@ -107,45 +112,45 @@ public class CardsLogAction extends Action
 		log.printf(rowFormat, (Object[])titles);
 		log.println(separator);
 		
-		cards.get().forEach(this::printCard);
+		mcs.get().forEach(this::printCard);
 		
 		log.println(separator);
 	}
 
 	
-	public void printCard(MonsterCardRandomizerWrapper card)
+	public void printCard(MonsterCard card)
 	{
 		Object[] entries = new Object[columnFormats.length];
 		for (int i = 0; i < columnFormats.length; i++)
 		{
 			switch (columnFormats[i].getColumn()) 
 			{
-				case C_ID: entries[i] = card.getMonsterCard().id; break;
-				case C_NAME: entries[i] = card.getMonsterCard().name; break;
-				case C_TYPE_SHORT: entries[i] = card.getMonsterCard().type.convertToEnergyType().getAbbreviation(); break;
-				case C_GFX: entries[i] = card.getMonsterCard().gfx; break;
-				case C_RARITY: entries[i] = card.getMonsterCard().rarity.getAbbreviation(); break;
-				case C_SET: entries[i] = card.getMonsterCard().set.getAbbreviation(); break;
-				case C_PACK: entries[i] = card.getMonsterCard().pack.getAbbreviation(); break;
-				case MC_HP: entries[i] = card.getMonsterCard().getHp(); break;
-				case MC_STAGE: entries[i] = card.getMonsterCard().stage; break;
-				case MC_PREV_EVO: entries[i] = card.getMonsterCard().prevEvoName; break;
-				case MC_MOVE_1_NAME: entries[i] = card.getMonsterCard().getMove(0).name; break;
-				case MC_MOVE_2_NAME: entries[i] = card.getMonsterCard().getMove(1).name; break;
-				case MC_RETREAT: entries[i] = card.getMonsterCard().retreatCost; break;
-				case MC_WEAKNESS: entries[i] = card.getMonsterCard().weakness; break;
-				case MC_RESISTANCE: entries[i] = card.getMonsterCard().resistance; break;
-				case MC_CATEGORY: entries[i] = card.getMonsterCard().monsterCategory; break;
-				case MC_DEX_NUMBER: entries[i] = card.getMonsterCard().dexNumber; break;
-				case MC_UNKNOWN_1: entries[i] = card.getMonsterCard().unknownByte1; break;
-				case MC_LEVEL: entries[i] = card.getMonsterCard().level; break;
-				case MC_LENGTH: entries[i] = card.getMonsterCard().lengthFt + "'" + 
-							card.getMonsterCard().lengthIn + "\""; break;
-				case MC_WEIGHT: entries[i] = card.getMonsterCard().weight; break;
-				case MC_DESCRIPTION_ID: entries[i] = card.getMonsterCard().description.getTextId(); break;
-				case MC_UNKNOWN_2: entries[i] = card.getMonsterCard().unknownByte2; break;
-				case MC_EVO_ID: entries[i] = card.getEvoLineId(); break; 
-				case MC_MAX_EVO_STAGE: entries[i] = card.getEvoLineMaxStage().getAbbreviation(); break;
+				case C_ID: entries[i] = card.id; break;
+				case C_NAME: entries[i] = card.name; break;
+				case C_TYPE_SHORT: entries[i] = card.type.convertToEnergyType().getAbbreviation(); break;
+				case C_GFX: entries[i] = card.gfx; break;
+				case C_RARITY: entries[i] = card.rarity.getAbbreviation(); break;
+				case C_SET: entries[i] = card.set.getAbbreviation(); break;
+				case C_PACK: entries[i] = card.pack.getAbbreviation(); break;
+				case MC_HP: entries[i] = card.getHp(); break;
+				case MC_STAGE: entries[i] = card.stage; break;
+				case MC_PREV_EVO: entries[i] = card.prevEvoName; break;
+				case MC_MOVE_1_NAME: entries[i] = card.getMove(0).name; break;
+				case MC_MOVE_2_NAME: entries[i] = card.getMove(1).name; break;
+				case MC_RETREAT: entries[i] = card.retreatCost; break;
+				case MC_WEAKNESS: entries[i] = card.weakness; break;
+				case MC_RESISTANCE: entries[i] = card.resistance; break;
+				case MC_CATEGORY: entries[i] = card.monsterCategory; break;
+				case MC_DEX_NUMBER: entries[i] = card.dexNumber; break;
+				case MC_UNKNOWN_1: entries[i] = card.unknownByte1; break;
+				case MC_LEVEL: entries[i] = card.level; break;
+				case MC_LENGTH: entries[i] = card.lengthFt + "'" + 
+							card.lengthIn + "\""; break;
+				case MC_WEIGHT: entries[i] = card.weight; break;
+				case MC_DESCRIPTION_ID: entries[i] = card.description.getTextId(); break;
+				case MC_UNKNOWN_2: entries[i] = card.unknownByte2; break;
+				case MC_EVO_ID: entries[i] = card.get("evoLineId", -1); break; 
+				case MC_MAX_EVO_STAGE: entries[i] = card.get("evoLineMaxStage", EvolutionStage.BASIC).getAbbreviation(); break;
 				default: entries[i] = "N/A"; break;
 			}
 		}

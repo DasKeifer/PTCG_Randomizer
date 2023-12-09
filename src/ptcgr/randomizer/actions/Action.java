@@ -1,9 +1,6 @@
 package ptcgr.randomizer.actions;
 
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-
-import ptcgr.randomizer.MonsterCardRandomizerWrapper;
+import ptcgr.rom.Rom;
 
 public abstract class Action {
 	private static int nextId = 0;
@@ -23,7 +20,7 @@ public abstract class Action {
 		this.description = description;
 	}
 	
-	abstract public void Perform(Supplier<Stream<MonsterCardRandomizerWrapper>> cards);
+	abstract public void Perform(Rom rom);
 
 	public int getId()
 	{
